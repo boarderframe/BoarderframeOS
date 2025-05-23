@@ -1,0 +1,429 @@
+#!/usr/bin/env python3
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+"""
+boarderctl - The BoarderframeOS Command Center
+Control your AI workforce from the command line
+"""
+
+import typer
+import yaml
+import json
+import asyncio
+from pathlib import Path
+from typing import Optional, List
+from rich.console import Console
+from rich.table import Table
+from rich.prompt import Prompt, Confirm
+from rich.progress import Progress, SpinnerColumn, TextColumn
+from datetime import datetime
+from enum import Enum
+
+app = typer.Typer(help="BoarderframeOS Control Center")
+console = Console()
+
+# Configuration paths
+CONFIG_FILE = Path("boarderframe.yaml")
+AGENTS_DIR = Path("agents")
+ZONES_DIR = Path("zones")
+MCP_DIR = Path("mcp-servers")
+
+class AgentStatus(str, Enum):
+    RUNNING = "running"
+    STOPPED = "stopped"
+    ERROR = "error"
+    CREATING = "creating"
+
+@app.command()
+def init():
+    """Initialize a new BoarderframeOS environment"""
+    console.print("\n[bold cyan]🚀 BoarderframeOS Initialization[/bold cyan]\n")
+    
+    if CONFIG_FILE.exists():
+        if not Confirm.ask("BoarderframeOS already initialized. Reinitialize?"):
+            return
+    
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+    ) as progress:
+        # Create directory structure
+        task = progress.add_task("Creating directory structure...", total=5)
+        
+        dirs = [AGENTS_DIR, ZONES_DIR, MCP_DIR, Path("data"), Path("logs")]
+        for d in dirs:
+            d.mkdir(exist_ok=True)
+            progress.advance(task)
+        
+        # Create initial configuration
+        config = {
+            'version': '0.1.0',
+            'created': datetime.now().isoformat(),
+            'compute': {
+                'total_tops': 2000,
+                'total_memory_gb': 256,
+                'devices': [
+                    {'id': 'dgx-spark-1', 'tops': 1000, 'memory_gb': 128},
+                    {'id': 'dgx-spark-2', 'tops': 1000, 'memory_gb': 128}
+                ]
+            },
+            'zones': {},
+            'agents': {},
+            'mcp_servers': {
+                'filesystem': {'status': 'inactive', 'port': 8001},
+                'git': {'status': 'inactive', 'port': 8002},
+                'browser': {'status': 'inactive', 'port': 8003}
+            }
+        }
+        
+        with open(CONFIG_FILE, 'w') as f:
+            yaml.dump(config, f, default_flow_style=False)
+        
+    console.print("\n✅ [bold green]BoarderframeOS initialized successfully![/bold green]")
+    console.print("\nNext steps:")
+    console.print("  1. Run [bold]boarderctl zone create[/bold] to create your first compute zone")
+    console.print("  2. Run [bold]boarderctl agent create[/bold] to create your first agent")
+    console.print("  3. Run [bold]boarderctl start[/bold] to launch the system\n")
+
+@app.command()
+def status():
+    """Show system status"""
+    if not CONFIG_FILE.exists():
+        console.print("[red]BoarderframeOS not initialized. Run 'boarderctl init' first.[/red]")
+        return
+    
+    config = yaml.safe_load(CONFIG_FILE.read_text())
+    
+    # System overview
+    console.print("\n[bold cyan]BoarderframeOS Status[/bold cyan]\n")
+    
+    # Compute resources
+    compute_table = Table(title="Compute Resources")
+    compute_table.add_column("Device", style="cyan")
+    compute_table.add_column("TOPS", justify="right")
+    compute_table.add_column("Memory", justify="right")
+    compute_table.add_column("Status", justify="center")
+    
+    for device in config['compute']['devices']:
+        compute_table.add_row(
+            device['id'],
+            f"{device['tops']:,}",
+            f"{device['memory_gb']} GB",
+            "[green]Online[/green]"
+        )
+    
+    console.print(compute_table)
+    
+    # Active zones
+    if config['zones']:
+        zones_table = Table(title="\nActive Zones", show_header=True)
+        zones_table.add_column("Zone", style="cyan")
+        zones_table.add_column("Allocation", justify="right")
+        zones_table.add_column("Agents", justify="right")
+        zones_table.add_column("Status")
+        
+        for zone_name, zone_data in config['zones'].items():
+            zones_table.add_row(
+                zone_name,
+                f"{zone_data.get('allocation', 0)}%",
+                str(len(zone_data.get('agents', []))),
+                f"[green]{zone_data.get('status', 'active')}[/green]"
+            )
+        
+        console.print(zones_table)
+    else:
+        console.print("\n[yellow]No active zones[/yellow]")
+    
+    # MCP Servers
+    mcp_table = Table(title="\nMCP Servers")
+    mcp_table.add_column("Server", style="cyan")
+    mcp_table.add_column("Port", justify="right")
+    mcp_table.add_column("Status", justify="center")
+    
+    for server_name, server_data in config['mcp_servers'].items():
+        status = server_data['status']
+        status_color = "green" if status == "active" else "red"
+        mcp_table.add_row(
+            server_name,
+            str(server_data['port']),
+            f"[{status_color}]{status}[/{status_color}]"
+        )
+    
+    console.print(mcp_table)
+    console.print()
+
+@app.command()
+def zone(
+    action: str = typer.Argument(..., help="Action: create, list, delete"),
+    name: Optional[str] = typer.Argument(None, help="Zone name")
+):
+    """Manage compute zones"""
+    
+    config = yaml.safe_load(CONFIG_FILE.read_text())
+    
+    if action == "create":
+        if not name:
+            name = Prompt.ask("Zone name")
+        
+        console.print(f"\n[bold]Creating zone: {name}[/bold]\n")
+        
+        # Zone creation wizard
+        zone_type = Prompt.ask(
+            "Zone type",
+            choices=["agent-factory", "research", "business-ops", "monetization", "custom"]
+        )
+        
+        allocation = int(Prompt.ask(
+            "Compute allocation (% of total TOPS)",
+            default="20"
+        ))
+        
+        # Create zone configuration
+        zone_config = {
+            'type': zone_type,
+            'allocation': allocation,
+            'created': datetime.now().isoformat(),
+            'status': 'active',
+            'agents': []
+        }
+        
+        # Add zone templates
+        if zone_type == "agent-factory":
+            zone_config['templates'] = ['builder', 'qa-bot', 'deployer']
+        elif zone_type == "business-ops":
+            zone_config['templates'] = ['ceo', 'cfo', 'assistant']
+        
+        config['zones'][name] = zone_config
+        
+        # Save configuration
+        with open(CONFIG_FILE, 'w') as f:
+            yaml.dump(config, f, default_flow_style=False)
+        
+        # Create zone directory
+        zone_dir = ZONES_DIR / name
+        zone_dir.mkdir(exist_ok=True)
+        
+        console.print(f"\n✅ Zone [bold green]{name}[/bold green] created successfully!")
+        
+    elif action == "list":
+        if not config['zones']:
+            console.print("[yellow]No zones created yet[/yellow]")
+            return
+        
+        for zone_name, zone_data in config['zones'].items():
+            console.print(f"\n[bold cyan]{zone_name}[/bold cyan]")
+            console.print(f"  Type: {zone_data['type']}")
+            console.print(f"  Allocation: {zone_data['allocation']}%")
+            console.print(f"  Agents: {len(zone_data.get('agents', []))}")
+            console.print(f"  Status: [green]{zone_data['status']}[/green]")
+
+@app.command()
+def agent(
+    action: str = typer.Argument(..., help="Action: create, list, start, stop"),
+    name: Optional[str] = typer.Argument(None, help="Agent name")
+):
+    """Manage AI agents"""
+    
+    if action == "create":
+        if not name:
+            name = Prompt.ask("Agent name")
+        
+        console.print(f"\n[bold]Creating agent: {name}[/bold]\n")
+        
+        # Agent creation wizard
+        agent_type = Prompt.ask(
+            "Agent type",
+            choices=["jarvis", "ceo", "developer", "writer", "analyst", "custom"]
+        )
+        
+        zone = Prompt.ask("Assign to zone", default="default")
+        
+        goals = []
+        console.print("\nDefine agent goals (empty line to finish):")
+        while True:
+            goal = Prompt.ask("Goal", default="")
+            if not goal:
+                break
+            goals.append(goal)
+        
+        # Create agent configuration
+        agent_config = {
+            'name': name,
+            'type': agent_type,
+            'zone': zone,
+            'goals': goals,
+            'status': AgentStatus.STOPPED,
+            'created': datetime.now().isoformat(),
+            'tools': ['filesystem', 'git'] if agent_type == 'jarvis' else ['filesystem'],
+            'memory_limit_gb': 8,
+            'compute_allocation': 5  # percentage
+        }
+        
+        # Generate agent code
+        agent_code = generate_agent_code(name, agent_type, goals)
+        
+        # Save agent
+        agent_file = AGENTS_DIR / f"{name}.py"
+        agent_file.write_text(agent_code)
+        
+        # Update config
+        config = yaml.safe_load(CONFIG_FILE.read_text())
+        if 'agents' not in config:
+            config['agents'] = {}
+        config['agents'][name] = agent_config
+        
+        with open(CONFIG_FILE, 'w') as f:
+            yaml.dump(config, f, default_flow_style=False)
+        
+        console.print(f"\n✅ Agent [bold green]{name}[/bold green] created successfully!")
+        console.print(f"   Location: {agent_file}")
+        console.print(f"   Run: [bold]boarderctl agent start {name}[/bold]")
+    
+    elif action == "list":
+        config = yaml.safe_load(CONFIG_FILE.read_text())
+        if not config.get('agents'):
+            console.print("[yellow]No agents created yet[/yellow]")
+            return
+        
+        table = Table(title="AI Agents")
+        table.add_column("Name", style="cyan")
+        table.add_column("Type", style="magenta")
+        table.add_column("Zone")
+        table.add_column("Status")
+        table.add_column("Compute", justify="right")
+        
+        for agent_name, agent_data in config['agents'].items():
+            status = agent_data.get('status', 'stopped')
+            status_color = "green" if status == "running" else "yellow"
+            table.add_row(
+                agent_name,
+                agent_data['type'],
+                agent_data['zone'],
+                f"[{status_color}]{status}[/{status_color}]",
+                f"{agent_data.get('compute_allocation', 5)}%"
+            )
+        
+        console.print(table)
+    
+    elif action == "start" and name:
+        console.print(f"Starting agent [bold]{name}[/bold]...")
+        # TODO: Actually start the agent process
+        console.print(f"✅ Agent [bold green]{name}[/bold green] started!")
+
+def generate_agent_code(name: str, agent_type: str, goals: List[str]) -> str:
+    """Generate agent code based on type and goals"""
+    
+    goals_str = '\n'.join([f'        - {goal}' for goal in goals])
+    
+    code = f'''"""
+{name} - {agent_type.title()} Agent
+Auto-generated by BoarderframeOS
+"""
+
+from boarderframe.core import BaseAgent
+from boarderframe.tools import filesystem, git
+import asyncio
+
+class {name.title().replace("-", "")}(BaseAgent):
+    """
+    Agent Type: {agent_type}
+    Goals:
+{goals_str}
+    """
+    
+    def __init__(self):
+        super().__init__(
+            name="{name}",
+            role="{agent_type}",
+            tools=[filesystem, git] if "{agent_type}" == "jarvis" else [filesystem]
+        )
+    
+    async def think(self, context):
+        """Core reasoning loop"""
+        # TODO: Connect to local LLM
+        thought = f"Analyzing context: {{context}}"
+        return thought
+    
+    async def act(self, thought):
+        """Execute actions based on thoughts"""
+        # TODO: Implement action logic
+        return {{"action": "completed", "thought": thought}}
+    
+    async def run(self):
+        """Main agent execution loop"""
+        self.log("Starting {name}...")
+        
+        while self.active:
+            try:
+                context = await self.get_context()
+                thought = await self.think(context)
+                result = await self.act(thought)
+                
+                self.log(f"Thought: {{thought}}")
+                self.log(f"Action: {{result}}")
+                
+                await asyncio.sleep(5)  # Agent cycle time
+                
+            except Exception as e:
+                self.log(f"Error: {{e}}", level="error")
+                await asyncio.sleep(10)
+
+if __name__ == "__main__":
+    agent = {name.title().replace("-", "")}()
+    asyncio.run(agent.run())
+'''
+    
+    return code
+
+@app.command()
+def start():
+    """Start BoarderframeOS"""
+    console.print("\n[bold cyan]🚀 Starting BoarderframeOS...[/bold cyan]\n")
+    
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+    ) as progress:
+        
+        # Start MCP servers
+        task1 = progress.add_task("Starting MCP servers...", total=3)
+        for i in range(3):
+            progress.advance(task1)
+            asyncio.run(asyncio.sleep(0.5))
+        
+        # Initialize zones
+        task2 = progress.add_task("Initializing compute zones...", total=2)
+        for i in range(2):
+            progress.advance(task2)
+            asyncio.run(asyncio.sleep(0.5))
+        
+        # Start agents
+        task3 = progress.add_task("Launching AI agents...", total=1)
+        progress.advance(task3)
+    
+    console.print("\n✅ [bold green]BoarderframeOS is running![/bold green]")
+    console.print("\n📊 Dashboard: http://localhost:3000")
+    console.print("📝 Logs: tail -f logs/boarderframe.log")
+    console.print("\nPress Ctrl+C to stop")
+
+@app.command()
+def logs(
+    agent: Optional[str] = typer.Argument(None, help="Agent name to filter logs"),
+    follow: bool = typer.Option(False, "-f", "--follow", help="Follow log output")
+):
+    """View system logs"""
+    console.print("[cyan]BoarderframeOS Logs[/cyan]\n")
+    
+    # TODO: Implement actual log streaming
+    console.print("2024-01-15 10:30:15 [INFO] System initialized")
+    console.print("2024-01-15 10:30:16 [INFO] MCP filesystem server started on port 8001")
+    console.print("2024-01-15 10:30:17 [INFO] Agent 'jarvis' starting...")
+    
+    if follow:
+        console.print("\n[dim]Following logs... Press Ctrl+C to stop[/dim]")
+
+if __name__ == "__main__":
+    app()

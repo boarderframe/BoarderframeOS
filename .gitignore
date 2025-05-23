@@ -1,0 +1,48 @@
+# Environment and secrets
+.env
+*.env
+.claude/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+nohup.out
+
+# MCP Server logs
+boarderframeos/mcp.log
+boarderframeos/git_mcp.log
+boarderframeos/terminal_mcp.log
+boarderframeos/enhanced.log
+boarderframeos/debug.log
+
+# Temporary files
+*.tmp
+*.temp
