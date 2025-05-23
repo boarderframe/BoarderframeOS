@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Jarvis Web Chat - Simple and Working
+Jarvis Web Chat - Friendly and Warm Version
 Uses .env file for API key
 """
 
@@ -48,24 +48,55 @@ async def get_chat():
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Jarvis AI Assistant</title>
+    <title>Jarvis AI Assistant - Friendly Mode</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
+            /* Warm, friendly color system */
             --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            --glass-bg: rgba(255, 255, 255, 0.25);
-            --glass-border: rgba(255, 255, 255, 0.18);
-            --shadow-light: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-            --shadow-heavy: 0 15px 35px rgba(0, 0, 0, 0.1);
+            --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warm-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            
+            /* Glass Morphism - darker for better contrast */
+            --glass-bg: rgba(0, 0, 0, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-hover: rgba(0, 0, 0, 0.5);
+            --glass-active: rgba(0, 0, 0, 0.6);
+            
+            /* Gentle shadows */
+            --shadow-soft: 0 8px 32px rgba(31, 38, 135, 0.15);
+            --shadow-medium: 0 12px 40px rgba(31, 38, 135, 0.25);
+            --shadow-warm: 0 8px 25px rgba(255, 154, 158, 0.2);
+            
+            /* High contrast text colors */
             --text-primary: #2c3e50;
             --text-secondary: #7f8c8d;
-            --success: #00d4aa;
-            --danger: #ff6b6b;
-            --warning: #feca57;
+            --text-white: rgba(255, 255, 255, 1);
+            --text-white-secondary: rgba(255, 255, 255, 0.9);
+            
+            /* Status colors */
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            
+            /* Layout */
+            --sidebar-width: 320px;
+            --sidebar-collapsed: 60px;
+            --border-radius: 16px;
+            --border-radius-small: 8px;
+            --border-radius-large: 24px;
+            
+            /* Gentle transitions */
+            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-medium: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         * { 
@@ -74,15 +105,19 @@ async def get_chat():
             box-sizing: border-box; 
         }
         
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
             background: var(--primary-gradient);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            overflow: hidden;
+            color: var(--text-primary);
+            font-size: 14px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         
         body::before {
@@ -92,52 +127,265 @@ async def get_chat():
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: 
-                radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.08) 0%, transparent 60%),
+                radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.06) 0%, transparent 60%),
+                radial-gradient(circle at 50% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 80%);
             pointer-events: none;
             z-index: 0;
         }
         
-        .chat-container {
-            width: 100%;
-            max-width: 900px;
-            height: 90vh;
+        /* Mobile Sidebar Toggle */
+        .mobile-sidebar-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 44px;
+            height: 44px;
             background: var(--glass-bg);
             backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-radius: 24px;
             border: 1px solid var(--glass-border);
-            box-shadow: var(--shadow-light);
+            border-radius: 12px;
+            color: var(--text-white);
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 1001;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-medium);
+        }
+        
+        .mobile-sidebar-toggle:hover {
+            background: var(--glass-hover);
+            transform: scale(1.05);
+        }
+        
+        /* Sidebar Styles */
+        .mcp-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            z-index: 1000;
+            transition: transform var(--transition-medium);
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .mcp-sidebar.collapsed {
+            transform: translateX(calc(-1 * (var(--sidebar-width) - var(--sidebar-collapsed))));
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 80px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .sidebar-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-white);
+            font-weight: 700;
+            font-size: 15px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar-title i {
+            color: var(--info);
+            font-size: 18px;
+        }
+        
+        .sidebar-toggle {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: var(--border-radius-small);
+            background: var(--glass-hover);
+            color: var(--text-white-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+        
+        .sidebar-toggle:hover {
+            background: var(--glass-active);
+            color: var(--text-white);
+            transform: scale(1.05);
+        }
+        
+        .sidebar-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .mcp-server-card {
+            background: var(--glass-hover);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all var(--transition-medium);
             position: relative;
-            z-index: 1;
+            overflow: hidden;
+        }
+        
+        .mcp-server-card:hover {
+            background: var(--glass-active);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+        
+        .server-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--border-radius-small);
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            box-shadow: var(--shadow-soft);
+            flex-shrink: 0;
+        }
+        
+        .server-info {
+            flex: 1;
+        }
+        
+        .server-name {
+            font-weight: 700;
+            color: var(--text-white);
+            margin-bottom: 3px;
+            font-size: 14px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .server-status {
+            font-size: 11px;
+            color: var(--text-white-secondary);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        
+        .server-capabilities {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        
+        .capability-tag {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 9px;
+            color: var(--text-white-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .server-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--danger);
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+            animation: gentlePulse 2s infinite;
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+        
+        .server-indicator.online {
+            background: var(--success);
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+        }
+        
+        @keyframes gentlePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.2);
+            margin-top: auto;
+            text-align: center;
+        }
+        
+        .powered-by {
+            color: var(--text-white-secondary);
+            font-size: 11px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .powered-by i {
+            color: var(--info);
+            font-size: 12px;
+        }
+        
+        /* Main Container */
+        .main-container {
+            margin-left: var(--sidebar-width);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left var(--transition-medium);
+        }
+        
+        .main-container.sidebar-collapsed {
+            margin-left: var(--sidebar-collapsed);
+        }
+        
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            margin: 16px 20px 20px 20px;
+            border-radius: var(--border-radius-large);
+            overflow: hidden;
+            box-shadow: var(--shadow-medium);
         }
         
         .header {
-            background: var(--dark-gradient);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: white;
-            padding: 24px 32px;
+            padding: 20px 32px;
             position: relative;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.05) 50%, transparent 70%);
-            animation: shimmer 3s ease-in-out infinite;
-        }
-        
-        @keyframes shimmer {
-            0%, 100% { transform: translateX(-100%); }
-            50% { transform: translateX(100%); }
+            min-height: 80px;
+            display: flex;
+            align-items: center;
         }
         
         .header-content {
@@ -146,119 +394,196 @@ async def get_chat():
             justify-content: space-between;
             position: relative;
             z-index: 1;
+            width: 100%;
         }
         
         .logo-section {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
         }
         
         .logo {
-            width: 48px;
-            height: 48px;
-            background: var(--secondary-gradient);
+            width: 44px;
+            height: 44px;
+            background: var(--warm-gradient);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            animation: pulse 2s ease-in-out infinite;
+            font-size: 20px;
+            box-shadow: var(--shadow-warm);
+            animation: gentleGlow 3s ease-in-out infinite;
         }
         
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        @keyframes gentleGlow {
+            0%, 100% { 
+                box-shadow: var(--shadow-warm);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 8px 25px rgba(255, 154, 158, 0.4);
+                transform: scale(1.02);
+            }
         }
         
         .title-section h1 {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 700;
-            margin-bottom: 4px;
-            background: linear-gradient(45deg, #fff, #f0f0f0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            margin-bottom: 2px;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            line-height: 1.2;
         }
         
         .subtitle {
-            font-size: 14px;
-            opacity: 0.8;
+            font-size: 13px;
+            opacity: 0.7;
             font-weight: 400;
-        }
-        
-        .status-section {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
+        }
+        
+        .model-badge {
+            background: var(--accent-gradient);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            box-shadow: 0 2px 8px rgba(79, 172, 254, 0.3);
+        }
+        
+        .divider {
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 300;
+        }
+        
+        /* Header Controls */
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            height: 100%;
+        }
+        
+        .tool-indicators {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            backdrop-filter: blur(8px);
+        }
+        
+        .tool-indicator {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-white-secondary);
+            font-size: 14px;
+            transition: all var(--transition-medium);
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .tool-indicator:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .tool-indicator.active {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+        }
+        
+        .tool-indicator.active::after {
+            content: '';
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            width: 6px;
+            height: 6px;
+            background: #00ff88;
+            border: 1px solid white;
+            border-radius: 50%;
+            animation: gentlePulse 2s infinite;
         }
         
         .settings-btn {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             background: rgba(255, 255, 255, 0.1);
             color: white;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
+            transition: all var(--transition-medium);
             font-size: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
         
         .settings-btn:hover {
             background: rgba(255, 255, 255, 0.2);
-            transform: rotate(90deg);
+            transform: rotate(90deg) scale(1.05);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            backdrop-filter: blur(8px);
         }
         
         .status {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: var(--danger);
             transition: all 0.3s ease;
             position: relative;
-            box-shadow: 0 0 12px rgba(255, 107, 107, 0.6);
+            box-shadow: 0 0 8px rgba(255, 107, 107, 0.6);
         }
         
         .status.connected {
             background: var(--success);
-            box-shadow: 0 0 12px rgba(0, 212, 170, 0.6);
-        }
-        
-        .status.connected::after {
-            content: '';
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: var(--success);
-            animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-        }
-        
-        @keyframes ping {
-            75%, 100% {
-                transform: scale(2);
-                opacity: 0;
-            }
+            box-shadow: 0 0 8px rgba(0, 212, 170, 0.6);
         }
         
         .status-text {
-            font-size: 12px;
-            opacity: 0.9;
+            font-size: 11px;
+            opacity: 0.8;
             font-weight: 500;
+            color: var(--text-white);
         }
         
+        /* Messages Area */
         .messages {
             flex: 1;
             padding: 32px;
             overflow-y: auto;
             background: linear-gradient(180deg, 
-                rgba(255, 255, 255, 0.1) 0%, 
-                rgba(255, 255, 255, 0.05) 100%);
+                rgba(0, 0, 0, 0.1) 0%, 
+                rgba(0, 0, 0, 0.05) 100%);
             position: relative;
         }
         
@@ -275,6 +600,259 @@ async def get_chat():
             border-radius: 3px;
         }
         
+        /* Jarvis Startup Animation */
+        .jarvis-startup {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 32px;
+            margin: 24px;
+            height: calc(100vh - 240px);
+            max-height: 600px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .startup-animation {
+            margin-bottom: 24px;
+            position: relative;
+        }
+        
+        .jarvis-core {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+        }
+        
+        .core-ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid;
+            opacity: 0.6;
+            animation: coreRing 3s ease-in-out infinite;
+        }
+        
+        .core-ring-1 {
+            width: 80px;
+            height: 80px;
+            border-color: #667eea;
+            animation-delay: 0s;
+        }
+        
+        .core-ring-2 {
+            width: 64px;
+            height: 64px;
+            top: 8px;
+            left: 8px;
+            border-color: #764ba2;
+            animation-delay: 0.3s;
+        }
+        
+        .core-ring-3 {
+            width: 48px;
+            height: 48px;
+            top: 16px;
+            left: 16px;
+            border-color: #4facfe;
+            animation-delay: 0.6s;
+        }
+        
+        @keyframes coreRing {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.3;
+            }
+        }
+        
+        .jarvis-avatar {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: var(--warm-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 0 20px rgba(255, 154, 158, 0.6);
+            animation: avatarGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes avatarGlow {
+            0% {
+                box-shadow: 0 0 20px rgba(255, 154, 158, 0.6);
+            }
+            100% {
+                box-shadow: 0 0 40px rgba(255, 154, 158, 0.8), 0 0 60px rgba(255, 154, 158, 0.4);
+            }
+        }
+        
+        .startup-sequence {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .startup-line {
+            color: var(--text-white-secondary);
+            font-size: 12px;
+            opacity: 0;
+            transform: translateX(-20px);
+            animation: startupLine 0.5s ease-out forwards;
+        }
+        
+        .startup-line.success {
+            color: var(--success);
+            font-weight: 600;
+        }
+        
+        .startup-line:nth-child(1) { animation-delay: 0s; }
+        .startup-line:nth-child(2) { animation-delay: 0.5s; }
+        .startup-line:nth-child(3) { animation-delay: 1s; }
+        .startup-line:nth-child(4) { animation-delay: 1.5s; }
+        
+        @keyframes startupLine {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .welcome-message-new {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-large);
+            padding: 24px;
+            backdrop-filter: blur(16px);
+            box-shadow: var(--shadow-soft);
+            animation: fadeInUp 0.6s ease-out forwards;
+            max-width: 500px;
+            margin: 0 auto;
+            max-height: 320px;
+            overflow: hidden;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .jarvis-greeting {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-white);
+            margin-bottom: 12px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .jarvis-intro {
+            font-size: 14px;
+            color: var(--text-white-secondary);
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+        
+        .capability-showcase {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .capability-card {
+            background: var(--glass-hover);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 8px 12px;
+            text-align: center;
+            transition: all var(--transition-medium);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideInUp 0.4s ease-out forwards;
+            min-width: 120px;
+            flex: 0 0 auto;
+        }
+        
+        .capability-card:hover {
+            background: var(--glass-active);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+        
+        @keyframes slideInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .capability-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--primary-gradient);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            margin: 0 auto 6px;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .capability-info h4 {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-white);
+            margin: 0;
+            text-align: center;
+        }
+        
+        .quick-start {
+            background: rgba(255, 154, 158, 0.1);
+            border: 1px solid rgba(255, 154, 158, 0.2);
+            border-radius: var(--border-radius);
+            padding: 12px;
+            color: var(--text-white-secondary);
+            font-size: 12px;
+            opacity: 0;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        
+        .quick-start strong {
+            color: var(--text-white);
+            background: rgba(255, 154, 158, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+        
+        /* Message Styles */
         .message {
             margin: 20px 0;
             display: flex;
@@ -318,7 +896,7 @@ async def get_chat():
         }
         
         .jarvis .avatar {
-            background: var(--dark-gradient);
+            background: var(--warm-gradient);
             color: white;
         }
         
@@ -340,17 +918,18 @@ async def get_chat():
         }
         
         .jarvis .message-content {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             color: var(--text-primary);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             border-bottom-left-radius: 6px;
             backdrop-filter: blur(8px);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
         }
         
         .system .message-content {
-            background: rgba(52, 152, 219, 0.15);
-            color: #2980b9;
-            border: 1px solid rgba(52, 152, 219, 0.3);
+            background: rgba(255, 154, 158, 0.15);
+            color: #e91e63;
+            border: 1px solid rgba(255, 154, 158, 0.3);
             text-align: center;
             font-style: italic;
             font-weight: 600;
@@ -369,30 +948,39 @@ async def get_chat():
             color: var(--text-secondary);
         }
         
+        /* Input Area */
         .input-area {
-            padding: 24px 32px 32px;
-            background: rgba(255, 255, 255, 0.1);
+            padding: 20px 24px 24px;
+            background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(16px);
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .input-group {
             display: flex;
-            gap: 16px;
-            align-items: flex-end;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 24px;
-            padding: 8px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            gap: 8px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 4px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
             backdrop-filter: blur(16px);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            transition: all var(--transition-medium);
         }
+        
+        .input-group:focus-within {
+            border-color: rgba(102, 126, 234, 0.6);
+            box-shadow: 0 4px 24px rgba(102, 126, 234, 0.25);
+        }
+        
         
         #messageInput {
             flex: 1;
-            padding: 16px 20px;
+            padding: 12px 16px;
             border: none;
             background: transparent;
-            font-size: 16px;
+            font-size: 15px;
             outline: none;
             resize: none;
             max-height: 120px;
@@ -400,6 +988,7 @@ async def get_chat():
             font-family: inherit;
             color: var(--text-primary);
             font-weight: 400;
+            line-height: 1.5;
         }
         
         #messageInput::placeholder {
@@ -407,9 +996,16 @@ async def get_chat():
             font-weight: 400;
         }
         
-        #sendBtn {
-            width: 56px;
-            height: 56px;
+        .input-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        
+        .send-btn {
+            width: 44px;
+            height: 44px;
             border: none;
             border-radius: 50%;
             background: var(--primary-gradient);
@@ -418,519 +1014,269 @@ async def get_chat():
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            font-size: 20px;
-            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+            transition: all var(--transition-medium);
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 2px 12px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+            margin: 4px;
         }
         
-        #sendBtn:hover:not(:disabled) {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        .send-btn:hover:not(:disabled) {
+            transform: scale(1.08);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.6);
         }
         
-        #sendBtn:active {
+        .send-btn:active {
             transform: scale(0.95);
         }
         
-        #sendBtn:disabled {
+        .send-btn:disabled {
             background: var(--text-secondary);
             cursor: not-allowed;
             box-shadow: none;
             transform: scale(1);
         }
         
-        .typing {
-            color: var(--text-secondary);
-            font-style: italic;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .typing-dots {
-            display: flex;
-            gap: 4px;
-        }
-        
-        .typing-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--text-secondary);
-            animation: typingBounce 1.4s ease-in-out infinite;
-        }
-        
-        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
-        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
-        .typing-dot:nth-child(3) { animation-delay: 0s; }
-        
-        @keyframes typingBounce {
-            0%, 80%, 100% {
-                transform: scale(0.8);
-                opacity: 0.5;
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .mcp-sidebar {
+                transform: translateX(-100%);
+                width: 280px;
             }
-            40% {
-                transform: scale(1.2);
-                opacity: 1;
+            
+            .mcp-sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-container {
+                margin-left: 0;
+            }
+            
+            .mobile-sidebar-toggle {
+                display: flex;
             }
         }
         
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
+            .mobile-sidebar-toggle {
+                display: flex;
             }
             
             .chat-container {
-                height: 95vh;
+                margin: 10px;
                 border-radius: 16px;
             }
             
             .header {
-                padding: 20px 24px;
-            }
-            
-            .logo {
-                width: 40px;
-                height: 40px;
-                font-size: 20px;
-            }
-            
-            .title-section h1 {
-                font-size: 20px;
+                padding: 16px 20px;
+                min-height: 70px;
             }
             
             .messages {
-                padding: 24px 20px;
+                padding: 20px 16px;
             }
             
             .message-content {
                 max-width: 85%;
-                padding: 14px 18px;
+                padding: 12px 16px;
+                font-size: 14px;
             }
             
             .input-area {
-                padding: 20px 20px 24px;
-            }
-            
-            .input-group {
-                gap: 12px;
-            }
-            
-            #messageInput {
-                padding: 14px 18px;
-                font-size: 16px;
-            }
-            
-            #sendBtn {
-                width: 48px;
-                height: 48px;
-                font-size: 18px;
-            }
-        }
-        
-        /* Settings Panel */
-        .settings-panel {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .settings-panel.active {
-            display: flex;
-        }
-        
-        .settings-content {
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            border-radius: 20px;
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--shadow-light);
-            overflow: hidden;
-            animation: slideUp 0.3s ease;
-        }
-        
-        @keyframes slideUp {
-            from { transform: translateY(20px) scale(0.95); opacity: 0; }
-            to { transform: translateY(0) scale(1); opacity: 1; }
-        }
-        
-        .settings-header {
-            background: var(--dark-gradient);
-            color: white;
-            padding: 20px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .settings-header h2 {
-            font-size: 20px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .close-btn {
-            width: 32px;
-            height: 32px;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-        
-        .close-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        .settings-body {
-            padding: 24px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        
-        .setting-group {
-            margin-bottom: 32px;
-        }
-        
-        .setting-group h3 {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .setting-item {
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-        }
-        
-        .setting-item label {
-            font-weight: 500;
-            color: var(--text-primary);
-            min-width: 120px;
-        }
-        
-        .setting-item select,
-        .setting-item input[type="number"] {
-            flex: 1;
-            max-width: 200px;
-            padding: 8px 12px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-primary);
-            font-size: 14px;
-        }
-        
-        .setting-item input[type="range"] {
-            flex: 1;
-            max-width: 150px;
-        }
-        
-        .setting-item input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-        }
-        
-        #tempValue {
-            min-width: 30px;
-            text-align: center;
-            font-weight: 600;
-        }
-        
-        .mcp-servers {
-            space-y: 12px;
-        }
-        
-        .mcp-server {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            margin-bottom: 8px;
-        }
-        
-        .mcp-info {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        
-        .mcp-name {
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        
-        .mcp-status {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-        
-        .mcp-toggle {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            background: var(--primary-gradient);
-            color: white;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .mcp-toggle:disabled {
-            background: var(--text-secondary);
-            cursor: not-allowed;
-        }
-        
-        .setting-actions {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        
-        .btn-secondary,
-        .btn-danger,
-        .btn-primary {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-primary);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-        
-        .btn-primary {
-            background: var(--primary-gradient);
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        .btn-danger:hover {
-            background: #e74c3c;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-        
-        .settings-footer {
-            padding: 20px 24px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(255, 255, 255, 0.05);
-            display: flex;
-            justify-content: flex-end;
-        }
-
-        /* Dark mode enhancements */
-        @media (prefers-color-scheme: dark) {
-            .jarvis .message-content {
-                background: rgba(44, 62, 80, 0.9);
-                color: white;
-                border-color: rgba(255, 255, 255, 0.1);
-            }
-            
-            .input-group {
-                background: rgba(44, 62, 80, 0.9);
-            }
-            
-            #messageInput {
-                color: white;
-            }
-            
-            #messageInput::placeholder {
-                color: rgba(255, 255, 255, 0.6);
-            }
-            
-            .setting-item select,
-            .setting-item input[type="number"] {
-                background: rgba(44, 62, 80, 0.9);
-                color: white;
-                border-color: rgba(255, 255, 255, 0.2);
+                padding: 16px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <div class="header">
-            <div class="header-content">
-                <div class="logo-section">
-                    <div class="logo">🤖</div>
-                    <div class="title-section">
-                        <h1>Jarvis AI Assistant</h1>
-                        <div class="subtitle">Powered by Claude 4 Opus • BoarderframeOS</div>
+    <!-- Mobile Sidebar Toggle -->
+    <button class="mobile-sidebar-toggle" id="mobileSidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- MCP Status Sidebar -->
+    <div class="mcp-sidebar" id="mcpSidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">
+                <i class="fas fa-plug"></i>
+                <span>MCP Servers</span>
+            </div>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </div>
+        
+        <div class="sidebar-content">
+            <div class="mcp-server-card" id="fsCard" data-tooltip="Filesystem Server">
+                <div class="server-icon">
+                    <i class="fas fa-folder"></i>
+                </div>
+                <div class="server-info">
+                    <div class="server-name">Filesystem</div>
+                    <div class="server-status" id="sidebarFsStatus">Checking...</div>
+                    <div class="server-capabilities">
+                        <span class="capability-tag">Read</span>
+                        <span class="capability-tag">Write</span>
+                        <span class="capability-tag">List</span>
                     </div>
                 </div>
-                
-                <div class="status-section">
-                    <button id="settingsBtn" class="settings-btn">
-                        <i class="fas fa-cog"></i>
-                    </button>
-                    <div class="status" id="status"></div>
-                    <div class="status-text" id="statusText">Connecting...</div>
+                <div class="server-indicator" id="fsIndicator"></div>
+            </div>
+            
+            <div class="mcp-server-card" id="gitCard" data-tooltip="Git Server">
+                <div class="server-icon">
+                    <i class="fas fa-code-branch"></i>
                 </div>
+                <div class="server-info">
+                    <div class="server-name">Git</div>
+                    <div class="server-status" id="sidebarGitStatus">Checking...</div>
+                    <div class="server-capabilities">
+                        <span class="capability-tag">Status</span>
+                        <span class="capability-tag">Commit</span>
+                        <span class="capability-tag">Push</span>
+                    </div>
+                </div>
+                <div class="server-indicator" id="gitIndicator"></div>
+            </div>
+            
+            <div class="mcp-server-card" id="terminalCard" data-tooltip="Terminal Server">
+                <div class="server-icon">
+                    <i class="fas fa-terminal"></i>
+                </div>
+                <div class="server-info">
+                    <div class="server-name">Terminal</div>
+                    <div class="server-status" id="sidebarTerminalStatus">Checking...</div>
+                    <div class="server-capabilities">
+                        <span class="capability-tag">Execute</span>
+                        <span class="capability-tag">Python</span>
+                        <span class="capability-tag">Install</span>
+                    </div>
+                </div>
+                <div class="server-indicator" id="terminalIndicator"></div>
             </div>
         </div>
         
-        <div class="messages" id="messages">
-            <div class="message system">
-                <div class="message-content">
-                    Initializing Jarvis AI Assistant...
-                </div>
-            </div>
-        </div>
-        
-        <div class="input-area">
-            <div class="input-group">
-                <textarea id="messageInput" placeholder="Ask Jarvis anything..." disabled rows="1"></textarea>
-                <button id="sendBtn" disabled>
-                    <i class="fas fa-paper-plane"></i>
-                </button>
+        <div class="sidebar-footer">
+            <div class="powered-by">
+                <i class="fas fa-robot"></i>
+                <span>Powered by Claude 4 Opus</span>
             </div>
         </div>
     </div>
-    
-    <!-- Settings Panel -->
-    <div class="settings-panel" id="settingsPanel">
-        <div class="settings-content">
-            <div class="settings-header">
-                <h2><i class="fas fa-cog"></i> Jarvis Settings</h2>
-                <button class="close-btn" id="closeSettings">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="settings-body">
-                <div class="setting-group">
-                    <h3><i class="fas fa-robot"></i> Model Configuration</h3>
-                    <div class="setting-item">
-                        <label for="modelSelect">Claude Model:</label>
-                        <select id="modelSelect">
-                            <option value="claude-opus-4-20250514">Claude 4 Opus (Most Intelligent)</option>
-                            <option value="claude-sonnet-4-20250514">Claude 4 Sonnet (Balanced)</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label for="temperatureSlider">Temperature:</label>
-                        <input type="range" id="temperatureSlider" min="0" max="1" step="0.1" value="0.5">
-                        <span id="tempValue">0.5</span>
-                    </div>
-                    <div class="setting-item">
-                        <label for="maxTokensInput">Max Tokens:</label>
-                        <input type="number" id="maxTokensInput" min="100" max="4000" value="1000">
-                    </div>
-                </div>
-                
-                <div class="setting-group">
-                    <h3><i class="fas fa-plug"></i> MCP Servers</h3>
-                    <div class="mcp-servers">
-                        <div class="mcp-server">
-                            <div class="mcp-info">
-                                <span class="mcp-name">Filesystem Server</span>
-                                <span class="mcp-status" id="fsStatus">Checking...</span>
-                            </div>
-                            <button class="mcp-toggle" id="fsToggle">Enable</button>
+
+    <!-- Main Chat Container -->
+    <div class="main-container" id="mainContainer">
+        <div class="chat-container">
+            <div class="header">
+                <div class="header-content">
+                    <div class="logo-section">
+                        <div class="logo">
+                            🤖
                         </div>
-                        <div class="mcp-server">
-                            <div class="mcp-info">
-                                <span class="mcp-name">Git Server</span>
-                                <span class="mcp-status" id="gitStatus">Checking...</span>
+                        <div class="title-section">
+                            <h1>Jarvis AI Assistant</h1>
+                            <div class="subtitle">
+                                <span class="model-badge" id="modelBadge">Claude 4 Opus</span>
+                                <span class="divider">•</span>
+                                <span>BoarderframeOS</span>
                             </div>
-                            <button class="mcp-toggle" id="gitToggle">Enable</button>
-                        </div>
-                        <div class="mcp-server">
-                            <div class="mcp-info">
-                                <span class="mcp-name">Terminal Server</span>
-                                <span class="mcp-status" id="terminalStatus">Checking...</span>
-                            </div>
-                            <button class="mcp-toggle" id="terminalToggle">Enable</button>
                         </div>
                     </div>
-                </div>
-                
-                <div class="setting-group">
-                    <h3><i class="fas fa-palette"></i> Interface</h3>
-                    <div class="setting-item">
-                        <label for="themeSelect">Theme:</label>
-                        <select id="themeSelect">
-                            <option value="auto">Auto (System)</option>
-                            <option value="light">Light</option>
-                            <option value="dark">Dark</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label for="animationsToggle">Animations:</label>
-                        <input type="checkbox" id="animationsToggle" checked>
-                    </div>
-                </div>
-                
-                <div class="setting-group">
-                    <h3><i class="fas fa-save"></i> Data</h3>
-                    <div class="setting-actions">
-                        <button class="btn-secondary" id="exportSettings">
-                            <i class="fas fa-download"></i> Export Settings
+                    
+                    <div class="header-controls">
+                        <div class="tool-indicators" id="toolIndicators">
+                            <div class="tool-indicator" id="fsToolIndicator" title="Filesystem Access">
+                                <i class="fas fa-folder"></i>
+                            </div>
+                            <div class="tool-indicator" id="gitToolIndicator" title="Git Operations">
+                                <i class="fas fa-code-branch"></i>
+                            </div>
+                            <div class="tool-indicator" id="terminalToolIndicator" title="Terminal Commands">
+                                <i class="fas fa-terminal"></i>
+                            </div>
+                        </div>
+                        
+                        <button id="settingsBtn" class="settings-btn">
+                            <i class="fas fa-cog"></i>
                         </button>
-                        <button class="btn-secondary" id="importSettings">
-                            <i class="fas fa-upload"></i> Import Settings
-                        </button>
-                        <button class="btn-danger" id="clearData">
-                            <i class="fas fa-trash"></i> Clear All Data
-                        </button>
+                        
+                        <div class="connection-status">
+                            <div class="status" id="status"></div>
+                            <div class="status-text" id="statusText">Connecting...</div>
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <div class="settings-footer">
-                <button class="btn-primary" id="saveSettings">
-                    <i class="fas fa-save"></i> Save Settings
-                </button>
+            <div class="messages" id="messages">
+                <div class="jarvis-startup">
+                    <div class="startup-animation">
+                        <div class="jarvis-core">
+                            <div class="core-ring core-ring-1"></div>
+                            <div class="core-ring core-ring-2"></div>
+                            <div class="core-ring core-ring-3"></div>
+                            <div class="jarvis-avatar">
+                                🤖
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="startup-sequence">
+                        <div class="startup-line" data-delay="0">◉ Initializing Jarvis Neural Network...</div>
+                        <div class="startup-line" data-delay="800">◉ Loading Claude 4 Opus Intelligence...</div>
+                        <div class="startup-line" data-delay="1600">◉ Connecting to MCP Servers...</div>
+                        <div class="startup-line success" data-delay="2400">✓ Jarvis is Online and Ready</div>
+                    </div>
+                    
+                    <div class="welcome-message-new" style="opacity: 0; animation-delay: 2s;">
+                        <h2 class="jarvis-greeting">Hello! I'm Jarvis, your friendly AI assistant.</h2>
+                        <p class="jarvis-intro">Powered by Claude 4, I'm here to help with coding, project management, and development tasks.</p>
+                        
+                        <div class="capability-showcase">
+                            <div class="capability-card" style="animation-delay: 2.2s;">
+                                <div class="capability-icon">
+                                    <i class="fas fa-folder-open"></i>
+                                </div>
+                                <div class="capability-info">
+                                    <h4>Files</h4>
+                                </div>
+                            </div>
+                            
+                            <div class="capability-card" style="animation-delay: 2.3s;">
+                                <div class="capability-icon">
+                                    <i class="fas fa-code-branch"></i>
+                                </div>
+                                <div class="capability-info">
+                                    <h4>Git</h4>
+                                </div>
+                            </div>
+                            
+                            <div class="capability-card" style="animation-delay: 2.4s;">
+                                <div class="capability-icon">
+                                    <i class="fas fa-terminal"></i>
+                                </div>
+                                <div class="capability-info">
+                                    <h4>Terminal</h4>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="quick-start" style="animation-delay: 2.6s;">
+                            <p>Ready to help! Try: <strong>"Show me the project files"</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-area">
+                <div class="input-group">
+                    <textarea id="messageInput" placeholder="Ask Jarvis anything..." disabled rows="1"></textarea>
+                    <button id="sendBtn" disabled class="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -943,24 +1289,32 @@ async def get_chat():
         const status = document.getElementById('status');
         const statusText = document.getElementById('statusText');
         
-        // Settings elements
-        const settingsBtn = document.getElementById('settingsBtn');
-        const settingsPanel = document.getElementById('settingsPanel');
-        const closeSettings = document.getElementById('closeSettings');
-        const saveSettings = document.getElementById('saveSettings');
+        // UI Elements
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const mcpSidebar = document.getElementById('mcpSidebar');
+        const mainContainer = document.getElementById('mainContainer');
+        const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
         
-        // Settings storage
-        let currentSettings = {
-            model: 'claude-opus-4-20250514',
-            temperature: 0.5,
-            max_tokens: 1000,
-            theme: 'auto',
-            animations: true,
-            mcp_enabled: {}
-        };
+        // Tool indicators
+        const fsToolIndicator = document.getElementById('fsToolIndicator');
+        const gitToolIndicator = document.getElementById('gitToolIndicator');
+        const terminalToolIndicator = document.getElementById('terminalToolIndicator');
+        
+        // Sidebar status elements
+        const fsIndicator = document.getElementById('fsIndicator');
+        const gitIndicator = document.getElementById('gitIndicator');
+        const terminalIndicator = document.getElementById('terminalIndicator');
+        const sidebarFsStatus = document.getElementById('sidebarFsStatus');
+        const sidebarGitStatus = document.getElementById('sidebarGitStatus');
+        const sidebarTerminalStatus = document.getElementById('sidebarTerminalStatus');
+        
+        // System stats
+        const messageCountElement = document.getElementById('messageCount');
 
         let connectionAttempts = 0;
         const maxAttempts = 3;
+        let messageCount = 0;
+        let sidebarCollapsed = false;
         
         function connect() {
             connectionAttempts++;
@@ -984,7 +1338,6 @@ async def get_chat():
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const wsUrl = `${protocol}//${window.location.host}/ws`;
             console.log('Attempting WebSocket connection to:', wsUrl);
-            console.log('Browser:', navigator.userAgent);
             
             try {
                 ws = new WebSocket(wsUrl);
@@ -1006,8 +1359,16 @@ async def get_chat():
                     statusText.textContent = 'Online';
                     input.disabled = false;
                     updateSendButton();
-                    clearMessages();
-                    addMessage('system', 'Connected to Jarvis! Ready to assist you.');
+                    
+                    // Gentle connection animation
+                    const jarvisCore = document.querySelector('.jarvis-core');
+                    if (jarvisCore) {
+                        jarvisCore.style.animation = 'none';
+                        jarvisCore.offsetHeight; // Trigger reflow
+                        jarvisCore.style.animation = 'connectionSuccess 1s ease-out';
+                    }
+                    
+                    // Don't add connection message - welcome screen is enough
                 };
                 
                 ws.onmessage = function(event) {
@@ -1052,7 +1413,7 @@ async def get_chat():
                 setTimeout(connect, 2000);
             } else {
                 statusText.textContent = 'Failed';
-                addMessage('system', 'Connection failed after multiple attempts. Please refresh the page or try a different browser.');
+                addMessage('system', 'Connection failed after multiple attempts. Please refresh the page.');
             }
         }
 
@@ -1074,6 +1435,7 @@ async def get_chat():
                         <div class="timestamp">${timeStr}</div>
                     </div>
                 `;
+                messageCount++;
             } else if (type === 'jarvis') {
                 avatar = '<div class="avatar">J</div>';
                 content = `
@@ -1082,16 +1444,19 @@ async def get_chat():
                         <div class="timestamp">${timeStr}</div>
                     </div>
                 `;
+                messageCount++;
             } else if (type === 'system') {
                 messageDiv.innerHTML = `<div class="message-content">${escapeHtml(message)}</div>`;
                 messages.appendChild(messageDiv);
                 scrollToBottom();
+                updateSystemStats();
                 return;
             }
             
             messageDiv.innerHTML = avatar + content;
             messages.appendChild(messageDiv);
             scrollToBottom();
+            updateSystemStats();
         }
         
         function addTyping() {
@@ -1122,7 +1487,13 @@ async def get_chat():
         }
         
         function clearMessages() {
-            messages.innerHTML = '';
+            // Remove jarvis startup when first real message arrives
+            const jarvisStartup = document.querySelector('.jarvis-startup');
+            if (jarvisStartup) {
+                jarvisStartup.style.opacity = '0';
+                jarvisStartup.style.transform = 'translateY(-20px)';
+                setTimeout(() => jarvisStartup.remove(), 300);
+            }
         }
         
         function scrollToBottom() {
@@ -1132,12 +1503,24 @@ async def get_chat():
         function sendMessage() {
             const message = input.value.trim();
             if (message && ws && ws.readyState === WebSocket.OPEN) {
+                // Clear welcome message on first user message
+                if (messageCount === 0) {
+                    clearMessages();
+                }
                 addMessage('user', message);
                 addTyping();
                 ws.send(JSON.stringify({message: message}));
                 input.value = '';
                 autoResize();
                 updateSendButton();
+                
+                // Close mobile sidebar if open
+                if (window.innerWidth <= 1024 && mcpSidebar.classList.contains('show')) {
+                    mcpSidebar.classList.remove('show');
+                    if (mobileSidebarToggle) {
+                        mobileSidebarToggle.innerHTML = '<i class="fas fa-bars"></i>';
+                    }
+                }
             }
         }
         
@@ -1158,6 +1541,153 @@ async def get_chat():
             return div.innerHTML.replace(/\\n/g, '<br>');
         }
 
+        function updateSystemStats() {
+            // Update message count
+            if (messageCountElement) {
+                messageCountElement.textContent = messageCount;
+            }
+        }
+        
+        function toggleSidebar() {
+            sidebarCollapsed = !sidebarCollapsed;
+            if (sidebarCollapsed) {
+                mcpSidebar.classList.add('collapsed');
+                mainContainer.classList.add('sidebar-collapsed');
+                sidebarToggle.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            } else {
+                mcpSidebar.classList.remove('collapsed');
+                mainContainer.classList.remove('sidebar-collapsed');
+                sidebarToggle.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            }
+        }
+        
+        function toggleMobileSidebar() {
+            if (window.innerWidth <= 1024) {
+                const isVisible = mcpSidebar.classList.contains('show');
+                if (isVisible) {
+                    mcpSidebar.classList.remove('show');
+                    mobileSidebarToggle.innerHTML = '<i class="fas fa-bars"></i>';
+                } else {
+                    mcpSidebar.classList.add('show');
+                    mobileSidebarToggle.innerHTML = '<i class="fas fa-times"></i>';
+                }
+            }
+        }
+        
+        function updateSidebarIndicators(serverType, isOnline) {
+            let indicator;
+            let statusElement;
+            let card;
+            
+            switch(serverType) {
+                case 'filesystem':
+                    indicator = fsIndicator;
+                    statusElement = sidebarFsStatus;
+                    card = document.getElementById('fsCard');
+                    break;
+                case 'git':
+                    indicator = gitIndicator;
+                    statusElement = sidebarGitStatus;
+                    card = document.getElementById('gitCard');
+                    break;
+                case 'terminal':
+                    indicator = terminalIndicator;
+                    statusElement = sidebarTerminalStatus;
+                    card = document.getElementById('terminalCard');
+                    break;
+            }
+            
+            if (indicator && statusElement && card) {
+                if (isOnline) {
+                    indicator.classList.add('online');
+                    statusElement.textContent = 'Online';
+                    statusElement.style.color = 'var(--success)';
+                    card.classList.add('online');
+                    card.classList.remove('offline');
+                } else {
+                    indicator.classList.remove('online');
+                    statusElement.textContent = 'Offline';
+                    statusElement.style.color = 'var(--danger)';
+                    card.classList.add('offline');
+                    card.classList.remove('online');
+                }
+            }
+        }
+        
+        function updateToolIndicators(serverType, isOnline) {
+            let toolIndicator;
+            
+            switch(serverType) {
+                case 'filesystem':
+                    toolIndicator = fsToolIndicator;
+                    break;
+                case 'git':
+                    toolIndicator = gitToolIndicator;
+                    break;
+                case 'terminal':
+                    toolIndicator = terminalToolIndicator;
+                    break;
+            }
+            
+            if (toolIndicator) {
+                if (isOnline) {
+                    toolIndicator.classList.add('active');
+                } else {
+                    toolIndicator.classList.remove('active');
+                }
+            }
+        }
+        
+        function updateMCPStatus(statusElement, toggleElement, isOnline, serverType) {
+            if (isOnline) {
+                statusElement.textContent = 'Online';
+                statusElement.style.color = 'var(--success)';
+                toggleElement.disabled = false;
+                toggleElement.textContent = 'Disable';
+            } else {
+                statusElement.textContent = 'Offline';
+                statusElement.style.color = 'var(--danger)';
+                toggleElement.disabled = true;
+                toggleElement.textContent = 'Enable';
+            }
+            
+            // Update sidebar indicators
+            updateSidebarIndicators(serverType, isOnline);
+            
+            // Update header tool indicators
+            updateToolIndicators(serverType, isOnline);
+        }
+        
+        async function checkMCPServers() {
+            try {
+                const response = await fetch('/settings');
+                const settings = await response.json();
+                
+                // Update all server statuses
+                updateMCPStatus(document.getElementById('fsStatus') || {textContent: '', style: {}}, 
+                              document.getElementById('fsToggle') || {disabled: false, textContent: ''}, 
+                              settings.mcp_servers?.filesystem, 'filesystem');
+                              
+                updateMCPStatus(document.getElementById('gitStatus') || {textContent: '', style: {}}, 
+                              document.getElementById('gitToggle') || {disabled: false, textContent: ''}, 
+                              settings.mcp_servers?.git, 'git');
+                              
+                updateMCPStatus(document.getElementById('terminalStatus') || {textContent: '', style: {}}, 
+                              document.getElementById('terminalToggle') || {disabled: false, textContent: ''}, 
+                              settings.mcp_servers?.terminal, 'terminal');
+                
+            } catch (error) {
+                console.error('Failed to check MCP servers:', error);
+                // Update indicators for error state
+                updateSidebarIndicators('filesystem', false);
+                updateSidebarIndicators('git', false);
+                updateSidebarIndicators('terminal', false);
+                updateToolIndicators('filesystem', false);
+                updateToolIndicators('git', false);
+                updateToolIndicators('terminal', false);
+            }
+        }
+
         // Event listeners
         sendBtn.addEventListener('click', sendMessage);
         
@@ -1173,222 +1703,66 @@ async def get_chat():
             updateSendButton();
         });
 
-        // Settings functions
-        function initializeSettings() {
-            // Load settings from localStorage
-            const saved = localStorage.getItem('jarvis-settings');
-            if (saved) {
-                currentSettings = { ...currentSettings, ...JSON.parse(saved) };
-            }
-            
-            // Load server settings
-            loadServerSettings();
-            updateSettingsUI();
-            
-            // Check MCP servers
-            checkMCPServers();
+        // UI Event Listeners
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', toggleSidebar);
         }
         
-        async function loadServerSettings() {
-            try {
-                const response = await fetch('/settings');
-                const serverSettings = await response.json();
-                currentSettings = { ...currentSettings, ...serverSettings };
-                updateSettingsUI();
-            } catch (error) {
-                console.error('Failed to load server settings:', error);
+        if (mobileSidebarToggle) {
+            mobileSidebarToggle.addEventListener('click', toggleMobileSidebar);
+        }
+        
+        // Auto-update system stats
+        setInterval(updateSystemStats, 1000);
+        
+        // Auto-refresh MCP servers status
+        setInterval(checkMCPServers, 30000); // Every 30 seconds
+        
+        // Handle responsive sidebar on mobile
+        if (window.innerWidth <= 1024) {
+            sidebarCollapsed = true;
+            mcpSidebar.classList.add('collapsed');
+            mainContainer.classList.add('sidebar-collapsed');
+            if (sidebarToggle) {
+                sidebarToggle.innerHTML = '<i class="fas fa-chevron-right"></i>';
             }
         }
         
-        async function checkMCPServers() {
-            // Check all MCP servers through main server (avoids CORS issues)
-            try {
-                const response = await fetch('/settings');
-                const settings = await response.json();
-                
-                // Update filesystem server status
-                const fsStatus = document.getElementById('fsStatus');
-                const fsToggle = document.getElementById('fsToggle');
-                updateMCPStatus(fsStatus, fsToggle, settings.mcp_servers?.filesystem, 'filesystem');
-                
-                // Update git server status
-                const gitStatus = document.getElementById('gitStatus');
-                const gitToggle = document.getElementById('gitToggle');
-                updateMCPStatus(gitStatus, gitToggle, settings.mcp_servers?.git, 'git');
-                
-                // Update terminal server status
-                const terminalStatus = document.getElementById('terminalStatus');
-                const terminalToggle = document.getElementById('terminalToggle');
-                updateMCPStatus(terminalStatus, terminalToggle, settings.mcp_servers?.terminal, 'terminal');
-                
-            } catch (error) {
-                console.error('Failed to check MCP servers:', error);
-                // Set all to error state
-                ['fsStatus', 'gitStatus', 'terminalStatus'].forEach(id => {
-                    const status = document.getElementById(id);
-                    if (status) {
-                        status.textContent = 'Error';
-                        status.style.color = 'var(--danger)';
-                    }
-                });
-            }
-        }
-        
-        function updateMCPStatus(statusElement, toggleElement, isOnline, serverType) {
-            if (isOnline) {
-                statusElement.textContent = 'Online';
-                statusElement.style.color = 'var(--success)';
-                toggleElement.disabled = false;
-                toggleElement.textContent = currentSettings.mcp_enabled[serverType] ? 'Disable' : 'Enable';
-            } else {
-                statusElement.textContent = 'Offline';
-                statusElement.style.color = 'var(--danger)';
-                toggleElement.disabled = true;
-                toggleElement.textContent = 'Enable';
-            }
-        }
-        
-        function updateSettingsUI() {
-            document.getElementById('modelSelect').value = currentSettings.model;
-            document.getElementById('temperatureSlider').value = currentSettings.temperature;
-            document.getElementById('tempValue').textContent = currentSettings.temperature;
-            document.getElementById('maxTokensInput').value = currentSettings.max_tokens;
-            document.getElementById('themeSelect').value = currentSettings.theme;
-            document.getElementById('animationsToggle').checked = currentSettings.animations;
-        }
-        
-        async function saveSettingsToServer() {
-            try {
-                const response = await fetch('/settings', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(currentSettings)
-                });
-                
-                if (response.ok) {
-                    addMessage('system', 'Settings saved successfully!');
-                } else {
-                    addMessage('system', 'Failed to save settings to server.');
-                }
-            } catch (error) {
-                console.error('Failed to save settings:', error);
-                addMessage('system', 'Error saving settings to server.');
-            }
-        }
-        
-        function exportSettings() {
-            const dataStr = JSON.stringify(currentSettings, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'jarvis-settings.json';
-            link.click();
-            
-            URL.revokeObjectURL(url);
-            addMessage('system', 'Settings exported successfully!');
-        }
-        
-        function importSettings() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            
-            input.onchange = function(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        try {
-                            const imported = JSON.parse(e.target.result);
-                            currentSettings = { ...currentSettings, ...imported };
-                            updateSettingsUI();
-                            localStorage.setItem('jarvis-settings', JSON.stringify(currentSettings));
-                            addMessage('system', 'Settings imported successfully!');
-                        } catch (error) {
-                            addMessage('system', 'Failed to import settings. Invalid file format.');
-                        }
-                    };
-                    reader.readAsText(file);
-                }
-            };
-            
-            input.click();
-        }
-        
-        // Settings event listeners
-        settingsBtn.addEventListener('click', () => {
-            settingsPanel.classList.add('active');
-            // Refresh MCP status when settings panel opens
-            checkMCPServers();
-        });
-        
-        closeSettings.addEventListener('click', () => {
-            settingsPanel.classList.remove('active');
-        });
-        
-        saveSettings.addEventListener('click', () => {
-            // Update settings from UI
-            currentSettings.model = document.getElementById('modelSelect').value;
-            currentSettings.temperature = parseFloat(document.getElementById('temperatureSlider').value);
-            currentSettings.max_tokens = parseInt(document.getElementById('maxTokensInput').value);
-            currentSettings.theme = document.getElementById('themeSelect').value;
-            currentSettings.animations = document.getElementById('animationsToggle').checked;
-            
-            // Save to localStorage
-            localStorage.setItem('jarvis-settings', JSON.stringify(currentSettings));
-            
-            // Save to server
-            saveSettingsToServer();
-            
-            settingsPanel.classList.remove('active');
-        });
-        
-        document.getElementById('temperatureSlider').addEventListener('input', (e) => {
-            document.getElementById('tempValue').textContent = e.target.value;
-        });
-        
-        document.getElementById('exportSettings').addEventListener('click', exportSettings);
-        document.getElementById('importSettings').addEventListener('click', importSettings);
-        
-        document.getElementById('clearData').addEventListener('click', () => {
-            if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
-                localStorage.clear();
-                addMessage('system', 'All data cleared successfully!');
-                location.reload();
+        // Close mobile sidebar when clicking outside
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 1024 && 
+                mcpSidebar.classList.contains('show') && 
+                !mcpSidebar.contains(e.target) && 
+                !mobileSidebarToggle.contains(e.target)) {
+                mcpSidebar.classList.remove('show');
+                mobileSidebarToggle.innerHTML = '<i class="fas fa-bars"></i>';
             }
         });
         
-        // MCP toggle handlers
-        document.getElementById('fsToggle').addEventListener('click', () => {
-            currentSettings.mcp_enabled.filesystem = !currentSettings.mcp_enabled.filesystem;
-            const toggle = document.getElementById('fsToggle');
-            toggle.textContent = currentSettings.mcp_enabled.filesystem ? 'Disable' : 'Enable';
-            
-            if (currentSettings.mcp_enabled.filesystem) {
-                addMessage('system', 'Filesystem MCP server enabled. Jarvis can now access files.');
-            } else {
-                addMessage('system', 'Filesystem MCP server disabled.');
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 1024) {
+                mcpSidebar.classList.remove('show');
+                mobileSidebarToggle.innerHTML = '<i class="fas fa-bars"></i>';
             }
         });
-
+        
         // Connect on load
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM loaded, starting connection...');
-            initializeSettings();
             connect();
+            updateSystemStats();
         });
         
         // Also try to connect immediately
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', function() {
-                initializeSettings();
                 connect();
+                updateSystemStats();
             });
         } else {
-            initializeSettings();
             connect();
+            updateSystemStats();
         }
     </script>
 </body>
@@ -1555,7 +1929,7 @@ async def call_filesystem_mcp(operation: dict):
         return {"error": str(e)}
 
 async def main():
-    print("🚀 Starting Jarvis Web Chat")
+    print("🌟 Starting Jarvis Web Chat - Friendly Mode")
     print("=" * 40)
     
     # Initialize Claude
