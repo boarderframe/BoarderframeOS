@@ -14,6 +14,7 @@ from enum import Enum
 import httpx
 from pathlib import Path
 from .llm_client import LLMClient, LLMConfig, ANTHROPIC_CONFIG, CLAUDE_OPUS_CONFIG
+from .message_bus import message_bus, MessageType, MessagePriority, AgentMessage, send_task_request, broadcast_status
 
 # Agent States
 class AgentState(Enum):
@@ -83,6 +84,7 @@ class BaseAgent(ABC):
         self.tools: Dict[str, Callable] = {}
         self.active = True
         self.logger = self._setup_logger()
+        self.message_handlers: Dict[MessageType, Callable] = {}
         
         # LLM client for reasoning - default to Claude
         if "claude" in config.model.lower() or config.model == "claude-3-opus-20240229":
@@ -105,6 +107,9 @@ class BaseAgent(ABC):
         
         # Initialize tools
         self._load_tools()
+        
+        # Register with message bus
+        asyncio.create_task(self._register_with_message_bus())
     
     def _setup_logger(self) -> logging.Logger:
         """Set up agent-specific logger"""
@@ -190,6 +195,9 @@ class BaseAgent(ABC):
     
     async def get_context(self) -> Dict[str, Any]:
         """Gather context from environment and memory"""
+        # Get messages from message bus
+        messages = await message_bus.get_messages(self.config.name)
+        
         context = {
             'current_time': datetime.now().isoformat(),
             'agent_name': self.config.name,
@@ -198,7 +206,8 @@ class BaseAgent(ABC):
             'available_tools': list(self.tools.keys()),
             'recent_memories': self.memory.short_term[-10:],
             'message_queue_size': self.message_queue.qsize(),
-            'active_tasks': len(self.active_tasks)
+            'active_tasks': len(self.active_tasks),
+            'new_messages': messages
         }
         
         return context
@@ -234,6 +243,13 @@ class BaseAgent(ABC):
                 self.log(f"Thought: {thought[:100]}...")
                 self.log(f"Action result: {str(result)[:100]}...")
                 
+                # Process any messages
+                await self._process_messages(context.get('new_messages', []))
+                
+                # Broadcast status periodically
+                if self.metrics['thoughts_processed'] % 10 == 0:
+                    await self.broadcast_status()
+                
                 # Wait before next cycle
                 self.state = AgentState.WAITING
                 await asyncio.sleep(1)
@@ -261,10 +277,72 @@ class BaseAgent(ABC):
             'error_rate': self.metrics['errors'] / max(self.metrics['thoughts_processed'], 1)
         }
     
+    async def _register_with_message_bus(self):
+        """Register this agent with the message bus"""
+        await message_bus.register_agent(self.config.name)
+        
+        # Subscribe to relevant topics
+        await message_bus.subscribe_to_topic(self.config.name, "broadcast")
+        await message_bus.subscribe_to_topic(self.config.name, self.config.zone)
+        
+        self.log(f"Registered with message bus")
+    
+    async def _process_messages(self, messages: List[AgentMessage]):
+        """Process incoming messages"""
+        for message in messages:
+            try:
+                # Check if we have a handler for this message type
+                if message.message_type in self.message_handlers:
+                    await self.message_handlers[message.message_type](message)
+                else:
+                    # Default handling
+                    self.log(f"Received {message.message_type} from {message.from_agent}")
+                    
+                    if message.requires_response:
+                        # Send acknowledgment
+                        response = AgentMessage(
+                            from_agent=self.config.name,
+                            to_agent=message.from_agent,
+                            message_type=MessageType.TASK_RESPONSE,
+                            content={"status": "received", "original_message": message.content},
+                            correlation_id=message.correlation_id
+                        )
+                        await message_bus.send_message(response)
+                        
+            except Exception as e:
+                self.log(f"Error processing message: {e}", level="error")
+    
+    async def send_task_to_agent(self, to_agent: str, task: Dict[str, Any], priority: MessagePriority = MessagePriority.NORMAL) -> Optional[AgentMessage]:
+        """Send a task to another agent and wait for response"""
+        correlation_id = await send_task_request(self.config.name, to_agent, task, priority)
+        
+        # Wait for response
+        response = await message_bus.wait_for_response(correlation_id, timeout=30.0)
+        return response
+    
+    async def broadcast_status(self):
+        """Broadcast current status to other agents"""
+        status = {
+            "state": self.state.value,
+            "metrics": self.get_metrics(),
+            "memory_size": len(self.memory.short_term) + len(self.memory.long_term),
+            "active_tasks": len(self.active_tasks)
+        }
+        
+        await broadcast_status(self.config.name, status)
+    
+    def register_message_handler(self, message_type: MessageType, handler: Callable):
+        """Register a handler for a specific message type"""
+        self.message_handlers[message_type] = handler
+        self.log(f"Registered handler for {message_type}")
+    
     async def terminate(self):
         """Gracefully shut down the agent"""
         self.log(f"Terminating {self.config.name}...")
         self.active = False
+        
+        # Unregister from message bus
+        await message_bus.unregister_agent(self.config.name)
         
         # Cancel active tasks
         for task in self.active_tasks:

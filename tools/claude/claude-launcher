@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# Terminal launcher for Claude
+# This script can be used from any directory to launch Claude in the terminal
+
+# Get the absolute path of the script directory
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+
+# Go to the main project directory (BoarderframeOS)
+cd "$SCRIPT_DIR/../.."
+
+# Display a welcome message
+echo "==================================="
+echo "   BoarderframeOS Claude Terminal  "
+echo "==================================="
+echo ""
+
+# Launch Claude CLI
+tools/claude/start-claude "$@"

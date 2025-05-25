@@ -1,0 +1,49 @@
+agents:
+  jarvis:
+    compute_allocation: 5
+    created: '2025-05-22T23:16:56.607350'
+    goals:
+    - Manage overall business operations
+    - Coordinate between teams
+    - Monitor system health
+    memory_limit_gb: 8
+    name: jarvis
+    status: stopped
+    tools:
+    - filesystem
+    - git
+    type: jarvis
+    zone: executive
+compute:
+  devices:
+  - id: dgx-spark-1
+    memory_gb: 128
+    tops: 1000
+  - id: dgx-spark-2
+    memory_gb: 128
+    tops: 1000
+  total_memory_gb: 256
+  total_tops: 2000
+created: '2025-05-22T23:07:04.448141'
+mcp_servers:
+  browser:
+    port: 8003
+    status: inactive
+  filesystem:
+    port: 8001
+    status: inactive
+  git:
+    port: 8002
+    status: inactive
+version: 0.1.0
+zones:
+  executive:
+    agents: []
+    allocation: 20
+    created: '2025-05-22T23:16:44.385778'
+    status: active
+    templates:
+    - ceo
+    - cfo
+    - assistant
+    type: business-ops

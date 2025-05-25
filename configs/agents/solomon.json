@@ -1,0 +1,14 @@
+{
+  "name": "solomon",
+  "role": "Solomon Agent",
+  "goals": [
+    "Assist with solomon related tasks"
+  ],
+  "tools": [
+    "mcp_filesystem"
+  ],
+  "zone": "demo_zone",
+  "model": "claude-3-opus-20240229",
+  "temperature": 0.7,
+  "max_concurrent_tasks": 5
+}

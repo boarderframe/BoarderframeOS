@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# Direct wrapper for Claude CLI that preserves the nice terminal interface
+# This script ensures all terminal features work properly
+
+# Change to the script's directory
+cd "$(dirname "$0")"
+
+# Run Claude CLI directly via npx to preserve the terminal interface
+npx @anthropic-ai/claude-code "$@"

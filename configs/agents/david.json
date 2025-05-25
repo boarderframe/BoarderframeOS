@@ -1,0 +1,14 @@
+{
+  "name": "david",
+  "role": "David Agent",
+  "goals": [
+    "Assist with david related tasks"
+  ],
+  "tools": [
+    "mcp_filesystem"
+  ],
+  "zone": "demo_zone",
+  "model": "claude-3-opus-20240229",
+  "temperature": 0.7,
+  "max_concurrent_tasks": 5
+}

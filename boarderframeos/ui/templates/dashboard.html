@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}} - BoarderframeOS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        .agent-pulse { animation: pulse 2s infinite; }
+        .biome-glow { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-gray-800 border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-8">
+                    <h1 class="text-xl font-bold text-blue-400">BoarderframeOS</h1>
+                    <div class="flex space-x-4">
+                        <a href="/" class="text-white bg-blue-600 px-3 py-2 rounded">Dashboard</a>
+                        <a href="/solomon" class="text-gray-300 hover:text-white px-3 py-2 rounded">Solomon</a>
+                        <a href="/agents" class="text-gray-300 hover:text-white px-3 py-2 rounded">Agents</a>
+                        <a href="/orchestration" class="text-gray-300 hover:text-white px-3 py-2 rounded">Orchestration</a>
+                        <a href="/llm" class="text-gray-300 hover:text-white px-3 py-2 rounded">LLM Monitor</a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <div x-data="connectionStatus" class="flex items-center space-x-2">
+                        <div :class="connected ? 'bg-green-500' : 'bg-red-500'" class="w-3 h-3 rounded-full"></div>
+                        <span x-text="connected ? 'Connected' : 'Disconnected'" class="text-sm"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Dashboard -->
+    <div class="max-w-7xl mx-auto p-6" x-data="dashboard">
+        <!-- System Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                <h3 class="text-lg font-semibold mb-2">Total Agents</h3>
+                <div class="text-3xl font-bold text-blue-400" x-text="systemStatus.total_agents || 0"></div>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                <h3 class="text-lg font-semibold mb-2">Running Agents</h3>
+                <div class="text-3xl font-bold text-green-400" x-text="systemStatus.running_agents || 0"></div>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                <h3 class="text-lg font-semibold mb-2">System Load</h3>
+                <div class="text-3xl font-bold text-yellow-400" x-text="Math.round((systemStatus.system_load || 0) * 100) + '%'"></div>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                <h3 class="text-lg font-semibold mb-2">Active Tasks</h3>
+                <div class="text-3xl font-bold text-purple-400" x-text="systemStatus.active_tasks || 0"></div>
+            </div>
+        </div>
+
+        <!-- Biomes Grid -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold mb-4">Biome Status</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <template x-for="(biome, name) in biomes" :key="name">
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-700 biome-glow">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 x-text="name.charAt(0).toUpperCase() + name.slice(1)" class="font-semibold"></h3>
+                            <div :class="biome.health > 0.7 ? 'bg-green-500' : biome.health > 0.4 ? 'bg-yellow-500' : 'bg-red-500'" 
+                                 class="w-3 h-3 rounded-full"></div>
+                        </div>
+                        <div class="text-sm text-gray-400">
+                            <div>Population: <span x-text="biome.population || 0" class="text-white"></span></div>
+                            <div>Fitness: <span x-text="Math.round((biome.avg_fitness || 0) * 100) + '%'" class="text-white"></span></div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Core Agents Status -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold mb-4">Core Agents</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <template x-for="agent in coreAgents" :key="agent.name">
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 x-text="agent.name" class="font-semibold"></h3>
+                            <div :class="agent.status === 'online' ? 'bg-green-500 agent-pulse' : 'bg-red-500'" 
+                                 class="w-3 h-3 rounded-full"></div>
+                        </div>
+                        <div class="text-sm text-gray-400">
+                            <div>Role: <span x-text="agent.role" class="text-white"></span></div>
+                            <div>State: <span x-text="agent.state" class="text-white"></span></div>
+                            <div x-show="agent.uptime">Uptime: <span x-text="Math.round(agent.uptime || 0) + 'm'" class="text-white"></span></div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div>
+            <h2 class="text-2xl font-bold mb-4">Recent Activity</h2>
+            <div class="bg-gray-800 rounded-lg border border-gray-700 p-4 max-h-96 overflow-y-auto">
+                <template x-for="event in recentEvents" :key="event.id">
+                    <div class="border-b border-gray-700 pb-2 mb-2 last:border-b-0">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span :class="getEventColor(event.type)" class="font-semibold" x-text="event.type"></span>
+                                <span x-text="event.description" class="ml-2"></span>
+                            </div>
+                            <span class="text-xs text-gray-400" x-text="formatTime(event.timestamp)"></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket connection
+        function connectionStatus() {
+            return {
+                connected: false,
+                init() {
+                    this.connect();
+                },
+                connect() {
+                    const ws = new WebSocket('ws://localhost:8080/ws');
+                    
+                    ws.onopen = () => {
+                        this.connected = true;
+                        window.ws = ws;
+                    };
+                    
+                    ws.onclose = () => {
+                        this.connected = false;
+                        setTimeout(() => this.connect(), 5000);
+                    };
+                    
+                    ws.onmessage = (event) => {
+                        const data = JSON.parse(event.data);
+                        window.dispatchEvent(new CustomEvent('wsMessage', { detail: data }));
+                    };
+                }
+            }
+        }
+
+        // Main dashboard data
+        function dashboard() {
+            return {
+                systemStatus: {},
+                biomes: {},
+                coreAgents: [
+                    { name: 'Solomon', role: 'Chief of Staff', status: 'offline', state: 'idle', uptime: 0 },
+                    { name: 'David', role: 'CEO', status: 'offline', state: 'idle', uptime: 0 },
+                    { name: 'Adam', role: 'The Builder', status: 'offline', state: 'idle', uptime: 0 },
+                    { name: 'Eve', role: 'The Evolver', status: 'offline', state: 'idle', uptime: 0 },
+                    { name: 'Bezalel', role: 'The Coder', status: 'offline', state: 'idle', uptime: 0 }
+                ],
+                recentEvents: [],
+                
+                init() {
+                    this.loadInitialData();
+                    this.setupWebSocketListeners();
+                    setInterval(() => this.loadInitialData(), 30000);
+                },
+
+                async loadInitialData() {
+                    try {
+                        const [statusRes, biomesRes] = await Promise.all([
+                            fetch('/api/status'),
+                            fetch('/api/biomes')
+                        ]);
+                        
+                        if (statusRes.ok) {
+                            const statusData = await statusRes.json();
+                            this.systemStatus = statusData.data?.orchestrator || {};
+                            
+                            // Update core agents
+                            if (statusData.data?.agents) {
+                                Object.entries(statusData.data.agents).forEach(([id, agent]) => {
+                                    const coreAgent = this.coreAgents.find(a => a.name.toLowerCase() === agent.name.toLowerCase());
+                                    if (coreAgent) {
+                                        coreAgent.status = 'online';
+                                        coreAgent.state = agent.state;
+                                        coreAgent.uptime = agent.uptime_minutes;
+                                    }
+                                });
+                            }
+                        }
+                        
+                        if (biomesRes.ok) {
+                            const biomesData = await biomesRes.json();
+                            this.biomes = biomesData.biomes || {};
+                        }
+                    } catch (error) {
+                        console.error('Failed to load data:', error);
+                    }
+                },
+
+                setupWebSocketListeners() {
+                    window.addEventListener('wsMessage', (event) => {
+                        const data = event.detail;
+                        
+                        switch (data.event_type) {
+                            case 'agent_status_update':
+                                this.handleAgentUpdate(data.data);
+                                break;
+                            case 'agent_birth':
+                            case 'agent_evolution':
+                            case 'agent_death':
+                                this.addRecentEvent(data);
+                                break;
+                            case 'metrics_update':
+                                this.systemStatus = { ...this.systemStatus, ...data.data };
+                                break;
+                        }
+                    });
+                },
+
+                handleAgentUpdate(data) {
+                    const coreAgent = this.coreAgents.find(a => a.name.toLowerCase() === data.agent_id);
+                    if (coreAgent) {
+                        coreAgent.status = data.status.status;
+                        coreAgent.state = data.status.state;
+                    }
+                },
+
+                addRecentEvent(data) {
+                    this.recentEvents.unshift({
+                        id: data.id,
+                        type: data.event_type,
+                        description: this.getEventDescription(data),
+                        timestamp: data.timestamp
+                    });
+                    
+                    if (this.recentEvents.length > 50) {
+                        this.recentEvents = this.recentEvents.slice(0, 50);
+                    }
+                },
+
+                getEventDescription(data) {
+                    switch (data.event_type) {
+                        case 'agent_birth': return `Agent ${data.data.name} created in ${data.data.biome}`;
+                        case 'agent_evolution': return `Agent ${data.data.agent_id} evolved`;
+                        case 'agent_death': return `Agent ${data.data.agent_id} terminated`;
+                        default: return JSON.stringify(data.data);
+                    }
+                },
+
+                getEventColor(type) {
+                    switch (type) {
+                        case 'agent_birth': return 'text-green-400';
+                        case 'agent_evolution': return 'text-blue-400';
+                        case 'agent_death': return 'text-red-400';
+                        default: return 'text-gray-400';
+                    }
+                },
+
+                formatTime(timestamp) {
+                    return new Date(timestamp).toLocaleTimeString();
+                }
+            }
+        }
+    </script>
+</body>
+</html>

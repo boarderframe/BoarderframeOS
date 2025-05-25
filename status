@@ -1,0 +1,45 @@
+#!/bin/bash
+# BoarderframeOS Status Checker
+
+echo "🔍 BoarderframeOS Status Check"
+echo "================================"
+
+# Check if UI server is running
+if curl -s http://localhost:8888 > /dev/null 2>&1; then
+    echo "✅ UI Server: RUNNING (http://localhost:8888)"
+else
+    echo "❌ UI Server: OFFLINE"
+fi
+
+# Check for Python processes
+UI_PID=$(pgrep -f "quick_ui.py" 2>/dev/null)
+if [ ! -z "$UI_PID" ]; then
+    echo "✅ UI Process: Running (PID: $UI_PID)"
+else
+    echo "❌ UI Process: Not found"
+fi
+
+# Check if MCP servers would be running (placeholder)
+echo ""
+echo "📡 Backend Services:"
+if curl -s http://localhost:8004/health > /dev/null 2>&1; then
+    echo "✅ Database Server: RUNNING"
+else
+    echo "❌ Database Server: OFFLINE"
+fi
+
+if curl -s http://localhost:8005/health > /dev/null 2>&1; then
+    echo "✅ LLM Server: RUNNING"
+else
+    echo "❌ LLM Server: OFFLINE"
+fi
+
+if curl -s http://localhost:8001/health > /dev/null 2>&1; then
+    echo "✅ Filesystem Server: RUNNING"
+else
+    echo "❌ Filesystem Server: OFFLINE"
+fi
+
+echo ""
+echo "🚀 To start UI: ./start"
+echo "🛑 To stop: Press Ctrl+C in the server terminal"

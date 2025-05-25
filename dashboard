@@ -1,0 +1,6 @@
+#!/bin/bash
+# BoarderframeOS Dashboard Launcher
+
+echo "🎯 Launching BoarderframeOS Dashboard..."
+cd "$(dirname "$0")"
+python quick_ui.py

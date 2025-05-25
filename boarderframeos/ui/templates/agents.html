@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}} - BoarderframeOS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        .evolution-pulse { animation: pulse 2s infinite; }
+        .birth-glow { animation: glow 1s ease-in-out; }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(34, 197, 94, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.8); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-gray-800 border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-8">
+                    <h1 class="text-xl font-bold text-blue-400">BoarderframeOS</h1>
+                    <div class="flex space-x-4">
+                        <a href="/" class="text-gray-300 hover:text-white px-3 py-2 rounded">Dashboard</a>
+                        <a href="/solomon" class="text-gray-300 hover:text-white px-3 py-2 rounded">Solomon</a>
+                        <a href="/agents" class="text-white bg-blue-600 px-3 py-2 rounded">Agents</a>
+                        <a href="/orchestration" class="text-gray-300 hover:text-white px-3 py-2 rounded">Orchestration</a>
+                        <a href="/llm" class="text-gray-300 hover:text-white px-3 py-2 rounded">LLM Monitor</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto p-6" x-data="agentMonitor">
+        <!-- Header with Controls -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">Agent Monitor</h1>
+            <div class="flex space-x-4">
+                <select x-model="filterBiome" @change="filterAgents" class="bg-gray-800 border border-gray-600 rounded px-3 py-2">
+                    <option value="">All Biomes</option>
+                    <option value="forge">Forge</option>
+                    <option value="arena">Arena</option>
+                    <option value="library">Library</option>
+                    <option value="market">Market</option>
+                    <option value="council">Council</option>
+                    <option value="garden">Garden</option>
+                </select>
+                <select x-model="filterStatus" @change="filterAgents" class="bg-gray-800 border border-gray-600 rounded px-3 py-2">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="retired">Retired</option>
+                    <option value="evolving">Evolving</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Evolution Activity Feed -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold mb-4">Evolution Activity</h2>
+            <div class="bg-gray-800 rounded-lg border border-gray-700 p-4 max-h-64 overflow-y-auto">
+                <template x-for="event in evolutionEvents" :key="event.id">
+                    <div :class="event.type === 'birth' ? 'birth-glow' : event.type === 'evolution' ? 'evolution-pulse' : ''" 
+                         class="border-b border-gray-700 pb-2 mb-2 last:border-b-0">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center space-x-2">
+                                <div :class="getEventIcon(event.type)" class="w-2 h-2 rounded-full"></div>
+                                <span class="font-semibold" x-text="event.agent_name"></span>
+                                <span x-text="event.description"></span>
+                                <span class="text-xs bg-gray-700 px-2 py-1 rounded" x-text="event.biome"></span>
+                            </div>
+                            <span class="text-xs text-gray-400" x-text="formatTime(event.timestamp)"></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Agent Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <template x-for="agent in filteredAgents" :key="agent.id">
+                <div class="bg-gray-800 rounded-lg border border-gray-700 p-4 hover:border-blue-500 transition-colors cursor-pointer"
+                     @click="selectAgent(agent)">
+                    <!-- Agent Header -->
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h3 class="font-bold text-lg" x-text="agent.name"></h3>
+                            <p class="text-sm text-gray-400" x-text="agent.role || 'Agent'"></p>
+                        </div>
+                        <div class="flex flex-col items-end space-y-1">
+                            <div :class="getStatusColor(agent.status)" class="w-3 h-3 rounded-full"></div>
+                            <span class="text-xs" x-text="agent.status"></span>
+                        </div>
+                    </div>
+
+                    <!-- Biome Badge -->
+                    <div class="mb-3">
+                        <span :class="getBiomeColor(agent.biome)" 
+                              class="text-xs px-2 py-1 rounded-full" 
+                              x-text="agent.biome"></span>
+                    </div>
+
+                    <!-- Metrics -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span>Fitness:</span>
+                            <span class="font-mono" x-text="Math.round((agent.fitness_score || 0) * 100) + '%'"></span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span>Generation:</span>
+                            <span class="font-mono" x-text="agent.generation || 1"></span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span>Created:</span>
+                            <span class="font-mono text-xs" x-text="formatDate(agent.created_at)"></span>
+                        </div>
+                    </div>
+
+                    <!-- Fitness Bar -->
+                    <div class="mt-3">
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div :class="getFitnessColor(agent.fitness_score)" 
+                                 class="h-2 rounded-full transition-all duration-300"
+                                 :style="`width: ${(agent.fitness_score || 0) * 100}%`"></div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="mt-3 flex space-x-2">
+                        <button @click.stop="evolveAgent(agent.id)" 
+                                class="flex-1 bg-blue-600 hover:bg-blue-700 text-xs py-1 px-2 rounded transition-colors">
+                            Evolve
+                        </button>
+                        <button @click.stop="retireAgent(agent.id)" 
+                                class="flex-1 bg-red-600 hover:bg-red-700 text-xs py-1 px-2 rounded transition-colors">
+                            Retire
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Agent Detail Modal -->
+        <div x-show="selectedAgent" x-transition class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+             @click.away="selectedAgent = null">
+            <div x-show="selectedAgent" class="bg-gray-800 rounded-lg border border-gray-700 p-6 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
+                <template x-if="selectedAgent">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h2 class="text-2xl font-bold" x-text="selectedAgent.name"></h2>
+                                <p class="text-gray-400" x-text="selectedAgent.id"></p>
+                            </div>
+                            <button @click="selectedAgent = null" class="text-gray-400 hover:text-white">✕</button>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <h3 class="font-semibold mb-2">Basic Info</h3>
+                                <div class="space-y-1 text-sm">
+                                    <div>Status: <span x-text="selectedAgent.status"></span></div>
+                                    <div>Biome: <span x-text="selectedAgent.biome"></span></div>
+                                    <div>Generation: <span x-text="selectedAgent.generation"></span></div>
+                                    <div>Fitness: <span x-text="Math.round((selectedAgent.fitness_score || 0) * 100) + '%'"></span></div>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold mb-2">Configuration</h3>
+                                <div class="text-xs bg-gray-900 p-2 rounded overflow-x-auto">
+                                    <pre x-text="JSON.stringify(selectedAgent.config ? JSON.parse(selectedAgent.config) : {}, null, 2)"></pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button @click="evolveAgent(selectedAgent.id)" 
+                                    class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition-colors">
+                                Trigger Evolution
+                            </button>
+                            <button @click="retireAgent(selectedAgent.id)" 
+                                    class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition-colors">
+                                Retire Agent
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function agentMonitor() {
+            return {
+                agents: [],
+                filteredAgents: [],
+                evolutionEvents: [],
+                selectedAgent: null,
+                filterBiome: '',
+                filterStatus: '',
+                
+                init() {
+                    this.loadAgents();
+                    this.setupWebSocketListeners();
+                    setInterval(() => this.loadAgents(), 30000);
+                },
+
+                async loadAgents() {
+                    try {
+                        const response = await fetch('/api/agents');
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.agents = data.agents || [];
+                            this.filterAgents();
+                        }
+                    } catch (error) {
+                        console.error('Failed to load agents:', error);
+                    }
+                },
+
+                setupWebSocketListeners() {
+                    window.addEventListener('wsMessage', (event) => {
+                        const data = event.detail;
+                        
+                        switch (data.event_type) {
+                            case 'agent_birth':
+                                this.handleAgentBirth(data);
+                                break;
+                            case 'agent_evolution':
+                                this.handleAgentEvolution(data);
+                                break;
+                            case 'agent_death':
+                                this.handleAgentDeath(data);
+                                break;
+                        }
+                    });
+                },
+
+                handleAgentBirth(data) {
+                    this.evolutionEvents.unshift({
+                        id: data.id,
+                        type: 'birth',
+                        agent_name: data.data.name,
+                        description: 'was born',
+                        biome: data.data.biome,
+                        timestamp: data.timestamp
+                    });
+                    this.loadAgents(); // Refresh agent list
+                },
+
+                handleAgentEvolution(data) {
+                    this.evolutionEvents.unshift({
+                        id: data.id,
+                        type: 'evolution',
+                        agent_name: data.data.agent_id,
+                        description: 'evolved',
+                        biome: 'unknown',
+                        timestamp: data.timestamp
+                    });
+                    this.loadAgents(); // Refresh agent list
+                },
+
+                handleAgentDeath(data) {
+                    this.evolutionEvents.unshift({
+                        id: data.id,
+                        type: 'death',
+                        agent_name: data.data.agent_id,
+                        description: 'was retired',
+                        biome: 'unknown',
+                        timestamp: data.timestamp
+                    });
+                    this.loadAgents(); // Refresh agent list
+                },
+
+                filterAgents() {
+                    this.filteredAgents = this.agents.filter(agent => {
+                        if (this.filterBiome && agent.biome !== this.filterBiome) return false;
+                        if (this.filterStatus && agent.status !== this.filterStatus) return false;
+                        return true;
+                    });
+                },
+
+                selectAgent(agent) {
+                    this.selectedAgent = agent;
+                },
+
+                async evolveAgent(agentId) {
+                    try {
+                        const response = await fetch('/api/agents/command', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                command: 'evolve',
+                                agent_id: agentId
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            console.log('Evolution triggered for agent:', agentId);
+                        }
+                    } catch (error) {
+                        console.error('Failed to evolve agent:', error);
+                    }
+                },
+
+                async retireAgent(agentId) {
+                    if (!confirm('Are you sure you want to retire this agent?')) return;
+                    
+                    try {
+                        const response = await fetch('/api/agents/command', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                command: 'retire',
+                                agent_id: agentId
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            this.loadAgents();
+                            this.selectedAgent = null;
+                        }
+                    } catch (error) {
+                        console.error('Failed to retire agent:', error);
+                    }
+                },
+
+                getStatusColor(status) {
+                    switch (status) {
+                        case 'active': return 'bg-green-500';
+                        case 'retired': return 'bg-red-500';
+                        case 'evolving': return 'bg-yellow-500';
+                        default: return 'bg-gray-500';
+                    }
+                },
+
+                getBiomeColor(biome) {
+                    const colors = {
+                        forge: 'bg-orange-600 text-orange-100',
+                        arena: 'bg-red-600 text-red-100',
+                        library: 'bg-blue-600 text-blue-100',
+                        market: 'bg-green-600 text-green-100',
+                        council: 'bg-purple-600 text-purple-100',
+                        garden: 'bg-pink-600 text-pink-100'
+                    };
+                    return colors[biome] || 'bg-gray-600 text-gray-100';
+                },
+
+                getFitnessColor(fitness) {
+                    if (fitness >= 0.8) return 'bg-green-500';
+                    if (fitness >= 0.6) return 'bg-yellow-500';
+                    if (fitness >= 0.4) return 'bg-orange-500';
+                    return 'bg-red-500';
+                },
+
+                getEventIcon(type) {
+                    switch (type) {
+                        case 'birth': return 'bg-green-500';
+                        case 'evolution': return 'bg-blue-500';
+                        case 'death': return 'bg-red-500';
+                        default: return 'bg-gray-500';
+                    }
+                },
+
+                formatTime(timestamp) {
+                    return new Date(timestamp).toLocaleTimeString();
+                },
+
+                formatDate(timestamp) {
+                    return new Date(timestamp).toLocaleDateString();
+                }
+            }
+        }
+    </script>
+</body>
+</html>

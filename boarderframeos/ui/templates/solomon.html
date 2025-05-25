@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}} - BoarderframeOS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        .message-bubble { max-width: 70%; }
+        .typing-indicator { animation: pulse 1.5s infinite; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-gray-800 border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-8">
+                    <h1 class="text-xl font-bold text-blue-400">BoarderframeOS</h1>
+                    <div class="flex space-x-4">
+                        <a href="/" class="text-gray-300 hover:text-white px-3 py-2 rounded">Dashboard</a>
+                        <a href="/solomon" class="text-white bg-blue-600 px-3 py-2 rounded">Solomon</a>
+                        <a href="/agents" class="text-gray-300 hover:text-white px-3 py-2 rounded">Agents</a>
+                        <a href="/orchestration" class="text-gray-300 hover:text-white px-3 py-2 rounded">Orchestration</a>
+                        <a href="/llm" class="text-gray-300 hover:text-white px-3 py-2 rounded">LLM Monitor</a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <div x-data="connectionStatus" class="flex items-center space-x-2">
+                        <div :class="connected ? 'bg-green-500' : 'bg-red-500'" class="w-3 h-3 rounded-full"></div>
+                        <span x-text="connected ? 'Connected' : 'Disconnected'" class="text-sm"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Solomon Interface -->
+    <div class="max-w-4xl mx-auto p-6" x-data="solomonChat">
+        <!-- Header -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-6 border border-gray-700">
+            <div class="flex items-center space-x-4">
+                <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <span class="text-2xl font-bold">S</span>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold">Solomon</h1>
+                    <p class="text-gray-400">Chief of Staff • Your trusted advisor and interface to BoarderframeOS</p>
+                    <div class="flex items-center space-x-2 mt-2">
+                        <div :class="solomonStatus.online ? 'bg-green-500' : 'bg-red-500'" class="w-2 h-2 rounded-full"></div>
+                        <span class="text-sm" x-text="solomonStatus.online ? 'Online' : 'Offline'"></span>
+                        <span class="text-xs text-gray-500" x-show="solomonStatus.rapport_score">
+                            • Rapport: <span x-text="Math.round(solomonStatus.rapport_score * 100) + '%'"></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="bg-gray-800 rounded-lg border border-gray-700 flex flex-col h-96">
+            <!-- Messages -->
+            <div class="flex-1 p-4 overflow-y-auto" x-ref="messagesContainer">
+                <template x-for="message in messages" :key="message.id">
+                    <div class="mb-4">
+                        <div :class="message.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
+                            <div :class="message.role === 'user' ? 'bg-blue-600' : 'bg-gray-700'" 
+                                 class="message-bubble rounded-lg p-3">
+                                <div class="flex items-start space-x-2">
+                                    <div x-show="message.role === 'solomon'" class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-xs font-bold">
+                                        S
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-semibold text-sm mb-1" x-text="message.role === 'user' ? 'You' : 'Solomon'"></div>
+                                        <div x-html="formatMessage(message.content)"></div>
+                                        <div class="text-xs text-gray-400 mt-2" x-text="formatTime(message.timestamp)"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                
+                <!-- Typing Indicator -->
+                <div x-show="isTyping" class="mb-4">
+                    <div class="flex justify-start">
+                        <div class="bg-gray-700 rounded-lg p-3 message-bubble">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-xs font-bold">S</div>
+                                <div class="typing-indicator text-gray-400">Solomon is thinking...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input -->
+            <div class="border-t border-gray-700 p-4">
+                <form @submit.prevent="sendMessage">
+                    <div class="flex space-x-3">
+                        <input 
+                            x-model="currentMessage" 
+                            type="text" 
+                            placeholder="Ask Solomon anything about the system or your goals..."
+                            class="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
+                            :disabled="isTyping"
+                        >
+                        <button 
+                            type="submit" 
+                            :disabled="!currentMessage.trim() || isTyping"
+                            class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 px-6 py-2 rounded-lg transition-colors"
+                        >
+                            Send
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button @click="sendQuickMessage('What is the current system status?')" 
+                    class="bg-gray-800 hover:bg-gray-700 border border-gray-700 p-4 rounded-lg text-left transition-colors">
+                <div class="font-semibold">System Status</div>
+                <div class="text-sm text-gray-400">Get current system overview</div>
+            </button>
+            <button @click="sendQuickMessage('How are the agents performing?')" 
+                    class="bg-gray-800 hover:bg-gray-700 border border-gray-700 p-4 rounded-lg text-left transition-colors">
+                <div class="font-semibold">Agent Performance</div>
+                <div class="text-sm text-gray-400">Review agent metrics</div>
+            </button>
+            <button @click="sendQuickMessage('What should we focus on next?')" 
+                    class="bg-gray-800 hover:bg-gray-700 border border-gray-700 p-4 rounded-lg text-left transition-colors">
+                <div class="font-semibold">Strategic Guidance</div>
+                <div class="text-sm text-gray-400">Get strategic recommendations</div>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket connection
+        function connectionStatus() {
+            return {
+                connected: false,
+                init() {
+                    this.connect();
+                },
+                connect() {
+                    const ws = new WebSocket('ws://localhost:8080/ws');
+                    
+                    ws.onopen = () => {
+                        this.connected = true;
+                        window.ws = ws;
+                    };
+                    
+                    ws.onclose = () => {
+                        this.connected = false;
+                        setTimeout(() => this.connect(), 5000);
+                    };
+                    
+                    ws.onmessage = (event) => {
+                        const data = JSON.parse(event.data);
+                        window.dispatchEvent(new CustomEvent('wsMessage', { detail: data }));
+                    };
+                }
+            }
+        }
+
+        // Solomon Chat Interface
+        function solomonChat() {
+            return {
+                messages: [],
+                currentMessage: '',
+                isTyping: false,
+                solomonStatus: {
+                    online: false,
+                    rapport_score: 0.5
+                },
+                
+                init() {
+                    this.setupWebSocketListeners();
+                    this.loadChatHistory();
+                },
+
+                setupWebSocketListeners() {
+                    window.addEventListener('wsMessage', (event) => {
+                        const data = event.detail;
+                        
+                        switch (data.event_type) {
+                            case 'solomon_conversation':
+                                this.handleSolomonMessage(data.data);
+                                break;
+                            case 'initial_state':
+                                this.loadInitialState(data.data);
+                                break;
+                            case 'agent_status_update':
+                                if (data.data.agent_id === 'solomon') {
+                                    this.solomonStatus.online = data.data.status.status === 'online';
+                                }
+                                break;
+                        }
+                    });
+                },
+
+                loadInitialState(data) {
+                    if (data.solomon_conversations) {
+                        this.messages = data.solomon_conversations.map(msg => ({
+                            id: Date.now() + Math.random(),
+                            ...msg
+                        }));
+                        this.scrollToBottom();
+                    }
+                },
+
+                handleSolomonMessage(data) {
+                    if (data.role === 'solomon') {
+                        this.isTyping = false;
+                        this.messages.push({
+                            id: Date.now(),
+                            role: 'solomon',
+                            content: data.content,
+                            timestamp: new Date().toISOString()
+                        });
+                        this.scrollToBottom();
+                    }
+                },
+
+                async sendMessage() {
+                    if (!this.currentMessage.trim()) return;
+                    
+                    const message = this.currentMessage.trim();
+                    this.currentMessage = '';
+                    
+                    // Add user message
+                    this.messages.push({
+                        id: Date.now(),
+                        role: 'user',
+                        content: message,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    this.isTyping = true;
+                    this.scrollToBottom();
+                    
+                    // Send via WebSocket
+                    if (window.ws && window.ws.readyState === WebSocket.OPEN) {
+                        window.ws.send(JSON.stringify({
+                            type: 'solomon_message',
+                            content: message
+                        }));
+                    } else {
+                        // Fallback to HTTP API
+                        try {
+                            const response = await fetch('/api/solomon/message', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ message })
+                            });
+                            
+                            if (!response.ok) {
+                                this.isTyping = false;
+                                this.messages.push({
+                                    id: Date.now(),
+                                    role: 'solomon',
+                                    content: 'I apologize, but I seem to be experiencing connection issues. Please try again.',
+                                    timestamp: new Date().toISOString()
+                                });
+                            }
+                        } catch (error) {
+                            this.isTyping = false;
+                            console.error('Failed to send message:', error);
+                        }
+                    }
+                },
+
+                sendQuickMessage(message) {
+                    this.currentMessage = message;
+                    this.sendMessage();
+                },
+
+                async loadChatHistory() {
+                    // This would load chat history from the server
+                    // For now, we'll wait for WebSocket initial state
+                },
+
+                formatMessage(content) {
+                    // Basic markdown-like formatting
+                    return content
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                        .replace(/\n/g, '<br>');
+                },
+
+                formatTime(timestamp) {
+                    return new Date(timestamp).toLocaleTimeString();
+                },
+
+                scrollToBottom() {
+                    this.$nextTick(() => {
+                        this.$refs.messagesContainer.scrollTop = this.$refs.messagesContainer.scrollHeight;
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>

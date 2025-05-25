@@ -1,0 +1,6 @@
+#!/bin/bash
+# Stable BoarderframeOS launcher
+
+echo "🚀 Starting Stable BoarderframeOS Dashboard..."
+cd "$(dirname "$0")"
+python stable_ui.py

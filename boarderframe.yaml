@@ -1,0 +1,24 @@
+agents: {}
+compute:
+  devices:
+  - id: dgx-spark-1
+    memory_gb: 128
+    tops: 1000
+  - id: dgx-spark-2
+    memory_gb: 128
+    tops: 1000
+  total_memory_gb: 256
+  total_tops: 2000
+created: '2025-05-23T22:10:37.437764'
+mcp_servers:
+  browser:
+    port: 8003
+    status: inactive
+  filesystem:
+    port: 8001
+    status: inactive
+  git:
+    port: 8002
+    status: inactive
+version: 0.1.0
+zones: {}
