@@ -14,7 +14,7 @@ from datetime import datetime
 import asyncio
 import httpx
 
-PORT = 8889
+PORT = 8888
 
 class DashboardData:
     """Manages dashboard data updates"""
