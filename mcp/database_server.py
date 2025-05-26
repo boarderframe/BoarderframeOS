@@ -214,6 +214,58 @@ class DatabaseManager:
         
         for index_sql in indexes:
             await db.execute(index_sql)
+            
+        # Create business-related tables
+        
+        # Revenue tracking
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS revenue_transactions (
+                id TEXT PRIMARY KEY,
+                customer_id TEXT,
+                amount DECIMAL(10,2),
+                currency TEXT,
+                product TEXT,
+                agent_id TEXT,  -- Which agent generated this revenue
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        # Customer subscriptions
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS customers (
+                id TEXT PRIMARY KEY,
+                email TEXT UNIQUE,
+                stripe_customer_id TEXT,
+                subscription_status TEXT,
+                monthly_value DECIMAL(10,2),
+                created_by_agent TEXT
+            )
+        """)
+        
+        # API usage for billing
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS api_usage (
+                customer_id TEXT,
+                endpoint TEXT,
+                tokens_used INTEGER,
+                cost DECIMAL(10,4),
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        # Create indexes for business tables
+        business_indexes = [
+            "CREATE INDEX IF NOT EXISTS idx_revenue_customer ON revenue_transactions(customer_id)",
+            "CREATE INDEX IF NOT EXISTS idx_revenue_agent ON revenue_transactions(agent_id)",
+            "CREATE INDEX IF NOT EXISTS idx_revenue_product ON revenue_transactions(product)",
+            "CREATE INDEX IF NOT EXISTS idx_customers_subscription ON customers(subscription_status)",
+            "CREATE INDEX IF NOT EXISTS idx_customers_created_by ON customers(created_by_agent)",
+            "CREATE INDEX IF NOT EXISTS idx_api_usage_customer ON api_usage(customer_id)",
+            "CREATE INDEX IF NOT EXISTS idx_api_usage_endpoint ON api_usage(endpoint)"
+        ]
+        
+        for index_sql in business_indexes:
+            await db.execute(index_sql)
     
     async def execute_query(self, request: QueryRequest) -> DatabaseResponse:
         """Execute SQL query"""

@@ -11,9 +11,41 @@ compute:
   total_tops: 2000
 created: '2025-05-23T22:10:37.437764'
 mcp_servers:
+  analytics:
+    dependencies:
+    - httpx
+    - fastapi
+    - pydantic
+    - numpy
+    - pandas
+    enabled: true
+    features:
+      customer_acquisition_cost: true
+      customer_lifetime_value: true
+      churn_rate: true
+      revenue_per_agent: true
+      api_usage_metrics: true
+    health_endpoint: http://localhost:8007/health
+    path: mcp/analytics_server.py
+    port: 8007
+    startup_script: mcp/analytics_server.py
   browser:
     port: 8003
     status: inactive
+  customer:
+    dependencies:
+    - httpx
+    - fastapi
+    - pydantic
+    enabled: true
+    features:
+      customer_management: true
+      subscription_tracking: true
+      interaction_logging: true
+    health_endpoint: http://localhost:8008/health
+    path: mcp/customer_server.py
+    port: 8008
+    startup_script: mcp/customer_server.py
   filesystem:
     dependencies:
     - aiofiles
@@ -37,5 +69,21 @@ mcp_servers:
   git:
     port: 8002
     status: inactive
+  payment:
+    dependencies:
+    - httpx
+    - fastapi
+    - pydantic
+    enabled: true
+    features:
+      stripe_integration: true
+      subscription_management: true
+      usage_based_billing: true
+      invoice_generation: true
+      payment_webhooks: true
+    health_endpoint: http://localhost:8006/health
+    path: mcp/payment_server.py
+    port: 8006
+    startup_script: mcp/payment_server.py
 version: 0.1.0
 zones: {}
