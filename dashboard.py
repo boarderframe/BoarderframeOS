@@ -74,7 +74,10 @@ class DashboardData:
             "filesystem": {"port": 8001, "name": "File System Server", "icon": "fas fa-folder-tree"},
             "database": {"port": 8004, "name": "Database Server", "icon": "fas fa-database"},
             "llm": {"port": 8005, "name": "LLM Server", "icon": "fas fa-brain"},
-            "registry": {"port": 8000, "name": "Registry Server", "icon": "fas fa-server"}
+            "registry": {"port": 8000, "name": "Registry Server", "icon": "fas fa-server"},
+            "payment": {"port": 8006, "name": "Payment Server", "icon": "fas fa-credit-card"},
+            "analytics": {"port": 8007, "name": "Analytics Server", "icon": "fas fa-chart-bar"},
+            "customer": {"port": 8008, "name": "Customer Server", "icon": "fas fa-users"}
         }
         
         for service_id, service_info in services.items():
