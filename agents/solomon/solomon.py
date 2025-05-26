@@ -1,5 +1,5 @@
 """
-analyst_agent Agent - BoarderframeOS
+solomon Agent - BoarderframeOS
 Generated agent implementation
 """
 
@@ -12,17 +12,17 @@ from boarderframeos.core.llm_client import LLMClient
 import asyncio
 from typing import Dict, Any
 
-class analyst_agent(BaseAgent):
+class Solomon(BaseAgent):
     """Generated general agent"""
     
     async def think(self, context: Dict[str, Any]) -> str:
         """Agent reasoning process"""
         # Use LLM for reasoning
         prompt = f"""
-You are Analyst_Agent Agent.
+You are Solomon Agent.
 
 Your goals are:
-- {goal}
+- {'\n- '.join(self.config.goals)}
 
 Current context:
 {context}
@@ -30,8 +30,8 @@ Current context:
 Based on this context, what should you do next? Provide a clear thought process.
 """
         
-        response = await self.llm.chat([{"role": "user", "content": prompt}])
-        return response.content
+        response = await self.llm.generate(prompt)
+        return response
     
     async def act(self, thought: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Execute actions based on thoughts"""
@@ -48,15 +48,15 @@ Based on this context, what should you do next? Provide a clear thought process.
 async def main():
     """Main entry point"""
     config = AgentConfig(
-        name="analyst_agent",
-        role="Analyst_Agent Agent",
-        goals=['Assist with analyst_agent related tasks'],
+        name="solomon",
+        role="Solomon Agent",
+        goals=['Assist with solomon related tasks'],
         tools=['mcp_filesystem'],
         zone="demo_zone",
         model="claude-3-opus-20240229"
     )
     
-    agent = analyst_agent(config)
+    agent = Solomon(config)
     await agent.run()
 
 if __name__ == "__main__":

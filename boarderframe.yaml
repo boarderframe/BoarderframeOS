@@ -15,8 +15,25 @@ mcp_servers:
     port: 8003
     status: inactive
   filesystem:
+    dependencies:
+    - aiofiles
+    - sentence-transformers
+    - xxhash
+    - aiosqlite
+    - watchdog
+    - tiktoken
+    - pygments
+    enabled: true
+    features:
+      ai_content_analysis: true
+      integrity_checking: true
+      real_time_monitoring: true
+      vector_embeddings: true
+      version_control: true
+    health_endpoint: http://localhost:8001/health
+    path: mcp/filesystem_server.py
     port: 8001
-    status: inactive
+    startup_script: mcp/start_filesystem_server.py
   git:
     port: 8002
     status: inactive

@@ -22,7 +22,7 @@ class david(BaseAgent):
 You are David Agent.
 
 Your goals are:
-- {goal}
+- {'\n- '.join(self.config.goals)}
 
 Current context:
 {context}
@@ -30,8 +30,8 @@ Current context:
 Based on this context, what should you do next? Provide a clear thought process.
 """
         
-        response = await self.llm.chat([{"role": "user", "content": prompt}])
-        return response.content
+        response = await self.llm.generate(prompt)
+        return response
     
     async def act(self, thought: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Execute actions based on thoughts"""

@@ -19,7 +19,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler(os.path.join(os.path.dirname(__file__), "../../logs/git_mcp.log")),
+        logging.FileHandler(os.path.join(os.path.dirname(__file__), "../logs/git_mcp.log")),
         logging.StreamHandler()
     ]
 )

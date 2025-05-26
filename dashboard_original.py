@@ -23,6 +23,8 @@ class DashboardData:
         self.agents_status = {}
         self.system_metrics = {}
         self.health_status = {}
+        self.running_agents = {}
+        self.startup_status = {}
         self.last_update = None
         self.update_thread = None
         self.running = True
@@ -45,25 +47,8 @@ class DashboardData:
                 print(f"Update error: {e}")
             time.sleep(5)  # Update every 5 seconds
     
-    async def _async_update(self):
-        """Async update of all data"""
-        async with httpx.AsyncClient(timeout=2.0) as client:
-            # Update services status
-            await self._update_services(client)
-            
-            # Update agents status
-            await self._update_agents(client)
-            
-            # Update system metrics
-            await self._update_metrics(client)
-            
-            # Load health check data if available
-            self._load_health_data()
-            
-            self.last_update = datetime.now()
-    
     async def _update_services(self, client):
-        """Update MCP services status"""
+        """Update MCP services status with enhanced filesystem server monitoring"""
         services = [
             ("MCP Registry", 8000),
             ("Filesystem Server", 8001),
@@ -74,16 +59,41 @@ class DashboardData:
         
         for service_name, port in services:
             try:
-                response = await client.get(f"http://localhost:{port}/health")
-                self.services_status[service_name] = {
-                    "status": "online" if response.status_code == 200 else "offline",
-                    "port": port
-                }
+                response = await client.get(f"http://localhost:{port}/health", timeout=3.0)
+                service_data = {"status": "online", "port": port}
+                
+                # Enhanced data for filesystem server
+                if service_name == "Filesystem Server" and response.status_code == 200:
+                    try:
+                        health_data = response.json()
+                        service_data.update({
+                            "uptime": health_data.get("uptime", 0),
+                            "ai_available": health_data.get("ai_available", False),
+                            "active_operations": health_data.get("active_operations", 0),
+                            "connected_clients": health_data.get("connected_clients", 0),
+                            "features": health_data.get("features", {}),
+                            "base_path": health_data.get("base_path", "unknown")
+                        })
+                    except:
+                        pass  # Use basic status if JSON parsing fails
+                
+                self.services_status[service_name] = service_data
             except:
                 self.services_status[service_name] = {
                     "status": "offline",
                     "port": port
                 }
+        
+        # Update with startup status data if available
+        if hasattr(self, 'startup_status') and 'mcp_servers' in self.startup_status:
+            mcp_servers = self.startup_status.get('mcp_servers', {})
+            for server_name, server_info in mcp_servers.items():
+                service_display_name = f"{server_name.title()} Server"
+                if service_display_name not in self.services_status:
+                    self.services_status[service_display_name] = {
+                        "status": server_info.get('status', 'unknown'),
+                        "port": server_info.get('details', {}).get('port', 'unknown')
+                    }
     
     async def _update_agents(self, client):
         """Update agents status from database"""
@@ -107,6 +117,152 @@ class DashboardData:
         except:
             pass  # Database might not be available
     
+    def _load_startup_status(self):
+        """Load startup status data if available"""
+        try:
+            startup_file = "/tmp/boarderframe_startup_status.json"
+            if os.path.exists(startup_file):
+                with open(startup_file, 'r') as f:
+                    self.startup_status = json.load(f)
+            else:
+                self.startup_status = {}
+        except Exception as e:
+            self.startup_status = {}
+            print(f"Error loading startup status: {e}")
+
+    async def _update_running_agents(self):
+        """Update running agents by checking processes"""
+        try:
+            import psutil
+            
+            # Check for running agent processes
+            running_agents = {}
+            
+            for process in psutil.process_iter(['pid', 'name', 'cmdline']):
+                try:
+                    cmdline = ' '.join(process.info['cmdline'] or [])
+                    
+                    # Check for agent processes
+                    if 'solomon.py' in cmdline:
+                        running_agents['solomon'] = {
+                            'name': 'Solomon',
+                            'status': 'running',
+                            'pid': process.info['pid'],
+                            'type': 'Strategic Planning Agent'
+                        }
+                    elif 'david.py' in cmdline:
+                        running_agents['david'] = {
+                            'name': 'David',
+                            'status': 'running', 
+                            'pid': process.info['pid'],
+                            'type': 'Research Agent'
+                        }
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    continue
+                    
+        except ImportError:
+            # psutil not available, fall back to simpler check
+            running_agents = {}
+            
+        # Update agents status with running processes
+        self.running_agents = running_agents
+
+    def _generate_startup_section(self):
+        """Generate startup status section HTML"""
+        if not self.startup_status:
+            return ""
+        
+        startup_phase = self.startup_status.get('startup_phase', 'unknown')
+        start_time = self.startup_status.get('start_time', '')
+        logs = self.startup_status.get('logs', [])
+        mcp_servers = self.startup_status.get('mcp_servers', {})
+        
+        # Show startup section only if we have startup data
+        if startup_phase == 'initializing' or logs or mcp_servers:
+            # Phase indicator
+            phase_display = {
+                'initializing': '🔄 Initializing System',
+                'starting_mcp_servers': '🚀 Starting MCP Servers',
+                'starting_dashboard': '📊 Starting Dashboard',
+                'starting_agents': '🤖 Starting Agents',
+                'complete': '✅ System Ready'
+            }.get(startup_phase, f'📍 {startup_phase.replace("_", " ").title()}')
+            
+            # MCP Servers status
+            mcp_status_html = ""
+            for server_name, server_info in mcp_servers.items():
+                status = server_info.get('status', 'unknown')
+                status_icon = {
+                    'starting': '🔄',
+                    'running': '✅',
+                    'failed': '❌',
+                    'error': '❌',
+                    'not_found': '⚠️'
+                }.get(status, '❓')
+                
+                details = server_info.get('details', {})
+                port_info = f"Port {details.get('port', 'N/A')}" if 'port' in details else ""
+                
+                mcp_status_html += f"""
+                    <div class="startup-item">
+                        <span class="startup-icon">{status_icon}</span>
+                        <span class="startup-name">{server_name.title()} Server</span>
+                        <span class="startup-status">{status.replace('_', ' ').title()}</span>
+                        <span class="startup-details">{port_info}</span>
+                    </div>"""
+            
+            # Recent logs
+            recent_logs = logs[-5:] if len(logs) > 5 else logs
+            logs_html = ""
+            for log in recent_logs:
+                timestamp = datetime.fromisoformat(log['timestamp']).strftime('%H:%M:%S')
+                component = log.get('component', 'system')
+                message = log.get('message', '')
+                status = log.get('status', 'info')
+                
+                status_color = {
+                    'success': '#10b981',
+                    'error': '#ef4444', 
+                    'warning': '#f59e0b',
+                    'info': '#6b7280'
+                }.get(status, '#6b7280')
+                
+                logs_html += f"""
+                    <div class="log-entry" style="color: {status_color};">
+                        <span class="log-time">{timestamp}</span>
+                        <span class="log-component">[{component}]</span>
+                        <span class="log-message">{message}</span>
+                    </div>"""
+            
+            return f"""
+                <div class="panel startup-panel">
+                    <h3>🚀 System Startup Status</h3>
+                    <div class="startup-phase">
+                        <h4>{phase_display}</h4>
+                        {f'<div class="startup-time">Started: {datetime.fromisoformat(start_time).strftime("%H:%M:%S")}</div>' if start_time else ''}
+                    </div>
+                    
+                    {f'''
+                    <div class="startup-section">
+                        <h5>MCP Servers</h5>
+                        <div class="startup-list">
+                            {mcp_status_html}
+                        </div>
+                    </div>
+                    ''' if mcp_status_html else ''}
+                    
+                    {f'''
+                    <div class="startup-section">
+                        <h5>Recent Activity</h5>
+                        <div class="startup-logs">
+                            {logs_html}
+                        </div>
+                    </div>
+                    ''' if logs_html else ''}
+                </div>"""
+        
+        return ""
+
     async def _update_metrics(self, client):
         """Update system metrics"""
         try:
@@ -135,30 +291,85 @@ class DashboardData:
         except:
             pass
     
+    async def _async_update(self):
+        """Async update of all data"""
+        async with httpx.AsyncClient(timeout=2.0) as client:
+            # Update services status
+            await self._update_services(client)
+            
+            # Update agents status
+            await self._update_agents(client)
+            
+            # Update running agents from processes
+            await self._update_running_agents()
+            
+            # Load health check data if available
+            self._load_health_data()
+            
+            # Load startup status data if available
+            self._load_startup_status()
+            
+            self.last_update = datetime.now()
+    
     def get_dashboard_html(self):
         """Generate dashboard HTML with current data"""
+        # Startup status HTML
+        startup_section_html = self._generate_startup_section()
+        
         # Services status HTML
         services_html = ""
         for service, status in self.services_status.items():
             status_class = "online" if status["status"] == "online" else "offline"
             icon = "✓" if status["status"] == "online" else "✗"
-            services_html += f"""
-                <div class="service-item">
-                    <span class="status-icon {status_class}">{icon}</span>
-                    <span class="service-name">{service}</span>
-                    <span class="service-port">Port {status['port']}</span>
-                </div>"""
+            
+            # Enhanced display for filesystem server
+            if service == "Filesystem Server" and status["status"] == "online":
+                uptime = status.get("uptime", 0)
+                ai_status = "🤖" if status.get("ai_available", False) else ""
+                active_ops = status.get("active_operations", 0)
+                clients = status.get("connected_clients", 0)
+                
+                services_html += f"""
+                    <div class="service-item filesystem-server">
+                        <span class="status-icon {status_class}">{icon}</span>
+                        <span class="service-name">{service} {ai_status}</span>
+                        <span class="service-details">
+                            Port {status['port']} | ⏱️ {uptime:.1f}s | 
+                            🔄 {active_ops} ops | 👥 {clients} clients
+                        </span>
+                    </div>"""
+            else:
+                services_html += f"""
+                    <div class="service-item">
+                        <span class="status-icon {status_class}">{icon}</span>
+                        <span class="service-name">{service}</span>
+                        <span class="service-port">Port {status['port']}</span>
+                    </div>"""
         
-        # Agents status HTML
+        # Agents status HTML - prioritize running agents
         agents_html = ""
-        core_agents = ["solomon", "david", "adam", "eve", "bezalel"]
+        all_agents = ["solomon", "david"]
         
-        for agent_id in core_agents:
-            if agent_id in self.agents_status:
+        for agent_id in all_agents:
+            if agent_id in self.running_agents:
+                # Agent is currently running
+                agent = self.running_agents[agent_id]
+                agents_html += f"""
+                    <div class="agent-card">
+                        <h4>{agent['name']}</h4>
+                        <div class="agent-status active">RUNNING</div>
+                        <div class="agent-details">
+                            <div>Type: {agent['type']}</div>
+                            <div>PID: {agent['pid']}</div>
+                            <div>Status: Active Process</div>
+                        </div>
+                    </div>"""
+            elif agent_id in self.agents_status:
+                # Agent in database but not running
                 agent = self.agents_status[agent_id]
                 status_class = "active" if agent["status"] == "active" else "inactive"
                 agents_html += f"""
-                    <div class="agent-card">
+                    <div class="agent-card {status_class}">
                         <h4>{agent['name']}</h4>
                         <div class="agent-status {status_class}">{agent['status'].upper()}</div>
                         <div class="agent-details">
@@ -168,10 +379,14 @@ class DashboardData:
                         </div>
                     </div>"""
             else:
+                # Agent not found
                 agents_html += f"""
                     <div class="agent-card inactive">
-                        <h4>{agent_id.capitalize()}</h4>
-                        <div class="agent-status">NOT DEPLOYED</div>
+                        <h4>{agent_id.replace('_', ' ').title()}</h4>
+                        <div class="agent-status">NOT RUNNING</div>
+                        <div class="agent-details">
+                            <div>Status: Offline</div>
+                        </div>
                     </div>"""
         
         # System metrics
@@ -180,9 +395,11 @@ class DashboardData:
         return f"""<!DOCTYPE html>
 <html>
 <head>
-    <title>BoarderframeOS Dashboard</title>
+    <title>BoarderframeOS Control Center</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <meta http-equiv="refresh" content="10">
     <style>
         body {{ 
@@ -251,6 +468,10 @@ class DashboardData:
             background: #0f172a;
             border-radius: 6px;
         }}
+        .service-item.filesystem-server {{
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border: 1px solid #334155;
+        }}
         .status-icon {{
             width: 20px;
             height: 20px;
@@ -262,6 +483,11 @@ class DashboardData:
         .status-icon.offline {{ color: #ef4444; }}
         .service-name {{ flex: 1; }}
         .service-port {{ color: #6b7280; font-size: 0.9em; }}
+        .service-details {{ 
+            color: #94a3b8; 
+            font-size: 0.85em; 
+            white-space: nowrap;
+        }}
         .agents-grid {{
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -335,6 +561,94 @@ class DashboardData:
         .health-indicator.healthy {{ background: #10b981; }}
         .health-indicator.degraded {{ background: #f59e0b; }}
         .health-indicator.critical {{ background: #ef4444; }}
+        
+        /* Startup Status Styles */
+        .startup-panel {{
+            background: linear-gradient(135deg, #1e293b, #334155);
+            border: 1px solid #475569;
+            margin-bottom: 20px;
+        }}
+        .startup-phase {{
+            text-align: center;
+            padding: 15px;
+            border-bottom: 1px solid #475569;
+        }}
+        .startup-phase h4 {{
+            margin: 0;
+            color: #60a5fa;
+            font-size: 1.2em;
+        }}
+        .startup-time {{
+            color: #94a3b8;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }}
+        .startup-section {{
+            margin: 15px 0;
+        }}
+        .startup-section h5 {{
+            margin: 0 0 10px 0;
+            color: #e2e8f0;
+            font-size: 1em;
+            border-bottom: 1px solid #475569;
+            padding-bottom: 5px;
+        }}
+        .startup-list {{
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }}
+        .startup-item {{
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: #0f172a;
+            border-radius: 6px;
+            border-left: 3px solid #475569;
+        }}
+        .startup-icon {{
+            width: 20px;
+            margin-right: 10px;
+            text-align: center;
+        }}
+        .startup-name {{
+            flex: 1;
+            font-weight: 500;
+        }}
+        .startup-status {{
+            color: #94a3b8;
+            font-size: 0.9em;
+            margin-right: 10px;
+        }}
+        .startup-details {{
+            color: #6b7280;
+            font-size: 0.8em;
+        }}
+        .startup-logs {{
+            background: #0f172a;
+            border-radius: 6px;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.85em;
+        }}
+        .log-entry {{
+            margin: 3px 0;
+            display: flex;
+            gap: 10px;
+        }}
+        .log-time {{
+            color: #94a3b8;
+            min-width: 60px;
+        }}
+        .log-component {{
+            color: #60a5fa;
+            min-width: 80px;
+        }}
+        .log-message {{
+            flex: 1;
+        }}
     </style>
     <script>
         // Auto-refresh countdown
@@ -375,6 +689,9 @@ class DashboardData:
                 <div class="metric-label">Total Agents</div>
             </div>
         </div>
+
+        <!-- Startup Status Section -->
+        {startup_section_html}
 
         <div class="dashboard-grid">
             <div class="panel">
