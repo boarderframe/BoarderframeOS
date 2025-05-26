@@ -975,6 +975,29 @@ class DashboardData:
             </div>
         </div>
     </header>        <div class="container">
+        <!-- Welcome Section -->
+        <div class="card full-width">
+            <h3><i class="fas fa-home"></i> Welcome to BoarderframeOS</h3>
+            <div style="padding: 1rem; background: rgba(99, 102, 241, 0.1); border-radius: 12px; border-left: 4px solid var(--accent-color);">
+                <h4 style="margin: 0 0 1rem 0; color: var(--accent-color);">
+                    <i class="fas fa-user"></i> Hello Carl
+                </h4>
+                <p style="margin: 0 0 1rem 0; font-size: 1rem; line-height: 1.6; color: var(--primary-text);">
+                    Welcome to your BoarderframeOS Control Center. Your intelligent agent ecosystem is {overall_status.replace('_', ' ')}, 
+                    with {healthy_services} of {total_services} core services operational. 
+                    The system is equipped with advanced MCP (Model Context Protocol) servers providing file operations, 
+                    database management, AI processing, and service coordination capabilities.
+                </p>
+                <p style="margin: 0; font-size: 0.95rem; color: var(--secondary-text);">
+                    <i class="fas fa-lightbulb"></i> 
+                    Your AI agents Solomon and David are standing by, ready to assist with strategic planning, 
+                    research tasks, and system management. All systems are being monitored in real-time for optimal performance.
+                </p>
+            </div>
+        </div>
+
+        <div class="section-separator"></div>
+
         <!-- AI Agents -->
         <div class="card full-width">
             <h3><i class="fas fa-robot"></i> AI Agents</h3>
@@ -991,9 +1014,9 @@ class DashboardData:
 
         <div class="section-separator"></div>
 
-        <!-- Server Details -->
+        <!-- MCP Server Details -->
         <div class="card full-width">
-            <h3><i class="fas fa-cogs"></i> Server Details</h3>
+            <h3><i class="fas fa-cogs"></i> MCP Server Details</h3>
             <div class="grid">
                 {self._generate_detailed_server_widgets()}
             </div>
@@ -1374,20 +1397,26 @@ class DashboardData:
             # Generate specific widget content based on server type
             if service_id == "filesystem":
                 widget_content = self._generate_filesystem_widget_content()
+                # Use proper title for File System Server
+                server_title = "File System Server Details"
             elif service_id == "registry":
                 widget_content = self._generate_registry_widget_content()
+                server_title = f"{service.get('name', service_id.title())} Details"
             elif service_id == "database":
                 widget_content = self._generate_database_widget_content()
+                server_title = f"{service.get('name', service_id.title())} Details"
             elif service_id == "llm":
                 widget_content = self._generate_llm_widget_content()
+                server_title = f"{service.get('name', service_id.title())} Details"
             else:
                 widget_content = self._generate_generic_widget_content(service)
+                server_title = f"{service.get('name', service_id.title())} Details"
             
             widgets_html += f'''
                 <div class="card {border_class}">
                     <h3>
                         <i class="{service.get('icon', 'fas fa-server')}"></i> 
-                        {service.get('name', service_id.title())} Details
+                        {server_title}
                     </h3>
                     {widget_content}
                 </div>
@@ -1398,7 +1427,40 @@ class DashboardData:
     def _generate_filesystem_widget_content(self):
         """Generate detailed filesystem server widget content"""
         if "filesystem" not in self.mcp_details:
-            return '<div style="text-align: center; color: var(--secondary-text); padding: 1rem;">No detailed data available</div>'
+            # If no MCP details, try to get basic service info
+            fs_service = self.services_status.get("filesystem", {})
+            if not fs_service:
+                return '<div style="text-align: center; color: var(--secondary-text); padding: 1rem;">File System Server not available</div>'
+            
+            # Show basic info if detailed data is not available
+            return f'''
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-value">{fs_service.get("port", "Unknown")}</div>
+                        <div class="metric-label">Port</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">{fs_service.get("response_time", 0)*1000:.0f}ms</div>
+                        <div class="metric-label">Response Time</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">{"✅" if fs_service.get("status") == "healthy" else "❌"}</div>
+                        <div class="metric-label">Status</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">Ready</div>
+                        <div class="metric-label">State</div>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 8px; border-left: 3px solid var(--success-color);">
+                    <h4 style="margin: 0 0 0.5rem 0; color: var(--success-color);">
+                        <i class="fas fa-folder-tree"></i> File System Operations
+                    </h4>
+                    <p style="margin: 0; color: var(--secondary-text); font-size: 0.9rem;">
+                        Provides file operations, directory management, and AI-powered content analysis capabilities.
+                    </p>
+                </div>
+            '''
         
         details = self.mcp_details["filesystem"]
         return f'''
@@ -1420,11 +1482,14 @@ class DashboardData:
                     <div class="metric-label">Vector DB Entries</div>
                 </div>
             </div>
-            <div style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 8px;">
-                <h4 style="margin: 0 0 0.5rem 0; color: var(--accent-color);">
-                    <i class="fas fa-folder"></i> Base Path
+            <div style="margin-top: 1rem; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 8px; border-left: 3px solid var(--success-color);">
+                <h4 style="margin: 0 0 0.5rem 0; color: var(--success-color);">
+                    <i class="fas fa-folder"></i> Configuration
                 </h4>
-                <code style="color: var(--primary-text);">{details.get("base_path", "/")}</code>
+                <div style="font-size: 0.9rem; color: var(--secondary-text);">
+                    <div style="margin-bottom: 0.3rem;"><i class="fas fa-clock"></i> Uptime: {details.get('uptime', 'Unknown')}</div>
+                    <div><i class="fas fa-folder-open"></i> Base Path: <code style="color: var(--primary-text); background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">{details.get("base_path", "/")}</code></div>
+                </div>
             </div>
         '''
 
@@ -1567,6 +1632,20 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
             
             html_content = dashboard_data.generate_dashboard_html()
             self.wfile.write(html_content.encode('utf-8'))
+        elif self.path == "/health":
+            # Health endpoint for the dashboard itself
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            
+            health_data = {
+                "status": "healthy",
+                "uptime": "Active",
+                "service": "BoarderframeOS Dashboard",
+                "port": PORT,
+                "timestamp": datetime.now().isoformat()
+            }
+            self.wfile.write(json.dumps(health_data).encode('utf-8'))
         else:
             super().do_GET()
 
