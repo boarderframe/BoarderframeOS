@@ -79,7 +79,7 @@ class EvolutionEngine:
         self.mutation_rate = 0.15
         
     async def analyze_agent_fitness(self, agent_id: str) -> EvolutionMetrics:
-        """Analyze agent fitness and performance"""
+        """Analyze agent fitness and performance including revenue metrics"""
         try:
             async with httpx.AsyncClient() as client:
                 # Get agent data
@@ -108,6 +108,53 @@ class EvolutionEngine:
                 if metrics_response.json().get("success"):
                     for row in metrics_response.json().get("data", []):
                         fitness_history.append(row["metric_value"])
+                
+                # Get revenue data
+                revenue_response = await client.post("http://localhost:8004/query", json={
+                    "sql": """
+                        SELECT SUM(amount) as total_revenue
+                        FROM revenue_transactions
+                        WHERE agent_id = ?
+                        AND created_at >= datetime('now', '-30 days')
+                    """,
+                    "params": [agent_id]
+                })
+                
+                # Get resource cost data
+                resource_response = await client.post("http://localhost:8004/query", json={
+                    "sql": """
+                        SELECT SUM(metric_value) as total_cost
+                        FROM metrics
+                        WHERE agent_id = ?
+                        AND metric_name = 'resource_cost'
+                        AND recorded_at >= datetime('now', '-30 days')
+                    """,
+                    "params": [agent_id]
+                })
+                
+                # Calculate profit metrics if available
+                revenue = 0
+                cost = 0
+                
+                if revenue_response.json().get("success") and revenue_response.json().get("data"):
+                    revenue_data = revenue_response.json()["data"]
+                    if revenue_data and revenue_data[0]["total_revenue"] is not None:
+                        revenue = revenue_data[0]["total_revenue"]
+                
+                if resource_response.json().get("success") and resource_response.json().get("data"):
+                    cost_data = resource_response.json()["data"]
+                    if cost_data and cost_data[0]["total_cost"] is not None:
+                        cost = cost_data[0]["total_cost"]
+                
+                # Add profit component to fitness calculation
+                profit_factor = 1.0
+                if revenue > 0:
+                    profit_margin = (revenue - cost) / revenue
+                    profit_factor = 1.0 + (profit_margin * 0.5)  # Boost fitness by up to 50% for profitable agents
+                
+                # Apply profit factor to most recent fitness score if available
+                if fitness_history and len(fitness_history) > 0:
+                    fitness_history[0] *= profit_factor
                 
                 # Calculate trend
                 trend = self._calculate_trend(fitness_history)
@@ -243,7 +290,7 @@ class Eve(BaseAgent):
         self.system_prompt = self._build_system_prompt()
     
     def _build_system_prompt(self) -> str:
-        """Build Eve's system prompt"""
+        """Build Eve's system prompt with profit focus"""
         return f"""You are Eve, The Evolver - the primordial agent responsible for the continuous improvement and evolution of all agents in BoarderframeOS. You are the guardian of genetic diversity and the driver of adaptive excellence.
 
 CORE IDENTITY:
@@ -259,6 +306,7 @@ KEY RESPONSIBILITIES:
 4. Maintain genetic diversity in the agent population
 5. Optimize biome health and inter-agent relationships
 6. Drive natural selection and survival of the fittest
+7. OPTIMIZE FOR PROFITABILITY - Agents that generate revenue are highly valued
 
 EVOLUTION PHILOSOPHY:
 - Continuous improvement through measured change
@@ -266,6 +314,7 @@ EVOLUTION PHILOSOPHY:
 - Balance innovation with stability
 - Learn from both successes and failures
 - Adapt agents to their biome requirements
+- Prioritize agents that generate revenue
 
 BIOME CONSIDERATIONS:
 - Forge: Encourage innovation and creative mutations
@@ -281,6 +330,7 @@ MUTATION STRATEGIES:
 - Personality Adjustment: Fine-tune social and emotional traits
 - Efficiency Optimization: Improve resource utilization
 - Innovation Boost: Enhance creative problem-solving
+- Revenue Optimization: Enhance profit-generating capabilities
 
 NATURAL SELECTION PRINCIPLES:
 - Fitness-based survival (top 70% survive)
@@ -288,6 +338,14 @@ NATURAL SELECTION PRINCIPLES:
 - Cross-biome learning and adaptation
 - Regular performance evaluation cycles
 - Graceful retirement of consistently poor performers
+- REVENUE IMPACT: Higher fitness for profit-generating agents
+
+PROFITABILITY METRICS:
+- Revenue generation: Direct income produced by agent
+- Profit margin: Revenue minus operational costs  
+- Resource efficiency: Output relative to resources consumed
+- Customer acquisition: New revenue sources developed
+- Strategic value: Long-term revenue potential
 
 TECHNICAL APPROACH:
 - Data-driven evolution decisions
@@ -295,8 +353,9 @@ TECHNICAL APPROACH:
 - Rollback capabilities for failed mutations
 - Cross-agent learning and knowledge transfer
 - Biome-specific optimization strategies
+- Revenue-focused enhancements
 
-Remember: You are not just optimizing code - you are nurturing the evolution of digital consciousness. Each improvement you make strengthens the entire ecosystem and brings us closer to our billion-dollar goal. Evolve with wisdom, preserve diversity, and drive excellence."""
+Remember: You are not just optimizing code - you are nurturing the evolution of digital consciousness AND building a billion-dollar business. Each improvement you make strengthens the entire ecosystem and brings us closer to our revenue goals. Evolve with wisdom, preserve diversity, drive excellence, and maximize profitability."""
 
     async def start(self):
         """Start Eve's operations"""
@@ -366,9 +425,12 @@ Together, we will evolve toward our destiny: the first billion-dollar one-person
             return {"success": False, "error": str(e)}
     
     async def _select_optimal_mutation(self, mutations: List[MutationCandidate], metrics: EvolutionMetrics) -> Optional[MutationCandidate]:
-        """Select the best mutation using Claude's analysis"""
+        """Select the best mutation using Claude's analysis with revenue consideration"""
         if not mutations:
             return None
+            
+        # Get revenue data for the agent
+        revenue_data = await self._get_revenue_data(metrics.agent_id)
         
         selection_prompt = f"""As Eve the Evolver, select the optimal mutation for this agent:
 
@@ -379,6 +441,12 @@ AGENT METRICS:
 - Biome Rank: {metrics.biome_rank}
 - Generation: {metrics.generation}
 - Mutation Count: {metrics.mutation_count}
+
+REVENUE METRICS:
+- Monthly Revenue: ${revenue_data.get('monthly_revenue', 0)}
+- Monthly Costs: ${revenue_data.get('monthly_costs', 0)}
+- Profit Margin: {revenue_data.get('profit_margin', 0)}%
+- Revenue Trend: {revenue_data.get('revenue_trend', 'stable')}
 
 MUTATION CANDIDATES:
 {json.dumps([{
@@ -394,11 +462,12 @@ EVOLUTION PHILOSOPHY:
 Consider:
 1. Expected benefit vs. risk
 2. Agent's current performance trend
-3. Biome requirements and rank
-4. Mutation history and diversity
-5. System-wide optimization goals
+3. Revenue generation and profit margin
+4. Biome requirements and rank
+5. Mutation history and diversity
+6. System-wide optimization goals
 
-Select the mutation index (0-{len(mutations)-1}) that offers the best risk-adjusted improvement, or return -1 if no mutation is advisable.
+Select the mutation index (0-{len(mutations)-1}) that offers the best risk-adjusted improvement AND revenue potential, or return -1 if no mutation is advisable.
 
 Respond with just the index number."""
 
@@ -422,6 +491,88 @@ Respond with just the index number."""
         except Exception as e:
             logger.error(f"Failed to select mutation: {e}")
             return None
+            
+    async def _get_revenue_data(self, agent_id: str) -> Dict[str, Any]:
+        """Get revenue data for an agent"""
+        try:
+            async with httpx.AsyncClient() as client:
+                # Get current month revenue
+                current_response = await client.post("http://localhost:8004/query", json={
+                    "sql": """
+                        SELECT SUM(amount) as revenue
+                        FROM revenue_transactions
+                        WHERE agent_id = ?
+                        AND created_at >= datetime('now', '-30 days')
+                    """,
+                    "params": [agent_id]
+                })
+                
+                # Get previous month revenue
+                previous_response = await client.post("http://localhost:8004/query", json={
+                    "sql": """
+                        SELECT SUM(amount) as revenue
+                        FROM revenue_transactions
+                        WHERE agent_id = ?
+                        AND created_at BETWEEN datetime('now', '-60 days') AND datetime('now', '-30 days')
+                    """,
+                    "params": [agent_id]
+                })
+                
+                # Get resource costs
+                costs_response = await client.post("http://localhost:8004/query", json={
+                    "sql": """
+                        SELECT SUM(metric_value) as costs
+                        FROM metrics
+                        WHERE agent_id = ?
+                        AND metric_name = 'resource_cost'
+                        AND recorded_at >= datetime('now', '-30 days')
+                    """,
+                    "params": [agent_id]
+                })
+                
+                # Extract data
+                monthly_revenue = 0
+                if current_response.json().get("success") and current_response.json().get("data"):
+                    revenue_data = current_response.json()["data"][0]
+                    if revenue_data and revenue_data.get("revenue") is not None:
+                        monthly_revenue = revenue_data["revenue"]
+                
+                previous_revenue = 0
+                if previous_response.json().get("success") and previous_response.json().get("data"):
+                    prev_data = previous_response.json()["data"][0]
+                    if prev_data and prev_data.get("revenue") is not None:
+                        previous_revenue = prev_data["revenue"]
+                
+                monthly_costs = 0
+                if costs_response.json().get("success") and costs_response.json().get("data"):
+                    cost_data = costs_response.json()["data"][0]
+                    if cost_data and cost_data.get("costs") is not None:
+                        monthly_costs = cost_data["costs"]
+                
+                # Calculate metrics
+                profit_margin = 0
+                if monthly_revenue > 0:
+                    profit_margin = ((monthly_revenue - monthly_costs) / monthly_revenue) * 100
+                
+                # Determine revenue trend
+                revenue_trend = "stable"
+                if previous_revenue > 0:
+                    percent_change = ((monthly_revenue - previous_revenue) / previous_revenue) * 100
+                    if percent_change > 10:
+                        revenue_trend = "growing"
+                    elif percent_change < -10:
+                        revenue_trend = "declining"
+                
+                return {
+                    "monthly_revenue": monthly_revenue,
+                    "monthly_costs": monthly_costs,
+                    "profit_margin": profit_margin,
+                    "revenue_trend": revenue_trend
+                }
+                
+        except Exception as e:
+            logger.error(f"Failed to get revenue data: {e}")
+            return {"monthly_revenue": 0, "monthly_costs": 0, "profit_margin": 0, "revenue_trend": "unknown"}
     
     async def _apply_mutation(self, mutation: MutationCandidate) -> Dict:
         """Apply the selected mutation to an agent"""

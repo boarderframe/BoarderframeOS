@@ -240,6 +240,9 @@ class EnhancedSystemStartup:
             {"name": "filesystem", "port": 8001, "script": "filesystem_server.py"},
             {"name": "database", "port": 8004, "script": "database_server.py"},
             {"name": "llm", "port": 8005, "script": "llm_server.py"},
+            {"name": "payment", "port": 8006, "script": "payment_server.py"},
+            {"name": "analytics", "port": 8007, "script": "analytics_server.py"},
+            {"name": "customer", "port": 8008, "script": "customer_server.py"},
         ]
         results = []
         for server in mcp_servers:

@@ -17,6 +17,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from boarderframeos.mcp.filesystem_server import MCPFilesystemServer
 from boarderframeos.mcp.git_server import MCPGitServer
 from boarderframeos.mcp.terminal_server import MCPTerminalServer
+from boarderframeos.mcp.payment_server import MCPPaymentServer
+from boarderframeos.mcp.analytics_server import MCPAnalyticsServer
+from boarderframeos.mcp.customer_server import MCPCustomerServer
 
 # Configure logging
 logging.basicConfig(
@@ -34,13 +37,19 @@ async def main():
     """Run the servers"""
     parser = argparse.ArgumentParser(description="BoarderframeOS MCP Server Launcher")
     parser.add_argument("--servers", "-s", nargs="+", default=["all"],
-                       help="Servers to start (filesystem, git, terminal, or all)")
+                       help="Servers to start (filesystem, git, terminal, payment, analytics, customer, or all)")
     parser.add_argument("--port-fs", type=int, default=8001,
                        help="Port for filesystem server (default: 8001)")
     parser.add_argument("--port-git", type=int, default=8002,
                        help="Port for git server (default: 8002)")
     parser.add_argument("--port-terminal", type=int, default=8003,
                        help="Port for terminal server (default: 8003)")
+    parser.add_argument("--port-payment", type=int, default=8006,
+                       help="Port for payment server (default: 8006)")
+    parser.add_argument("--port-analytics", type=int, default=8007,
+                       help="Port for analytics server (default: 8007)")
+    parser.add_argument("--port-customer", type=int, default=8008,
+                       help="Port for customer server (default: 8008)")
     
     args = parser.parse_args()
     
@@ -48,6 +57,9 @@ async def main():
     start_filesystem = "all" in args.servers or "filesystem" in args.servers
     start_git = "all" in args.servers or "git" in args.servers
     start_terminal = "all" in args.servers or "terminal" in args.servers
+    start_payment = "all" in args.servers or "payment" in args.servers
+    start_analytics = "all" in args.servers or "analytics" in args.servers
+    start_customer = "all" in args.servers or "customer" in args.servers
     
     tasks = []
     
@@ -68,6 +80,24 @@ async def main():
         logger.info(f"Starting terminal server on port {args.port_terminal}")
         terminal_server = MCPTerminalServer()
         tasks.append(asyncio.create_task(terminal_server.start(args.port_terminal)))
+    
+    # Start payment server
+    if start_payment:
+        logger.info(f"Starting payment server on port {args.port_payment}")
+        payment_server = MCPPaymentServer()
+        tasks.append(asyncio.create_task(payment_server.start(args.port_payment)))
+    
+    # Start analytics server
+    if start_analytics:
+        logger.info(f"Starting analytics server on port {args.port_analytics}")
+        analytics_server = MCPAnalyticsServer()
+        tasks.append(asyncio.create_task(analytics_server.start(args.port_analytics)))
+    
+    # Start customer server
+    if start_customer:
+        logger.info(f"Starting customer server on port {args.port_customer}")
+        customer_server = MCPCustomerServer()
+        tasks.append(asyncio.create_task(customer_server.start(args.port_customer)))
     
     if tasks:
         logger.info("All specified MCP servers started")
