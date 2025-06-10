@@ -1,0 +1,303 @@
+#!/bin/bash
+# BoarderframeOS Database Management CLI
+# Quick access to PostgreSQL database operations
+
+set -e
+
+# Configuration
+DB_HOST="localhost"
+DB_PORT="5432"
+DB_NAME="boarderframeos"
+DB_USER="boarderframe"
+DB_PASSWORD="boarderframe_secure_2025"
+PGPASSWORD="$DB_PASSWORD"
+export PGPASSWORD
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Helper functions
+print_usage() {
+    echo "BoarderframeOS Database CLI"
+    echo "Usage: $0 <command> [args]"
+    echo ""
+    echo "Commands:"
+    echo "  connect              - Connect to PostgreSQL with psql"
+    echo "  status               - Show database status and connections"
+    echo "  tables               - List all tables"
+    echo "  schema <table>       - Show table schema"
+    echo "  count <table>        - Count rows in table"
+    echo "  agents               - List all agents"
+    echo "  memories [agent_id]  - List agent memories (optionally filtered)"
+    echo "  vector-test          - Test vector operations"
+    echo "  backup               - Create database backup"
+    echo "  restore <file>       - Restore from backup"
+    echo "  reset                - Reset database (WARNING: destructive)"
+    echo "  logs                 - Show PostgreSQL logs"
+    echo "  admin                - Launch web admin interfaces"
+    echo ""
+    echo "Examples:"
+    echo "  $0 connect"
+    echo "  $0 agents"
+    echo "  $0 memories agent-uuid"
+    echo "  $0 schema agent_memories"
+}
+
+check_connection() {
+    if ! pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" >/dev/null 2>&1; then
+        echo -e "${RED}❌ Cannot connect to PostgreSQL database${NC}"
+        echo "Make sure PostgreSQL is running: docker-compose up -d postgresql"
+        exit 1
+    fi
+}
+
+case "$1" in
+    "connect")
+        echo -e "${BLUE}🔌 Connecting to BoarderframeOS PostgreSQL...${NC}"
+        check_connection
+        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME"
+        ;;
+    
+    "status")
+        echo -e "${BLUE}📊 Database Status${NC}"
+        check_connection
+        
+        echo -e "\n${YELLOW}Connection Info:${NC}"
+        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "
+            SELECT 
+                current_database() as database,
+                current_user as user,
+                version() as version;
+        "
+        
+        echo -e "\n${YELLOW}Active Connections:${NC}"
+        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "
+            SELECT 
+                datname,
+                numbackends as connections,
+                xact_commit as commits,
+                xact_rollback as rollbacks
+            FROM pg_stat_database 
+            WHERE datname = '$DB_NAME';
+        "
+        
+        echo -e "\n${YELLOW}Database Size:${NC}"
+        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "
+            SELECT pg_size_pretty(pg_database_size('$DB_NAME')) as size;
+        "
+        ;;
+    
+    "tables")
+        echo -e "${BLUE}📋 Database Tables${NC}"
+        check_connection
+        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "
+            SELECT 
+                schemaname,
+                tablename,
+                tableowner,
+                pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size
+            FROM pg_tables 
+            WHERE schemaname = 'public'
+            ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
+        "
+        ;;
+    
+    "schema")
+        if [ -z "$2" ]; then
+            echo -e "${RED}❌ Please specify a table name${NC}"
+            echo "Usage: $0 schema <table_name>"
+            exit 1
+        fi
+        
+        TABLE_NAME="$2"
+        echo -e "${BLUE}🏗️  Schema for table: $TABLE_NAME${NC}"
+        check_connection
+        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "
+            SELECT 
+                column_name,
+                data_type,
+                is_nullable,
+                column_default,
+                character_maximum_length
+            FROM information_schema.columns 
+            WHERE table_name = '$TABLE_NAME' AND table_schema = 'public'
+            ORDER BY ordinal_position;
+        "
+        ;;
+    
+    "count")
+        if [ -z "$2" ]; then
+            echo -e "${RED}❌ Please specify a table name${NC}"
+            echo "Usage: $0 count <table_name>"
+            exit 1
+        fi
+        
+        TABLE_NAME="$2"
+        echo -e "${BLUE}🔢 Row count for table: $TABLE_NAME${NC}"
+        check_connection
+        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "
+            SELECT COUNT(*) as row_count FROM $TABLE_NAME;
+        "
+        ;;
+    
+    "agents")
+        echo -e "${BLUE}🤖 Agents in BoarderframeOS${NC}"
+        check_connection
+        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "
+            SELECT 
+                name,
+                department,
+                agent_type,
+                status,
+                generation,
+                fitness_score,
+                created_at
+            FROM agents 
+            ORDER BY created_at DESC
+            LIMIT 20;
+        "
+        ;;
+    
+    "memories")
+        AGENT_FILTER=""
+        if [ -n "$2" ]; then
+            AGENT_FILTER="WHERE agent_id = '$2'"
+        fi
+        
+        echo -e "${BLUE}🧠 Agent Memories${NC}"
+        check_connection
+        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "
+            SELECT 
+                m.agent_id,
+                a.name as agent_name,
+                m.content,
+                m.memory_type,
+                m.importance,
+                m.created_at
+            FROM agent_memories m
+            LEFT JOIN agents a ON m.agent_id = a.id
+            $AGENT_FILTER
+            ORDER BY m.created_at DESC
+            LIMIT 10;
+        "
+        ;;
+    
+    "vector-test")
+        echo -e "${BLUE}🔍 Testing Vector Operations${NC}"
+        check_connection
+        
+        echo -e "\n${YELLOW}Testing pgvector extension:${NC}"
+        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "
+            SELECT extversion FROM pg_extension WHERE extname = 'vector';
+        "
+        
+        echo -e "\n${YELLOW}Testing vector similarity:${NC}"
+        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "
+            SELECT '[1,2,3]'::vector <-> '[1,2,4]'::vector as distance;
+        "
+        
+        echo -e "\n${YELLOW}Memory count with embeddings:${NC}"
+        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "
+            SELECT COUNT(*) as memories_with_embeddings 
+            FROM agent_memories 
+            WHERE embedding IS NOT NULL;
+        "
+        ;;
+    
+    "backup")
+        BACKUP_FILE="backup_$(date +%Y%m%d_%H%M%S).sql"
+        echo -e "${BLUE}💾 Creating database backup: $BACKUP_FILE${NC}"
+        check_connection
+        
+        pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" > "$BACKUP_FILE"
+        echo -e "${GREEN}✅ Backup created: $BACKUP_FILE${NC}"
+        ;;
+    
+    "restore")
+        if [ -z "$2" ]; then
+            echo -e "${RED}❌ Please specify backup file${NC}"
+            echo "Usage: $0 restore <backup_file.sql>"
+            exit 1
+        fi
+        
+        BACKUP_FILE="$2"
+        if [ ! -f "$BACKUP_FILE" ]; then
+            echo -e "${RED}❌ Backup file not found: $BACKUP_FILE${NC}"
+            exit 1
+        fi
+        
+        echo -e "${YELLOW}⚠️  This will restore database from: $BACKUP_FILE${NC}"
+        echo -e "${RED}⚠️  This operation may overwrite existing data!${NC}"
+        read -p "Are you sure? (y/N): " -n 1 -r
+        echo
+        
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            echo -e "${BLUE}🔄 Restoring database...${NC}"
+            check_connection
+            psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" < "$BACKUP_FILE"
+            echo -e "${GREEN}✅ Database restored${NC}"
+        else
+            echo -e "${YELLOW}❌ Restore cancelled${NC}"
+        fi
+        ;;
+    
+    "reset")
+        echo -e "${RED}⚠️  WARNING: This will completely reset the database!${NC}"
+        echo -e "${RED}⚠️  All data will be lost!${NC}"
+        read -p "Are you absolutely sure? Type 'RESET' to confirm: " -r
+        
+        if [ "$REPLY" = "RESET" ]; then
+            echo -e "${BLUE}🔄 Resetting database...${NC}"
+            check_connection
+            
+            # Drop and recreate database
+            psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "postgres" -c "
+                DROP DATABASE IF EXISTS $DB_NAME;
+                CREATE DATABASE $DB_NAME OWNER $DB_USER;
+            "
+            
+            echo -e "${GREEN}✅ Database reset complete${NC}"
+            echo -e "${YELLOW}ℹ️  Run migration to recreate schema: python migrations/001_initial_schema.sql${NC}"
+        else
+            echo -e "${YELLOW}❌ Reset cancelled${NC}"
+        fi
+        ;;
+    
+    "logs")
+        echo -e "${BLUE}📋 PostgreSQL Logs${NC}"
+        docker-compose logs -f postgresql
+        ;;
+    
+    "admin")
+        echo -e "${BLUE}🌐 Launching Database Admin Interfaces${NC}"
+        
+        echo "Starting admin services..."
+        docker-compose --profile admin up -d
+        
+        echo ""
+        echo -e "${GREEN}✅ Admin interfaces available:${NC}"
+        echo -e "  📊 pgAdmin:          http://localhost:8080"
+        echo -e "     Email:            admin@boarderframeos.local"
+        echo -e "     Password:         admin_secure_2025"
+        echo ""
+        echo -e "  🏃 Adminer:          http://localhost:8081"
+        echo -e "     Server:           postgresql"
+        echo -e "     Username:         boarderframe"
+        echo -e "     Database:         boarderframeos"
+        echo ""
+        echo -e "  🔴 Redis Commander:  http://localhost:8082"
+        echo -e "     Username:         admin"
+        echo -e "     Password:         admin_secure_2025"
+        echo ""
+        echo "Press Ctrl+C to stop admin services"
+        ;;
+    
+    *)
+        print_usage
+        exit 1
+        ;;
+esac

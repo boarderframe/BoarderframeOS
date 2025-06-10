@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Tabs</title>
+</head>
+<body>
+    <h1>Testing Tab Switching</h1>
+    
+    <button onclick="testShowTab('leaders')">Show Leaders Tab</button>
+    <button onclick="testShowTab('departments')">Show Departments Tab</button>
+    <button onclick="testShowTab('services')">Show Servers Tab</button>
+    
+    <script>
+        function testShowTab(tabName) {
+            // Open HQ in current window
+            window.location.href = 'http://localhost:8888';
+            
+            // Wait a bit then switch tab
+            setTimeout(() => {
+                // Try to call showTab
+                if (typeof showTab === 'function') {
+                    showTab(tabName);
+                    console.log('Tab switched to: ' + tabName);
+                } else {
+                    console.error('showTab function not found');
+                }
+            }, 1000);
+        }
+        
+        // Direct test
+        console.log('Opening console to test showTab function...');
+        console.log('You can test by typing: showTab("leaders") in the browser console');
+    </script>
+    
+    <p>Open browser console (F12) and type: showTab('leaders')</p>
+</body>
+</html>

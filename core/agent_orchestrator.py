@@ -81,40 +81,63 @@ class AgentOrchestrator:
         """Initialize the orchestrator"""
         logger.info(f"Initializing Agent Orchestrator in {self.mode.value} mode")
         
-        # Load agent registry from database
-        await self._load_agent_registry()
-        
-        # Start orchestrator services
+        # Start orchestrator services first
         await self._start_orchestrator_services()
         
         # Register with message bus
         await message_bus.subscribe(self.orchestrator_id, self._handle_orchestrator_message)
         
+        # Defer agent registry loading - will be done lazily or via explicit call
+        self._registry_loaded = False
+        
         logger.info("Agent Orchestrator initialized successfully")
+        
+    async def ensure_registry_loaded(self):
+        """Ensure agent registry is loaded (can be called after database is ready)"""
+        if not self._registry_loaded:
+            await self._load_agent_registry()
+            self._registry_loaded = True
     
     async def _load_agent_registry(self):
-        """Load agent registry from database"""
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post("http://localhost:8004/query", json={
-                    "sql": "SELECT id, name, config FROM agents WHERE status = 'active'"
-                })
-                
-                if response.status_code == 200 and response.json().get("success"):
-                    for row in response.json().get("data", []):
-                        config = json.loads(row["config"])
-                        self.agent_registry[row["id"]] = {
-                            "name": row["name"],
-                            "config": config,
-                            "class_name": config.get("class_name", row["name"]),
-                            "module_path": config.get("module_path", f"agents.{row['name'].lower()}.{row['name'].lower()}"),
-                            "biome": config.get("biome", "default")
-                        }
+        """Load agent registry from database with retry logic"""
+        max_retries = 3
+        retry_delay = 2
+        
+        for attempt in range(max_retries):
+            try:
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    # Use PostgreSQL MCP server instead of SQLite
+                    response = await client.post("http://localhost:8010/query", json={
+                        "sql": "SELECT id, name, configuration as config FROM agents WHERE status = 'active'"
+                    })
                     
-                    logger.info(f"Loaded {len(self.agent_registry)} agents from registry")
-                    
-        except Exception as e:
-            logger.error(f"Failed to load agent registry: {e}")
+                    if response.status_code == 200 and response.json().get("success"):
+                        data = response.json().get("data", [])
+                        for row in data:
+                            try:
+                                config = json.loads(row["config"]) if isinstance(row["config"], str) else row["config"]
+                                self.agent_registry[row["id"]] = {
+                                    "name": row["name"],
+                                    "config": config,
+                                    "class_name": config.get("class_name", row["name"]),
+                                    "module_path": config.get("module_path", f"agents.{row['name'].lower()}.{row['name'].lower()}"),
+                                    "biome": config.get("biome", "default")
+                                }
+                            except (json.JSONDecodeError, KeyError) as e:
+                                logger.warning(f"Skipping invalid agent config for {row.get('name', 'unknown')}: {e}")
+                                continue
+                        
+                        logger.info(f"Loaded {len(self.agent_registry)} agents from registry")
+                        return  # Success, exit retry loop
+                    else:
+                        logger.warning(f"Database query failed: {response.status_code}")
+                        
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    logger.warning(f"Failed to load agent registry (attempt {attempt + 1}/{max_retries}): {e}")
+                    await asyncio.sleep(retry_delay)
+                else:
+                    logger.error(f"Failed to load agent registry after {max_retries} attempts: {e}")
     
     async def _start_orchestrator_services(self):
         """Start background orchestrator services"""
@@ -167,7 +190,7 @@ class AgentOrchestrator:
                     from_agent=self.orchestrator_id,
                     to_agent="system",
                     message_type=MessageType.STATUS_UPDATE,
-                    data={"event": "agent_started", "agent_id": agent_id, "name": registry_entry["name"]},
+                    content={"event": "agent_started", "agent_id": agent_id, "name": registry_entry["name"]},
                     priority=MessagePriority.NORMAL
                 ))
                 
@@ -221,7 +244,7 @@ class AgentOrchestrator:
                 from_agent=self.orchestrator_id,
                 to_agent="system",
                 message_type=MessageType.STATUS_UPDATE,
-                data={"event": "agent_stopped", "agent_id": agent_id},
+                content={"event": "agent_stopped", "agent_id": agent_id},
                 priority=MessagePriority.NORMAL
             ))
             
@@ -234,6 +257,9 @@ class AgentOrchestrator:
     async def start_core_agents(self) -> Dict[str, bool]:
         """Start the core agents in proper order"""
         results = {}
+        
+        # Ensure registry is loaded before starting agents
+        await self.ensure_registry_loaded()
         
         # Core agent startup order
         startup_order = ["solomon", "david", "adam", "eve", "bezalel"]
@@ -283,7 +309,7 @@ class AgentOrchestrator:
             from_agent=self.orchestrator_id,
             to_agent=agent_id,
             message_type=MessageType.TASK_REQUEST,
-            data={
+            content={
                 "task_id": task_id,
                 "task_type": task_type,
                 "task_data": data,
@@ -313,7 +339,7 @@ class AgentOrchestrator:
                     from_agent=self.orchestrator_id,
                     to_agent=agent_id,
                     message_type=MessageType.MESH_CONTROL,
-                    data={
+                    content={
                         "action": "join_mesh",
                         "mesh_id": mesh_id,
                         "mesh_members": valid_agents,
@@ -344,7 +370,7 @@ class AgentOrchestrator:
                         from_agent=self.orchestrator_id,
                         to_agent=agent_id,
                         message_type=MessageType.MESH_CONTROL,
-                        data={
+                        content={
                             "action": "leave_mesh",
                             "mesh_id": mesh_id
                         },
@@ -422,11 +448,11 @@ class AgentOrchestrator:
     
     async def _handle_task_response(self, message: AgentMessage):
         """Handle task completion responses"""
-        task_id = message.data.get("task_id")
+        task_id = message.content.get("task_id")
         if task_id in self.task_queue:
             assignment = self.task_queue[task_id]
             assignment.status = "completed"
-            assignment.result = message.data.get("result")
+            assignment.result = message.content.get("result")
             
             logger.info(f"Task {task_id} completed by agent {message.from_agent}")
     
@@ -436,7 +462,7 @@ class AgentOrchestrator:
         if agent_id in self.running_agents:
             instance = self.running_agents[agent_id]
             
-            status = message.data.get("status")
+            status = message.content.get("status")
             if status:
                 try:
                     instance.state = AgentState(status)
@@ -451,7 +477,7 @@ class AgentOrchestrator:
             instance.last_heartbeat = datetime.now()
             
             # Update performance metrics if provided
-            metrics = message.data.get("metrics")
+            metrics = message.content.get("metrics")
             if metrics:
                 instance.performance_metrics.update(metrics)
     
@@ -581,7 +607,7 @@ class AgentOrchestrator:
         """Log agent events to database"""
         try:
             async with httpx.AsyncClient() as client:
-                await client.post("http://localhost:8004/insert", json={
+                await client.post("http://localhost:8010/insert", json={
                     "table": "agent_interactions",
                     "data": {
                         "id": str(uuid.uuid4()),
@@ -595,10 +621,10 @@ class AgentOrchestrator:
             logger.error(f"Failed to log agent event: {e}")
     
     async def _log_performance_metrics(self, metrics: Dict):
-        """Log performance metrics to database"""
+        """Log performance metrics to database with error handling"""
         try:
-            async with httpx.AsyncClient() as client:
-                await client.post("http://localhost:8004/insert", json={
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                response = await client.post("http://localhost:8010/insert", json={
                     "table": "metrics",
                     "data": {
                         "id": str(uuid.uuid4()),
@@ -608,8 +634,17 @@ class AgentOrchestrator:
                         "metadata": json.dumps(metrics)
                     }
                 })
+                
+                if response.status_code != 200:
+                    logger.debug(f"Performance metrics logging failed: HTTP {response.status_code}")
+                    
+        except httpx.ConnectError:
+            # Silently ignore connection errors during startup
+            logger.debug("Performance metrics logging skipped - database not ready")
+        except httpx.TimeoutException:
+            logger.debug("Performance metrics logging timeout - database busy")
         except Exception as e:
-            logger.error(f"Failed to log performance metrics: {e}")
+            logger.debug(f"Performance metrics logging failed: {e}")
     
     async def _optimize_agent_distribution(self):
         """Optimize agent distribution across biomes"""

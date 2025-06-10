@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Cortex Management Panel - BoarderframeOS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e27;
+            color: #e0e6ed;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 20px 30px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+        
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .cortex-icon {
+            font-size: 36px;
+            color: #64ffda;
+        }
+        
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            max-width: 1600px;
+            margin: 0 auto;
+            min-height: calc(100vh - 80px);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: #0f1419;
+            padding: 20px;
+            border-right: 1px solid #1a1f2e;
+        }
+        
+        .nav-section {
+            margin-bottom: 30px;
+        }
+        
+        .nav-section h3 {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #8892b0;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            margin-bottom: 4px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #e0e6ed;
+            text-decoration: none;
+        }
+        
+        .nav-item:hover {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+        }
+        
+        .nav-item.active {
+            background: rgba(100, 255, 218, 0.2);
+            color: #64ffda;
+        }
+        
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        /* Cards */
+        .card {
+            background: #1a1f2e;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid #2a3142;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #e6f1ff;
+        }
+        
+        /* Overview Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #1a1f2e 0%, #2a3142 100%);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #2a3142;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 600;
+            color: #64ffda;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #8892b0;
+        }
+        
+        /* Provider Cards */
+        .provider-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .provider-card {
+            background: #0f1419;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #2a3142;
+            position: relative;
+        }
+        
+        .provider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .provider-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e6f1ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .provider-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .provider-status.active {
+            background: rgba(100, 255, 218, 0.2);
+            color: #64ffda;
+        }
+        
+        .provider-status.inactive {
+            background: rgba(255, 85, 85, 0.2);
+            color: #ff5555;
+        }
+        
+        .provider-models {
+            margin-top: 12px;
+        }
+        
+        .model-tag {
+            display: inline-block;
+            background: rgba(189, 147, 249, 0.2);
+            color: #bd93f9;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin: 4px;
+        }
+        
+        /* Agent Table */
+        .agent-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .agent-table th {
+            background: #0f1419;
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 500;
+            color: #8892b0;
+            border-bottom: 1px solid #2a3142;
+        }
+        
+        .agent-table td {
+            padding: 16px;
+            border-bottom: 1px solid #2a3142;
+        }
+        
+        .agent-table tr:hover {
+            background: rgba(100, 255, 218, 0.05);
+        }
+        
+        .agent-name {
+            font-weight: 500;
+            color: #e6f1ff;
+        }
+        
+        .agent-tier {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .tier-executive { background: rgba(255, 107, 107, 0.2); color: #ff6b6b; }
+        .tier-department { background: rgba(100, 255, 218, 0.2); color: #64ffda; }
+        .tier-specialist { background: rgba(189, 147, 249, 0.2); color: #bd93f9; }
+        .tier-worker { background: rgba(139, 233, 253, 0.2); color: #8be9fd; }
+        
+        .model-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .model-provider {
+            color: #8892b0;
+            font-size: 12px;
+        }
+        
+        .model-name {
+            color: #e6f1ff;
+            font-weight: 500;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #64ffda;
+            color: #0a0e27;
+        }
+        
+        .btn-primary:hover {
+            background: #50e3c2;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #2a3142;
+            color: #e6f1ff;
+        }
+        
+        .btn-secondary:hover {
+            background: #3a4152;
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #8892b0;
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            background: #0f1419;
+            border: 1px solid #2a3142;
+            border-radius: 8px;
+            color: #e6f1ff;
+            font-size: 14px;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #64ffda;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1a1f2e;
+            border-radius: 12px;
+            padding: 30px;
+            min-width: 500px;
+            border: 1px solid #2a3142;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #e6f1ff;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: #8892b0;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .modal-close:hover {
+            color: #e6f1ff;
+        }
+        
+        /* Tier Configuration */
+        .tier-config {
+            background: #0f1419;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #2a3142;
+        }
+        
+        .tier-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .tier-name {
+            font-size: 18px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        
+        .model-config-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        
+        /* Loading & Status */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #2a3142;
+            border-top-color: #64ffda;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .status-indicator.green { background: #50fa7b; }
+        .status-indicator.yellow { background: #f1fa8c; }
+        .status-indicator.red { background: #ff5555; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #1a1f2e;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>
+                <i class="fas fa-brain cortex-icon"></i>
+                Agent Cortex Management Panel
+            </h1>
+            <div id="systemStatus" class="provider-status active">
+                <span class="status-indicator green"></span>
+                <span>System Active</span>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="nav-section">
+                <h3>Overview</h3>
+                <a href="#" class="nav-item active" onclick="showSection('overview')">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <h3>Configuration</h3>
+                <a href="#" class="nav-item" onclick="showSection('providers')">
+                    <i class="fas fa-server"></i>
+                    <span>LLM Providers</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('agents')">
+                    <i class="fas fa-robot"></i>
+                    <span>Agent LLMs</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('tiers')">
+                    <i class="fas fa-layer-group"></i>
+                    <span>Tier Defaults</span>
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <h3>Analytics</h3>
+                <a href="#" class="nav-item" onclick="showSection('performance')">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Performance</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('testing')">
+                    <i class="fas fa-flask"></i>
+                    <span>Testing</span>
+                </a>
+            </div>
+        </aside>
+        
+        <!-- Content Area -->
+        <main class="content">
+            <!-- Overview Section -->
+            <section id="overview-section" class="section active">
+                <h2 style="margin-bottom: 24px;">System Overview</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fas fa-robot" style="font-size: 24px; color: #64ffda;"></i>
+                        <div class="stat-value" id="totalAgents">0</div>
+                        <div class="stat-label">Total Agents</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-server" style="font-size: 24px; color: #bd93f9;"></i>
+                        <div class="stat-value" id="activeProviders">0</div>
+                        <div class="stat-label">Active Providers</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-building" style="font-size: 24px; color: #8be9fd;"></i>
+                        <div class="stat-value" id="departments">0</div>
+                        <div class="stat-label">Departments</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-link" style="font-size: 24px; color: #50fa7b;"></i>
+                        <div class="stat-value" id="assignments">0</div>
+                        <div class="stat-label">Model Assignments</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Quick Status</h3>
+                    </div>
+                    <div id="quickStatus">
+                        <p>Loading system status...</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- LLM Providers Section -->
+            <section id="providers-section" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">LLM Providers</h2>
+                        <button class="btn btn-primary" onclick="showAddProviderModal()">
+                            <i class="fas fa-plus"></i> Add Provider
+                        </button>
+                    </div>
+                    <div class="provider-grid" id="providerGrid">
+                        <!-- Providers will be populated here -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Agent LLMs Section -->
+            <section id="agents-section" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Agent LLM Configuration</h2>
+                        <button class="btn btn-secondary" onclick="refreshAgents()">
+                            <i class="fas fa-sync"></i> Refresh
+                        </button>
+                    </div>
+                    <table class="agent-table">
+                        <thead>
+                            <tr>
+                                <th>Agent</th>
+                                <th>Department</th>
+                                <th>Tier</th>
+                                <th>Current Model</th>
+                                <th>Temperature</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="agentTableBody">
+                            <!-- Agents will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <!-- Tier Defaults Section -->
+            <section id="tiers-section" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Tier Default Configurations</h2>
+                    </div>
+                    <div id="tierConfigs">
+                        <!-- Tier configurations will be populated here -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Performance Section -->
+            <section id="performance-section" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Model Performance Analytics</h2>
+                    </div>
+                    <p>Performance tracking coming soon...</p>
+                </div>
+            </section>
+            
+            <!-- Testing Section -->
+            <section id="testing-section" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">LLM Connection Testing</h2>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Provider</label>
+                        <select class="form-select" id="testProvider">
+                            <option value="">Select Provider</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Model</label>
+                        <select class="form-select" id="testModel">
+                            <option value="">Select Model</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="testConnection()">
+                        <i class="fas fa-plug"></i> Test Connection
+                    </button>
+                    <div id="testResults" style="margin-top: 20px;">
+                        <!-- Test results will appear here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- Agent Configuration Modal -->
+    <div id="agentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Configure Agent LLM</h3>
+                <button class="modal-close" onclick="closeModal('agentModal')">&times;</button>
+            </div>
+            <form id="agentConfigForm">
+                <input type="hidden" id="agentName">
+                <div class="form-group">
+                    <label class="form-label">Provider</label>
+                    <select class="form-select" id="agentProvider" onchange="updateModelOptions()">
+                        <option value="">Select Provider</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Model</label>
+                    <select class="form-select" id="agentModel">
+                        <option value="">Select Model</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Temperature (0.0 - 2.0)</label>
+                    <input type="number" class="form-input" id="agentTemperature" 
+                           min="0" max="2" step="0.1" value="0.7">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Max Tokens</label>
+                    <input type="number" class="form-input" id="agentMaxTokens" 
+                           min="100" max="32000" value="1000">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fallback Provider (Optional)</label>
+                    <select class="form-select" id="agentFallbackProvider">
+                        <option value="">None</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('agentModal')">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Configuration
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Global state
+        let providers = {};
+        let agents = [];
+        let tiers = {};
+        
+        // Navigation
+        function showSection(sectionName) {
+            // Update nav
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.nav-item').classList.add('active');
+            
+            // Update content
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(`${sectionName}-section`).classList.add('active');
+            
+            // Load section data
+            switch(sectionName) {
+                case 'overview':
+                    loadOverview();
+                    break;
+                case 'providers':
+                    loadProviders();
+                    break;
+                case 'agents':
+                    loadAgents();
+                    break;
+                case 'tiers':
+                    loadTiers();
+                    break;
+                case 'testing':
+                    loadTestingOptions();
+                    break;
+            }
+        }
+        
+        // Load overview data
+        async function loadOverview() {
+            try {
+                const response = await fetch('/api/cortex/overview');
+                const data = await response.json();
+                
+                document.getElementById('totalAgents').textContent = data.total_agents;
+                document.getElementById('activeProviders').textContent = data.active_providers;
+                document.getElementById('departments').textContent = data.departments;
+                document.getElementById('assignments').textContent = data.model_assignments;
+                
+                // Update quick status
+                document.getElementById('quickStatus').innerHTML = `
+                    <p><strong>Agent Cortex Status:</strong> ${data.cortex_status}</p>
+                    <p><strong>Configuration:</strong> ${data.model_assignments} agents configured with LLMs</p>
+                `;
+            } catch (error) {
+                console.error('Error loading overview:', error);
+            }
+        }
+        
+        // Load providers
+        async function loadProviders() {
+            try {
+                const response = await fetch('/api/cortex/providers');
+                providers = await response.json();
+                
+                const grid = document.getElementById('providerGrid');
+                grid.innerHTML = '';
+                
+                for (const [name, provider] of Object.entries(providers)) {
+                    const card = document.createElement('div');
+                    card.className = 'provider-card';
+                    
+                    const providerIcon = getProviderIcon(provider.provider_type);
+                    
+                    card.innerHTML = `
+                        <div class="provider-header">
+                            <div class="provider-name">
+                                ${providerIcon}
+                                <span>${name}</span>
+                            </div>
+                            <div class="provider-status ${provider.is_active ? 'active' : 'inactive'}">
+                                <span class="status-indicator ${provider.is_active ? 'green' : 'red'}"></span>
+                                <span>${provider.is_active ? 'Active' : 'Inactive'}</span>
+                            </div>
+                        </div>
+                        ${provider.base_url ? `<p style="font-size: 12px; color: #8892b0;">URL: ${provider.base_url}</p>` : ''}
+                        <div class="provider-models">
+                            ${provider.models.map(model => 
+                                `<span class="model-tag">${model}</span>`
+                            ).join('')}
+                        </div>
+                        <div style="margin-top: 16px; display: flex; gap: 8px;">
+                            <button class="btn btn-sm btn-secondary" onclick="editProvider('${name}')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-sm btn-secondary" onclick="testProvider('${name}')">
+                                <i class="fas fa-plug"></i> Test
+                            </button>
+                        </div>
+                    `;
+                    
+                    grid.appendChild(card);
+                }
+            } catch (error) {
+                console.error('Error loading providers:', error);
+            }
+        }
+        
+        // Load agents
+        async function loadAgents() {
+            try {
+                const response = await fetch('/api/cortex/agents');
+                agents = await response.json();
+                
+                const tbody = document.getElementById('agentTableBody');
+                tbody.innerHTML = '';
+                
+                agents.forEach(agent => {
+                    const row = document.createElement('tr');
+                    
+                    const tierClass = `tier-${agent.tier}`;
+                    const modelDisplay = agent.model === 'not_assigned' ? 
+                        '<span style="color: #ff5555;">Not Assigned</span>' : 
+                        `<div class="model-info">
+                            <span class="model-provider">${agent.provider}/</span>
+                            <span class="model-name">${agent.model}</span>
+                        </div>`;
+                    
+                    row.innerHTML = `
+                        <td>
+                            <div class="agent-name">${agent.name}</div>
+                            <div style="font-size: 12px; color: #8892b0;">${agent.title}</div>
+                        </td>
+                        <td>${agent.department}</td>
+                        <td><span class="agent-tier ${tierClass}">${agent.tier}</span></td>
+                        <td>${modelDisplay}</td>
+                        <td>${agent.temperature}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="configureAgent('${agent.name}')">
+                                <i class="fas fa-cog"></i> Configure
+                            </button>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading agents:', error);
+            }
+        }
+        
+        // Load tier configurations
+        async function loadTiers() {
+            try {
+                const response = await fetch('/api/cortex/tiers');
+                tiers = await response.json();
+                
+                const container = document.getElementById('tierConfigs');
+                container.innerHTML = '';
+                
+                for (const [tier, config] of Object.entries(tiers)) {
+                    const tierDiv = document.createElement('div');
+                    tierDiv.className = 'tier-config';
+                    
+                    const tierClass = `tier-${tier}`;
+                    
+                    tierDiv.innerHTML = `
+                        <div class="tier-header">
+                            <span class="agent-tier ${tierClass}">${tier}</span>
+                            <h3 class="tier-name">${tier} Tier</h3>
+                        </div>
+                        <div class="model-config-grid">
+                            <div>
+                                <label class="form-label">Default Model</label>
+                                <p>${config.default_provider}/${config.default_model}</p>
+                            </div>
+                            <div>
+                                <label class="form-label">Budget Model</label>
+                                <p>${config.budget_provider}/${config.budget_model}</p>
+                            </div>
+                            <div>
+                                <label class="form-label">Local Model</label>
+                                <p>${config.local_provider}/${config.local_model}</p>
+                            </div>
+                            <div>
+                                <label class="form-label">Max Cost/Request</label>
+                                <p>$${config.max_cost_per_request}</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-secondary" style="margin-top: 12px;" 
+                                onclick="editTier('${tier}')">
+                            <i class="fas fa-edit"></i> Edit Defaults
+                        </button>
+                    `;
+                    
+                    container.appendChild(tierDiv);
+                }
+            } catch (error) {
+                console.error('Error loading tiers:', error);
+            }
+        }
+        
+        // Configure agent
+        function configureAgent(agentName) {
+            const agent = agents.find(a => a.name === agentName);
+            if (!agent) return;
+            
+            document.getElementById('agentName').value = agentName;
+            document.getElementById('agentTemperature').value = agent.temperature;
+            document.getElementById('agentMaxTokens').value = agent.max_tokens;
+            
+            // Populate provider options
+            const providerSelect = document.getElementById('agentProvider');
+            providerSelect.innerHTML = '<option value="">Select Provider</option>';
+            
+            for (const [name, provider] of Object.entries(providers)) {
+                if (provider.is_active) {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    if (name === agent.provider) {
+                        option.selected = true;
+                    }
+                    providerSelect.appendChild(option);
+                }
+            }
+            
+            // Update model options
+            updateModelOptions();
+            
+            // Set current model
+            setTimeout(() => {
+                document.getElementById('agentModel').value = agent.model;
+            }, 100);
+            
+            document.getElementById('agentModal').style.display = 'block';
+        }
+        
+        // Update model options based on selected provider
+        function updateModelOptions() {
+            const providerName = document.getElementById('agentProvider').value;
+            const modelSelect = document.getElementById('agentModel');
+            
+            modelSelect.innerHTML = '<option value="">Select Model</option>';
+            
+            if (providerName && providers[providerName]) {
+                const models = providers[providerName].models;
+                models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model;
+                    option.textContent = model;
+                    modelSelect.appendChild(option);
+                });
+            }
+        }
+        
+        // Save agent configuration
+        document.getElementById('agentConfigForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const agentName = document.getElementById('agentName').value;
+            const data = {
+                provider: document.getElementById('agentProvider').value,
+                model: document.getElementById('agentModel').value,
+                temperature: parseFloat(document.getElementById('agentTemperature').value),
+                max_tokens: parseInt(document.getElementById('agentMaxTokens').value),
+                fallback_provider: document.getElementById('agentFallbackProvider').value || null
+            };
+            
+            try {
+                const response = await fetch(`/api/cortex/agents/${agentName}/llm`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showNotification('Agent configuration saved successfully', 'success');
+                    closeModal('agentModal');
+                    loadAgents();
+                } else {
+                    showNotification('Failed to save configuration', 'error');
+                }
+            } catch (error) {
+                showNotification('Error saving configuration', 'error');
+                console.error('Error:', error);
+            }
+        });
+        
+        // Test connection
+        async function testConnection() {
+            const provider = document.getElementById('testProvider').value;
+            const model = document.getElementById('testModel').value;
+            
+            if (!provider || !model) {
+                showNotification('Please select provider and model', 'error');
+                return;
+            }
+            
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            
+            try {
+                const response = await fetch('/api/cortex/test-llm', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({provider, model})
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    resultsDiv.innerHTML = `
+                        <div style="background: rgba(100, 255, 218, 0.1); padding: 16px; border-radius: 8px; margin-top: 16px;">
+                            <h4 style="color: #64ffda; margin-bottom: 8px;">✓ Connection Successful</h4>
+                            <p>${result.message}</p>
+                            <p style="font-size: 12px; color: #8892b0; margin-top: 8px;">Response: ${result.response}</p>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div style="background: rgba(255, 85, 85, 0.1); padding: 16px; border-radius: 8px; margin-top: 16px;">
+                            <h4 style="color: #ff5555; margin-bottom: 8px;">✗ Connection Failed</h4>
+                            <p>${result.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div style="background: rgba(255, 85, 85, 0.1); padding: 16px; border-radius: 8px; margin-top: 16px;">
+                        <h4 style="color: #ff5555; margin-bottom: 8px;">✗ Test Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Load testing options
+        async function loadTestingOptions() {
+            const providerSelect = document.getElementById('testProvider');
+            providerSelect.innerHTML = '<option value="">Select Provider</option>';
+            
+            for (const [name, provider] of Object.entries(providers)) {
+                if (provider.is_active) {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    providerSelect.appendChild(option);
+                }
+            }
+            
+            providerSelect.addEventListener('change', () => {
+                const modelSelect = document.getElementById('testModel');
+                modelSelect.innerHTML = '<option value="">Select Model</option>';
+                
+                const providerName = providerSelect.value;
+                if (providerName && providers[providerName]) {
+                    providers[providerName].models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model;
+                        option.textContent = model;
+                        modelSelect.appendChild(option);
+                    });
+                }
+            });
+        }
+        
+        // Utility functions
+        function getProviderIcon(providerType) {
+            const icons = {
+                'anthropic': '<i class="fas fa-brain" style="color: #ff6b6b;"></i>',
+                'openai': '<i class="fas fa-robot" style="color: #50fa7b;"></i>',
+                'ollama': '<i class="fas fa-server" style="color: #8be9fd;"></i>',
+                'local': '<i class="fas fa-home" style="color: #bd93f9;"></i>'
+            };
+            return icons[providerType] || '<i class="fas fa-cube"></i>';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        function showNotification(message, type = 'info') {
+            // Simple notification - you can enhance this
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function refreshAgents() {
+            loadAgents();
+            showNotification('Agent list refreshed', 'success');
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', () => {
+            loadOverview();
+        });
+    </script>
+</body>
+</html>

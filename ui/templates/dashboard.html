@@ -23,7 +23,7 @@
                         <a href="/solomon" class="text-gray-300 hover:text-white px-3 py-2 rounded">Solomon</a>
                         <a href="/agents" class="text-gray-300 hover:text-white px-3 py-2 rounded">Agents</a>
                         <a href="/orchestration" class="text-gray-300 hover:text-white px-3 py-2 rounded">Orchestration</a>
-                        <a href="/llm" class="text-gray-300 hover:text-white px-3 py-2 rounded">LLM Monitor</a>
+                        <a href="http://localhost:8889" class="text-gray-300 hover:text-white px-3 py-2 rounded">Agent Cortex</a>
                     </div>
                 </div>
                 <div class="flex items-center">
@@ -37,33 +37,33 @@
     </nav>
 
     <!-- Main Dashboard -->
-    <div class="max-w-7xl mx-auto p-6" x-data="dashboard">
+    <div class="max-w-7xl mx-auto p-8" x-data="dashboard">
         <!-- System Overview -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+            <div class="bg-gray-800 p-8 rounded-lg border border-gray-700">
                 <h3 class="text-lg font-semibold mb-2">Total Agents</h3>
                 <div class="text-3xl font-bold text-blue-400" x-text="systemStatus.total_agents || 0"></div>
             </div>
-            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+            <div class="bg-gray-800 p-8 rounded-lg border border-gray-700">
                 <h3 class="text-lg font-semibold mb-2">Running Agents</h3>
                 <div class="text-3xl font-bold text-green-400" x-text="systemStatus.running_agents || 0"></div>
             </div>
-            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+            <div class="bg-gray-800 p-8 rounded-lg border border-gray-700">
                 <h3 class="text-lg font-semibold mb-2">System Load</h3>
                 <div class="text-3xl font-bold text-yellow-400" x-text="Math.round((systemStatus.system_load || 0) * 100) + '%'"></div>
             </div>
-            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+            <div class="bg-gray-800 p-8 rounded-lg border border-gray-700">
                 <h3 class="text-lg font-semibold mb-2">Active Tasks</h3>
                 <div class="text-3xl font-bold text-purple-400" x-text="systemStatus.active_tasks || 0"></div>
             </div>
         </div>
 
         <!-- Biomes Grid -->
-        <div class="mb-8">
+        <div class="mb-10">
             <h2 class="text-2xl font-bold mb-4">Biome Status</h2>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
                 <template x-for="(biome, name) in biomes" :key="name">
-                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-700 biome-glow">
+                    <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 biome-glow">
                         <div class="flex justify-between items-center mb-2">
                             <h3 x-text="name.charAt(0).toUpperCase() + name.slice(1)" class="font-semibold"></h3>
                             <div :class="biome.health > 0.7 ? 'bg-green-500' : biome.health > 0.4 ? 'bg-yellow-500' : 'bg-red-500'" 
@@ -79,11 +79,11 @@
         </div>
 
         <!-- Core Agents Status -->
-        <div class="mb-8">
+        <div class="mb-10">
             <h2 class="text-2xl font-bold mb-4">Core Agents</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <template x-for="agent in coreAgents" :key="agent.name">
-                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                    <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
                         <div class="flex justify-between items-center mb-2">
                             <h3 x-text="agent.name" class="font-semibold"></h3>
                             <div :class="agent.status === 'online' ? 'bg-green-500 agent-pulse' : 'bg-red-500'" 
@@ -102,9 +102,9 @@
         <!-- Recent Activity -->
         <div>
             <h2 class="text-2xl font-bold mb-4">Recent Activity</h2>
-            <div class="bg-gray-800 rounded-lg border border-gray-700 p-4 max-h-96 overflow-y-auto">
+            <div class="bg-gray-800 rounded-lg border border-gray-700 p-6 max-h-96 overflow-y-auto">
                 <template x-for="event in recentEvents" :key="event.id">
-                    <div class="border-b border-gray-700 pb-2 mb-2 last:border-b-0">
+                    <div class="border-b border-gray-700 pb-3 mb-3 last:border-b-0">
                         <div class="flex justify-between items-start">
                             <div>
                                 <span :class="getEventColor(event.type)" class="font-semibold" x-text="event.type"></span>

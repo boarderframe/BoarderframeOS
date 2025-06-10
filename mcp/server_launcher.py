@@ -11,15 +11,16 @@ import os
 import sys
 from pathlib import Path
 
-# Add parent directory to path so we can import from boarderframeos package
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add current directory to path for local imports
+sys.path.insert(0, str(Path(__file__).parent))
 
-from boarderframeos.mcp.filesystem_server import MCPFilesystemServer
-from boarderframeos.mcp.git_server import MCPGitServer
-from boarderframeos.mcp.terminal_server import MCPTerminalServer
-from boarderframeos.mcp.payment_server import MCPPaymentServer
-from boarderframeos.mcp.analytics_server import MCPAnalyticsServer
-from boarderframeos.mcp.customer_server import MCPCustomerServer
+from filesystem_server import MCPFilesystemServer
+from git_server import MCPGitServer
+from terminal_server import MCPTerminalServer
+from payment_server import MCPPaymentServer
+from analytics_server import MCPAnalyticsServer
+from customer_server import MCPCustomerServer
+from screenshot_server import MCPScreenshotServer
 
 # Configure logging
 logging.basicConfig(
@@ -37,7 +38,7 @@ async def main():
     """Run the servers"""
     parser = argparse.ArgumentParser(description="BoarderframeOS MCP Server Launcher")
     parser.add_argument("--servers", "-s", nargs="+", default=["all"],
-                       help="Servers to start (filesystem, git, terminal, payment, analytics, customer, or all)")
+                       help="Servers to start (filesystem, git, terminal, payment, analytics, customer, screenshot, or all)")
     parser.add_argument("--port-fs", type=int, default=8001,
                        help="Port for filesystem server (default: 8001)")
     parser.add_argument("--port-git", type=int, default=8002,
@@ -50,6 +51,8 @@ async def main():
                        help="Port for analytics server (default: 8007)")
     parser.add_argument("--port-customer", type=int, default=8008,
                        help="Port for customer server (default: 8008)")
+    parser.add_argument("--port-screenshot", type=int, default=8011,
+                       help="Port for screenshot server (default: 8011)")
     
     args = parser.parse_args()
     
@@ -60,6 +63,7 @@ async def main():
     start_payment = "all" in args.servers or "payment" in args.servers
     start_analytics = "all" in args.servers or "analytics" in args.servers
     start_customer = "all" in args.servers or "customer" in args.servers
+    start_screenshot = "all" in args.servers or "screenshot" in args.servers
     
     tasks = []
     
@@ -98,6 +102,12 @@ async def main():
         logger.info(f"Starting customer server on port {args.port_customer}")
         customer_server = MCPCustomerServer()
         tasks.append(asyncio.create_task(customer_server.start(args.port_customer)))
+    
+    # Start screenshot server
+    if start_screenshot:
+        logger.info(f"Starting screenshot server on port {args.port_screenshot}")
+        screenshot_server = MCPScreenshotServer()
+        tasks.append(asyncio.create_task(screenshot_server.start(args.port_screenshot)))
     
     if tasks:
         logger.info("All specified MCP servers started")

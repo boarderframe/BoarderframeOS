@@ -7,6 +7,8 @@ import asyncio
 import json
 import logging
 import random
+import sys
+import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Set, Tuple
 from pathlib import Path
@@ -15,9 +17,12 @@ import uuid
 import numpy as np
 from dataclasses import dataclass
 
-from ...core.base_agent import BaseAgent, AgentConfig, AgentState
-from ...core.llm_client import LLMClient, CLAUDE_OPUS_CONFIG
-from ...core.message_bus import send_task_request, broadcast_status
+# Add project root to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+from core.base_agent import BaseAgent, AgentConfig, AgentState
+from core.llm_client import LLMClient, CLAUDE_OPUS_CONFIG
+from core.message_bus import send_task_request, broadcast_status
 
 logger = logging.getLogger("eve")
 

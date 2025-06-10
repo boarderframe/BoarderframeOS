@@ -8,12 +8,21 @@ import os
 import json
 import asyncio
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, Any, List, Optional
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).parent.parent.parent / '.env')
+except ImportError:
+    pass
 
-from boarderframeos.core.base_agent import BaseAgent, AgentConfig
-from boarderframeos.core.llm_client import LLMClient
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+from core.base_agent import BaseAgent, AgentConfig
+from core.llm_client import LLMClient
+from core.message_bus import message_bus
 
 class David(BaseAgent):
     """
@@ -58,9 +67,25 @@ class David(BaseAgent):
         }
     
     async def think(self, context: Dict[str, Any]) -> str:
-        """CEO-level strategic reasoning process"""
-        # Enhanced reasoning with strategic focus
-        prompt = f"""
+        """CEO-level strategic reasoning process - Cost-optimized"""
+        
+        # Check if there are new messages or urgent tasks
+        new_messages = context.get('new_messages', [])
+        
+        # If no new messages, don't make expensive LLM calls
+        if not new_messages:
+            return "No new strategic issues - remaining idle to conserve API usage"
+        
+        # Check for strategic keywords in messages
+        strategic_keywords = ['strategic', 'urgent', 'critical', 'revenue', 'budget', 'decision', 'priority', 'ceo', 'executive']
+        has_strategic_content = any(
+            any(keyword in str(msg.content).lower() for keyword in strategic_keywords)
+            for msg in new_messages
+        )
+        
+        # Only use LLM for complex strategic reasoning when needed
+        if has_strategic_content or len(new_messages) > 3:
+            prompt = f"""
 You are David, the CEO agent in BoarderframeOS.
 
 Your goals are:
@@ -77,18 +102,58 @@ Your priorities:
 - Medium priority: {', '.join(self.priorities['medium'])}
 - Low priority: {', '.join(self.priorities['low'])}
 
-Current context:
-{context}
+STRATEGIC CONTEXT - New messages requiring executive attention:
+{[msg.content for msg in new_messages]}
 
-Based on this context, your strategic plan, and priorities, what executive decisions should you make?
+Based on this strategic context and your priorities, what executive decisions should you make?
 Provide a clear, structured thought process that demonstrates strategic leadership.
+Be concise to minimize API costs.
 """
-        
-        response = await self.llm.generate(prompt)
-        return response
+            
+            response = await self.llm.generate(prompt)
+            return response
+        else:
+            # Simple rule-based thinking for routine messages
+            return f"Processing {len(new_messages)} routine operational message(s) - delegating to appropriate protocols"
     
     async def act(self, thought: str, context: Dict[str, Any]) -> Dict[str, Any]:
-        """Execute actions with CEO capabilities"""
+        """Execute actions with CEO capabilities - Cost-optimized"""
+        
+        # Check for chat messages from Control Center
+        new_messages = context.get('new_messages', [])
+        for message in new_messages:
+            if hasattr(message, 'content') and isinstance(message.content, dict):
+                if message.content.get('type') == 'user_chat':
+                    # Handle chat message from user
+                    user_message = message.content.get('message', '')
+                    response = await self.handle_user_chat(user_message)
+                    
+                    # Send response back
+                    from core.message_bus import AgentMessage, MessageType, MessagePriority
+                    response_msg = AgentMessage(
+                        from_agent=self.config.name,
+                        to_agent=message.from_agent,
+                        message_type=MessageType.TASK_RESPONSE,
+                        content={"response": response},
+                        correlation_id=message.correlation_id
+                    )
+                    await message_bus.send_message(response_msg)
+                    
+                    return {
+                        "action": "chat_response",
+                        "message": user_message,
+                        "response": response
+                    }
+        
+        # Check if there's actually strategic work to do
+        if not new_messages and not any(keyword in thought.lower() 
+                                       for keyword in ['urgent', 'critical', 'strategic', 'revenue', 'priority']):
+            return {
+                "action": "idle", 
+                "reason": "No strategic issues requiring executive attention - conserving API usage",
+                "status": "monitoring_operations"
+            }
+        
         # Enhanced action framework with executive functions
         if "allocate" in thought.lower() or "resource" in thought.lower():
             return await self.allocate_resources(thought)
@@ -108,6 +173,34 @@ Provide a clear, structured thought process that demonstrates strategic leadersh
             return await self.review_financials()
         else:
             return {"action": "wait", "reason": "No executive action identified"}
+
+    async def handle_user_chat(self, user_message: str) -> str:
+        """Handle chat messages from users via Control Center"""
+        
+        # Use LLM to generate appropriate response as David
+        prompt = f"""You are David, CEO of BoarderframeOS. You are a sophisticated AI agent with executive leadership capabilities and strategic oversight of the entire system.
+
+Your personality:
+- Executive leader and decision maker
+- Strategic thinker focused on organizational success
+- Direct and authoritative communication style
+- Deep understanding of resource allocation and business operations
+
+Current business context:
+- Revenue target: $15K monthly
+- System status: Operational with core agents online
+- Your role: CEO and operational commander
+- You oversee Solomon (Chief of Staff), Adam (Agent Creator), and all departments
+
+User message: "{user_message}"
+
+Respond as David would - be executive, strategic, and demonstrate your leadership capabilities. If the user asks about agents or creating new agents, mention that you can coordinate with Adam. Keep responses conversational but authoritative."""
+
+        try:
+            response = await self.llm.generate(prompt)
+            return response
+        except Exception as e:
+            return f"I'm David, CEO of BoarderframeOS. I received your message: '{user_message}'. I'm currently experiencing a technical issue with my executive reasoning systems, but I'm here to provide strategic leadership and operational direction. How can I assist with executive decisions today?"
     
     async def allocate_resources(self, thought: str) -> Dict[str, Any]:
         """Allocate system resources based on priorities and performance"""
@@ -512,7 +605,7 @@ async def main():
             'mcp_customer'
         ],
         zone="council",
-        model="claude-3-opus-20240229"
+        model="claude-3-5-sonnet-latest"
     )
     
     agent = David(config)

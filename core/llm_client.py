@@ -304,7 +304,7 @@ Response:"""
 # Default configurations for different setups
 ANTHROPIC_CONFIG = LLMConfig(
     provider="anthropic",
-    model="claude-sonnet-4-20250514",  # Claude 4 Sonnet
+    model="claude-4-sonnet-20250514",  # Claude 4 Sonnet - Latest and most balanced
     max_tokens=4000,
     temperature=0.7
 )

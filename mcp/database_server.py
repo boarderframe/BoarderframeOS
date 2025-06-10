@@ -16,6 +16,9 @@ import aiosqlite
 from pathlib import Path
 from datetime import datetime
 import hashlib
+import time
+from contextlib import asynccontextmanager
+from collections import defaultdict, OrderedDict
 
 # Configure logging
 logging.basicConfig(
@@ -65,7 +68,7 @@ class DeleteRequest(BaseModel):
 
 class CreateTableRequest(BaseModel):
     table: str = Field(..., description="Table name")
-    schema: Dict[str, str] = Field(..., description="Column definitions")
+    column_schema: Dict[str, str] = Field(..., description="Column definitions")
     indexes: Optional[List[str]] = Field(default=[], description="Indexes to create")
 
 class DatabaseResponse(BaseModel):
@@ -75,13 +78,140 @@ class DatabaseResponse(BaseModel):
     rows_affected: int = 0
     timestamp: str
 
+# Connection Pool Implementation
+class SQLiteConnectionPool:
+    """Connection pool for SQLite database"""
+    
+    def __init__(self, db_path: Path, max_connections: int = 10):
+        self.db_path = db_path
+        self.max_connections = max_connections
+        self.pool = asyncio.Queue(maxsize=max_connections)
+        self.active_connections = 0
+        self._initialized = False
+        
+    async def initialize(self):
+        """Initialize the connection pool"""
+        if self._initialized:
+            return
+            
+        # Pre-populate the pool with connections
+        for _ in range(min(3, self.max_connections)):  # Start with 3 connections
+            conn = await self._create_connection()
+            await self.pool.put(conn)
+            
+        self._initialized = True
+        logger.info(f"Connection pool initialized with {self.pool.qsize()} connections")
+        
+    async def _create_connection(self):
+        """Create a new database connection"""
+        conn = await aiosqlite.connect(self.db_path)
+        conn.row_factory = aiosqlite.Row
+        await conn.execute("PRAGMA foreign_keys = ON")
+        await conn.execute("PRAGMA journal_mode = WAL")
+        await conn.execute("PRAGMA synchronous = NORMAL")
+        await conn.execute("PRAGMA cache_size = 10000")
+        await conn.execute("PRAGMA temp_store = memory")
+        self.active_connections += 1
+        return conn
+        
+    @asynccontextmanager
+    async def get_connection(self):
+        """Get a connection from the pool"""
+        await self.initialize()
+        
+        try:
+            # Try to get from pool first
+            conn = await asyncio.wait_for(self.pool.get(), timeout=1.0)
+        except asyncio.TimeoutError:
+            # If pool is empty and we haven't reached max, create new connection
+            if self.active_connections < self.max_connections:
+                conn = await self._create_connection()
+            else:
+                # Wait longer for a connection to be returned
+                conn = await self.pool.get()
+                
+        try:
+            yield conn
+        finally:
+            # Return connection to pool
+            await self.pool.put(conn)
+            
+    async def close_all(self):
+        """Close all connections in the pool"""
+        while not self.pool.empty():
+            conn = await self.pool.get()
+            await conn.close()
+            self.active_connections -= 1
+            
+# Query Cache Implementation
+class QueryCache:
+    """LRU cache for query results"""
+    
+    def __init__(self, max_size: int = 1000, ttl: int = 300):
+        self.max_size = max_size
+        self.ttl = ttl
+        self.cache = OrderedDict()
+        
+    def _get_cache_key(self, sql: str, params: list) -> str:
+        """Generate cache key for query"""
+        cache_input = f"{sql}:{params}"
+        return hashlib.md5(cache_input.encode()).hexdigest()
+        
+    def get(self, sql: str, params: list):
+        """Get cached result if available and not expired"""
+        if not self._should_cache_query(sql):
+            return None
+            
+        cache_key = self._get_cache_key(sql, params)
+        if cache_key in self.cache:
+            result, timestamp = self.cache[cache_key]
+            if time.time() - timestamp < self.ttl:
+                # Move to end (most recently used)
+                self.cache.move_to_end(cache_key)
+                return result
+            else:
+                # Expired, remove from cache
+                del self.cache[cache_key]
+        return None
+        
+    def set(self, sql: str, params: list, result):
+        """Cache query result"""
+        if not self._should_cache_query(sql):
+            return
+            
+        cache_key = self._get_cache_key(sql, params)
+        
+        # Remove oldest if at capacity
+        if len(self.cache) >= self.max_size:
+            self.cache.popitem(last=False)
+            
+        self.cache[cache_key] = (result, time.time())
+        
+    def _should_cache_query(self, sql: str) -> bool:
+        """Determine if query should be cached (only SELECT queries)"""
+        return sql.strip().upper().startswith('SELECT')
+        
+    def clear(self):
+        """Clear all cached entries"""
+        self.cache.clear()
+
 # Database Manager
 class DatabaseManager:
-    """Manages SQLite database operations"""
+    """Manages SQLite database operations with connection pooling and caching"""
     
     def __init__(self, db_path: Path):
         self.db_path = db_path
         self.is_initialized = False
+        self.connection_pool = SQLiteConnectionPool(db_path)
+        self.query_cache = QueryCache()
+        
+        # Query statistics
+        self.query_stats = {
+            'total_queries': 0,
+            'cache_hits': 0,
+            'cache_misses': 0,
+            'avg_query_time': 0
+        }
     
     async def initialize(self):
         """Initialize database with core tables"""
@@ -89,9 +219,8 @@ class DatabaseManager:
             return
         
         try:
-            async with aiosqlite.connect(self.db_path) as db:
-                # Enable foreign key support
-                await db.execute("PRAGMA foreign_keys = ON")
+            async with self.connection_pool.get_connection() as db:
+            # Connection pool already enables foreign keys and optimizations
                 
                 # Core tables for BoarderframeOS
                 await self._create_core_tables(db)
@@ -268,18 +397,37 @@ class DatabaseManager:
             await db.execute(index_sql)
     
     async def execute_query(self, request: QueryRequest) -> DatabaseResponse:
-        """Execute SQL query"""
+        """Execute SQL query with connection pooling and caching"""
+        start_time = time.time()
+        self.query_stats['total_queries'] += 1
+        
         try:
             await self.initialize()
             
-            async with aiosqlite.connect(self.db_path) as db:
-                db.row_factory = aiosqlite.Row
+            # Check cache for SELECT queries
+            if request.sql.strip().upper().startswith('SELECT'):
+                cached_result = self.query_cache.get(request.sql, request.params)
+                if cached_result is not None:
+                    self.query_stats['cache_hits'] += 1
+                    return DatabaseResponse(
+                        success=True,
+                        data=cached_result,
+                        rows_affected=0,
+                        timestamp=datetime.now().isoformat()
+                    )
+                self.query_stats['cache_misses'] += 1
+            
+            # Execute query using connection pool
+            async with self.connection_pool.get_connection() as db:
                 cursor = await db.execute(request.sql, request.params)
                 
                 if request.sql.strip().upper().startswith(('INSERT', 'UPDATE', 'DELETE')):
                     rows_affected = cursor.rowcount
                     await db.commit()
                     data = None
+                    
+                    # Clear relevant cache entries for write operations
+                    self.query_cache.clear()
                 else:
                     if request.fetch_all:
                         rows = await cursor.fetchall()
@@ -288,6 +436,16 @@ class DatabaseManager:
                         row = await cursor.fetchone()
                         data = dict(row) if row else None
                     rows_affected = 0
+                    
+                    # Cache SELECT results
+                    if request.sql.strip().upper().startswith('SELECT'):
+                        self.query_cache.set(request.sql, request.params, data)
+                
+                # Update query timing statistics
+                query_time = time.time() - start_time
+                self.query_stats['avg_query_time'] = (
+                    self.query_stats['avg_query_time'] * (self.query_stats['total_queries'] - 1) + query_time
+                ) / self.query_stats['total_queries']
                 
                 return DatabaseResponse(
                     success=True,
@@ -387,7 +545,7 @@ class DatabaseManager:
         try:
             await self.initialize()
             
-            column_defs = [f"{col} {datatype}" for col, datatype in request.schema.items()]
+            column_defs = [f"{col} {datatype}" for col, datatype in request.column_schema.items()]
             
             sql = f"""
                 CREATE TABLE IF NOT EXISTS {request.table} (
@@ -395,7 +553,7 @@ class DatabaseManager:
                 )
             """
             
-            async with aiosqlite.connect(self.db_path) as db:
+            async with self.connection_pool.get_connection() as db:
                 await db.execute(sql)
                 
                 # Create indexes if specified
@@ -404,6 +562,9 @@ class DatabaseManager:
                     await db.execute(index_sql)
                 
                 await db.commit()
+                
+                # Clear cache after schema changes
+                self.query_cache.clear()
                 
                 return DatabaseResponse(
                     success=True,
@@ -487,7 +648,7 @@ async def get_database_stats():
     try:
         await db_manager.initialize()
         
-        async with aiosqlite.connect(DB_PATH) as db:
+        async with db_manager.connection_pool.get_connection() as db:
             # Get table counts
             cursor = await db.execute("""
                 SELECT name FROM sqlite_master WHERE type='table'
@@ -508,6 +669,46 @@ async def get_database_stats():
             
             return stats
             
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/performance")
+async def get_performance_stats():
+    """Get performance statistics for connection pool and query cache"""
+    try:
+        cache_hit_rate = 0
+        if db_manager.query_stats['total_queries'] > 0:
+            cache_hit_rate = (db_manager.query_stats['cache_hits'] / 
+                            (db_manager.query_stats['cache_hits'] + db_manager.query_stats['cache_misses']))
+        
+        pool_stats = {
+            "active_connections": db_manager.connection_pool.active_connections,
+            "max_connections": db_manager.connection_pool.max_connections,
+            "available_connections": db_manager.connection_pool.pool.qsize(),
+            "pool_initialized": db_manager.connection_pool._initialized
+        }
+        
+        cache_stats = {
+            "cached_entries": len(db_manager.query_cache.cache),
+            "cache_size_limit": db_manager.query_cache.max_size,
+            "cache_ttl": db_manager.query_cache.ttl
+        }
+        
+        query_stats = {
+            "total_queries": db_manager.query_stats['total_queries'],
+            "cache_hits": db_manager.query_stats['cache_hits'],
+            "cache_misses": db_manager.query_stats['cache_misses'],
+            "cache_hit_rate": f"{cache_hit_rate:.2%}",
+            "avg_query_time": f"{db_manager.query_stats['avg_query_time']:.4f}s"
+        }
+        
+        return {
+            "connection_pool": pool_stats,
+            "query_cache": cache_stats,
+            "query_performance": query_stats,
+            "timestamp": datetime.now().isoformat()
+        }
+        
     except Exception as e:
         return {"error": str(e)}
 

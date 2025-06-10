@@ -1,6 +1,6 @@
 #!/bin/bash
-# BoarderframeOS Dashboard Launcher
+# BoarderframeOS BCC Launcher
 
-echo "🎯 Launching BoarderframeOS Dashboard..."
-cd "$(dirname "$0")"
-python quick_ui.py
+echo "🎛️ Launching BoarderframeOS BCC..."
+cd "$(dirname "$0")/.."
+python boarderframeos_bcc.py

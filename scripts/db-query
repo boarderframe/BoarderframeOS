@@ -1,0 +1,46 @@
+#!/bin/bash
+# Quick database query utility for BoarderframeOS
+# Usage: ./db-query "SELECT * FROM agents LIMIT 5"
+
+set -e
+
+# Configuration
+DB_HOST="localhost"
+DB_PORT="5432"
+DB_NAME="boarderframeos"
+DB_USER="boarderframe"
+DB_PASSWORD="boarderframe_secure_2025"
+PGPASSWORD="$DB_PASSWORD"
+export PGPASSWORD
+
+# Colors
+BLUE='\033[0;34m'
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+if [ -z "$1" ]; then
+    echo -e "${RED}❌ Please provide a SQL query${NC}"
+    echo "Usage: $0 \"SELECT * FROM table_name LIMIT 5\""
+    echo ""
+    echo "Examples:"
+    echo "  $0 \"SELECT COUNT(*) FROM agents\""
+    echo "  $0 \"SELECT name, department FROM agents WHERE status = 'active'\""
+    echo "  $0 \"SELECT * FROM agent_memories ORDER BY created_at DESC LIMIT 3\""
+    exit 1
+fi
+
+QUERY="$1"
+
+echo -e "${BLUE}🔍 Executing query:${NC} $QUERY"
+echo ""
+
+# Check connection
+if ! pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" >/dev/null 2>&1; then
+    echo -e "${RED}❌ Cannot connect to PostgreSQL database${NC}"
+    echo "Make sure PostgreSQL is running: docker-compose up -d postgresql"
+    exit 1
+fi
+
+# Execute query
+psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "$QUERY"

@@ -45,6 +45,11 @@ import stat
 import difflib
 import logging
 import gzip
+from collections import defaultdict
+from fastapi import HTTPException
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
 
 # Configure logging first
 logging.basicConfig(
@@ -139,6 +144,13 @@ DEFAULT_EMBEDDING_MODEL = 'sentence-transformers/all-MiniLM-L6-v2'
 MAX_VERSIONS_PER_FILE = 10  # Maximum versions to keep per file
 CHUNK_TARGET_TIME = 0.2  # seconds – target per-chunk duration when AUTO_CHUNK is on
 
+# Rate limiting configuration
+RATE_LIMIT_GENERAL = 100  # requests per minute for general operations
+RATE_LIMIT_FILES = 20     # requests per minute for file upload/download
+RATE_LIMIT_BATCH = 10     # requests per minute for batch operations
+RATE_LIMIT_AI = 5         # requests per minute for AI operations
+RATE_LIMIT_WINDOW = 60    # time window in seconds
+
 # --------------------------------------------------------------------------
 # Feature toggles (env‑driven; default safe values)
 # --------------------------------------------------------------------------
@@ -197,6 +209,122 @@ class EmbeddingResult(BaseModel):
     model: str
     chunk_count: int
     processing_time: float
+
+# Rate Limiting Implementation
+class RateLimiter:
+    """Advanced rate limiter with different limits for different operation types"""
+    
+    def __init__(self):
+        self.requests = defaultdict(list)  # client_id -> [(timestamp, operation_type), ...]
+        
+    def is_allowed(self, client_id: str, operation_type: str) -> bool:
+        """Check if request is allowed based on rate limits"""
+        now = time.time()
+        
+        # Get rate limit for operation type
+        if operation_type == "ai":
+            limit = RATE_LIMIT_AI
+        elif operation_type == "files":
+            limit = RATE_LIMIT_FILES
+        elif operation_type == "batch":
+            limit = RATE_LIMIT_BATCH
+        else:
+            limit = RATE_LIMIT_GENERAL
+            
+        # Clean old requests outside the time window
+        self.requests[client_id] = [
+            (timestamp, op_type) for timestamp, op_type in self.requests[client_id]
+            if now - timestamp < RATE_LIMIT_WINDOW
+        ]
+        
+        # Count requests of this type in the current window
+        current_count = sum(
+            1 for timestamp, op_type in self.requests[client_id]
+            if op_type == operation_type or operation_type == "general"
+        )
+        
+        if current_count < limit:
+            self.requests[client_id].append((now, operation_type))
+            return True
+        
+        return False
+    
+    def get_stats(self, client_id: str) -> Dict[str, Any]:
+        """Get rate limiting stats for a client"""
+        now = time.time()
+        
+        # Clean old requests
+        self.requests[client_id] = [
+            (timestamp, op_type) for timestamp, op_type in self.requests[client_id]
+            if now - timestamp < RATE_LIMIT_WINDOW
+        ]
+        
+        # Count by operation type
+        counts = defaultdict(int)
+        for timestamp, op_type in self.requests[client_id]:
+            counts[op_type] += 1
+            
+        return {
+            "current_window_requests": dict(counts),
+            "window_seconds": RATE_LIMIT_WINDOW,
+            "limits": {
+                "general": RATE_LIMIT_GENERAL,
+                "files": RATE_LIMIT_FILES,
+                "batch": RATE_LIMIT_BATCH,
+                "ai": RATE_LIMIT_AI
+            }
+        }
+
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    """Rate limiting middleware for filesystem server"""
+    
+    def __init__(self, app, rate_limiter: RateLimiter):
+        super().__init__(app)
+        self.rate_limiter = rate_limiter
+        
+    async def dispatch(self, request: Request, call_next):
+        # Get client identifier (IP address)
+        client_id = request.client.host if request.client else "unknown"
+        
+        # Determine operation type based on request
+        operation_type = self._get_operation_type(request)
+        
+        # Check rate limit
+        if not self.rate_limiter.is_allowed(client_id, operation_type):
+            stats = self.rate_limiter.get_stats(client_id)
+            return Response(
+                content=json.dumps({
+                    "error": "Rate limit exceeded",
+                    "operation_type": operation_type,
+                    "client_stats": stats
+                }),
+                status_code=429,
+                headers={"Content-Type": "application/json"}
+            )
+        
+        # Process request
+        response = await call_next(request)
+        return response
+    
+    def _get_operation_type(self, request: Request) -> str:
+        """Determine operation type from request"""
+        path = request.url.path
+        method = request.method
+        
+        # File operations
+        if path.startswith(("/upload", "/download")):
+            return "files"
+            
+        # Batch operations
+        if path.startswith("/batch"):
+            return "batch"
+            
+        # RPC operations - need to check if it's AI-related
+        if path.startswith("/rpc"):
+            return "ai"  # Assume RPC calls might be AI operations
+            
+        # General operations
+        return "general"
 
 class FileVersion(BaseModel):
     version_id: str
@@ -257,6 +385,10 @@ class UnifiedFilesystemServer:
         self.app = FastAPI(title="Unified MCP Filesystem Server", version="1.0.0")
         # --- API prefix for v1 (non‑breaking migration) ---
         self.v1_prefix = "/v1"
+        
+        # Rate limiting
+        self.rate_limiter = RateLimiter()
+        
         self._setup_middleware()
         self._setup_routes()
         
@@ -292,6 +424,10 @@ class UnifiedFilesystemServer:
 
     def _setup_middleware(self):
         """Setup FastAPI middleware"""
+        # Add rate limiting middleware first (processes requests before other middleware)
+        self.app.add_middleware(RateLimitMiddleware, rate_limiter=self.rate_limiter)
+        
+        # Add CORS middleware
         self.app.add_middleware(
             CORSMiddleware,
             allow_origins=["*"],
@@ -305,6 +441,7 @@ class UnifiedFilesystemServer:
         # Health and status endpoints
         self.app.get("/health")(self.health_check)
         self.app.get("/stats")(self.get_stats)
+        self.app.get("/rate-limit-stats")(self.get_rate_limit_stats)
         
         # File operation endpoints
         self.app.post("/upload")(self.upload_stream)
@@ -508,6 +645,32 @@ class UnifiedFilesystemServer:
                 name: len(clients) for name, clients in self.connected_clients.items()
             },
             "fs_watchers": len(self.fs_watchers)
+        }
+    
+    async def get_rate_limit_stats(self, request: Request):
+        """Get rate limiting statistics for the requesting client"""
+        # Get client identifier (IP address)
+        client_id = request.client.host if request.client else "unknown"
+        
+        # Get rate limiting stats for this client
+        client_stats = self.rate_limiter.get_stats(client_id)
+        
+        # Add global rate limiting information
+        total_clients = len(self.rate_limiter.requests)
+        
+        return {
+            "client_id": client_id,
+            "client_stats": client_stats,
+            "global_stats": {
+                "total_tracked_clients": total_clients,
+                "rate_limits": {
+                    "general": RATE_LIMIT_GENERAL,
+                    "files": RATE_LIMIT_FILES,
+                    "batch": RATE_LIMIT_BATCH,
+                    "ai": RATE_LIMIT_AI
+                },
+                "window_seconds": RATE_LIMIT_WINDOW
+            }
         }
 
     # =============================================================================

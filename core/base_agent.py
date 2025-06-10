@@ -15,6 +15,8 @@ import httpx
 from pathlib import Path
 from .llm_client import LLMClient, LLMConfig, ANTHROPIC_CONFIG, CLAUDE_OPUS_CONFIG
 from .message_bus import message_bus, MessageType, MessagePriority, AgentMessage, send_task_request, broadcast_status
+from .cost_management import API_COST_SETTINGS, get_agent_cost_policy, estimate_daily_cost
+from .registry_integration import register_agent_with_database, get_registry_client
 
 # Agent States
 class AgentState(Enum):
@@ -86,8 +88,14 @@ class BaseAgent(ABC):
         self.logger = self._setup_logger()
         self.message_handlers: Dict[MessageType, Callable] = {}
         
+        # Cost management
+        self.cost_policy = get_agent_cost_policy(config.name)
+        self.api_call_count = 0
+        self.daily_cost = 0.0
+        self.cost_optimization_enabled = API_COST_SETTINGS["cost_optimization_enabled"]
+        
         # LLM client for reasoning - default to Claude
-        if "claude" in config.model.lower() or config.model == "claude-3-opus-20240229":
+        if "claude" in config.model.lower() and ("opus" in config.model.lower() or config.model == "claude-3-opus-20240229"):
             llm_config = CLAUDE_OPUS_CONFIG
         else:
             llm_config = ANTHROPIC_CONFIG
@@ -102,7 +110,9 @@ class BaseAgent(ABC):
             'thoughts_processed': 0,
             'actions_taken': 0,
             'errors': 0,
-            'start_time': datetime.now()
+            'start_time': datetime.now(),
+            'api_calls_made': 0,
+            'estimated_cost': 0.0
         }
         
         # Initialize tools
@@ -110,6 +120,10 @@ class BaseAgent(ABC):
         
         # Register with message bus
         asyncio.create_task(self._register_with_message_bus())
+        
+        # Register with database registry
+        self.registry_id = None
+        asyncio.create_task(self._register_with_database_registry())
     
     def _setup_logger(self) -> logging.Logger:
         """Set up agent-specific logger"""
@@ -213,46 +227,54 @@ class BaseAgent(ABC):
         return context
     
     async def run(self):
-        """Main agent loop"""
+        """Main agent loop - Event-driven to minimize API costs"""
         self.log(f"Starting {self.config.name} agent...")
         self.state = AgentState.IDLE
         
         try:
+            # Initial broadcast
+            await self.broadcast_status()
+            
             while self.active and self.state not in [AgentState.TERMINATED, AgentState.ERROR]:
-                # Get context
+                # Check for new messages/tasks
                 context = await self.get_context()
+                new_messages = context.get('new_messages', [])
                 
-                # Think
-                self.state = AgentState.THINKING
-                thought = await self.think(context)
-                self.metrics['thoughts_processed'] += 1
+                if new_messages or self.message_queue.qsize() > 0:
+                    # Only think/act when there's actual work to do
+                    self.state = AgentState.THINKING
+                    thought = await self.think(context)
+                    self.metrics['thoughts_processed'] += 1
+                    
+                    # Act
+                    self.state = AgentState.ACTING
+                    result = await self.act(thought, context)
+                    self.metrics['actions_taken'] += 1
+                    
+                    # Remember
+                    self.memory.add({
+                        'thought': thought,
+                        'action': result,
+                        'context': context
+                    })
+                    
+                    # Log
+                    self.log(f"Thought: {thought[:100]}...")
+                    self.log(f"Action result: {str(result)[:100]}...")
+                    
+                    # Process messages
+                    await self._process_messages(new_messages)
+                else:
+                    # No work to do - stay idle and save API costs
+                    self.state = AgentState.IDLE
+                    self.log("No tasks - remaining idle to save API costs", level="debug")
                 
-                # Act
-                self.state = AgentState.ACTING
-                result = await self.act(thought, context)
-                self.metrics['actions_taken'] += 1
-                
-                # Remember
-                self.memory.add({
-                    'thought': thought,
-                    'action': result,
-                    'context': context
-                })
-                
-                # Log
-                self.log(f"Thought: {thought[:100]}...")
-                self.log(f"Action result: {str(result)[:100]}...")
-                
-                # Process any messages
-                await self._process_messages(context.get('new_messages', []))
-                
-                # Broadcast status periodically
-                if self.metrics['thoughts_processed'] % 10 == 0:
+                # Broadcast status less frequently to save resources
+                if self.metrics['thoughts_processed'] % 50 == 0:
                     await self.broadcast_status()
                 
-                # Wait before next cycle
-                self.state = AgentState.WAITING
-                await asyncio.sleep(1)
+                # Longer wait time to reduce resource usage
+                await asyncio.sleep(5)  # Check every 5 seconds instead of 1
                 
         except Exception as e:
             self.state = AgentState.ERROR
@@ -286,6 +308,47 @@ class BaseAgent(ABC):
         await message_bus.subscribe_to_topic(self.config.name, self.config.zone)
         
         self.log(f"Registered with message bus")
+    
+    async def _register_with_database_registry(self):
+        """Register this agent with the database registry"""
+        try:
+            self.registry_id = await register_agent_with_database(self.config)
+            self.log(f"Registered with database registry, ID: {self.registry_id}")
+            
+            # Update health status periodically
+            asyncio.create_task(self._update_registry_health())
+            
+        except Exception as e:
+            self.log(f"Failed to register with database registry: {e}", level=logging.WARNING)
+    
+    async def _update_registry_health(self):
+        """Periodically update health status in the registry"""
+        while self.active:
+            try:
+                if self.registry_id:
+                    registry_client = await get_registry_client()
+                    
+                    # Calculate current load percentage
+                    load_percentage = (len(self.active_tasks) / self.config.max_concurrent_tasks) * 100
+                    
+                    # Determine health status based on agent state
+                    health_status = "healthy"
+                    if self.state == AgentState.ERROR:
+                        health_status = "unhealthy"
+                    elif self.state in [AgentState.THINKING, AgentState.ACTING]:
+                        health_status = "busy"
+                    
+                    await registry_client.update_agent_health(
+                        self.registry_id, 
+                        health_status, 
+                        load_percentage
+                    )
+                
+                await asyncio.sleep(30)  # Update every 30 seconds
+                
+            except Exception as e:
+                self.log(f"Registry health update error: {e}", level=logging.DEBUG)
+                await asyncio.sleep(60)  # Wait longer on error
     
     async def _process_messages(self, messages: List[AgentMessage]):
         """Process incoming messages"""

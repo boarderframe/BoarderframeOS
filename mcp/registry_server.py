@@ -1,33 +1,420 @@
 """
-MCP Registry Server for BoarderframeOS
-Central registry for MCP servers, tools, and capabilities discovery
+BoarderframeOS Registry Server
+Centralized registry management for agents, servers, departments, tools, workflows, and resources
 """
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
-from typing import Dict, List, Optional, Any, Set
+import os
 import asyncio
+import asyncpg
+import redis.asyncio as redis
 import json
 import logging
 import uvicorn
-import httpx
+import uuid
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, Query
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field, validator
+from typing import Dict, List, Optional, Any, Union
 from datetime import datetime, timedelta
 from pathlib import Path
-import uuid
+from contextlib import asynccontextmanager
+import time
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler(Path(__file__).parent / "mcp.log"),
+        logging.FileHandler(Path(__file__).parent / "registry.log"),
         logging.StreamHandler()
     ]
 )
-logger = logging.getLogger("mcp_registry")
+logger = logging.getLogger("registry_server")
 
-app = FastAPI(title="MCP Registry Server", version="1.0.0")
+# Configuration
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://boarderframe:boarderframe_secure_2025@localhost:5434/boarderframeos")
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+REGISTRY_PORT = int(os.getenv("REGISTRY_PORT", "8000"))
+
+# Global connections
+db_pool: Optional[asyncpg.Pool] = None
+redis_client: Optional[redis.Redis] = None
+
+# ============================================================================
+# PYDANTIC MODELS
+# ============================================================================
+
+class RegistryResponse(BaseModel):
+    success: bool
+    data: Any = None
+    error: Optional[str] = None
+    timestamp: str
+    count: Optional[int] = None
+
+# Agent Registry Models
+class AgentRegistration(BaseModel):
+    agent_id: str
+    name: str
+    department_id: Optional[str] = None
+    agent_type: str
+    capabilities: List[str] = []
+    supported_tools: List[str] = []
+    communication_endpoints: Dict[str, str] = {}
+    api_endpoints: Dict[str, str] = {}
+    health_check_url: Optional[str] = None
+    resource_requirements: Dict[str, Any] = {}
+    max_concurrent_tasks: int = 1
+    version: Optional[str] = None
+    tags: List[str] = []
+    metadata: Dict[str, Any] = {}
+
+class AgentHeartbeat(BaseModel):
+    agent_id: str
+    status: str = "online"
+    current_load: float = 0.0
+    current_tasks: int = 0
+    response_time_ms: Optional[int] = None
+    health_status: str = "healthy"
+
+# Server Registry Models
+class ServerRegistration(BaseModel):
+    name: str
+    server_type: str
+    endpoint_url: str
+    internal_url: Optional[str] = None
+    health_check_url: Optional[str] = None
+    capabilities: List[str] = []
+    supported_protocols: List[str] = []
+    api_version: Optional[str] = None
+    max_connections: int = 100
+    authentication: Dict[str, Any] = {}
+    configuration: Dict[str, Any] = {}
+    environment: str = "development"
+    version: Optional[str] = None
+    tags: List[str] = []
+    metadata: Dict[str, Any] = {}
+
+# ============================================================================
+# REGISTRY MANAGER
+# ============================================================================
+
+class RegistryManager:
+    """Centralized registry management for all BoarderframeOS components"""
+    
+    def __init__(self):
+        self.pool: Optional[asyncpg.Pool] = None
+        self.redis: Optional[redis.Redis] = None
+        self.is_initialized = False
+    
+    async def initialize(self):
+        """Initialize PostgreSQL pool and Redis connection"""
+        if self.is_initialized:
+            return
+        
+        try:
+            # Initialize PostgreSQL connection pool
+            self.pool = await asyncpg.create_pool(
+                DATABASE_URL,
+                min_size=5,
+                max_size=15,
+                command_timeout=60
+            )
+            
+            # Initialize Redis connection
+            self.redis = redis.from_url(REDIS_URL, decode_responses=True)
+            
+            # Test connections
+            async with self.pool.acquire() as conn:
+                await conn.fetchval("SELECT 1")
+                logger.info("Registry PostgreSQL connection pool initialized")
+            
+            await self.redis.ping()
+            logger.info("Registry Redis connection initialized")
+            
+            self.is_initialized = True
+            
+        except Exception as e:
+            logger.error(f"Registry initialization failed: {e}")
+            raise HTTPException(status_code=500, detail=f"Registry init failed: {e}")
+    
+    async def close(self):
+        """Close database connections"""
+        if self.pool:
+            await self.pool.close()
+        if self.redis:
+            await self.redis.close()
+    
+    # ========================================================================
+    # AGENT REGISTRY METHODS
+    # ========================================================================
+    
+    async def register_agent(self, registration: AgentRegistration) -> RegistryResponse:
+        """Register a new agent or update existing registration"""
+        try:
+            await self.initialize()
+            
+            async with self.pool.acquire() as conn:
+                # Insert or update agent registry
+                await conn.execute("""
+                    INSERT INTO agent_registry (
+                        agent_id, name, department_id, agent_type, capabilities,
+                        supported_tools, communication_endpoints, api_endpoints,
+                        health_check_url, resource_requirements, max_concurrent_tasks,
+                        version, tags, metadata, status
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                    ON CONFLICT (agent_id) DO UPDATE SET
+                        name = EXCLUDED.name,
+                        department_id = EXCLUDED.department_id,
+                        agent_type = EXCLUDED.agent_type,
+                        capabilities = EXCLUDED.capabilities,
+                        supported_tools = EXCLUDED.supported_tools,
+                        communication_endpoints = EXCLUDED.communication_endpoints,
+                        api_endpoints = EXCLUDED.api_endpoints,
+                        health_check_url = EXCLUDED.health_check_url,
+                        resource_requirements = EXCLUDED.resource_requirements,
+                        max_concurrent_tasks = EXCLUDED.max_concurrent_tasks,
+                        version = EXCLUDED.version,
+                        tags = EXCLUDED.tags,
+                        metadata = EXCLUDED.metadata,
+                        status = 'online',
+                        updated_at = NOW()
+                """, 
+                    registration.agent_id,
+                    registration.name,
+                    registration.department_id,
+                    registration.agent_type,
+                    json.dumps(registration.capabilities),
+                    json.dumps(registration.supported_tools),
+                    json.dumps(registration.communication_endpoints),
+                    json.dumps(registration.api_endpoints),
+                    registration.health_check_url,
+                    json.dumps(registration.resource_requirements),
+                    registration.max_concurrent_tasks,
+                    registration.version,
+                    registration.tags,
+                    json.dumps(registration.metadata),
+                    "online"
+                )
+                
+                # Publish registration event
+                await self._publish_registry_event("agent_registered", {
+                    "agent_id": registration.agent_id,
+                    "name": registration.name,
+                    "agent_type": registration.agent_type
+                })
+                
+                return RegistryResponse(
+                    success=True,
+                    data={"agent_id": registration.agent_id, "status": "registered"},
+                    timestamp=datetime.utcnow().isoformat()
+                )
+                
+        except Exception as e:
+            logger.error(f"Agent registration failed: {e}")
+            return RegistryResponse(
+                success=False,
+                error=str(e),
+                timestamp=datetime.utcnow().isoformat()
+            )
+    
+    async def discover_agents(self, 
+                            agent_type: Optional[str] = None,
+                            department_id: Optional[str] = None,
+                            status: Optional[str] = None) -> RegistryResponse:
+        """Discover agents based on filters"""
+        try:
+            await self.initialize()
+            
+            # Build dynamic query
+            where_conditions = ["1=1"]
+            params = []
+            param_count = 1
+            
+            if agent_type:
+                where_conditions.append(f"agent_type = ${param_count}")
+                params.append(agent_type)
+                param_count += 1
+            
+            if department_id:
+                where_conditions.append(f"department_id = ${param_count}")
+                params.append(department_id)
+                param_count += 1
+            
+            if status:
+                where_conditions.append(f"status = ${param_count}")
+                params.append(status)
+                param_count += 1
+            
+            query = f"""
+                SELECT 
+                    agent_id, name, department_id, agent_type, status, health_status,
+                    capabilities, supported_tools, communication_endpoints, api_endpoints,
+                    current_load, current_tasks, max_concurrent_tasks, last_heartbeat,
+                    version, tags, metadata
+                FROM agent_registry
+                WHERE {' AND '.join(where_conditions)}
+                ORDER BY last_heartbeat DESC
+            """
+            
+            async with self.pool.acquire() as conn:
+                rows = await conn.fetch(query, *params)
+                agents = [dict(row) for row in rows]
+                
+                return RegistryResponse(
+                    success=True,
+                    data=agents,
+                    count=len(agents),
+                    timestamp=datetime.utcnow().isoformat()
+                )
+                
+        except Exception as e:
+            logger.error(f"Agent discovery failed: {e}")
+            return RegistryResponse(
+                success=False,
+                error=str(e),
+                timestamp=datetime.utcnow().isoformat()
+            )
+    
+    # ========================================================================
+    # SERVER REGISTRY METHODS  
+    # ========================================================================
+    
+    async def register_server(self, registration: ServerRegistration) -> RegistryResponse:
+        """Register a new server or update existing registration"""
+        try:
+            await self.initialize()
+            
+            async with self.pool.acquire() as conn:
+                server_id = await conn.fetchval("""
+                    INSERT INTO server_registry (
+                        name, server_type, endpoint_url, internal_url, health_check_url,
+                        capabilities, supported_protocols, api_version, max_connections,
+                        authentication, configuration, environment, version, tags, metadata, status
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+                    ON CONFLICT (name) DO UPDATE SET
+                        server_type = EXCLUDED.server_type,
+                        endpoint_url = EXCLUDED.endpoint_url,
+                        internal_url = EXCLUDED.internal_url,
+                        health_check_url = EXCLUDED.health_check_url,
+                        capabilities = EXCLUDED.capabilities,
+                        supported_protocols = EXCLUDED.supported_protocols,
+                        api_version = EXCLUDED.api_version,
+                        max_connections = EXCLUDED.max_connections,
+                        authentication = EXCLUDED.authentication,
+                        configuration = EXCLUDED.configuration,
+                        environment = EXCLUDED.environment,
+                        version = EXCLUDED.version,
+                        tags = EXCLUDED.tags,
+                        metadata = EXCLUDED.metadata,
+                        status = 'online',
+                        updated_at = NOW()
+                    RETURNING id
+                """,
+                    registration.name,
+                    registration.server_type,
+                    registration.endpoint_url,
+                    registration.internal_url,
+                    registration.health_check_url,
+                    json.dumps(registration.capabilities),
+                    json.dumps(registration.supported_protocols),
+                    registration.api_version,
+                    registration.max_connections,
+                    json.dumps(registration.authentication),
+                    json.dumps(registration.configuration),
+                    registration.environment,
+                    registration.version,
+                    registration.tags,
+                    json.dumps(registration.metadata),
+                    "online"
+                )
+                
+                return RegistryResponse(
+                    success=True,
+                    data={"server_id": str(server_id), "status": "registered"},
+                    timestamp=datetime.utcnow().isoformat()
+                )
+                
+        except Exception as e:
+            logger.error(f"Server registration failed: {e}")
+            return RegistryResponse(
+                success=False,
+                error=str(e),
+                timestamp=datetime.utcnow().isoformat()
+            )
+    
+    # ========================================================================
+    # UTILITY METHODS
+    # ========================================================================
+    
+    async def _publish_registry_event(self, event_type: str, data: Dict[str, Any]):
+        """Publish registry events to Redis Streams"""
+        try:
+            if self.redis:
+                event = {
+                    "event_type": event_type,
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "data": json.dumps(data, default=str)
+                }
+                await self.redis.xadd("registry_events", event)
+        except Exception as e:
+            logger.warning(f"Failed to publish registry event: {e}")
+    
+    async def get_health_status(self) -> Dict[str, Any]:
+        """Get comprehensive registry health status"""
+        try:
+            await self.initialize()
+            
+            async with self.pool.acquire() as conn:
+                # Get agent counts
+                agent_stats = await conn.fetchrow("""
+                    SELECT 
+                        COUNT(*) as total,
+                        COUNT(*) FILTER (WHERE status = 'online') as online,
+                        COUNT(*) FILTER (WHERE health_status = 'healthy') as healthy
+                    FROM agent_registry
+                """)
+                
+                # Get server counts
+                server_stats = await conn.fetchrow("""
+                    SELECT 
+                        COUNT(*) as total,
+                        COUNT(*) FILTER (WHERE status = 'online') as online,
+                        COUNT(*) FILTER (WHERE health_status = 'healthy') as healthy
+                    FROM server_registry
+                """)
+                
+                return {
+                    "status": "healthy",
+                    "agents": {
+                        "total": agent_stats["total"] if agent_stats else 0,
+                        "online": agent_stats["online"] if agent_stats else 0,
+                        "healthy": agent_stats["healthy"] if agent_stats else 0
+                    },
+                    "servers": {
+                        "total": server_stats["total"] if server_stats else 0,
+                        "online": server_stats["online"] if server_stats else 0,
+                        "healthy": server_stats["healthy"] if server_stats else 0
+                    },
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+                
+        except Exception as e:
+            logger.error(f"Health status check failed: {e}")
+            return {
+                "status": "unhealthy",
+                "error": str(e),
+                "timestamp": datetime.utcnow().isoformat()
+            }
+
+# ============================================================================
+# FASTAPI APPLICATION
+# ============================================================================
+
+app = FastAPI(
+    title="BoarderframeOS Registry Server",
+    version="1.0.0",
+    description="Centralized registry for agents, servers, departments, tools, and workflows"
+)
 
 # CORS middleware
 app.add_middleware(
@@ -38,603 +425,77 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Models
-class MCPServerInfo(BaseModel):
-    server_id: str = Field(..., description="Unique server identifier")
-    name: str = Field(..., description="Human-readable server name")
-    description: str = Field(..., description="Server description")
-    host: str = Field(..., description="Server host")
-    port: int = Field(..., description="Server port")
-    version: str = Field(default="1.0.0", description="Server version")
-    status: str = Field(default="unknown", description="Server status")
-    capabilities: List[str] = Field(default=[], description="Server capabilities")
-    tools: List[str] = Field(default=[], description="Available tools")
-    health_check_url: str = Field(..., description="Health check endpoint")
-    last_seen: Optional[datetime] = Field(None, description="Last successful health check")
+# Global registry manager
+registry_manager = RegistryManager()
 
-class ToolInfo(BaseModel):
-    tool_id: str = Field(..., description="Unique tool identifier")
-    name: str = Field(..., description="Tool name")
-    description: str = Field(..., description="Tool description")
-    server_id: str = Field(..., description="Server providing the tool")
-    category: str = Field(..., description="Tool category")
-    parameters: Dict[str, Any] = Field(default={}, description="Tool parameters schema")
-    examples: List[Dict] = Field(default=[], description="Usage examples")
-    access_level: str = Field(default="public", description="Access level: public, restricted, private")
+async def get_registry_manager():
+    """Dependency for registry manager"""
+    await registry_manager.initialize()
+    return registry_manager
 
-class AgentCapability(BaseModel):
-    capability_id: str = Field(..., description="Unique capability identifier")
-    name: str = Field(..., description="Capability name")
-    description: str = Field(..., description="Capability description")
-    required_tools: List[str] = Field(default=[], description="Required tools")
-    optional_tools: List[str] = Field(default=[], description="Optional tools")
-    complexity_level: int = Field(default=1, description="Complexity level 1-5")
-
-class RegistrationRequest(BaseModel):
-    server_info: MCPServerInfo
-    tools: List[ToolInfo] = Field(default=[], description="Tools provided by server")
-
-class ToolSearchRequest(BaseModel):
-    query: Optional[str] = Field(None, description="Search query")
-    category: Optional[str] = Field(None, description="Tool category filter")
-    server_id: Optional[str] = Field(None, description="Server filter")
-    capabilities: Optional[List[str]] = Field(None, description="Required capabilities")
-
-# Registry Storage
-class MCPRegistry:
-    """Central registry for MCP servers and tools"""
-    
-    def __init__(self):
-        self.servers: Dict[str, MCPServerInfo] = {}
-        self.tools: Dict[str, ToolInfo] = {}
-        self.capabilities: Dict[str, AgentCapability] = {}
-        self.server_tools: Dict[str, Set[str]] = {}  # server_id -> tool_ids
-        self.tool_categories: Dict[str, Set[str]] = {}  # category -> tool_ids
-        
-        # Initialize with core capabilities
-        self._initialize_core_capabilities()
-    
-    def _initialize_core_capabilities(self):
-        """Initialize core agent capabilities"""
-        core_capabilities = [
-            AgentCapability(
-                capability_id="file_operations",
-                name="File Operations",
-                description="Read, write, and manipulate files",
-                required_tools=["filesystem:read", "filesystem:write"],
-                optional_tools=["filesystem:search", "filesystem:backup"],
-                complexity_level=1
-            ),
-            AgentCapability(
-                capability_id="web_automation",
-                name="Web Automation",
-                description="Automate web browser interactions",
-                required_tools=["browser:navigate", "browser:click", "browser:extract"],
-                optional_tools=["browser:screenshot", "browser:script"],
-                complexity_level=3
-            ),
-            AgentCapability(
-                capability_id="code_generation",
-                name="Code Generation",
-                description="Generate and analyze code",
-                required_tools=["llm:generate", "filesystem:write"],
-                optional_tools=["git:commit", "browser:research"],
-                complexity_level=4
-            ),
-            AgentCapability(
-                capability_id="data_analysis",
-                name="Data Analysis",
-                description="Analyze and process data",
-                required_tools=["database:query", "llm:analyze"],
-                optional_tools=["filesystem:read", "browser:scrape"],
-                complexity_level=3
-            ),
-            AgentCapability(
-                capability_id="trading_operations",
-                name="Trading Operations",
-                description="Execute trading strategies",
-                required_tools=["browser:navigate", "database:store"],
-                optional_tools=["llm:analyze", "filesystem:log"],
-                complexity_level=5
-            )
-        ]
-        
-        for capability in core_capabilities:
-            self.capabilities[capability.capability_id] = capability
-    
-    def register_server(self, server_info: MCPServerInfo, tools: List[ToolInfo] = None) -> bool:
-        """Register an MCP server and its tools"""
-        try:
-            self.servers[server_info.server_id] = server_info
-            self.server_tools[server_info.server_id] = set()
-            
-            if tools:
-                for tool in tools:
-                    self.register_tool(tool)
-            
-            logger.info(f"Registered MCP server: {server_info.name} ({server_info.server_id})")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to register server {server_info.server_id}: {e}")
-            return False
-    
-    def register_tool(self, tool_info: ToolInfo) -> bool:
-        """Register a tool"""
-        try:
-            self.tools[tool_info.tool_id] = tool_info
-            
-            # Update server tools mapping
-            if tool_info.server_id in self.server_tools:
-                self.server_tools[tool_info.server_id].add(tool_info.tool_id)
-            
-            # Update category mapping
-            category = tool_info.category
-            if category not in self.tool_categories:
-                self.tool_categories[category] = set()
-            self.tool_categories[category].add(tool_info.tool_id)
-            
-            logger.info(f"Registered tool: {tool_info.name} ({tool_info.tool_id})")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to register tool {tool_info.tool_id}: {e}")
-            return False
-    
-    def unregister_server(self, server_id: str) -> bool:
-        """Unregister an MCP server and its tools"""
-        try:
-            if server_id not in self.servers:
-                return True
-            
-            # Remove server's tools
-            if server_id in self.server_tools:
-                tool_ids = self.server_tools[server_id].copy()
-                for tool_id in tool_ids:
-                    self.unregister_tool(tool_id)
-                del self.server_tools[server_id]
-            
-            # Remove server
-            del self.servers[server_id]
-            logger.info(f"Unregistered MCP server: {server_id}")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to unregister server {server_id}: {e}")
-            return False
-    
-    def unregister_tool(self, tool_id: str) -> bool:
-        """Unregister a tool"""
-        try:
-            if tool_id not in self.tools:
-                return True
-            
-            tool_info = self.tools[tool_id]
-            
-            # Remove from category mapping
-            category = tool_info.category
-            if category in self.tool_categories:
-                self.tool_categories[category].discard(tool_id)
-                if not self.tool_categories[category]:
-                    del self.tool_categories[category]
-            
-            # Remove from server mapping
-            server_id = tool_info.server_id
-            if server_id in self.server_tools:
-                self.server_tools[server_id].discard(tool_id)
-            
-            # Remove tool
-            del self.tools[tool_id]
-            logger.info(f"Unregistered tool: {tool_id}")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to unregister tool {tool_id}: {e}")
-            return False
-    
-    def search_tools(self, search_request: ToolSearchRequest) -> List[ToolInfo]:
-        """Search for tools based on criteria"""
-        results = []
-        
-        for tool_id, tool_info in self.tools.items():
-            # Apply filters
-            if search_request.server_id and tool_info.server_id != search_request.server_id:
-                continue
-            
-            if search_request.category and tool_info.category != search_request.category:
-                continue
-            
-            # Text search
-            if search_request.query:
-                query_lower = search_request.query.lower()
-                if not (query_lower in tool_info.name.lower() or 
-                       query_lower in tool_info.description.lower()):
-                    continue
-            
-            # Capability search
-            if search_request.capabilities:
-                tool_matches_capability = False
-                for capability_id in search_request.capabilities:
-                    if capability_id in self.capabilities:
-                        capability = self.capabilities[capability_id]
-                        if (tool_id in capability.required_tools or 
-                            tool_id in capability.optional_tools):
-                            tool_matches_capability = True
-                            break
-                
-                if not tool_matches_capability:
-                    continue
-            
-            results.append(tool_info)
-        
-        return results
-    
-    def get_tools_for_capability(self, capability_id: str) -> Dict[str, List[ToolInfo]]:
-        """Get all tools needed for a specific capability"""
-        if capability_id not in self.capabilities:
-            return {"required": [], "optional": []}
-        
-        capability = self.capabilities[capability_id]
-        
-        required_tools = []
-        for tool_id in capability.required_tools:
-            if tool_id in self.tools:
-                required_tools.append(self.tools[tool_id])
-        
-        optional_tools = []
-        for tool_id in capability.optional_tools:
-            if tool_id in self.tools:
-                optional_tools.append(self.tools[tool_id])
-        
-        return {
-            "required": required_tools,
-            "optional": optional_tools
-        }
-    
-    def update_server_status(self, server_id: str, status: str, last_seen: datetime = None):
-        """Update server status"""
-        if server_id in self.servers:
-            self.servers[server_id].status = status
-            if last_seen:
-                self.servers[server_id].last_seen = last_seen
-
-# Global registry instance
-registry = MCPRegistry()
-
-# Health Check Manager
-class HealthCheckManager:
-    """Manages health checks for registered servers"""
-    
-    def __init__(self, registry: MCPRegistry):
-        self.registry = registry
-        self.check_interval = 60  # seconds
-        self.timeout = 10  # seconds
-        self.running = False
-    
-    async def start(self):
-        """Start health check monitoring"""
-        self.running = True
-        asyncio.create_task(self._health_check_loop())
-        logger.info("Health check manager started")
-    
-    async def stop(self):
-        """Stop health check monitoring"""
-        self.running = False
-        logger.info("Health check manager stopped")
-    
-    async def _health_check_loop(self):
-        """Main health check loop"""
-        while self.running:
-            try:
-                await self._check_all_servers()
-                await asyncio.sleep(self.check_interval)
-            except Exception as e:
-                logger.error(f"Health check loop error: {e}")
-                await asyncio.sleep(30)
-    
-    async def _check_all_servers(self):
-        """Check health of all registered servers"""
-        tasks = []
-        for server_id, server_info in self.registry.servers.items():
-            task = asyncio.create_task(self._check_server_health(server_info))
-            tasks.append(task)
-        
-        if tasks:
-            await asyncio.gather(*tasks, return_exceptions=True)
-    
-    async def _check_server_health(self, server_info: MCPServerInfo):
-        """Check health of a specific server"""
-        try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                url = f"http://{server_info.host}:{server_info.port}{server_info.health_check_url}"
-                response = await client.get(url)
-                
-                if response.status_code == 200:
-                    self.registry.update_server_status(
-                        server_info.server_id, 
-                        "healthy", 
-                        datetime.now()
-                    )
-                else:
-                    self.registry.update_server_status(server_info.server_id, "unhealthy")
-                    
-        except Exception as e:
-            logger.warning(f"Health check failed for {server_info.server_id}: {e}")
-            self.registry.update_server_status(server_info.server_id, "offline")
-
-# Initialize health check manager
-health_manager = HealthCheckManager(registry)
-
-# API Endpoints
-@app.on_event("startup")
-async def startup_event():
-    """Initialize registry on startup"""
-    await health_manager.start()
-    
-    # Auto-register core MCP servers
-    await _register_core_servers()
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup on shutdown"""
-    await health_manager.stop()
-
-async def _register_core_servers():
-    """Register core MCP servers"""
-    core_servers = [
-        {
-            "server_info": MCPServerInfo(
-                server_id="filesystem",
-                name="Filesystem MCP Server",
-                description="File operations and management",
-                host="127.0.0.1",
-                port=8001,
-                capabilities=["file_operations", "backup", "search"],
-                tools=["read", "write", "delete", "search", "backup"],
-                health_check_url="/health"
-            ),
-            "tools": [
-                ToolInfo(
-                    tool_id="filesystem:read",
-                    name="Read File",
-                    description="Read contents of a file",
-                    server_id="filesystem",
-                    category="file_operations",
-                    parameters={"file_path": "string", "encoding": "string"},
-                    access_level="public"
-                ),
-                ToolInfo(
-                    tool_id="filesystem:write",
-                    name="Write File", 
-                    description="Write contents to a file",
-                    server_id="filesystem",
-                    category="file_operations",
-                    parameters={"file_path": "string", "content": "string", "encoding": "string"},
-                    access_level="public"
-                )
-            ]
-        },
-        {
-            "server_info": MCPServerInfo(
-                server_id="llm",
-                name="LLM MCP Server",
-                description="Large Language Model operations",
-                host="127.0.0.1",
-                port=8005,
-                capabilities=["text_generation", "analysis"],
-                tools=["generate", "chat", "analyze"],
-                health_check_url="/health"
-            ),
-            "tools": [
-                ToolInfo(
-                    tool_id="llm:generate",
-                    name="Generate Text",
-                    description="Generate text using LLM",
-                    server_id="llm",
-                    category="ai_generation",
-                    parameters={"prompt": "string", "model": "string", "temperature": "float"},
-                    access_level="public"
-                )
-            ]
-        },
-        {
-            "server_info": MCPServerInfo(
-                server_id="browser",
-                name="Browser MCP Server",
-                description="Web browser automation",
-                host="127.0.0.1",
-                port=8003,
-                capabilities=["web_automation", "scraping"],
-                tools=["navigate", "click", "extract", "screenshot"],
-                health_check_url="/health"
-            ),
-            "tools": [
-                ToolInfo(
-                    tool_id="browser:navigate",
-                    name="Navigate to URL",
-                    description="Navigate browser to specified URL",
-                    server_id="browser",
-                    category="web_automation",
-                    parameters={"url": "string", "wait_for": "string"},
-                    access_level="public"
-                )
-            ]
-        }
-    ]
-    
-    for server_config in core_servers:
-        registry.register_server(
-            server_config["server_info"],
-            server_config["tools"]
-        )
+# ============================================================================
+# API ENDPOINTS
+# ============================================================================
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "service": "mcp_registry",
-        "registered_servers": len(registry.servers),
-        "registered_tools": len(registry.tools),
-        "capabilities": len(registry.capabilities)
-    }
-
-@app.post("/register")
-async def register_server(request: RegistrationRequest):
-    """Register an MCP server and its tools"""
-    success = registry.register_server(request.server_info, request.tools)
-    
-    if success:
+    """Registry health check endpoint"""
+    try:
+        # Try to get registry manager if possible
+        registry = await get_registry_manager()
+        return await registry.get_health_status()
+    except Exception as e:
+        # Return basic health info if registry not available
         return {
-            "success": True,
-            "message": f"Server {request.server_info.server_id} registered successfully",
-            "server_id": request.server_info.server_id
+            "status": "degraded",
+            "timestamp": datetime.utcnow().isoformat(),
+            "service": "registry_server",
+            "port": REGISTRY_PORT,
+            "database_status": "unavailable",
+            "redis_status": "unknown",
+            "error": str(e)[:100]
         }
-    else:
-        raise HTTPException(status_code=400, detail="Registration failed")
 
-@app.delete("/servers/{server_id}")
-async def unregister_server(server_id: str):
-    """Unregister an MCP server"""
-    success = registry.unregister_server(server_id)
-    
-    if success:
-        return {"success": True, "message": f"Server {server_id} unregistered"}
-    else:
-        raise HTTPException(status_code=400, detail="Unregistration failed")
+# Agent Registry Endpoints
+@app.post("/agents/register", response_model=RegistryResponse)
+async def register_agent(registration: AgentRegistration, registry: RegistryManager = Depends(get_registry_manager)):
+    """Register a new agent"""
+    return await registry.register_agent(registration)
 
-@app.get("/servers")
-async def list_servers():
-    """List all registered servers"""
-    return {
-        "servers": [
-            {
-                **server.dict(),
-                "tools_count": len(registry.server_tools.get(server.server_id, set()))
-            }
-            for server in registry.servers.values()
-        ]
-    }
+@app.get("/agents/discover", response_model=RegistryResponse)
+async def discover_agents(
+    agent_type: Optional[str] = Query(None),
+    department_id: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    registry: RegistryManager = Depends(get_registry_manager)
+):
+    """Discover agents based on filters"""
+    return await registry.discover_agents(agent_type, department_id, status)
 
-@app.get("/servers/{server_id}")
-async def get_server(server_id: str):
-    """Get specific server information"""
-    if server_id not in registry.servers:
-        raise HTTPException(status_code=404, detail="Server not found")
-    
-    server = registry.servers[server_id]
-    tools = [
-        registry.tools[tool_id] 
-        for tool_id in registry.server_tools.get(server_id, set())
-        if tool_id in registry.tools
-    ]
-    
-    return {
-        "server": server.dict(),
-        "tools": [tool.dict() for tool in tools]
-    }
-
-@app.post("/tools/search")
-async def search_tools(request: ToolSearchRequest):
-    """Search for tools"""
-    results = registry.search_tools(request)
-    return {
-        "tools": [tool.dict() for tool in results],
-        "total": len(results)
-    }
-
-@app.get("/tools")
-async def list_tools():
-    """List all registered tools"""
-    return {
-        "tools": [tool.dict() for tool in registry.tools.values()],
-        "by_category": {
-            category: len(tool_ids) 
-            for category, tool_ids in registry.tool_categories.items()
-        }
-    }
-
-@app.get("/tools/{tool_id}")
-async def get_tool(tool_id: str):
-    """Get specific tool information"""
-    if tool_id not in registry.tools:
-        raise HTTPException(status_code=404, detail="Tool not found")
-    
-    return {"tool": registry.tools[tool_id].dict()}
-
-@app.get("/capabilities")
-async def list_capabilities():
-    """List all available capabilities"""
-    return {
-        "capabilities": [cap.dict() for cap in registry.capabilities.values()]
-    }
-
-@app.get("/capabilities/{capability_id}/tools")
-async def get_capability_tools(capability_id: str):
-    """Get tools for a specific capability"""
-    if capability_id not in registry.capabilities:
-        raise HTTPException(status_code=404, detail="Capability not found")
-    
-    tools = registry.get_tools_for_capability(capability_id)
-    return {
-        "capability": registry.capabilities[capability_id].dict(),
-        "required_tools": [tool.dict() for tool in tools["required"]],
-        "optional_tools": [tool.dict() for tool in tools["optional"]]
-    }
-
-@app.get("/categories")
-async def list_categories():
-    """List all tool categories"""
-    return {
-        "categories": {
-            category: {
-                "tool_count": len(tool_ids),
-                "tools": [
-                    registry.tools[tool_id].name 
-                    for tool_id in tool_ids 
-                    if tool_id in registry.tools
-                ]
-            }
-            for category, tool_ids in registry.tool_categories.items()
-        }
-    }
-
-@app.get("/stats")
-async def get_registry_stats():
-    """Get registry statistics"""
-    healthy_servers = len([s for s in registry.servers.values() if s.status == "healthy"])
-    
-    return {
-        "servers": {
-            "total": len(registry.servers),
-            "healthy": healthy_servers,
-            "unhealthy": len(registry.servers) - healthy_servers
-        },
-        "tools": {
-            "total": len(registry.tools),
-            "by_category": {
-                category: len(tool_ids)
-                for category, tool_ids in registry.tool_categories.items()
-            }
-        },
-        "capabilities": len(registry.capabilities),
-        "last_updated": datetime.now().isoformat()
-    }
+# Server Registry Endpoints
+@app.post("/servers/register", response_model=RegistryResponse)
+async def register_server(registration: ServerRegistration, registry: RegistryManager = Depends(get_registry_manager)):
+    """Register a new server"""
+    return await registry.register_server(registration)
 
 if __name__ == "__main__":
     import argparse
     
-    parser = argparse.ArgumentParser(description="MCP Registry Server")
+    parser = argparse.ArgumentParser(description="BoarderframeOS Registry Server")
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind to")
-    parser.add_argument("--port", type=int, default=8000, help="Port to bind to")
+    parser.add_argument("--port", type=int, default=REGISTRY_PORT, help="Port to bind to")
     parser.add_argument("--reload", action="store_true", help="Enable auto-reload")
     
     args = parser.parse_args()
     
-    logger.info(f"Starting MCP Registry Server on {args.host}:{args.port}")
+    logger.info(f"Starting Registry Server on {args.host}:{args.port}")
+    logger.info(f"PostgreSQL: {DATABASE_URL}")
+    logger.info(f"Redis: {REDIS_URL}")
+    
     uvicorn.run(
         "registry_server:app",
         host=args.host,
         port=args.port,
-        reload=args.reload
+        reload=args.reload,
+        log_level="info"
     )

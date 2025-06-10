@@ -1,0 +1,14 @@
+{
+    "Servers": {
+        "1": {
+            "Name": "BoarderframeOS PostgreSQL",
+            "Group": "Servers",
+            "Host": "postgresql",
+            "Port": 5432,
+            "MaintenanceDB": "boarderframeos",
+            "Username": "boarderframe",
+            "SSLMode": "prefer",
+            "Comment": "BoarderframeOS main database with pgvector extension"
+        }
+    }
+}

@@ -14,6 +14,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 
 import aiohttp
+import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Depends, Body, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -328,7 +329,6 @@ async def main():
 if __name__ == "__main__":
     try:
         # Run the server
-        import uvicorn
         asyncio.run(main())
     except KeyboardInterrupt:
         logger.info("Shutting down Customer Server")

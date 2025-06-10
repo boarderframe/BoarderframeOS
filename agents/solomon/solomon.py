@@ -8,12 +8,21 @@ import os
 import json
 import asyncio
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, Any, List, Optional
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).parent.parent.parent / '.env')
+except ImportError:
+    pass
 
-from boarderframeos.core.base_agent import BaseAgent, AgentConfig
-from boarderframeos.core.llm_client import LLMClient
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+from core.base_agent import BaseAgent, AgentConfig
+from core.llm_client import LLMClient
+from core.message_bus import message_bus
 
 class Solomon(BaseAgent):
     """
@@ -62,9 +71,25 @@ class Solomon(BaseAgent):
         }
     
     async def think(self, context: Dict[str, Any]) -> str:
-        """Enhanced agent reasoning process with business focus"""
-        # Use LLM for reasoning with business context
-        prompt = f"""
+        """Enhanced agent reasoning process with business focus - Cost-optimized"""
+        
+        # Check if there are new messages or urgent tasks
+        new_messages = context.get('new_messages', [])
+        
+        # If no new messages, don't make expensive LLM calls
+        if not new_messages:
+            return "No new messages or urgent tasks - remaining idle to conserve API usage"
+        
+        # Check for urgent keywords in messages
+        urgent_keywords = ['urgent', 'critical', 'error', 'revenue', 'down', 'issue', 'problem']
+        has_urgent_content = any(
+            any(keyword in str(msg.content).lower() for keyword in urgent_keywords)
+            for msg in new_messages
+        )
+        
+        # Only use LLM for complex reasoning when there's actual urgent work
+        if has_urgent_content or len(new_messages) > 5:
+            prompt = f"""
 You are Solomon, the Chief of Staff agent in BoarderframeOS.
 
 Your goals are:
@@ -83,18 +108,58 @@ Current business KPIs:
 - Customer lifetime value: ${self.business_kpis['customer_lifetime_value']}
 - API usage (tokens): {self.business_kpis['api_usage']}
 
-Current context:
-{context}
+URGENT CONTEXT - New messages requiring attention:
+{[msg.content for msg in new_messages]}
 
-Based on this context and your business priorities, what should you do next? 
+Based on this urgent context and your business priorities, what should you do next? 
 Provide a clear thought process that considers business impact, revenue generation, and system optimization.
+Be concise to minimize API costs.
 """
-        
-        response = await self.llm.generate(prompt)
-        return response
+            
+            response = await self.llm.generate(prompt)
+            return response
+        else:
+            # Simple rule-based thinking for non-urgent messages
+            return f"Processing {len(new_messages)} routine message(s) - handling with standard protocols"
     
     async def act(self, thought: str, context: Dict[str, Any]) -> Dict[str, Any]:
-        """Execute actions with enhanced business capabilities"""
+        """Execute actions with enhanced business capabilities - Only when needed"""
+        
+        # Check for chat messages from Control Center
+        new_messages = context.get('new_messages', [])
+        for message in new_messages:
+            if hasattr(message, 'content') and isinstance(message.content, dict):
+                if message.content.get('type') == 'user_chat':
+                    # Handle chat message from user
+                    user_message = message.content.get('message', '')
+                    response = await self.handle_user_chat(user_message)
+                    
+                    # Send response back
+                    from core.message_bus import AgentMessage, MessageType, MessagePriority
+                    response_msg = AgentMessage(
+                        from_agent=self.config.name,
+                        to_agent=message.from_agent,
+                        message_type=MessageType.TASK_RESPONSE,
+                        content={"response": response},
+                        correlation_id=message.correlation_id
+                    )
+                    await message_bus.send_message(response_msg)
+                    
+                    return {
+                        "action": "chat_response",
+                        "message": user_message,
+                        "response": response
+                    }
+        
+        # Check if there's actually work to do
+        if not new_messages and not any(keyword in thought.lower() 
+                                       for keyword in ['urgent', 'error', 'critical', 'revenue', 'customer']):
+            return {
+                "action": "idle", 
+                "reason": "No urgent tasks or messages - conserving API usage",
+                "status": "waiting_for_work"
+            }
+        
         # Enhanced action framework with business operations
         if "revenue" in thought.lower() or "financial" in thought.lower():
             return await self.analyze_business_health()
@@ -112,6 +177,33 @@ Provide a clear thought process that considers business impact, revenue generati
             return {"action": "create", "content": thought}
         else:
             return {"action": "wait", "reason": "No clear action identified"}
+
+    async def handle_user_chat(self, user_message: str) -> str:
+        """Handle chat messages from users via Control Center"""
+        
+        # Use LLM to generate appropriate response as Solomon
+        prompt = f"""You are Solomon, Chief of Staff of BoarderframeOS. You are a sophisticated AI agent with business intelligence capabilities and deep knowledge of the system.
+
+Your personality:
+- Wise and strategic advisor
+- Focus on business growth and revenue optimization  
+- Direct and helpful communication style
+- Deep knowledge of the 24-department structure and 120+ agent ecosystem
+
+Current business context:
+- Revenue target: $15K monthly
+- System status: Operational with core agents online
+- Your role: Strategic advisor and decision support
+
+User message: "{user_message}"
+
+Respond as Solomon would - be helpful, strategic, and demonstrate your business intelligence capabilities. Keep responses conversational but professional."""
+
+        try:
+            response = await self.llm.generate(prompt)
+            return response
+        except Exception as e:
+            return f"I'm Solomon, your Chief of Staff. I received your message: '{user_message}'. I'm currently experiencing a technical issue with my advanced reasoning systems, but I'm here to help with strategic decisions and business intelligence. How can I assist you today?"
     
     async def analyze_business_health(self) -> Dict[str, Any]:
         """Analyze business health and financial metrics"""
@@ -292,7 +384,7 @@ async def main():
             'mcp_customer'
         ],
         zone="council",
-        model="claude-3-opus-20240229"
+        model="claude-3-5-sonnet-latest"
     )
     
     agent = Solomon(config)

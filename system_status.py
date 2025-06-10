@@ -15,7 +15,7 @@ def check_mcp_servers():
     servers = [
         ("Registry", 8000),
         ("Filesystem", 8001), 
-        ("Database", 8004),
+        ("PostgreSQL Database", 8010),
         ("LLM", 8005),
         ("Dashboard", 8888)
     ]
