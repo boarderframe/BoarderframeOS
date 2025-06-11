@@ -60,16 +60,16 @@ temple_models:
     access: ["solomon"]
     cost_dev: "$400/month"
     cost_prod: "$0/month"
-    
+
   # Tier 2: Executive Access (David)
   david_ceo:
-    phase_1: "claude-3-sonnet-20240620"   # Development  
+    phase_1: "claude-3-sonnet-20240620"   # Development
     phase_2: "llama-4-scout-109b"         # Production
     context_window: 10000000
     access: ["david"]
     cost_dev: "$150/month"
     cost_prod: "$0/month"
-    
+
   # Tier 3: Department Heads (24 Leaders)
   department_oracle:
     phase_1: "claude-3-haiku-20240307"    # Development
@@ -78,7 +78,7 @@ temple_models:
     access: ["levi", "judah", "benjamin", "ephraim", "..."]
     shared: true
     max_concurrent: 24
-    
+
   # Tier 4: Worker Collective (100+ Agents)
   worker_swarm:
     phase_1: "gpt-4o-mini"                # Development
@@ -94,29 +94,29 @@ temple_models:
 ```python
 class TempleLLMRouter:
     """Sacred router for all AI intelligence"""
-    
+
     async def route_request(self, agent_id: str, request: LLMRequest) -> LLMResponse:
         # 1. Authenticate and authorize
         agent = await self.authenticate_agent(agent_id)
         model_id = self.determine_model(agent.tier, request.complexity)
-        
+
         # 2. Check resource availability
         if not await self.check_capacity(model_id):
             model_id = await self.get_fallback_model(agent.tier)
-            
+
         # 3. Route to appropriate backend
         backend = self.get_backend(model_id)
         response = await backend.complete(request)
-        
+
         # 4. Track usage and costs
         await self.log_usage(agent_id, model_id, response.tokens)
-        
+
         return response
-        
+
     def get_backend(self, model_id: str) -> LLMBackend:
         """Route to local or cloud based on current phase"""
         model_config = self.model_registry[model_id]
-        
+
         if self.deployment_phase == "production" and model_config.get("local_available"):
             return self.local_backend  # DGX Sparks
         else:
@@ -145,7 +145,7 @@ class TempleLLMRouter:
 
 **Why PostgreSQL:**
 - JSONB support for flexible agent schemas
-- Full-text search for memory retrieval  
+- Full-text search for memory retrieval
 - Time-series extensions for analytics
 - ACID compliance for financial data
 - Proven scalability (Instagram, Discord scale)
@@ -243,11 +243,11 @@ CREATE TABLE financial_transactions (
 CREATE EXTENSION IF NOT EXISTS vector;
 
 -- Semantic memory search
-CREATE INDEX agent_memories_embedding_idx 
+CREATE INDEX agent_memories_embedding_idx
 ON agent_memories USING ivfflat (embedding vector_cosine_ops);
 
 -- Full-text search on content
-CREATE INDEX agent_memories_content_fts 
+CREATE INDEX agent_memories_content_fts
 ON agent_memories USING GIN (to_tsvector('english', content));
 ```
 
@@ -293,15 +293,15 @@ mcp_servers:
     features:
       - "15-50 connection pool"
       - "5000-entry query cache with LRU eviction"
-      - "99.99% PostgreSQL cache hit ratio" 
+      - "99.99% PostgreSQL cache hit ratio"
       - "pgvector support for AI embeddings"
       - "Real-time performance monitoring"
       - "Advanced prepared statement caching"
     performance: "1-3ms average query time (83% improvement)"
-    
+
   filesystem:
     port: 8001
-    status: "🟢 Production Ready" 
+    status: "🟢 Production Ready"
     optimization: "⭐⭐⭐⭐⭐ Enterprise"
     features:
       - "AI-enhanced file operations"
@@ -311,11 +311,11 @@ mcp_servers:
       - "Real-time file monitoring"
       - "Advanced search capabilities"
     security: "Rate-limited protection against abuse"
-    
+
   analytics:
     port: 8007
     status: "🟢 Production Ready"
-    optimization: "⭐⭐⭐⭐⭐ Enterprise" 
+    optimization: "⭐⭐⭐⭐⭐ Enterprise"
     features:
       - "PostgreSQL backend with JSONB storage"
       - "Background event processing (50-event batches)"
@@ -324,7 +324,7 @@ mcp_servers:
       - "Business intelligence pipeline"
       - "Revenue tracking and customer analytics"
     performance: "95% throughput improvement with batching"
-    
+
   # TIER 2: STANDARD OPERATIONAL SERVERS
   registry:
     port: 8009
@@ -332,21 +332,21 @@ mcp_servers:
     optimization: "⭐⭐⭐ Standard"
     purpose: "Agent and service discovery"
     features: ["PostgreSQL integration", "Redis events"]
-    
+
   payment:
-    port: 8006  
+    port: 8006
     status: "🟢 Operational"
     optimization: "⭐⭐⭐ Standard"
     purpose: "Revenue management and billing"
     features: ["Stripe integration", "Customer tracking"]
-    
+
   llm:
     port: 8005
     status: "🟢 Operational"
     optimization: "⭐⭐⭐ Standard"
     purpose: "Language model proxy"
     features: ["OpenAI compatibility", "Model management"]
-    
+
   database_sqlite:
     port: 8004
     status: "🟢 Production Ready"
@@ -359,7 +359,7 @@ mcp_servers:
 
 **Enterprise Optimizations Applied:**
 - **Database Operations**: 83% performance improvement (15ms → 1-3ms)
-- **Connection Efficiency**: 15-50 pooled connections vs individual connections  
+- **Connection Efficiency**: 15-50 pooled connections vs individual connections
 - **Query Caching**: 5000 entries with intelligent TTL and LRU eviction
 - **Rate Limiting**: 4-tier protection system preventing abuse
 - **Background Processing**: 95% throughput improvement with event batching
@@ -367,7 +367,7 @@ mcp_servers:
 
 **Production Readiness:**
 - ✅ All 7 servers tested and operational
-- ✅ Enterprise-grade connection pooling 
+- ✅ Enterprise-grade connection pooling
 - ✅ Advanced caching and performance optimization
 - ✅ Rate limiting and security protection
 - ✅ PostgreSQL backend integration
@@ -378,18 +378,18 @@ mcp_servers:
 ```python
 class MCPOrchestrator:
     """Manages all MCP server connections and tool routing"""
-    
+
     def __init__(self):
         self.servers = {}
         self.tool_registry = {}
         self.access_control = AccessControlMatrix()
-        
+
     async def initialize_servers(self):
         """Start all MCP servers with proper security"""
         for server_name, config in self.mcp_config.items():
             server = await self.start_mcp_server(server_name, config)
             self.servers[server_name] = server
-            
+
             # Register tools with access control
             for tool in server.list_tools():
                 self.tool_registry[tool.name] = {
@@ -397,22 +397,22 @@ class MCPOrchestrator:
                     "access_level": config.get("access_level", 5),
                     "schema": tool.schema
                 }
-    
+
     async def call_tool(self, agent_id: str, tool_name: str, params: dict):
         """Route tool calls through security layer"""
         # 1. Check agent permissions
         agent = await self.get_agent(agent_id)
         if not self.access_control.can_use_tool(agent, tool_name):
             raise PermissionError(f"Agent {agent_id} cannot use {tool_name}")
-            
+
         # 2. Get tool server
         tool_info = self.tool_registry[tool_name]
         server = self.servers[tool_info["server"]]
-        
+
         # 3. Execute with audit logging
         result = await server.call_tool(tool_name, params)
         await self.audit_log(agent_id, tool_name, params, result)
-        
+
         return result
 ```
 
@@ -429,7 +429,7 @@ class MCPOrchestrator:
 
 **Core Business (5 Departments):**
 - **Finance**: Levi (CFO) + 5 specialist agents
-- **Legal**: Judah (CLO) + 5 specialist agents  
+- **Legal**: Judah (CLO) + 5 specialist agents
 - **Sales**: Benjamin (CSO) + 5 specialist agents
 - **Marketing**: Ephraim (CMO) + 5 specialist agents
 - **Procurement**: Nehemiah (CPO) + 5 specialist agents
@@ -493,32 +493,32 @@ from typing import List, Dict, Any
 
 class BoarderframeAgent(autogen.ConversableAgent):
     """Base class for all BoarderframeOS agents"""
-    
+
     def __init__(self, name: str, department: str, tier: int, **kwargs):
         # Connect to The Temple for LLM access
         llm_config = self.get_temple_config(tier)
-        
+
         super().__init__(
             name=name,
             llm_config=llm_config,
             system_message=self.build_system_message(department, tier),
             **kwargs
         )
-        
+
         self.department = department
         self.tier = tier
         self.db = PostgreSQLClient()
         self.mcp = MCPClient()
-        
+
     def get_temple_config(self, tier: int) -> Dict[str, Any]:
         """Get LLM configuration from The Temple based on agent tier"""
         model_map = {
             1: "solomon_prime",      # Executive tier
-            2: "department_oracle",  # Department heads  
+            2: "department_oracle",  # Department heads
             3: "department_oracle",  # Specialists
             4: "worker_swarm"        # Workers
         }
-        
+
         return {
             "config_list": [{
                 "model": model_map[tier],
@@ -529,35 +529,35 @@ class BoarderframeAgent(autogen.ConversableAgent):
 
 class DepartmentManager(BoarderframeAgent):
     """Base class for department head agents"""
-    
+
     def __init__(self, name: str, department: str, **kwargs):
         super().__init__(name, department, tier=2, **kwargs)
         self.specialists: List[BoarderframeAgent] = []
-        
+
     def add_specialist(self, specialist: BoarderframeAgent):
         """Add a specialist agent to this department"""
         self.specialists.append(specialist)
         specialist.department_head = self
-        
+
     async def delegate_task(self, task: str, specialist_type: str = None):
         """Delegate task to appropriate specialist"""
         if specialist_type:
             specialist = self.find_specialist(specialist_type)
         else:
             specialist = self.select_best_specialist(task)
-            
+
         return await self.initiate_chat(specialist, message=task)
 
 class AgentFactory:
     """Adam's agent creation system using AutoGen"""
-    
+
     async def create_department_head(self, spec: DepartmentSpec) -> DepartmentManager:
         """Create a new department head agent"""
         # 1. Validate and get approvals
         await self.validate_spec(spec)
         if spec.requires_approval:
             await self.request_human_approval(spec)
-            
+
         # 2. Create AutoGen agent with department context
         agent = DepartmentManager(
             name=spec.leader_name,
@@ -565,16 +565,16 @@ class AgentFactory:
             system_message=spec.system_prompt,
             max_consecutive_auto_reply=10
         )
-        
+
         # 3. Register in database
         await self.db.create_agent_record(agent)
-        
+
         # 4. Setup MCP tool access
         await self.setup_mcp_tools(agent, spec.tool_permissions)
-        
+
         return agent
-        
-    async def create_specialist(self, department_head: DepartmentManager, 
+
+    async def create_specialist(self, department_head: DepartmentManager,
                               spec: SpecialistSpec) -> BoarderframeAgent:
         """Create a specialist agent within a department"""
         specialist = BoarderframeAgent(
@@ -583,18 +583,18 @@ class AgentFactory:
             tier=3,
             system_message=spec.system_prompt
         )
-        
+
         department_head.add_specialist(specialist)
         await self.db.create_agent_record(specialist)
         await self.setup_mcp_tools(specialist, spec.tool_permissions)
-        
+
         return specialist
 
 # Example department creation
 async def create_finance_department():
     """Create the Finance department with Levi and specialists"""
     factory = AgentFactory()
-    
+
     # Create department head
     levi = await factory.create_department_head(DepartmentSpec(
         leader_name="Levi",
@@ -602,20 +602,20 @@ async def create_finance_department():
         system_prompt="You are Levi, CFO of BoarderframeOS. Sacred steward of wealth multiplication...",
         tool_permissions=["database", "financial_apis", "reporting"]
     ))
-    
+
     # Create specialists
     await factory.create_specialist(levi, SpecialistSpec(
-        name="Treasure-Counter", 
+        name="Treasure-Counter",
         system_prompt="Expert in real-time financial tracking...",
         tool_permissions=["database", "accounting_tools"]
     ))
-    
+
     await factory.create_specialist(levi, SpecialistSpec(
         name="Revenue-Multiplier",
-        system_prompt="Expert in income optimization...", 
+        system_prompt="Expert in income optimization...",
         tool_permissions=["financial_apis", "analytics"]
     ))
-    
+
     return levi
 ```
 
@@ -666,15 +666,15 @@ zones:
   executive_tier:
     solomon: "400 TOPS (20%)"  # Dedicated high-performance
     david: "200 TOPS (10%)"    # CEO operations
-    
+
   department_heads:
     allocation: "600 TOPS (30%)" # Shared among 24 leaders
     scheduling: "priority-based"
-    
+
   specialist_agents:
     allocation: "600 TOPS (30%)" # 80+ specialist workers
     scheduling: "fair-share"
-    
+
   worker_swarm:
     allocation: "200 TOPS (10%)" # Micro-tasks and support
     scheduling: "best-effort"
@@ -695,7 +695,7 @@ zones:
 ```python
 class AccessControlMatrix:
     """Sacred access control for The Temple"""
-    
+
     TIER_PERMISSIONS = {
         1: {  # Executive (Solomon, David)
             "tools": ["*"],  # All tools
@@ -898,7 +898,7 @@ class AccessControlMatrix:
 
 ### 11.1 Year 1 Outcomes
 - **Freedom**: Early retirement from NiSource achieved
-- **Wealth**: $180K+ annual revenue generated autonomously  
+- **Wealth**: $180K+ annual revenue generated autonomously
 - **Wellbeing**: 8+ hours sleep, reduced stress, time with Ryan
 - **Impact**: Revolutionary multi-agent system operational
 

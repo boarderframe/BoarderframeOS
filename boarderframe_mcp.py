@@ -5,10 +5,10 @@ import asyncio
 import sys
 from pathlib import Path
 
-from mcp import types
-from mcp.server import Server, NotificationOptions  
-from mcp.server.models import InitializationOptions
 import mcp.server.stdio
+from mcp import types
+from mcp.server import NotificationOptions, Server
+from mcp.server.models import InitializationOptions
 
 # Create server instance
 server = Server("boarderframeos")
@@ -30,7 +30,7 @@ async def handle_list_tools() -> list[types.Tool]:
             name="list_agents",
             description="List all active agents",
             inputSchema={
-                "type": "object", 
+                "type": "object",
                 "properties": {},
                 "required": []
             }
@@ -57,30 +57,30 @@ async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent
     try:
         if name == "get_system_status":
             return [types.TextContent(
-                type="text", 
+                type="text",
                 text="BoarderframeOS Status: Operational\n- MCP Servers: Running\n- Agent Framework: Active\n- Database: Connected"
             )]
-        
+
         elif name == "list_agents":
             return [types.TextContent(
                 type="text",
                 text="Active Agents:\n- Solomon (Chief of Staff)\n- David (CEO)\n- Adam (Agent Creator)\n- Eve (Agent Evolver)\n- Bezalel (Master Programmer)"
             )]
-            
+
         elif name == "read_file":
             file_path = Path("/Users/cosburn/BoarderframeOS") / arguments["path"]
             if not file_path.exists():
                 return [types.TextContent(type="text", text=f"File not found: {arguments['path']}")]
-            
+
             try:
                 content = file_path.read_text(encoding='utf-8')
                 return [types.TextContent(type="text", text=content)]
             except Exception as e:
                 return [types.TextContent(type="text", text=f"Error reading file: {str(e)}")]
-        
+
         else:
             return [types.TextContent(type="text", text=f"Unknown tool: {name}")]
-            
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Tool error: {str(e)}")]
 

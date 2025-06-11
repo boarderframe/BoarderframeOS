@@ -5,17 +5,17 @@ Wraps the HTTP-based customer server for use with Claude CLI
 """
 
 import asyncio
-import json
-import sys
-import logging
-import uuid
-from typing import Any, Dict, List, Optional
-from pathlib import Path
-from datetime import datetime
 
 # Handle MCP import conflicts by temporarily modifying sys.path
 import importlib
 import importlib.util
+import json
+import logging
+import sys
+import uuid
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 # Save original sys.path
 original_path = sys.path.copy()
@@ -32,10 +32,10 @@ for module_name in local_mcp_modules:
 
 try:
     # Import the real MCP package
-    from mcp import types
-    from mcp.server import Server, NotificationOptions
-    from mcp.server.models import InitializationOptions
     import mcp.server.stdio
+    from mcp import types
+    from mcp.server import NotificationOptions, Server
+    from mcp.server.models import InitializationOptions
 finally:
     # Restore original sys.path
     sys.path = original_path
@@ -244,7 +244,7 @@ async def create_customer(args: Dict[str, Any]) -> List[types.TextContent]:
     """Create a new customer."""
     try:
         customer_id = str(uuid.uuid4())
-        
+
         customer_data = {
             "id": customer_id,
             "email": args["email"],
@@ -256,9 +256,9 @@ async def create_customer(args: Dict[str, Any]) -> List[types.TextContent]:
             "metadata": args.get("metadata", {}),
             "stripe_customer_id": None
         }
-        
+
         customers[customer_id] = customer_data
-        
+
         result = {
             "success": True,
             "customer_id": customer_id,
@@ -267,9 +267,9 @@ async def create_customer(args: Dict[str, Any]) -> List[types.TextContent]:
             "created_at": customer_data["created_at"],
             "timestamp": datetime.now().isoformat()
         }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error creating customer: {str(e)}")]
 
@@ -277,7 +277,7 @@ async def get_customer(args: Dict[str, Any]) -> List[types.TextContent]:
     """Get customer details."""
     try:
         customer_id = args["customer_id"]
-        
+
         if customer_id not in customers:
             result = {
                 "success": False,
@@ -290,9 +290,9 @@ async def get_customer(args: Dict[str, Any]) -> List[types.TextContent]:
                 "customer": customers[customer_id],
                 "timestamp": datetime.now().isoformat()
             }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error getting customer: {str(e)}")]
 
@@ -300,7 +300,7 @@ async def update_customer(args: Dict[str, Any]) -> List[types.TextContent]:
     """Update customer details."""
     try:
         customer_id = args["customer_id"]
-        
+
         if customer_id not in customers:
             result = {
                 "success": False,
@@ -309,30 +309,30 @@ async def update_customer(args: Dict[str, Any]) -> List[types.TextContent]:
             }
         else:
             customer = customers[customer_id]
-            
+
             # Update fields if provided
             if "name" in args and args["name"] is not None:
                 customer["name"] = args["name"]
-            
+
             if "subscription_status" in args and args["subscription_status"] is not None:
                 customer["subscription_status"] = args["subscription_status"]
-            
+
             if "monthly_value" in args and args["monthly_value"] is not None:
                 customer["monthly_value"] = args["monthly_value"]
-            
+
             if "metadata" in args and args["metadata"] is not None:
                 customer["metadata"].update(args["metadata"])
-            
+
             customer["updated_at"] = datetime.now().isoformat()
-            
+
             result = {
                 "success": True,
                 "customer": customer,
                 "timestamp": datetime.now().isoformat()
             }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error updating customer: {str(e)}")]
 
@@ -342,17 +342,17 @@ async def list_customers(args: Dict[str, Any]) -> List[types.TextContent]:
         status = args.get("status")
         limit = args.get("limit", 100)
         skip = args.get("skip", 0)
-        
+
         customers_list = list(customers.values())
-        
+
         # Apply status filter if provided
         if status:
             customers_list = [c for c in customers_list if c["subscription_status"] == status]
-        
+
         # Apply pagination
         total = len(customers_list)
         paginated = customers_list[skip:skip + limit]
-        
+
         result = {
             "success": True,
             "customers": paginated,
@@ -361,9 +361,9 @@ async def list_customers(args: Dict[str, Any]) -> List[types.TextContent]:
             "limit": limit,
             "timestamp": datetime.now().isoformat()
         }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error listing customers: {str(e)}")]
 
@@ -371,7 +371,7 @@ async def create_interaction(args: Dict[str, Any]) -> List[types.TextContent]:
     """Create a customer interaction."""
     try:
         customer_id = args["customer_id"]
-        
+
         # Check if customer exists
         if customer_id not in customers:
             result = {
@@ -381,7 +381,7 @@ async def create_interaction(args: Dict[str, Any]) -> List[types.TextContent]:
             }
         else:
             interaction_id = str(uuid.uuid4())
-            
+
             interaction_data = {
                 "id": interaction_id,
                 "customer_id": customer_id,
@@ -391,9 +391,9 @@ async def create_interaction(args: Dict[str, Any]) -> List[types.TextContent]:
                 "created_at": datetime.now().isoformat(),
                 "metadata": args.get("metadata", {})
             }
-            
+
             interactions.append(interaction_data)
-            
+
             result = {
                 "success": True,
                 "interaction_id": interaction_id,
@@ -401,9 +401,9 @@ async def create_interaction(args: Dict[str, Any]) -> List[types.TextContent]:
                 "created_at": interaction_data["created_at"],
                 "timestamp": datetime.now().isoformat()
             }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error creating interaction: {str(e)}")]
 
@@ -413,7 +413,7 @@ async def get_customer_interactions(args: Dict[str, Any]) -> List[types.TextCont
         customer_id = args["customer_id"]
         limit = args.get("limit", 100)
         skip = args.get("skip", 0)
-        
+
         if customer_id not in customers:
             result = {
                 "success": False,
@@ -423,14 +423,14 @@ async def get_customer_interactions(args: Dict[str, Any]) -> List[types.TextCont
         else:
             # Filter interactions by customer
             customer_interactions = [i for i in interactions if i["customer_id"] == customer_id]
-            
+
             # Sort by creation date (newest first)
             customer_interactions.sort(key=lambda x: x["created_at"], reverse=True)
-            
+
             # Apply pagination
             total = len(customer_interactions)
             paginated = customer_interactions[skip:skip + limit]
-            
+
             result = {
                 "success": True,
                 "customer_id": customer_id,
@@ -440,9 +440,9 @@ async def get_customer_interactions(args: Dict[str, Any]) -> List[types.TextCont
                 "limit": limit,
                 "timestamp": datetime.now().isoformat()
             }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error getting customer interactions: {str(e)}")]
 
@@ -452,7 +452,7 @@ async def get_customer_stats() -> List[types.TextContent]:
         total_customers = len(customers)
         active_subscriptions = sum(1 for c in customers.values() if c["subscription_status"] == "active")
         total_monthly_value = sum(c["monthly_value"] for c in customers.values())
-        
+
         result = {
             "success": True,
             "stats": {
@@ -464,9 +464,9 @@ async def get_customer_stats() -> List[types.TextContent]:
             },
             "timestamp": datetime.now().isoformat()
         }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error getting customer stats: {str(e)}")]
 

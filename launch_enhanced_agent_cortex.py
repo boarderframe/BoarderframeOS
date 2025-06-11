@@ -4,8 +4,8 @@ Launch Enhanced Agent Cortex Management Panel with SDK Integration
 """
 
 import asyncio
-import sys
 import os
+import sys
 from pathlib import Path
 
 # Add project root to path
@@ -26,17 +26,17 @@ async def main():
     print("  • Swarm Builder - Create agent collaboration patterns")
     print("  • Cost Calculator - Estimate LLM usage costs")
     print("=" * 60)
-    
+
     # Create enhanced panel instance
     panel = create_enhanced_panel(port=8890)
-    
+
     # Initialize connections
     print("📊 Initializing SDK and database connections...")
     await panel.initialize()
-    
+
     print("✅ Enhanced Agent Cortex Panel ready!")
     print("=" * 60)
-    
+
     # Run the web server
     panel.run()
 

@@ -3,21 +3,22 @@
 Centralize all agent metrics in Corporate HQ for consistency
 """
 
-import subprocess
 import json
+import subprocess
+
 
 def create_centralized_metrics_system():
     """Create a centralized metrics system for Corporate HQ"""
     print("🎯 Creating Centralized Metrics System for Corporate HQ")
     print("=" * 70)
-    
+
     # First, let's create a database view that provides consistent metrics
     print("\n📊 Creating centralized metrics view in database...")
-    
+
     metrics_view = """
     CREATE OR REPLACE VIEW hq_centralized_metrics AS
     WITH agent_metrics AS (
-        SELECT 
+        SELECT
             COUNT(*) as total_agents,
             COUNT(*) FILTER (WHERE status = 'online') as active_agents,
             COUNT(*) FILTER (WHERE operational_status = 'operational') as operational_agents,
@@ -31,7 +32,7 @@ def create_centralized_metrics_system():
         FROM agent_registry
     ),
     department_metrics AS (
-        SELECT 
+        SELECT
             COUNT(DISTINCT d.id) as total_departments,
             COUNT(DISTINCT d.id) FILTER (WHERE d.status = 'active') as active_departments,
             COUNT(DISTINCT d.id) FILTER (WHERE d.phase = 1) as phase1_departments,
@@ -39,13 +40,13 @@ def create_centralized_metrics_system():
         FROM departments d
     ),
     division_metrics AS (
-        SELECT 
+        SELECT
             COUNT(*) as total_divisions,
             COUNT(*) FILTER (WHERE is_active = true) as active_divisions
         FROM divisions
     ),
     server_metrics AS (
-        SELECT 
+        SELECT
             COUNT(*) as total_servers,
             COUNT(*) FILTER (WHERE status = 'online') as online_servers,
             COUNT(*) FILTER (WHERE health_status = 'healthy') as healthy_servers
@@ -53,11 +54,11 @@ def create_centralized_metrics_system():
     ),
     running_process_metrics AS (
         -- This would be filled by the application
-        SELECT 
+        SELECT
             0 as running_processes,
             0 as active_processes
     )
-    SELECT 
+    SELECT
         a.*,
         d.*,
         div.*,
@@ -66,27 +67,27 @@ def create_centralized_metrics_system():
         CURRENT_TIMESTAMP as last_updated
     FROM agent_metrics a, department_metrics d, division_metrics div, server_metrics s, running_process_metrics p;
     """
-    
+
     result = subprocess.run([
         "docker", "exec", "boarderframeos_postgres",
         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", metrics_view
     ], capture_output=True, text=True)
-    
+
     if result.returncode == 0:
         print("   ✅ Created centralized metrics view")
     else:
         print(f"   ⚠️  View creation issue: {result.stderr[:50]}")
-    
+
     # Now create the Python method that will be the single source of truth
     print("\n📝 Generating centralized metrics method for corporate_headquarters.py...")
-    
+
     metrics_method = '''
     def _get_centralized_metrics(self):
         """Single source of truth for all metrics displayed in HQ"""
         try:
             # First, try to get metrics from database
             query = """
-            SELECT 
+            SELECT
                 total_agents,
                 active_agents,
                 operational_agents,
@@ -108,12 +109,12 @@ def create_centralized_metrics_system():
                 healthy_servers
             FROM hq_centralized_metrics;
             """
-            
+
             result = subprocess.run([
                 "docker", "exec", "boarderframeos_postgres",
                 "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", query
             ], capture_output=True, text=True, timeout=5)
-            
+
             if result.returncode == 0 and result.stdout.strip():
                 parts = result.stdout.strip().split('|')
                 if len(parts) >= 19:
@@ -150,22 +151,22 @@ def create_centralized_metrics_system():
                     db_metrics = None
             else:
                 db_metrics = None
-                
+
         except Exception as e:
             print(f"Error fetching centralized metrics: {e}")
             db_metrics = None
-        
+
         # If database metrics are available, use them
         if db_metrics:
             # Add running process information
             db_metrics['agents']['running_processes'] = len(self.running_agents)
-            
+
             # Store in unified data for global access
             self.unified_data['centralized_metrics'] = db_metrics
             self.unified_data['last_metrics_update'] = datetime.now()
-            
+
             return db_metrics
-        
+
         # Fallback to local data if database unavailable
         fallback_metrics = {
             'agents': {
@@ -197,27 +198,27 @@ def create_centralized_metrics_system():
                 'healthy': len([s for s in self.services_status.values() if s.get('status') == 'healthy'])
             }
         }
-        
+
         # Store in unified data
         self.unified_data['centralized_metrics'] = fallback_metrics
         self.unified_data['last_metrics_update'] = datetime.now()
-        
+
         return fallback_metrics
-    
+
     def get_metric(self, category, metric_name):
         """Helper method to safely get a specific metric"""
         if 'centralized_metrics' not in self.unified_data:
             self._get_centralized_metrics()
-        
+
         metrics = self.unified_data.get('centralized_metrics', {})
         return metrics.get(category, {}).get(metric_name, 0)
 '''
-    
+
     print(metrics_method)
-    
+
     # Now generate the patches for various display locations
     print("\n\n📝 Patches for consistent metric display:\n")
-    
+
     patches = {
         "Dashboard Welcome Section": '''
 Replace hardcoded values with:
@@ -225,27 +226,27 @@ Replace hardcoded values with:
     active_agents = self.get_metric('agents', 'active')
     operational_agents = self.get_metric('agents', 'operational')
 ''',
-        
+
         "Departments Tab (Line 4868)": '''
 Replace:
     <div class="widget-value" style="color: #06b6d4;">
         120+
     </div>
-    
+
 With:
     <div class="widget-value" style="color: #06b6d4;">
         {self.get_metric('agents', 'total')}
     </div>
 ''',
-        
+
         "Agent Status Widget": '''
 Replace:
     total_agents = health_summary['agents']['total'] or 2
-    
+
 With:
     total_agents = self.get_metric('agents', 'total')
 ''',
-        
+
         "Registry Display": '''
 In _fetch_registry_data(), at the end add:
     # Ensure consistency with centralized metrics
@@ -254,22 +255,22 @@ In _fetch_registry_data(), at the end add:
     registry_data['totals']['leaders'] = centralized['agents']['leaders']
 '''
     }
-    
+
     for location, patch in patches.items():
         print(f"### {location}:")
         print(patch)
         print()
-    
+
     # Test the centralized metrics
     print("\n🔍 Testing centralized metrics query...")
-    
+
     test_query = "SELECT * FROM hq_centralized_metrics;"
-    
+
     result = subprocess.run([
         "docker", "exec", "boarderframeos_postgres",
         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", test_query
     ], capture_output=True, text=True)
-    
+
     if result.returncode == 0 and result.stdout.strip():
         parts = result.stdout.strip().split('|')
         if len(parts) >= 10:
@@ -281,14 +282,14 @@ In _fetch_registry_data(), at the end add:
             print(f"   Workforce: {parts[5].strip()}")
             print(f"   Departments: {parts[10].strip()}")
             print(f"   Divisions: {parts[14].strip()}")
-    
+
     print("\n\n💡 Implementation Steps:")
     print("1. Add the _get_centralized_metrics() method to CorporateHeadquarters class")
     print("2. Add the get_metric() helper method")
     print("3. Replace all hardcoded values with get_metric() calls")
     print("4. Call _get_centralized_metrics() in __init__ and during refreshes")
     print("5. All pages will now show consistent metrics!")
-    
+
     print("\n✅ Centralized metrics system ready for implementation!")
 
 

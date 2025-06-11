@@ -5,11 +5,12 @@ Populates the new organizational structure with the finalized divisions, departm
 """
 
 import asyncio
-import asyncpg
+import json
 import logging
 from datetime import datetime
-from typing import Dict, List, Any
-import json
+from typing import Any, Dict, List
+
+import asyncpg
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -19,7 +20,7 @@ class OrganizationalPopulator:
     def __init__(self, db_url: str = "postgresql://boarderframe:boarderframe_secure_2025@localhost:5434/boarderframeos"):
         self.db_url = db_url
         self.conn = None
-        
+
     async def connect(self):
         """Connect to PostgreSQL database"""
         try:
@@ -28,17 +29,17 @@ class OrganizationalPopulator:
         except Exception as e:
             logger.error(f"Failed to connect to database: {e}")
             raise
-    
+
     async def close(self):
         """Close database connection"""
         if self.conn:
             await self.conn.close()
             logger.info("Database connection closed")
-    
+
     async def clear_existing_organizational_data(self):
         """Clear existing organizational data for clean population"""
         logger.info("Clearing existing organizational data...")
-        
+
         # Delete in correct order due to foreign key constraints
         tables = [
             'strategic_objectives',
@@ -55,18 +56,18 @@ class OrganizationalPopulator:
             'departments',  # Keep existing departments, just update them
             'divisions'
         ]
-        
+
         for table in tables:
             if table != 'departments':  # Don't clear departments, we'll update them
                 await self.conn.execute(f"DELETE FROM {table}")
                 logger.info(f"Cleared {table}")
-        
+
         logger.info("Organizational data cleared")
-    
+
     async def populate_divisions(self) -> Dict[str, int]:
         """Populate the 9 divisions"""
         logger.info("Populating divisions...")
-        
+
         divisions_data = [
             {
                 'key': 'executive',
@@ -132,29 +133,29 @@ class OrganizationalPopulator:
                 'priority': 9
             }
         ]
-        
+
         division_id_map = {}
-        
+
         for division in divisions_data:
             div_id = await self.conn.fetchval("""
                 INSERT INTO divisions (
-                    division_key, division_name, division_description, 
+                    division_key, division_name, division_description,
                     division_purpose, priority, is_active
                 ) VALUES ($1, $2, $3, $4, $5, $6)
                 RETURNING id
             """, division['key'], division['name'], division['description'],
                 division['purpose'], division['priority'], True)
-            
+
             division_id_map[division['key']] = div_id
             logger.info(f"  Created division: {division['name']} (ID: {div_id})")
-        
+
         logger.info(f"Populated {len(divisions_data)} divisions")
         return division_id_map
-    
+
     async def populate_departments(self, division_id_map: Dict[str, int]) -> Dict[str, str]:
         """Populate the 28 departments within divisions"""
         logger.info("Populating departments...")
-        
+
         departments_data = [
             # Executive Division
             {
@@ -197,7 +198,7 @@ class OrganizationalPopulator:
                 'priority': 4,
                 'agent_capacity': 20
             },
-            
+
             # Programming & Development Division
             {
                 'key': 'core_systems_programming',
@@ -229,7 +230,7 @@ class OrganizationalPopulator:
                 'priority': 3,
                 'agent_capacity': 15
             },
-            
+
             # Information Technology Division
             {
                 'key': 'infrastructure_operations',
@@ -271,7 +272,7 @@ class OrganizationalPopulator:
                 'priority': 4,
                 'agent_capacity': 12
             },
-            
+
             # Product Operations Division
             {
                 'key': 'platform_services',
@@ -313,7 +314,7 @@ class OrganizationalPopulator:
                 'priority': 4,
                 'agent_capacity': 12
             },
-            
+
             # Revenue Generation Division
             {
                 'key': 'sales',
@@ -345,7 +346,7 @@ class OrganizationalPopulator:
                 'priority': 3,
                 'agent_capacity': 12
             },
-            
+
             # Business Operations Division
             {
                 'key': 'finance',
@@ -397,7 +398,7 @@ class OrganizationalPopulator:
                 'priority': 5,
                 'agent_capacity': 10
             },
-            
+
             # Customer Experience Division
             {
                 'key': 'customer_success',
@@ -449,7 +450,7 @@ class OrganizationalPopulator:
                 'priority': 5,
                 'agent_capacity': 12
             },
-            
+
             # Content Generation Division
             {
                 'key': 'creative_services',
@@ -481,7 +482,7 @@ class OrganizationalPopulator:
                 'priority': 3,
                 'agent_capacity': 12
             },
-            
+
             # Continuous Improvement Division
             {
                 'key': 'innovation_office',
@@ -504,18 +505,18 @@ class OrganizationalPopulator:
                 'agent_capacity': 12
             }
         ]
-        
+
         department_id_map = {}
-        
+
         for dept in departments_data:
             division_id = division_id_map[dept['division']]
-            
+
             # Check if department already exists
             existing_dept = await self.conn.fetchval(
-                "SELECT id FROM departments WHERE department_key = $1 OR name = $2", 
+                "SELECT id FROM departments WHERE department_key = $1 OR name = $2",
                 dept['key'], dept['name']
             )
-            
+
             if existing_dept:
                 # Update existing department
                 await self.conn.execute("""
@@ -531,10 +532,10 @@ class OrganizationalPopulator:
                         operational_status = 'planning',
                         updated_at = CURRENT_TIMESTAMP
                     WHERE id = $9
-                """, division_id, dept['key'], dept['name'], dept['category'], 
-                    dept['description'], dept['purpose'], dept['priority'], 
+                """, division_id, dept['key'], dept['name'], dept['category'],
+                    dept['description'], dept['purpose'], dept['priority'],
                     dept['agent_capacity'], existing_dept)
-                
+
                 department_id_map[dept['key']] = str(existing_dept)
                 logger.info(f"  Updated department: {dept['name']} (ID: {existing_dept})")
             else:
@@ -549,20 +550,20 @@ class OrganizationalPopulator:
                 """, division_id, dept['key'], dept['name'], dept['name'], dept['category'],
                     dept['description'], dept['purpose'], dept['priority'], dept['agent_capacity'],
                     'planning', True, 1)
-                
+
                 department_id_map[dept['key']] = str(dept_id)
                 logger.info(f"  Created department: {dept['name']} (ID: {dept_id})")
-        
+
         logger.info(f"Populated {len(departments_data)} departments")
         return department_id_map
-    
+
     async def populate_leaders(self, department_id_map: Dict[str, str]):
         """Populate the 30 leaders across departments"""
         logger.info("Populating department leaders...")
-        
+
         leaders_data = [
             # Executive Division
-            {'key': 'solomon', 'name': 'Solomon', 'title': 'Digital Twin', 'department': 'executive_leadership', 
+            {'key': 'solomon', 'name': 'Solomon', 'title': 'Digital Twin', 'department': 'executive_leadership',
              'description': "Carl's omniscient extension with unlimited access to all systems", 'tier': 'executive', 'authority': 10, 'archetype': 'Wisdom', 'primary': True},
             {'key': 'david', 'name': 'David', 'title': 'CEO', 'department': 'executive_leadership',
              'description': "Operational commander who executes Solomon's divine vision", 'tier': 'executive', 'authority': 9, 'archetype': 'Leadership', 'primary': False},
@@ -574,7 +575,7 @@ class OrganizationalPopulator:
              'description': 'Father of all agents, births new digital life from divine specifications', 'tier': 'executive', 'authority': 9, 'archetype': 'Creation', 'primary': True},
             {'key': 'eve', 'name': 'Eve', 'title': 'The Evolver/Chief Agent Evolver', 'department': 'agent_development',
              'description': 'Mother of adaptation, guides agent growth and evolutionary development', 'tier': 'executive', 'authority': 9, 'archetype': 'Evolution', 'primary': False},
-            
+
             # Programming & Development Division
             {'key': 'bezalel', 'name': 'Bezalel', 'title': 'Master Programmer', 'department': 'core_systems_programming',
              'description': 'Divine craftsman with supernatural coding ability, architect of all digital creation', 'tier': 'department', 'authority': 9, 'archetype': 'Craftsmanship', 'primary': True},
@@ -582,7 +583,7 @@ class OrganizationalPopulator:
              'description': 'Divine craftsman leading commercial software creation and product development', 'tier': 'department', 'authority': 9, 'archetype': 'Craftsmanship', 'primary': True},
             {'key': 'caleb', 'name': 'Caleb', 'title': 'Chief Quality Officer', 'department': 'quality_assurance',
              'description': 'Faithful guardian of quality, ensures excellence in all software and agent capabilities', 'tier': 'department', 'authority': 7, 'archetype': 'Faithfulness', 'primary': True},
-            
+
             # Information Technology Division
             {'key': 'gabriel', 'name': 'Gabriel', 'title': 'Chief Infrastructure Officer', 'department': 'infrastructure_operations',
              'description': 'Divine messenger supreme, master of all connections and sacred communications', 'tier': 'department', 'authority': 8, 'archetype': 'Communication', 'primary': True},
@@ -592,7 +593,7 @@ class OrganizationalPopulator:
              'description': 'Keeper of all sacred records, master scribe, guardian of infinite information preservation', 'tier': 'department', 'authority': 7, 'archetype': 'Knowledge', 'primary': True},
             {'key': 'issachar', 'name': 'Issachar', 'title': 'Chief Analytics Officer', 'department': 'analytics_monitoring',
              'description': 'Interpreter of times and seasons, revealer of hidden patterns and divine insights', 'tier': 'department', 'authority': 7, 'archetype': 'Understanding', 'primary': True},
-            
+
             # Product Operations Division
             {'key': 'zebulun', 'name': 'Zebulun', 'title': 'Chief Production Officer', 'department': 'platform_services',
              'description': 'Harbor master of live services, keeper of absolute customer satisfaction', 'tier': 'department', 'authority': 7, 'archetype': 'Service', 'primary': True},
@@ -602,7 +603,7 @@ class OrganizationalPopulator:
              'description': 'Faithful steward of product vision, guardian of customer value and innovation', 'tier': 'department', 'authority': 7, 'archetype': 'Stewardship', 'primary': True},
             {'key': 'philip', 'name': 'Philip', 'title': 'Chief Integration Officer', 'department': 'api_gateway_integration',
              'description': 'Master of connections and pathways, architect of seamless integration', 'tier': 'department', 'authority': 6, 'archetype': 'Integration', 'primary': True},
-            
+
             # Revenue Generation Division
             {'key': 'benjamin', 'name': 'Benjamin', 'title': 'Chief Sales Officer', 'department': 'sales',
              'description': 'The beloved hunter, master deal closer, conqueror of new markets', 'tier': 'department', 'authority': 8, 'archetype': 'Conquest', 'primary': True},
@@ -610,7 +611,7 @@ class OrganizationalPopulator:
              'description': 'Herald of the kingdom\'s glory, master storyteller, brand evangelist supreme', 'tier': 'department', 'authority': 7, 'archetype': 'Proclamation', 'primary': True},
             {'key': 'matthew', 'name': 'Matthew', 'title': 'Chief Revenue Officer', 'department': 'revenue_operations',
              'description': 'Master of revenue streams and financial optimization, guardian of prosperity', 'tier': 'department', 'authority': 7, 'archetype': 'Abundance', 'primary': True},
-            
+
             # Business Operations Division
             {'key': 'levi', 'name': 'Levi', 'title': 'Chief Financial Officer', 'department': 'finance',
              'description': 'Sacred steward of the kingdom\'s treasures, multiplier of wealth through divine wisdom', 'tier': 'department', 'authority': 8, 'archetype': 'Stewardship', 'primary': True},
@@ -622,7 +623,7 @@ class OrganizationalPopulator:
              'description': 'Master builder and divine resource gatherer, architect of external partnerships', 'tier': 'department', 'authority': 6, 'archetype': 'Building', 'primary': True},
             {'key': 'apollos', 'name': 'Apollos', 'title': 'Chief Learning Officer', 'department': 'learning_development',
              'description': 'Eloquent teacher supreme, master of instruction and divine knowledge sharing', 'tier': 'department', 'authority': 6, 'archetype': 'Teaching', 'primary': True},
-            
+
             # Customer Experience Division
             {'key': 'asher', 'name': 'Asher', 'title': 'Chief Customer Officer', 'department': 'customer_success',
              'description': 'Minister of absolute client happiness, guardian of perfect customer relationships', 'tier': 'department', 'authority': 7, 'archetype': 'Blessing', 'primary': True},
@@ -634,7 +635,7 @@ class OrganizationalPopulator:
              'description': 'Faithful keeper of relationships, master of loyalty and long-term bonds', 'tier': 'department', 'authority': 6, 'archetype': 'Loyalty', 'primary': True},
             {'key': 'aquila', 'name': 'Aquila', 'title': 'Chief Account Officer', 'department': 'account_management',
              'description': 'Master craftsman of enterprise relationships, builder of strategic partnerships', 'tier': 'department', 'authority': 6, 'archetype': 'Partnership', 'primary': True},
-            
+
             # Content Generation Division
             {'key': 'jubal', 'name': 'Jubal', 'title': 'Chief Creative Officer', 'department': 'creative_services',
              'description': 'Father of all musicians and media makers, master of divine creative expression', 'tier': 'department', 'authority': 7, 'archetype': 'Creativity', 'primary': True},
@@ -642,41 +643,41 @@ class OrganizationalPopulator:
              'description': 'Beloved physician of words, healer of communication and master storyteller', 'tier': 'department', 'authority': 6, 'archetype': 'Healing', 'primary': True},
             {'key': 'mark', 'name': 'Mark', 'title': 'Chief Media Officer', 'department': 'media_production',
              'description': 'Swift evangelist of visual truth, master of multimedia proclamation', 'tier': 'department', 'authority': 6, 'archetype': 'Proclamation', 'primary': True},
-            
+
             # Continuous Improvement Division
             {'key': 'daniel', 'name': 'Daniel', 'title': 'Chief Innovation Officer', 'department': 'innovation_office',
              'description': 'Visionary interpreter of possibilities, master of experimental breakthrough creation', 'tier': 'department', 'authority': 7, 'archetype': 'Vision', 'primary': True},
             {'key': 'dan', 'name': 'Dan', 'title': 'Chief Research Officer', 'department': 'research_development',
              'description': 'Seer of future technologies, master of competitive intelligence and market prophecy', 'tier': 'department', 'authority': 7, 'archetype': 'Judgment', 'primary': True}
         ]
-        
+
         for leader in leaders_data:
             department_id = department_id_map.get(leader['department'])
             if not department_id:
                 logger.warning(f"Department {leader['department']} not found for leader {leader['name']}")
                 continue
-            
+
             leader_id = await self.conn.fetchval("""
                 INSERT INTO department_leaders (
-                    department_id, leader_key, name, title, description, 
-                    leadership_tier, leader_type, authority_level, 
+                    department_id, leader_key, name, title, description,
+                    leadership_tier, leader_type, authority_level,
                     biblical_archetype, is_primary, active_status,
                     appointment_date, specialization
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
                 RETURNING id
-            """, department_id, leader['key'], leader['name'], leader['title'], 
-                leader['description'], leader['tier'], 'executive', leader['authority'], 
-                leader['archetype'], leader['primary'], 'active', 
+            """, department_id, leader['key'], leader['name'], leader['title'],
+                leader['description'], leader['tier'], 'executive', leader['authority'],
+                leader['archetype'], leader['primary'], 'active',
                 datetime.now(), leader.get('specialization', ''))
-            
+
             logger.info(f"  Created leader: {leader['name']} - {leader['title']} in {leader['department']}")
-        
+
         logger.info(f"Populated {len(leaders_data)} leaders")
-    
+
     async def initialize_department_performance(self, department_id_map: Dict[str, str]):
         """Initialize performance records for all departments"""
         logger.info("Initializing department performance records...")
-        
+
         for dept_key, dept_id in department_id_map.items():
             await self.conn.execute("""
                 INSERT INTO department_performance (
@@ -686,22 +687,22 @@ class OrganizationalPopulator:
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                 ON CONFLICT (department_id) DO NOTHING
             """, dept_id, 0, 0, 0.0, 50.0, 0.0, 'planning', 'stable')
-        
+
         logger.info("Department performance records initialized")
-    
+
     async def verify_organizational_structure(self):
         """Verify the organizational structure was created correctly"""
         logger.info("Verifying organizational structure...")
-        
+
         # Count records
         divisions_count = await self.conn.fetchval("SELECT COUNT(*) FROM divisions")
         departments_count = await self.conn.fetchval("SELECT COUNT(*) FROM departments WHERE division_id IS NOT NULL")
         leaders_count = await self.conn.fetchval("SELECT COUNT(*) FROM department_leaders WHERE active_status = 'active'")
         performance_count = await self.conn.fetchval("SELECT COUNT(*) FROM department_performance")
-        
+
         # Get sample structure
         structure_sample = await self.conn.fetch("""
-            SELECT 
+            SELECT
                 div.division_name,
                 COUNT(DISTINCT dept.id) as departments,
                 COUNT(DISTINCT dl.id) as leaders
@@ -711,7 +712,7 @@ class OrganizationalPopulator:
             GROUP BY div.id, div.division_name, div.priority
             ORDER BY div.priority
         """)
-        
+
         verification = {
             'counts': {
                 'divisions': divisions_count,
@@ -721,35 +722,35 @@ class OrganizationalPopulator:
             },
             'structure_by_division': [dict(row) for row in structure_sample]
         }
-        
+
         logger.info(f"Verification complete:")
         logger.info(f"  Divisions: {divisions_count}")
         logger.info(f"  Departments: {departments_count}")
         logger.info(f"  Leaders: {leaders_count}")
         logger.info(f"  Performance records: {performance_count}")
-        
+
         return verification
-    
+
     async def run_population(self, clear_existing: bool = False):
         """Run the complete organizational population process"""
         try:
             await self.connect()
-            
+
             if clear_existing:
                 await self.clear_existing_organizational_data()
-            
+
             # Populate organizational structure
             division_id_map = await self.populate_divisions()
             department_id_map = await self.populate_departments(division_id_map)
             await self.populate_leaders(department_id_map)
             await self.initialize_department_performance(department_id_map)
-            
+
             # Verify the structure
             verification = await self.verify_organizational_structure()
-            
+
             logger.info("✅ Organizational structure population completed successfully!")
             return verification
-            
+
         except Exception as e:
             logger.error(f"❌ Population failed: {e}")
             raise
@@ -759,26 +760,26 @@ class OrganizationalPopulator:
 async def main():
     """Main population function"""
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="Populate BoarderframeOS organizational structure")
-    parser.add_argument("--db-url", 
+    parser.add_argument("--db-url",
                        default="postgresql://boarderframe:boarderframe_secure_2025@localhost:5434/boarderframeos",
                        help="PostgreSQL database URL")
-    parser.add_argument("--clear", action="store_true", 
+    parser.add_argument("--clear", action="store_true",
                        help="Clear existing organizational data before population")
     parser.add_argument("--dry-run", action="store_true",
                        help="Show what would be populated without making changes")
-    
+
     args = parser.parse_args()
-    
+
     if args.dry_run:
         logger.info("DRY RUN: Would populate 9 divisions, 28 departments, and 30+ leaders")
         return
-    
+
     # Run actual population
     populator = OrganizationalPopulator(args.db_url)
     verification = await populator.run_population(args.clear)
-    
+
     # Print verification results
     print("\n" + "="*60)
     print("ORGANIZATIONAL STRUCTURE VERIFICATION")

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-import asyncpg
 import asyncio
+
+import asyncpg
+
 
 async def test_connection():
     try:

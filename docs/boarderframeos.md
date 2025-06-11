@@ -34,7 +34,7 @@ DAVID (CEO-Agent) - Runs the organization
     ↓
 The Primordials (Core Functions)
 - ADAM (The Builder) - Creates new agents
-- EVE (The Evolver) - Improves all agents  
+- EVE (The Evolver) - Improves all agents
 - BEZALEL (The Coder) - Writes code for your applications
     ↓
 The Twelve (Department Heads) - Future Phase

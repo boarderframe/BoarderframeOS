@@ -5,19 +5,20 @@ Ensures proper environment configuration before startup
 """
 
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
-import shutil
+
 
 def setup_environment():
     """Setup the environment for BoarderframeOS"""
     print("🔧 Setting up BoarderframeOS environment...")
-    
+
     project_root = Path(__file__).parent
     env_file = project_root / ".env"
     env_example = project_root / ".env.example"
-    
+
     # Create .env file if it doesn't exist
     if not env_file.exists() and env_example.exists():
         print("📝 Creating .env file from template...")
@@ -38,7 +39,7 @@ REDIS_URL=redis://localhost:6379
 ENVIRONMENT=development
 """)
         print("✅ Basic .env file created")
-    
+
     # Check Docker
     print("🐳 Checking Docker availability...")
     try:
@@ -51,7 +52,7 @@ ENVIRONMENT=development
     except FileNotFoundError:
         print("❌ Docker not installed")
         return False
-    
+
     # Check docker-compose
     try:
         result = subprocess.run(["docker-compose", "--version"], capture_output=True, text=True)
@@ -63,16 +64,16 @@ ENVIRONMENT=development
     except FileNotFoundError:
         print("❌ Docker Compose not installed")
         return False
-    
+
     print("✅ Environment setup complete!")
     return True
 
 def ensure_database_setup():
     """Ensure database containers are running and initialized"""
     print("🗄️  Setting up database infrastructure...")
-    
+
     project_root = Path(__file__).parent
-    
+
     # Start PostgreSQL and Redis containers
     print("🚀 Starting PostgreSQL and Redis containers...")
     try:
@@ -82,7 +83,7 @@ def ensure_database_setup():
             capture_output=True,
             text=True
         )
-        
+
         if result.returncode == 0:
             print("✅ Database containers started")
         else:
@@ -91,7 +92,7 @@ def ensure_database_setup():
     except Exception as e:
         print(f"❌ Error starting containers: {e}")
         return False
-    
+
     # Wait for PostgreSQL to be ready
     print("⏳ Waiting for PostgreSQL to be ready...")
     import time
@@ -110,7 +111,7 @@ def ensure_database_setup():
         time.sleep(1)
     else:
         print("⚠️  PostgreSQL readiness check timeout")
-    
+
     # Create a simple test to verify database works
     print("🧪 Testing database connectivity...")
     try:
@@ -132,9 +133,9 @@ def ensure_database_setup():
 if __name__ == "__main__":
     if not setup_environment():
         sys.exit(1)
-        
+
     if not ensure_database_setup():
         print("⚠️  Database setup had issues, but continuing...")
-        
+
     print("\n🎉 Environment setup complete!")
     print("💡 You can now run: python startup.py")

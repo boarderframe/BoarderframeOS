@@ -7,18 +7,18 @@ def restore_tabs():
     """Add back the missing tab content divs"""
     print("🔧 Restoring Missing Tabs")
     print("=" * 60)
-    
+
     file_path = "/Users/cosburn/BoarderframeOS/corporate_headquarters.py"
-    
+
     with open(file_path, 'r') as f:
         content = f.read()
-    
+
     # Find where to insert the tabs (after agents tab closes)
     agents_tab_end = content.find('        </div>\n\n        <!-- System Tab -->')
-    
+
     if agents_tab_end > 0:
         print("✅ Found insertion point after agents tab")
-        
+
         # The missing tabs content
         missing_tabs = '''
         <!-- Leaders Tab -->
@@ -33,10 +33,10 @@ def restore_tabs():
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
                     <div style="display: flex; align-items: center; gap: 1rem;">
                         <div style="
-                            width: 60px; height: 60px; 
-                            background: linear-gradient(135deg, #ec4899, #ec4899cc); 
-                            border-radius: 12px; 
-                            display: flex; align-items: center; justify-content: center; 
+                            width: 60px; height: 60px;
+                            background: linear-gradient(135deg, #ec4899, #ec4899cc);
+                            border-radius: 12px;
+                            display: flex; align-items: center; justify-content: center;
                             color: white; font-size: 1.5rem; box-shadow: 0 4px 12px #ec489940;
                         ">
                             <i class="fas fa-building"></i>
@@ -55,10 +55,10 @@ def restore_tabs():
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Department Metrics from Metrics Layer -->
                 {self.metrics_layer.get_department_metrics_cards() if self.metrics_layer and hasattr(self.metrics_layer, 'get_department_metrics_cards') else ""}
-                
+
                 <!-- Department Cards -->
                 <div style="grid-column: span 12;">
                     {self.metrics_layer.get_department_cards_html() if self.metrics_layer else self._generate_divisions_html()}
@@ -70,14 +70,14 @@ def restore_tabs():
         <div id="divisions" class="tab-content">
             {self.metrics_layer.get_divisions_page_html() if self.metrics_layer and hasattr(self.metrics_layer, 'get_divisions_page_html') else self._generate_divisions_html()}
         </div>'''
-        
+
         # Insert the missing tabs
         content = content[:agents_tab_end + 8] + missing_tabs + content[agents_tab_end + 8:]
-        
+
         # Write back
         with open(file_path, 'w') as f:
             f.write(content)
-        
+
         print("✅ Restored all missing tabs:")
         print("   - Leaders tab")
         print("   - Departments tab")

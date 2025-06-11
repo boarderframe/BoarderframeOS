@@ -31,7 +31,7 @@ Successfully added Flask API endpoints for metrics to Corporate Headquarters, al
 ## Available Metrics
 The metrics API now provides data for:
 - agents (total: 195, online: 80)
-- departments (total: 45, active: 3) 
+- departments (total: 45, active: 3)
 - services (8 total)
 - database (health metrics, connections, tables)
 - leaders (organizational leadership data)

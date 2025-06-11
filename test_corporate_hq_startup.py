@@ -3,16 +3,17 @@
 Test script to verify Corporate HQ can start properly
 """
 
+import signal
+import socket
 import subprocess
 import sys
 import time
-import socket
-import signal
+
 
 def test_corporate_hq():
     """Test starting Corporate HQ directly"""
     print("🧪 Testing Corporate HQ startup...")
-    
+
     # Start Corporate HQ
     print("🚀 Starting Corporate HQ...")
     process = subprocess.Popen(
@@ -21,11 +22,11 @@ def test_corporate_hq():
         stderr=subprocess.PIPE,
         text=True
     )
-    
+
     # Give it time to start
     print("⏳ Waiting for startup...")
     time.sleep(5)
-    
+
     # Check if process is still running
     if process.poll() is not None:
         # Process has exited
@@ -39,7 +40,7 @@ def test_corporate_hq():
             print("STDERR:")
             print(stderr)
         return False
-    
+
     # Check if port 8888 is open
     print("🔍 Checking port 8888...")
     try:
@@ -47,11 +48,11 @@ def test_corporate_hq():
         sock.settimeout(1)
         result = sock.connect_ex(('localhost', 8888))
         sock.close()
-        
+
         if result == 0:
             print("✅ Corporate HQ is running on port 8888!")
             print("🌐 You can access it at: http://localhost:8888")
-            
+
             # Clean shutdown
             print("\n🛑 Stopping Corporate HQ...")
             process.send_signal(signal.SIGTERM)
@@ -62,7 +63,7 @@ def test_corporate_hq():
             print("❌ Port 8888 is not responding")
             process.terminate()
             return False
-            
+
     except Exception as e:
         print(f"❌ Error checking port: {e}")
         process.terminate()

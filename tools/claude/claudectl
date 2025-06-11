@@ -2,7 +2,7 @@
 
 /**
  * BoarderframeOS Claude CLI wrapper
- * 
+ *
  * This script wraps the Claude Code CLI for easy integration with BoarderframeOS.
  */
 

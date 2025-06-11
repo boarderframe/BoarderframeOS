@@ -84,7 +84,7 @@ python system_status.py
 
 ### AI Agents
 - **Solomon** - Chief of Staff AI (claude-3-5-sonnet-latest)
-- **David** - CEO Agent (claude-3-5-sonnet-latest) 
+- **David** - CEO Agent (claude-3-5-sonnet-latest)
 - **Adam** - Agent Creator (future agent generation)
 - **Eve** - Agent Development (future)
 

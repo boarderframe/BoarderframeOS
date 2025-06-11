@@ -3,19 +3,21 @@
 Test script to verify the refresh modal component card functionality
 """
 
-import requests
-import time
 import sys
+import time
+
+import requests
+
 
 def test_refresh_api():
     """Test the enhanced refresh API endpoint"""
     try:
         print("🔄 Testing enhanced refresh API...")
-        
-        response = requests.post('http://localhost:8888/api/enhanced/refresh', 
-                                json={}, 
+
+        response = requests.post('http://localhost:8888/api/enhanced/refresh',
+                                json={},
                                 timeout=30)
-        
+
         if response.status_code == 200:
             result = response.json()
             print("✅ API Response received successfully")
@@ -27,7 +29,7 @@ def test_refresh_api():
             print(f"❌ API request failed: {response.status_code}")
             print(f"🔍 Response: {response.text}")
             return False
-            
+
     except requests.exceptions.RequestException as e:
         print(f"❌ Network error: {e}")
         return False
@@ -49,7 +51,7 @@ def check_corporate_hq():
 def main():
     print("🧪 Testing Refresh Modal Component Cards")
     print("=" * 50)
-    
+
     # Check if corporate headquarters is running
     if not check_corporate_hq():
         print("\n💡 Instructions:")
@@ -57,7 +59,7 @@ def main():
         print("2. Then test the refresh functionality in the browser at http://localhost:8888")
         print("3. Click the 'Refresh OS' button to see the component cards animate")
         sys.exit(1)
-    
+
     # Test the API
     if test_refresh_api():
         print("\n✅ Enhanced refresh API is working!")

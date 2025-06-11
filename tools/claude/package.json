@@ -1,12 +1,12 @@
 {
-  "name": "boarderframe-claude",
-  "version": "0.1.0",
+  "dependencies": {
+    "@anthropic-ai/claude-code": "latest"
+  },
   "description": "Claude CLI integration for BoarderframeOS",
   "main": "index.js",
+  "name": "boarderframe-claude",
   "scripts": {
     "start": "node index.js"
   },
-  "dependencies": {
-    "@anthropic-ai/claude-code": "latest"
-  }
+  "version": "0.1.0"
 }

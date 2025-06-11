@@ -4,20 +4,20 @@ Provides live inspection and control of all agent variables across layers
 """
 
 import asyncio
+import inspect
 import json
 import logging
-import inspect
-from typing import Dict, List, Any, Optional, Type
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Type
 
-from .base_agent import BaseAgent, AgentConfig, AgentState, AgentMemory
-from .cost_management import API_COST_SETTINGS, MODEL_COSTS, AGENT_COST_POLICIES
+from .base_agent import AgentConfig, AgentMemory, AgentState, BaseAgent
+from .cost_management import AGENT_COST_POLICIES, API_COST_SETTINGS, MODEL_COSTS
 from .llm_client import LLMConfig
 
 
-@dataclass 
+@dataclass
 class VariableDefinition:
     """Definition of a controllable variable"""
     name: str
@@ -33,37 +33,37 @@ class VariableDefinition:
 
 class AgentVariableInspector:
     """Inspects and controls all agent variables across all layers"""
-    
+
     def __init__(self):
         self.logger = logging.getLogger("agent_variable_inspector")
         self.variable_definitions: Dict[str, VariableDefinition] = {}
         self.agent_instances: Dict[str, BaseAgent] = {}
         self._initialize_variable_definitions()
-        
+
     def _initialize_variable_definitions(self):
         """Initialize all variable definitions across layers"""
-        
+
         # BaseAgent Layer Variables
         self._add_base_agent_variables()
-        
-        # LLMClient Layer Variables  
+
+        # LLMClient Layer Variables
         self._add_llm_client_variables()
-        
+
         # Cost Management Layer Variables
         self._add_cost_management_variables()
-        
+
         # Agent-Specific Variables
         self._add_agent_specific_variables()
-        
+
         # Memory Management Variables
         self._add_memory_variables()
-        
+
         # Message Bus Variables
         self._add_message_bus_variables()
-        
+
     def _add_base_agent_variables(self):
         """Add BaseAgent configuration variables"""
-        
+
         # AgentConfig variables
         base_config_vars = [
             VariableDefinition(
@@ -74,7 +74,7 @@ class AgentVariableInspector:
                 affects=["logging", "registry", "message_routing"]
             ),
             VariableDefinition(
-                name="config.role", layer="BaseAgent", type="str", 
+                name="config.role", layer="BaseAgent", type="str",
                 current_value="", default_value="general",
                 description="Agent's role in the system",
                 affects=["agent_tier", "permissions", "task_routing"]
@@ -132,12 +132,12 @@ class AgentVariableInspector:
                 affects=["throughput", "resource_usage"]
             ),
         ]
-        
+
         # Runtime state variables
         runtime_vars = [
             VariableDefinition(
                 name="state", layer="BaseAgent", type="str",
-                current_value="idle", default_value="initializing", 
+                current_value="idle", default_value="initializing",
                 description="Current agent state",
                 affects=["availability", "task_acceptance"]
             ),
@@ -168,13 +168,13 @@ class AgentVariableInspector:
                 affects=["api_usage", "message_filtering", "smart_batching"]
             ),
         ]
-        
+
         for var in base_config_vars + runtime_vars:
             self.variable_definitions[var.name] = var
-            
+
     def _add_llm_client_variables(self):
         """Add LLMClient configuration variables"""
-        
+
         llm_vars = [
             VariableDefinition(
                 name="llm.config.provider", layer="LLMClient", type="str",
@@ -210,13 +210,13 @@ class AgentVariableInspector:
                 affects=["reliability", "user_experience"]
             ),
         ]
-        
+
         for var in llm_vars:
             self.variable_definitions[var.name] = var
-            
+
     def _add_cost_management_variables(self):
         """Add cost management configuration variables"""
-        
+
         cost_vars = [
             VariableDefinition(
                 name="cost.optimization_enabled", layer="CostManagement", type="bool",
@@ -279,18 +279,18 @@ class AgentVariableInspector:
                 affects=["efficiency", "latency"]
             ),
         ]
-        
+
         for var in cost_vars:
             self.variable_definitions[var.name] = var
-            
+
     def _add_agent_specific_variables(self):
         """Add agent-specific variables for Solomon, David, etc."""
-        
+
         # Solomon-specific variables
         solomon_vars = [
             VariableDefinition(
                 name="solomon.decision_framework.maximize", layer="Solomon", type="list",
-                current_value=["freedom", "wellbeing", "wealth"], 
+                current_value=["freedom", "wellbeing", "wealth"],
                 default_value=["freedom", "wellbeing", "wealth"],
                 description="Values to maximize in decisions",
                 affects=["decision_making", "goal_prioritization"]
@@ -315,8 +315,8 @@ class AgentVariableInspector:
                 affects=["reporting", "decision_making"]
             ),
         ]
-        
-        # David-specific variables  
+
+        # David-specific variables
         david_vars = [
             VariableDefinition(
                 name="david.strategic_plan.vision", layer="David", type="str",
@@ -340,13 +340,13 @@ class AgentVariableInspector:
                 affects=["performance_tracking", "goal_setting"]
             ),
         ]
-        
+
         for var in solomon_vars + david_vars:
             self.variable_definitions[var.name] = var
-            
+
     def _add_memory_variables(self):
         """Add memory management variables"""
-        
+
         memory_vars = [
             VariableDefinition(
                 name="memory.max_short_term", layer="Memory", type="int",
@@ -365,18 +365,18 @@ class AgentVariableInspector:
             VariableDefinition(
                 name="memory.long_term_count", layer="Memory", type="int",
                 current_value=0, default_value=0,
-                description="Current long-term memory count", 
+                description="Current long-term memory count",
                 editable=False,
                 affects=["memory_status"]
             ),
         ]
-        
+
         for var in memory_vars:
             self.variable_definitions[var.name] = var
-            
+
     def _add_message_bus_variables(self):
         """Add message bus configuration variables"""
-        
+
         bus_vars = [
             VariableDefinition(
                 name="message_bus.queue_size", layer="MessageBus", type="int",
@@ -393,19 +393,19 @@ class AgentVariableInspector:
                 affects=["memory_usage", "reliability"]
             ),
         ]
-        
+
         for var in bus_vars:
             self.variable_definitions[var.name] = var
-    
+
     def register_agent_instance(self, agent: BaseAgent):
         """Register a live agent instance for variable control"""
         self.agent_instances[agent.config.name] = agent
         self._update_variables_from_agent(agent)
-        
+
     def _update_variables_from_agent(self, agent: BaseAgent):
         """Update variable current values from live agent"""
         agent_name = agent.config.name
-        
+
         # Update BaseAgent variables
         if "config.name" in self.variable_definitions:
             self.variable_definitions["config.name"].current_value = agent.config.name
@@ -423,7 +423,7 @@ class AgentVariableInspector:
             self.variable_definitions["api_call_count"].current_value = agent.api_call_count
         if "daily_cost" in self.variable_definitions:
             self.variable_definitions["daily_cost"].current_value = agent.daily_cost
-            
+
         # Update memory variables
         if "memory.max_short_term" in self.variable_definitions:
             self.variable_definitions["memory.max_short_term"].current_value = agent.memory.max_short_term
@@ -431,61 +431,61 @@ class AgentVariableInspector:
             self.variable_definitions["memory.short_term_count"].current_value = len(agent.memory.short_term)
         if "memory.long_term_count" in self.variable_definitions:
             self.variable_definitions["memory.long_term_count"].current_value = len(agent.memory.long_term)
-            
+
         # Update LLM variables
         if hasattr(agent, 'llm') and agent.llm:
             if "llm.config.provider" in self.variable_definitions:
                 self.variable_definitions["llm.config.provider"].current_value = agent.llm.config.provider
             if "llm.config.max_tokens" in self.variable_definitions:
                 self.variable_definitions["llm.config.max_tokens"].current_value = agent.llm.config.max_tokens
-                
+
         # Update agent-specific variables (Solomon, David, etc.)
         if hasattr(agent, 'decision_framework') and agent_name == "solomon":
             if "solomon.decision_framework.maximize" in self.variable_definitions:
                 self.variable_definitions["solomon.decision_framework.maximize"].current_value = agent.decision_framework.get("maximize", [])
-                
+
     def get_variables_by_layer(self, layer: str = None) -> Dict[str, VariableDefinition]:
         """Get variables filtered by layer"""
         if layer is None:
             return self.variable_definitions
         return {k: v for k, v in self.variable_definitions.items() if v.layer == layer}
-        
+
     def get_variables_by_agent(self, agent_name: str) -> Dict[str, VariableDefinition]:
         """Get variables that affect a specific agent"""
         agent_vars = {}
-        
+
         # Always include BaseAgent, LLMClient, CostManagement, Memory variables
         for name, var in self.variable_definitions.items():
             if var.layer in ["BaseAgent", "LLMClient", "CostManagement", "Memory", "MessageBus"]:
                 agent_vars[name] = var
             elif var.layer.lower() == agent_name.lower():
                 agent_vars[name] = var
-                
+
         return agent_vars
-        
+
     def update_variable(self, variable_name: str, new_value: Any, agent_name: str = None) -> bool:
         """Update a variable value in both definition and live agent"""
         if variable_name not in self.variable_definitions:
             return False
-            
+
         var_def = self.variable_definitions[variable_name]
-        
+
         if not var_def.editable:
             return False
-            
+
         # Validate new value
         if not self._validate_value(var_def, new_value):
             return False
-            
+
         # Update definition
         var_def.current_value = new_value
-        
+
         # Update live agent instance if available
         if agent_name and agent_name in self.agent_instances:
             self._apply_variable_to_agent(variable_name, new_value, self.agent_instances[agent_name])
-            
+
         return True
-        
+
     def _validate_value(self, var_def: VariableDefinition, value: Any) -> bool:
         """Validate a new value against variable definition"""
         # Type checking
@@ -502,16 +502,16 @@ class AgentVariableInspector:
             return False
         elif expected_type == "dict" and not isinstance(value, dict):
             return False
-            
+
         # Validation rules
         if var_def.validation_rules:
             if "min" in var_def.validation_rules and value < var_def.validation_rules["min"]:
                 return False
             if "max" in var_def.validation_rules and value > var_def.validation_rules["max"]:
                 return False
-                
+
         return True
-        
+
     def _apply_variable_to_agent(self, variable_name: str, value: Any, agent: BaseAgent):
         """Apply variable change to live agent instance"""
         try:
@@ -520,27 +520,27 @@ class AgentVariableInspector:
                 attr_name = variable_name.split(".", 1)[1]
                 if hasattr(agent.config, attr_name):
                     setattr(agent.config, attr_name, value)
-                    
+
             elif variable_name.startswith("memory."):
                 attr_name = variable_name.split(".", 1)[1]
                 if attr_name == "max_short_term":
                     agent.memory.max_short_term = value
-                    
+
             elif variable_name.startswith("llm.config."):
                 attr_name = variable_name.split(".", 2)[2]
                 if hasattr(agent.llm.config, attr_name):
                     setattr(agent.llm.config, attr_name, value)
-                    
+
             elif variable_name == "state":
                 if isinstance(value, str):
                     agent.state = AgentState(value)
-                    
+
             elif variable_name == "active":
                 agent.active = value
-                
+
             elif variable_name == "cost_optimization_enabled":
                 agent.cost_optimization_enabled = value
-                
+
             # Agent-specific variables
             elif variable_name.startswith("solomon.") and hasattr(agent, 'decision_framework'):
                 # Handle Solomon-specific variables
@@ -550,17 +550,17 @@ class AgentVariableInspector:
                     agent.decision_framework["protect"] = value
                 elif variable_name == "solomon.decision_framework.target":
                     agent.decision_framework["target"] = value
-                    
+
         except Exception as e:
             self.logger.error(f"Error applying variable {variable_name} to agent: {e}")
             return False
-            
+
         return True
-        
+
     def get_variable_summary(self) -> Dict[str, Any]:
         """Get summary of all variables organized by layer"""
         summary = {}
-        
+
         for layer in ["BaseAgent", "LLMClient", "CostManagement", "Memory", "MessageBus", "Solomon", "David"]:
             layer_vars = self.get_variables_by_layer(layer)
             if layer_vars:
@@ -574,9 +574,9 @@ class AgentVariableInspector:
                         "description": var.description
                     } for name, var in layer_vars.items()}
                 }
-                
+
         return summary
-        
+
     def export_configuration(self) -> Dict[str, Any]:
         """Export current configuration for backup"""
         return {
@@ -587,7 +587,7 @@ class AgentVariableInspector:
                 "type": var.type
             } for name, var in self.variable_definitions.items() if var.editable}
         }
-        
+
     def import_configuration(self, config: Dict[str, Any]) -> bool:
         """Import configuration from backup"""
         try:

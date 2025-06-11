@@ -2,24 +2,25 @@
 """
 BoarderframeOS Corporate Headquarters with Modern UI, Real-Time Status, and Department Integration
 """
+import asyncio
 import http.server
-import socketserver
 import json
-import threading
-import time
 import os
 import signal
-import sys
-from datetime import datetime
-import asyncio
-import httpx
-from pathlib import Path
-import psutil
 import socket
+import socketserver
+import sys
+import threading
+import time
+from datetime import datetime
+from pathlib import Path
+
+import httpx
+import psutil
 
 # Metrics Layer Integration
 try:
-    from core.hq_metrics_integration import HQMetricsIntegration, METRICS_CSS
+    from core.hq_metrics_integration import METRICS_CSS, HQMetricsIntegration
     from core.hq_metrics_layer import BFColors, BFIcons, MetricValue
     METRICS_AVAILABLE = True
 except ImportError:
@@ -54,26 +55,26 @@ class HealthDataManager:
             "Updating service registry information...",
             "Finalizing health metrics and status..."
         ]
-    
+
     async def global_refresh_all_data(self, progress_callback=None):
         """Perform comprehensive refresh of all Corporate Headquarters data with progress tracking"""
         print("🔄 Starting global_refresh_all_data...")
         self.dashboard.unified_data['refresh_in_progress'] = True
-        
+
         # Ensure services_status exists in unified_data
         if 'services_status' not in self.dashboard.unified_data:
             self.dashboard.unified_data['services_status'] = {}
             print("🔄 Initialized empty services_status in unified_data")
-        
+
         start_time = time.time()
-        
+
         try:
             for i, step_description in enumerate(self.refresh_steps):
                 print(f"🔍 Step {i+1}/{len(self.refresh_steps)}: {step_description}")
-                
+
                 if progress_callback:
                     progress_callback(i + 1, len(self.refresh_steps), step_description)
-                
+
                 try:
                     # Execute the corresponding refresh step
                     await self._execute_refresh_step(i)
@@ -82,21 +83,21 @@ class HealthDataManager:
                     print(f"⚠️ Step {i+1} failed but continuing: {step_error}")
                     # Continue with other steps even if one fails - this is expected for offline services
                     pass
-                
+
                 # Small delay for UI feedback
                 await asyncio.sleep(0.1)
-            
+
             # Update global refresh timestamp
             self.dashboard.unified_data['last_refresh'] = datetime.now().isoformat()
-            
+
             # Sync unified data to legacy properties for compatibility
             self._sync_to_legacy_properties()
-            
+
             refresh_time = time.time() - start_time
             print(f"✅ Global refresh completed in {refresh_time:.2f}s")
-            
+
             return True
-            
+
         except Exception as e:
             print(f"❌ Global refresh failed: {e}")
             import traceback
@@ -104,7 +105,7 @@ class HealthDataManager:
             return False
         finally:
             self.dashboard.unified_data['refresh_in_progress'] = False
-    
+
     async def _execute_refresh_step(self, step_index: int):
         """Execute specific refresh step based on index"""
         try:
@@ -172,14 +173,14 @@ class HealthDataManager:
             import traceback
             traceback.print_exc()
             # Don't re-raise - let other steps continue
-    
+
     async def _refresh_system_metrics(self):
         """Refresh system resource metrics"""
         try:
             cpu_percent = psutil.cpu_percent(interval=0.1)
             memory = psutil.virtual_memory()
             disk = psutil.disk_usage('/')
-            
+
             self.dashboard.unified_data['system_metrics'] = {
                 'cpu_percent': cpu_percent,
                 'memory_percent': memory.percent,
@@ -192,18 +193,18 @@ class HealthDataManager:
             }
         except Exception as e:
             print(f"System metrics refresh failed: {e}")
-    
+
     async def _refresh_database_health(self):
         """Refresh PostgreSQL database health"""
         await self.dashboard._update_database_health()
         # Copy to unified data
         self.dashboard.unified_data['database_health'] = getattr(self.dashboard, 'database_health_metrics', {})
-    
+
     async def _refresh_database_details(self):
         """Refresh detailed database information"""
         # Additional database metrics can be added here
         pass
-    
+
     async def _refresh_mcp_server(self, server_name: str, port: int):
         """Refresh specific MCP server status"""
         try:
@@ -211,7 +212,7 @@ class HealthDataManager:
             async with httpx.AsyncClient(timeout=self.dashboard.monitoring_config['health_check_timeout']) as client:
                 url = f"http://localhost:{port}/health"
                 response = await client.get(url)
-                
+
                 if response.status_code == 200:
                     health_data = response.json()
                     self.dashboard.unified_data['services_status'][server_name] = {
@@ -237,7 +238,7 @@ class HealthDataManager:
                 'last_check': datetime.now().isoformat()
             }
             print(f"❌ {server_name} server offline: {e}")
-    
+
     async def _refresh_agents_status(self):
         """Refresh running agents status"""
         try:
@@ -246,7 +247,7 @@ class HealthDataManager:
             print(f"✅ Refreshed agents status: {len(self.dashboard.running_agents)} agents")
         except Exception as e:
             print(f"❌ Failed to refresh agents status: {e}")
-    
+
     async def _refresh_organizational_data(self):
         """Refresh organizational structure data"""
         # Run sync method in executor to avoid blocking
@@ -258,7 +259,7 @@ class HealthDataManager:
             print(f"✅ Refreshed organizational data: {len(org_data)} divisions")
         else:
             print("⚠️ No organizational data returned from fetch")
-    
+
     async def _refresh_departments_data(self):
         """Refresh departments and divisions data"""
         try:
@@ -287,10 +288,10 @@ class HealthDataManager:
                 password="boarderframe_secure_2025",
                 database="boarderframeos"
             )
-            
+
             # Fetch all departments with their division info
             departments_query = """
-                SELECT 
+                SELECT
                     d.id,
                     d.department_name,
                     d.description,
@@ -303,10 +304,10 @@ class HealthDataManager:
                 JOIN divisions div ON d.division_id = div.id
                 ORDER BY div.division_name, d.department_name
             """
-            
+
             rows = await connection.fetch(departments_query)
             await connection.close()
-            
+
             # Convert to dictionary format compatible with existing code
             departments_dict = {}
             for row in rows:
@@ -320,13 +321,13 @@ class HealthDataManager:
                     'division_description': row['division_description'],
                     'created_at': row['created_at'].isoformat() if row['created_at'] else None
                 }
-            
+
             return departments_dict
-            
+
         except Exception as e:
             print(f"Database departments fetch error: {e}")
             return None
-    
+
     async def _refresh_agent_cortex_status(self):
         """Refresh Agent Cortex system status"""
         try:
@@ -334,7 +335,7 @@ class HealthDataManager:
             async with httpx.AsyncClient(timeout=self.dashboard.monitoring_config['health_check_timeout']) as client:
                 url = "http://localhost:8889/api/agent-cortex/status"
                 response = await client.get(url)
-                
+
                 if response.status_code == 200:
                     agent_cortex_status = response.json()
                     self.dashboard.unified_data['services_status']['agent_cortex'] = {
@@ -374,7 +375,7 @@ class HealthDataManager:
                     'last_check': datetime.now().isoformat()
                 }
                 print(f"❌ Agent Cortex system offline: {e}")
-    
+
     async def _refresh_corporate_headquarters_status(self):
         """Refresh Corporate Headquarters server status"""
         try:
@@ -406,7 +407,7 @@ class HealthDataManager:
                 'last_check': datetime.now().isoformat()
             }
             print(f"⚠️ Corporate Headquarters status unknown: {e}")
-    
+
     async def _collect_organizational_metrics(self):
         """Collect comprehensive organizational metrics from database and registry"""
         try:
@@ -415,12 +416,12 @@ class HealthDataManager:
                 departments_data = self.dashboard.unified_data['departments_data']
             else:
                 departments_data = self.departments_data
-                
+
             if 'organizational_data' in self.dashboard.unified_data:
                 org_data = self.dashboard.unified_data['organizational_data']
             else:
                 org_data = self.dashboard._fetch_organizational_data() or {}
-            
+
             print("📊 Collecting organizational metrics...")
             metrics = {
                 'divisions': {'total': 0, 'active': 0, 'percentage': 0},
@@ -429,7 +430,7 @@ class HealthDataManager:
                 'agents': {'total': 0, 'active': 0, 'percentage': 0},
                 'by_division': {}  # Division-specific metrics
             }
-            
+
             # Collect from database
             import asyncpg
             connection = await asyncpg.connect(
@@ -439,7 +440,7 @@ class HealthDataManager:
                 password="boarderframe_secure_2025",
                 database="boarderframeos"
             )
-            
+
             # Get divisions metrics
             divisions_query = """
                 SELECT COUNT(*) as total,
@@ -451,7 +452,7 @@ class HealthDataManager:
             metrics['divisions']['active'] = div_result['active']
             if metrics['divisions']['total'] > 0:
                 metrics['divisions']['percentage'] = round((metrics['divisions']['active'] / metrics['divisions']['total']) * 100, 1)
-            
+
             # Get departments metrics
             departments_query = """
                 SELECT COUNT(*) as total,
@@ -463,7 +464,7 @@ class HealthDataManager:
             metrics['departments']['active'] = dept_result['active']
             if metrics['departments']['total'] > 0:
                 metrics['departments']['percentage'] = round((metrics['departments']['active'] / metrics['departments']['total']) * 100, 1)
-            
+
             # Get leaders metrics
             leaders_query = """
                 SELECT COUNT(*) as total,
@@ -475,10 +476,10 @@ class HealthDataManager:
             metrics['leaders']['active'] = leader_result['active']
             if metrics['leaders']['total'] > 0:
                 metrics['leaders']['percentage'] = round((metrics['leaders']['active'] / metrics['leaders']['total']) * 100, 1)
-            
+
             # Get division-specific metrics
             division_metrics_query = """
-                SELECT 
+                SELECT
                     div.id,
                     div.division_name,
                     div.is_active as division_active,
@@ -491,9 +492,9 @@ class HealthDataManager:
                 LEFT JOIN leaders l ON d.id = l.department_id
                 GROUP BY div.id, div.division_name, div.is_active
             """
-            
+
             div_metrics = await connection.fetch(division_metrics_query)
-            
+
             for row in div_metrics:
                 div_name = row['division_name']
                 metrics['by_division'][div_name] = {
@@ -514,9 +515,9 @@ class HealthDataManager:
                     },
                     'is_active': row['division_active']
                 }
-            
+
             await connection.close()
-            
+
             # Get agents metrics from registry
             try:
                 async with httpx.AsyncClient(timeout=5.0) as client:
@@ -535,13 +536,13 @@ class HealthDataManager:
                     metrics['agents']['active'] = sum(1 for a in agents_list if a.get('status') == 'online')
                     if metrics['agents']['total'] > 0:
                         metrics['agents']['percentage'] = round((metrics['agents']['active'] / metrics['agents']['total']) * 100, 1)
-            
+
             # Store metrics in unified data
             self.dashboard.unified_data['organizational_metrics'] = metrics
             print(f"✅ Collected organizational metrics: {metrics}")
-            
+
             return metrics
-            
+
         except Exception as e:
             print(f"❌ Failed to collect organizational metrics: {e}")
             # Return default metrics
@@ -551,24 +552,24 @@ class HealthDataManager:
                 'leaders': {'total': 0, 'active': 0, 'percentage': 0},
                 'agents': {'total': 0, 'active': 0, 'percentage': 0}
             }
-    
+
     async def _refresh_registry_data(self):
         """Refresh service registry information"""
         # Placeholder for registry-specific data
         pass
-    
+
     async def _finalize_health_metrics(self):
         """Finalize and calculate overall health metrics"""
         # Calculate overall system health
         services_online = len([s for s in self.dashboard.unified_data['services_status'].values() if s.get('status') == 'healthy'])
         total_services = len(self.dashboard.unified_data['services_status'])
-        
+
         self.dashboard.unified_data['overall_health'] = {
             'status': 'online' if services_online > total_services * 0.7 else 'warning' if services_online > 0 else 'offline',
             'services_ratio': f"{services_online}/{total_services}",
             'last_calculated': datetime.now().isoformat()
         }
-    
+
     def _sync_to_legacy_properties(self):
         """Sync unified data back to legacy properties for compatibility"""
         try:
@@ -576,24 +577,24 @@ class HealthDataManager:
             if 'services_status' in self.dashboard.unified_data:
                 self.dashboard.services_status = dict(self.dashboard.unified_data['services_status'])
                 print(f"✅ Synced {len(self.dashboard.services_status)} services to legacy")
-                
+
                 # Also update metrics layer if available
                 if hasattr(self.dashboard, 'metrics_layer') and hasattr(self.dashboard.metrics_layer, 'set_server_status'):
                     self.dashboard.metrics_layer.set_server_status(self.dashboard.unified_data['services_status'])
                     print(f"✅ Updated metrics layer with server status")
-            
+
             if 'system_metrics' in self.dashboard.unified_data:
                 self.dashboard.system_metrics = dict(self.dashboard.unified_data['system_metrics'])
                 print(f"✅ Synced system metrics to legacy")
-            
+
             if 'database_health' in self.dashboard.unified_data:
                 self.dashboard.database_health_metrics = dict(self.dashboard.unified_data['database_health'])
                 print(f"✅ Synced database health to legacy")
-            
+
             if 'last_refresh' in self.dashboard.unified_data:
                 self.dashboard.last_update = self.dashboard.unified_data['last_refresh']
                 print(f"✅ Synced last update timestamp")
-                
+
             print(f"✅ Legacy property sync completed")
         except Exception as e:
             print(f"❌ Legacy property sync failed: {e}")
@@ -603,28 +604,28 @@ class HealthDataManager:
         """Enhanced global refresh with granular component selection"""
         print("🔄 Starting enhanced global refresh...")
         self.dashboard.unified_data['refresh_in_progress'] = True
-        
+
         # Default components to refresh if none specified
         if components is None:
             components = [
-                'system_metrics', 'database_health', 'services_status', 
+                'system_metrics', 'database_health', 'services_status',
                 'agents_status', 'mcp_servers', 'registry_data',
                 'departments_data', 'organizational_data'
             ]
-        
+
         start_time = time.time()
         refreshed_components = []
         failed_components = []
-        
+
         try:
             total_steps = len(components)
-            
+
             for i, component in enumerate(components):
                 print(f"🔍 Refreshing {component} ({i+1}/{total_steps})...")
-                
+
                 if progress_callback:
                     progress_callback(i + 1, total_steps, f"Refreshing {component}...")
-                
+
                 try:
                     success = await self._refresh_component(component)
                     if success:
@@ -636,16 +637,16 @@ class HealthDataManager:
                 except Exception as e:
                     failed_components.append(component)
                     print(f"⚠️ {component} refresh error: {e}")
-                
+
                 await asyncio.sleep(0.1)  # UI feedback delay
-            
+
             # Update timestamps
             self.dashboard.unified_data['last_refresh'] = datetime.now().isoformat()
             self._sync_to_legacy_properties()
-            
+
             refresh_time = time.time() - start_time
             print(f"✅ Enhanced global refresh completed in {refresh_time:.2f}s")
-            
+
             return {
                 'success': True,
                 'total_components': len(components),
@@ -653,7 +654,7 @@ class HealthDataManager:
                 'failed_components': failed_components,
                 'refresh_time': refresh_time
             }
-            
+
         except Exception as e:
             print(f"❌ Enhanced global refresh failed: {e}")
             import traceback
@@ -696,7 +697,7 @@ class HealthDataManager:
             else:
                 print(f"⚠️ Unknown component: {component}")
                 return False
-            
+
             return True
         except Exception as e:
             print(f"❌ Component {component} refresh failed: {e}")
@@ -709,7 +710,7 @@ class DashboardData:
         # All Corporate Headquarters components pull from these unified data structures
         self.unified_data = {
             'services_status': {},      # All MCP servers and services
-            'agents_status': {},        # All agent states and metrics  
+            'agents_status': {},        # All agent states and metrics
             'system_metrics': {},       # CPU, memory, disk, network
             'database_health': {},      # PostgreSQL health and metrics
             'registry_data': {},        # Service registry information
@@ -722,7 +723,7 @@ class DashboardData:
             'last_refresh': None,       # Global last refresh timestamp
             'refresh_in_progress': False # Global refresh state
         }
-        
+
         # === LEGACY COMPATIBILITY ===
         # Keep existing properties for backward compatibility during transition
         self.services_status = {}
@@ -739,7 +740,7 @@ class DashboardData:
         self.last_update = None
         self.update_thread = None
         self.running = True
-        
+
         # === ENHANCED MONITORING CONFIG ===
         self.health_history = {}
         self.alert_conditions = {}
@@ -754,7 +755,7 @@ class DashboardData:
                 'disk_percent': 90
             }
         }
-        
+
         # Initialize Corporate HQ as healthy since we're running
         self.unified_data['services_status']['corporate_headquarters'] = {
             'status': 'healthy',
@@ -783,40 +784,40 @@ class DashboardData:
                 print("✓ Metrics layer initialized successfully")
             except Exception as e:
                 print(f"⚠️ Failed to initialize metrics layer: {e}")
-        
+
         self.status_file = "data/system_status.json"
-        
+
         # Ensure data directory exists
         os.makedirs("data", exist_ok=True)
-        
+
         # Initialize centralized health data manager
         self.health_manager = HealthDataManager(self)
-        
+
         # Load initial data and persistent status
         self._load_department_data()
         self._load_persistent_status()
-        
+
         # Initialize with basic server data to prevent empty state
         self._initialize_basic_server_data()
-        
+
         # Run initial health check to populate real server status
         # NOTE: Commented out because it marks servers as offline before they have time to start
         # The background refresh will update the status properly
         # self._run_initial_health_check()
-        
+
         print("🎯 Centralized Health & Data Management System initialized")
         print(f"📊 Monitoring {len(self.unified_data)} data categories")
         print(f"⚡ Global refresh system ready with {self.monitoring_config['global_refresh_steps']} steps")
         print(f"🔄 Health manager type: {type(self.health_manager)}")
         print(f"📦 Available methods: {[m for m in dir(self.health_manager) if not m.startswith('_')]}")
-        
+
         # Test basic functionality
         try:
             test_data = self.get_health_summary()
             print(f"✅ Health summary working: {len(test_data)} keys")
         except Exception as e:
             print(f"❌ Health summary failed: {e}")
-        
+
     def _load_department_data(self):
         """Load department data from JSON file"""
         try:
@@ -830,15 +831,15 @@ class DashboardData:
                 print("⚠️  Department data file not found")
         except Exception as e:
             print(f"⚠️  Error loading department data: {e}")
-    
+
     def _create_agent_department_mapping(self):
         """Create mapping between agents and departments"""
         self.agent_department_mapping = {}
-        
+
         # Define known agent to department mappings
         agent_mappings = {
             'solomon': 'executive_leadership',
-            'david': 'executive_leadership', 
+            'david': 'executive_leadership',
             'michael': 'coordination_orchestration',
             'adam': 'agent_development',
             'eve': 'agent_development',
@@ -864,7 +865,7 @@ class DashboardData:
             'joseph': 'strategic_planning',
             'joshua': 'change_management'
         }
-        
+
         for agent, dept_key in agent_mappings.items():
             if dept_key in self.departments_data:
                 self.agent_department_mapping[agent] = {
@@ -872,16 +873,16 @@ class DashboardData:
                     'department_name': self.departments_data[dept_key]['department_name'],
                     'category': self.departments_data[dept_key]['category']
                 }
-                
+
     def get_department_summary(self, departments_data=None):
         """Get summary of departments and their statistics using centralized data"""
         # Use provided data or fallback to centralized/legacy data
         if departments_data is None:
             departments_data = self.unified_data.get('departments_data', self.departments_data)
-            
+
         if not departments_data:
             return {}
-            
+
         summary = {
             'total_departments': len(departments_data),
             'categories': {},
@@ -889,26 +890,26 @@ class DashboardData:
             'total_agents': 0,
             'departments_by_category': {}
         }
-        
+
         for dept_key, dept_data in departments_data.items():
             category = dept_data.get('category', 'Other')
-            
+
             # Count by category
             if category not in summary['categories']:
                 summary['categories'][category] = 0
             summary['categories'][category] += 1
-            
+
             # Group departments by category
             if category not in summary['departments_by_category']:
                 summary['departments_by_category'][category] = []
             summary['departments_by_category'][category].append(dept_data)
-            
+
             # Count leaders and agents
             summary['total_leaders'] += len(dept_data.get('leaders', []))
             summary['total_agents'] += len(dept_data.get('native_agents', []))
-            
+
         return summary
-    
+
     def _get_subsystem_status(self, subsystem: str) -> str:
         """Get status for a specific subsystem using centralized data"""
         # Use unified_data when available, fallback to legacy data
@@ -916,7 +917,7 @@ class DashboardData:
         services_data = self.unified_data.get('services_status', self.services_status)
         db_data = self.unified_data.get('database_health', getattr(self, 'database_health_metrics', {}))
         departments_data = self.unified_data.get('departments_data', self.departments_data)
-        
+
         if subsystem == 'agents':
             running_count = len([a for a in agents_data.values() if a.get('status') == 'running'])
             return 'online' if running_count > 0 else 'offline'
@@ -947,55 +948,55 @@ class DashboardData:
             # BoarderFrame specific servers like Corporate Headquarters
             return 'online'  # Corporate Headquarters is always online if we're seeing this
         return 'unknown'
-    
+
     def _get_agents_count(self) -> str:
         """Get agents count summary using centralized data"""
         agents_data = self.unified_data.get('agents_status', self.running_agents)
         running = len([a for a in agents_data.values() if a.get('status') == 'running'])
         total = len(agents_data) if agents_data else 2  # Default: Solomon, David
         return f"{running}/{total}"
-    
+
     def _get_leaders_count(self) -> str:
         """Get leaders count summary using centralized data"""
         agents_data = self.unified_data.get('agents_status', self.running_agents)
         leader_agents = ['solomon', 'david', 'michael']
         running = len([a for a in leader_agents if a in agents_data and agents_data[a].get('status') == 'running'])
         return f"{running}/{len(leader_agents)}"
-    
+
     def _get_departments_count(self) -> str:
         """Get departments count summary using centralized data"""
         departments_data = self.unified_data.get('departments_data', self.departments_data)
         total = len(departments_data)
         active = len([d for d in departments_data.values() if d.get('status') != 'inactive'])
         return f"{active}/{total}"
-    
+
     def _get_servers_count(self) -> str:
         """Get servers count summary using centralized data"""
         services_data = self.unified_data.get('services_status', self.services_status)
         online = len([s for s in services_data.values() if s.get('status') in ['healthy', 'online']])
         total = len(services_data) if services_data else 8  # Default MCP servers
         return f"{online}/{total}"
-    
+
     def _get_database_status(self) -> str:
         """Get database status summary with key metrics using centralized data"""
         db_metrics = self.unified_data.get('database_health', getattr(self, 'database_health_metrics', {}))
-        
+
         if not db_metrics or db_metrics.get('status') != 'healthy':
             return 'Offline'
-        
+
         # Show only tables and size as requested
         tables = db_metrics.get('total_tables', 0)
         size = db_metrics.get('database_size', 'Unknown')
-        
+
         return f"{tables} tables • {size}"
-        
+
     def _get_formatted_timestamp(self) -> str:
         """Get formatted timestamp with date first and AM/PM format"""
         from datetime import datetime
         now = datetime.now()
         # Format: "Dec 31, 2025 at 11:59 PM"
         return now.strftime("%b %d, %Y at %I:%M %p")
-        
+
     def _get_divisions_count(self) -> str:
         """Get divisions count summary using centralized data"""
         try:
@@ -1017,7 +1018,7 @@ class DashboardData:
                     return "9/9"  # We have 9 major divisions defined
         except Exception:
             return "9/9"  # Safe fallback
-            
+
     def _get_mcps_count(self) -> str:
         """Get MCP servers count summary using centralized data"""
         services_data = self.unified_data.get('services_status', self.services_status)
@@ -1025,7 +1026,7 @@ class DashboardData:
         healthy_mcps = len([s for s in mcp_services if services_data.get(s, {}).get('status') in ['healthy', 'online']])
         total_mcps = len(mcp_services)
         return f"{healthy_mcps}/{total_mcps}"
-        
+
     def _get_boarderframe_servers_count(self) -> str:
         """Get BoarderFrame servers count summary"""
         # BoarderFrame specific tools/servers
@@ -1034,64 +1035,64 @@ class DashboardData:
         # Message Bus and Orchestrator status would need to be checked separately
         # For now, assume Corporate Headquarters is online (1) and check for others
         online_count = 1  # Corporate Headquarters is running
-        
+
         # Could add checks for other BoarderFrame components here
         # For now, return a conservative estimate
         total_count = len(boarderframe_tools)
         return f"{online_count}/{total_count}"
-    
+
     def _get_category_count(self, category_name: str) -> str:
         """Get server count for a specific category"""
         # Get the most up-to-date services data, preferring unified_data
         services_data = self.unified_data.get('services_status', {})
         if not services_data:
             services_data = self.services_status
-        
+
         # Define server categories matching the Systems tab organization
         category_servers = {
             "Core Systems": ["corporate_headquarters", "agent_cortex", "registry"],
             "MCP Servers": ["filesystem", "database_postgres", "analytics"],
             "Business Services": ["payment", "customer"]
         }
-        
+
         servers = category_servers.get(category_name, [])
         online_count = len([s for s in servers if services_data.get(s, {}).get('status') == 'healthy'])
         total_count = len(servers)
         return f"{online_count}/{total_count}"
-    
+
     def _get_category_status(self, category_name: str) -> str:
         """Get status for a specific server category"""
         # Get the most up-to-date services data, preferring unified_data
         services_data = self.unified_data.get('services_status', {})
         if not services_data:
             services_data = self.services_status
-        
+
         # Define server categories matching the Systems tab organization
         category_servers = {
             "Core Systems": ["corporate_headquarters", "agent_cortex", "registry"],
-            "MCP Servers": ["filesystem", "database_postgres", "analytics"], 
+            "MCP Servers": ["filesystem", "database_postgres", "analytics"],
             "Business Services": ["payment", "customer"]
         }
-        
+
         servers = category_servers.get(category_name, [])
         if not servers:
             return "offline"
-            
+
         online_count = len([s for s in servers if services_data.get(s, {}).get('status') == 'healthy'])
         total_count = len(servers)
-        
+
         if online_count == total_count:
             return "online"
         elif online_count > 0:
             return "warning"
         else:
             return "offline"
-        
+
     def start_updates(self, enhanced=True):
         """Start background data updates with enhanced monitoring"""
         print(f"🔄 Starting {'enhanced' if enhanced else 'standard'} monitoring system...")
         print(f"📊 Update interval: {self.monitoring_config['update_interval']} seconds")
-        
+
         # Run initial update immediately
         try:
             loop = asyncio.new_event_loop()
@@ -1101,15 +1102,15 @@ class DashboardData:
             print("✅ Initial system scan completed")
         except Exception as e:
             print(f"❌ Initial update error: {e}")
-        
+
         # Start enhanced or standard update thread
         if enhanced:
             self.update_thread = threading.Thread(target=self._enhanced_update_wrapper, daemon=True)
         else:
             self.update_thread = threading.Thread(target=self._update_loop, daemon=True)
-        
+
         self.update_thread.start()
-        
+
     def _enhanced_update_wrapper(self):
         """Wrapper to run enhanced async update loop in thread"""
         try:
@@ -1120,7 +1121,7 @@ class DashboardData:
             print(f"❌ Enhanced monitoring error: {e}")
         finally:
             loop.close()
-        
+
     def _update_loop(self):
         """Background update loop"""
         while self.running:
@@ -1133,7 +1134,7 @@ class DashboardData:
             except Exception as e:
                 print(f"Update error: {e}")
             time.sleep(30)  # Update every 30 seconds
-    
+
     async def _async_update(self):
         """Async update of all dashboard data"""
         async with httpx.AsyncClient(timeout=self.monitoring_config['health_check_timeout']) as client:
@@ -1142,11 +1143,11 @@ class DashboardData:
             await self._update_system_metrics()
             await self._update_startup_status()
             await self._update_database_health()
-            
+
             # Update organizational metrics every 3rd update cycle (every 45 seconds at 15s interval)
             update_count = getattr(self, '_update_count', 0)
             self._update_count = update_count + 1
-            
+
             if self._update_count % 3 == 0:
                 try:
                     health_manager = HealthDataManager(self)
@@ -1154,9 +1155,9 @@ class DashboardData:
                     self.unified_data['organizational_metrics'] = metrics
                 except Exception as e:
                     print(f"⚠️ Failed to update organizational metrics: {e}")
-            
+
             self.last_update = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
+
     async def _update_database_health(self):
         """Update database health metrics"""
         try:
@@ -1176,7 +1177,7 @@ class DashboardData:
             }
             # Also update unified_data for consistency
             self.unified_data['database_health'] = self.database_health_metrics
-    
+
     async def _update_services(self, client):
         """Update services status with enhanced MCP server details"""
         services = {
@@ -1184,23 +1185,23 @@ class DashboardData:
             "filesystem": {"port": 8001, "name": "File System Server", "icon": "fas fa-folder-tree", "category": "MCP Servers"},
             "database_postgres": {"port": 8010, "name": "PostgreSQL Database Server", "icon": "fas fa-database", "category": "MCP Servers"},
             "analytics": {"port": 8007, "name": "Analytics Server", "icon": "fas fa-chart-bar", "category": "MCP Servers"},
-            
+
             # Core Systems - Essential infrastructure
             "corporate_headquarters": {"port": 8888, "name": "HR", "icon": "fas fa-users-cog", "category": "Core Systems"},
             "agent_cortex": {"port": 8889, "name": "Agent Cortex", "icon": "fas fa-brain", "category": "Core Systems"},
             "registry": {"port": 8009, "name": "Registry", "icon": "fas fa-server", "category": "Core Systems"},
-            
+
             # Business Services - Business-focused services
             "payment": {"port": 8006, "name": "Payment Server", "icon": "fas fa-credit-card", "category": "Business Services"},
             "customer": {"port": 8008, "name": "Customer Server", "icon": "fas fa-users", "category": "Business Services"}
         }
-        
+
         for service_id, service_info in services.items():
             try:
                 resp = await client.get(f"http://localhost:{service_info['port']}/health")
                 if resp.status_code == 200:
                     health_data = resp.json() if resp.headers.get('content-type', '').startswith('application/json') else {}
-                    
+
                     # Enhanced data for filesystem server
                     if service_id == "filesystem":
                         self.mcp_details[service_id] = {
@@ -1213,7 +1214,7 @@ class DashboardData:
                             "disk_usage": health_data.get("disk_usage", {}),
                             "recent_operations": health_data.get("recent_operations", [])
                         }
-                    
+
                     # Calculate uptime if not provided by server
                     server_uptime = health_data.get("uptime")
                     if server_uptime is None:
@@ -1222,7 +1223,7 @@ class DashboardData:
                             server_uptime = "Online"
                         else:
                             server_uptime = f"{resp.elapsed.total_seconds():.1f}s response"
-                    
+
                     self.services_status[service_id] = {
                         "status": "healthy",
                         "response_time": resp.elapsed.total_seconds(),
@@ -1233,7 +1234,7 @@ class DashboardData:
                     }
                 else:
                     self.services_status[service_id] = {
-                        "status": "degraded", 
+                        "status": "degraded",
                         "error": f"HTTP {resp.status_code}",
                         "last_check": datetime.now().strftime("%I:%M:%S %p"),
                         "uptime": "Unknown",
@@ -1241,7 +1242,7 @@ class DashboardData:
                     }
             except Exception as e:
                 self.services_status[service_id] = {
-                    "status": "critical", 
+                    "status": "critical",
                     "error": str(e)[:50],
                     "last_check": datetime.now().strftime("%I:%M:%S %p"),
                     "uptime": "Offline",
@@ -1255,14 +1256,14 @@ class DashboardData:
             # Import agent manager for configuration data
             sys.path.insert(0, str(Path(__file__).parent))
             from scripts.start_agents import AgentManager
-            
+
             agent_manager = AgentManager()
-            
+
             # Check each configured agent
             for agent_name, config in agent_manager.agent_configs.items():
                 if agent_manager.is_agent_running(agent_name):
                     pid = agent_manager.get_agent_pid(agent_name)
-                    
+
                     # Get process information
                     try:
                         import psutil
@@ -1274,7 +1275,7 @@ class DashboardData:
                         memory_percent = 0
                         cpu_percent = 0
                         create_time = "Unknown"
-                    
+
                     running_agents[agent_name] = {
                         'name': agent_name.title(),
                         'status': 'running',
@@ -1301,7 +1302,7 @@ class DashboardData:
                         'start_time': None,
                         'health': 'offline'
                     }
-                    
+
         except ImportError:
             # Fallback to basic process detection if agent manager unavailable
             import psutil
@@ -1311,7 +1312,7 @@ class DashboardData:
                     if 'solomon.py' in cmdline or 'solomon' in process.info['name'].lower():
                         running_agents['solomon'] = {
                             'name': 'Solomon',
-                            'status': 'running', 
+                            'status': 'running',
                             'pid': process.info['pid'],
                             'type': 'Strategic Planning Agent',
                             'model': 'claude-3-5-sonnet-latest',
@@ -1323,7 +1324,7 @@ class DashboardData:
                     elif 'david.py' in cmdline or 'david' in process.info['name'].lower():
                         running_agents['david'] = {
                             'name': 'David',
-                            'status': 'running', 
+                            'status': 'running',
                             'pid': process.info['pid'],
                             'type': 'Research Agent',
                             'model': 'claude-3-5-sonnet-latest',
@@ -1336,14 +1337,14 @@ class DashboardData:
                     continue
         except Exception as e:
             print(f"Error updating agent status: {e}")
-            
+
         self.running_agents = running_agents
 
     async def _update_system_metrics(self):
         """Update system metrics"""
         try:
             import psutil
-            
+
             # Get network connections with proper error handling for macOS permissions
             try:
                 active_connections = len(psutil.net_connections())
@@ -1353,7 +1354,7 @@ class DashboardData:
                     active_connections = len([c for c in psutil.net_connections(kind='inet') if c.status == 'LISTEN'])
                 except (psutil.AccessDenied, PermissionError):
                     active_connections = 0
-            
+
             self.system_metrics = {
                 "cpu_percent": psutil.cpu_percent(interval=1),
                 "memory_percent": psutil.virtual_memory().percent,
@@ -1380,7 +1381,7 @@ class DashboardData:
                     self.startup_status = json.load(f)
         except:
             pass
-    
+
     def _load_persistent_status(self):
         """Load persistent system status data"""
         try:
@@ -1389,14 +1390,14 @@ class DashboardData:
                     data = json.load(f)
                     self.health_history = data.get('health_history', {})
                     self.last_update = data.get('last_update')
-                    
+
             # Also load startup status from startup.py
             startup_status_file = "/tmp/boarderframe_startup_status.json"
             if os.path.exists(startup_status_file):
                 print(f"📁 Loading startup status from {startup_status_file}")
                 with open(startup_status_file, 'r') as f:
                     startup_data = json.load(f)
-                    
+
                     # Load MCP server status
                     if 'mcp_servers' in startup_data:
                         print(f"✅ Found {len(startup_data['mcp_servers'])} MCP servers in startup status")
@@ -1414,7 +1415,7 @@ class DashboardData:
                                 # Also add to legacy for compatibility
                                 self.services_status[server_name] = self.unified_data['services_status'][server_name]
                                 print(f"  ✅ Loaded {server_name} as healthy on port {server_info.get('details', {}).get('port', 0)}")
-                                
+
                     # Load other services status
                     if 'services' in startup_data:
                         for service_name, service_info in startup_data['services'].items():
@@ -1426,20 +1427,20 @@ class DashboardData:
                                     'last_check': service_info.get('last_update', datetime.now().isoformat())
                                 }
                                 self.services_status[service_name] = self.unified_data['services_status'][service_name]
-                                
+
                     # Update metrics layer with initial status
                     if self.metrics_layer and hasattr(self.metrics_layer, 'set_server_status'):
                         print(f"📊 Updating metrics layer with {len(self.unified_data['services_status'])} servers")
                         self.metrics_layer.set_server_status(self.unified_data['services_status'])
-                        
+
                     # Also ensure health manager syncs to legacy properties
                     if hasattr(self, 'health_manager'):
                         self.health_manager._sync_to_legacy_properties()
                         print("✅ Synced startup status to legacy properties")
-                        
+
         except Exception as e:
             print(f"⚠️  Error loading persistent status: {e}")
-    
+
     def _save_persistent_status(self):
         """Save current system status to persistent storage"""
         try:
@@ -1451,22 +1452,22 @@ class DashboardData:
                 'health_history': self.health_history,
                 'timestamp': time.time()
             }
-            
+
             with open(self.status_file, 'w') as f:
                 json.dump(status_data, f, indent=2)
-                
+
         except Exception as e:
             print(f"⚠️  Error saving persistent status: {e}")
-    
+
     def _record_health_event(self, component_type: str, component_name: str, status: str, details: dict = None):
         """Record a health status change event with history"""
         timestamp = datetime.now().isoformat()
-        
+
         # Initialize component history if needed
         component_key = f"{component_type}:{component_name}"
         if component_key not in self.health_history:
             self.health_history[component_key] = []
-        
+
         # Record the event
         event = {
             'timestamp': timestamp,
@@ -1475,18 +1476,18 @@ class DashboardData:
             'component_type': component_type,
             'component_name': component_name
         }
-        
+
         self.health_history[component_key].append(event)
-        
+
         # Keep only recent history
         max_entries = self.monitoring_config['max_history_entries']
         if len(self.health_history[component_key]) > max_entries:
             self.health_history[component_key] = self.health_history[component_key][-max_entries:]
-    
+
     def _check_alert_conditions(self):
         """Check for alert conditions and record them"""
         alerts = []
-        
+
         # Check system metrics against thresholds
         for metric, threshold in self.monitoring_config['alert_thresholds'].items():
             current_value = self.system_metrics.get(metric, 0)
@@ -1498,7 +1499,7 @@ class DashboardData:
                     'threshold': threshold,
                     'severity': 'warning' if current_value < threshold * 1.1 else 'critical'
                 })
-        
+
         # Check for service failures
         for service_name, service_data in self.services_status.items():
             if service_data.get('status') not in ['healthy', 'online']:
@@ -1508,7 +1509,7 @@ class DashboardData:
                     'status': service_data.get('status', 'unknown'),
                     'severity': 'critical'
                 })
-        
+
         # Check for agent failures
         for agent_name, agent_data in self.agents_status.items():
             if agent_data.get('status') != 'running':
@@ -1518,49 +1519,49 @@ class DashboardData:
                     'status': agent_data.get('status', 'unknown'),
                     'severity': 'critical'
                 })
-        
+
         return alerts
-    
+
     async def _enhanced_update_loop(self):
         """Enhanced update loop with health tracking and persistence"""
         while self.running:
             try:
                 await self._async_update()
-                
+
                 # Record health events
                 for service_name, service_data in self.services_status.items():
-                    self._record_health_event('service', service_name, 
-                                            service_data.get('status', 'unknown'), 
+                    self._record_health_event('service', service_name,
+                                            service_data.get('status', 'unknown'),
                                             service_data)
-                
+
                 for agent_name, agent_data in self.agents_status.items():
                     self._record_health_event('agent', agent_name,
                                             agent_data.get('status', 'unknown'),
                                             agent_data)
-                
+
                 # Check for alerts
                 alerts = self._check_alert_conditions()
                 if alerts:
                     self._record_health_event('system', 'alerts', 'active', {'alerts': alerts})
-                
+
                 # Save persistent status
                 self._save_persistent_status()
-                
+
                 self.last_update = datetime.now().isoformat()
-                
+
             except Exception as e:
                 print(f"❌ Enhanced update loop error: {e}")
                 self._record_health_event('system', 'update_loop', 'error', {'error': str(e)})
-            
+
             await asyncio.sleep(self.monitoring_config['update_interval'])
-    
+
     def get_health_summary(self):
         """Get comprehensive health summary for dashboard using centralized data"""
         # Use centralized data when available, fallback to legacy data
         services_data = self.unified_data.get('services_status', self.services_status)
         agents_data = self.unified_data.get('agents_status', self.agents_status)
         departments_data = self.unified_data.get('departments_data', self.departments_data)
-        
+
         # Check if we have overall health from unified data
         if 'overall_health' in self.unified_data:
             unified_health = self.unified_data['overall_health']
@@ -1568,7 +1569,7 @@ class DashboardData:
         else:
             # Calculate overall status from individual components
             overall_status = self._calculate_overall_status(services_data, agents_data)
-        
+
         summary = {
             'overall_status': overall_status,
             'services': {
@@ -1596,19 +1597,19 @@ class DashboardData:
             'last_update': self.unified_data.get('last_refresh', self.last_update),
             'alerts': self._check_alert_conditions()
         }
-        
+
         return summary
-    
+
     def _initialize_basic_server_data(self):
         """Initialize basic server data to prevent empty state on startup"""
         print("🔄 Initializing basic server data...")
-        
+
         # Define default servers organized by type and importance
         default_servers = {
             # Core Infrastructure (Highest Priority)
             "corporate_headquarters": {
-                "name": "Corporate Headquarters", 
-                "port": 8888, 
+                "name": "Corporate Headquarters",
+                "port": 8888,
                 "status": "healthy",  # We're running if this code executes
                 "last_check": "Self-check",
                 "category": "Core Infrastructure",
@@ -1616,79 +1617,79 @@ class DashboardData:
                 "description": "Main management interface"
             },
             "agent_cortex": {
-                "name": "Agent Cortex", 
-                "port": 8889, 
-                "status": "unknown", 
+                "name": "Agent Cortex",
+                "port": 8889,
+                "status": "unknown",
                 "last_check": "Initializing...",
-                "category": "Core Infrastructure", 
+                "category": "Core Infrastructure",
                 "priority": 2,
                 "description": "Intelligent model orchestration"
             },
             "registry": {
-                "name": "Registry Server", 
-                "port": 8009, 
-                "status": "unknown", 
+                "name": "Registry Server",
+                "port": 8009,
+                "status": "unknown",
                 "last_check": "Initializing...",
                 "category": "Core Infrastructure",
                 "priority": 3,
                 "description": "Service discovery and registration"
             },
-            
+
             # MCP Servers (High Priority)
             "filesystem": {
-                "name": "Filesystem Server", 
-                "port": 8001, 
-                "status": "unknown", 
+                "name": "Filesystem Server",
+                "port": 8001,
+                "status": "unknown",
                 "last_check": "Initializing...",
                 "category": "MCP Servers",
                 "priority": 4,
                 "description": "File operations and management"
             },
             "database_postgres": {
-                "name": "PostgreSQL Database Server", 
-                "port": 8010, 
-                "status": "unknown", 
+                "name": "PostgreSQL Database Server",
+                "port": 8010,
+                "status": "unknown",
                 "last_check": "Initializing...",
                 "category": "MCP Servers",
                 "priority": 5,
                 "description": "Data storage and retrieval"
             },
             "analytics": {
-                "name": "Analytics Server", 
-                "port": 8007, 
-                "status": "unknown", 
+                "name": "Analytics Server",
+                "port": 8007,
+                "status": "unknown",
                 "last_check": "Initializing...",
                 "category": "MCP Servers",
                 "priority": 6,
                 "description": "Business intelligence and metrics"
             },
-            
+
             # Business Services (Medium Priority)
             "payment": {
-                "name": "Payment Server", 
-                "port": 8006, 
-                "status": "unknown", 
+                "name": "Payment Server",
+                "port": 8006,
+                "status": "unknown",
                 "last_check": "Initializing...",
                 "category": "Business Services",
                 "priority": 7,
                 "description": "Revenue and billing management"
             },
             "customer": {
-                "name": "Customer Server", 
-                "port": 8008, 
-                "status": "unknown", 
+                "name": "Customer Server",
+                "port": 8008,
+                "status": "unknown",
                 "last_check": "Initializing...",
                 "category": "Business Services",
                 "priority": 8,
                 "description": "Customer relationship management"
             }
         }
-        
+
         # Initialize both legacy and unified data
         # But only for servers that don't already exist (to preserve loaded status)
         initialized_count = 0
         preserved_count = 0
-        
+
         for server_id, server_info in default_servers.items():
             if server_id not in self.unified_data['services_status']:
                 self.services_status[server_id] = server_info
@@ -1698,30 +1699,30 @@ class DashboardData:
                 # Keep the existing loaded status
                 preserved_count += 1
                 print(f"  ⏩ Preserved {server_id} - status: {self.unified_data['services_status'][server_id].get('status')}")
-        
+
         print(f"✅ Initialized {initialized_count} new servers, preserved {preserved_count} loaded servers")
-    
+
     def _run_initial_health_check(self):
         """Run a quick initial health check to populate server status"""
         print("📊 Running initial health check...")
-        
+
         # Run a simplified health check for key servers
         import socket
-        
+
         # Check servers in order of priority (most important first)
         servers_to_check = [
             ("corporate_headquarters", 8888),
             ("agent_cortex", 8889),
             ("registry", 8000),
-            ("filesystem", 8001), 
+            ("filesystem", 8001),
             ("database_postgres", 8010),
             ("analytics", 8007),
             ("payment", 8006),
             ("customer", 8008)
         ]
-        
+
         healthy_count = 0
-        
+
         for server_name, port in servers_to_check:
             try:
                 # Quick socket check to see if port is open
@@ -1729,7 +1730,7 @@ class DashboardData:
                 sock.settimeout(1)  # 1 second timeout
                 result = sock.connect_ex(('localhost', port))
                 sock.close()
-                
+
                 if result == 0:
                     # Port is open, assume healthy
                     self.services_status[server_name]['status'] = 'healthy'
@@ -1745,7 +1746,7 @@ class DashboardData:
                     self.unified_data['services_status'][server_name]['status'] = 'offline'
                     self.unified_data['services_status'][server_name]['last_check'] = datetime.now().isoformat()
                     print(f"❌ {server_name} server is offline on port {port}")
-                    
+
             except Exception as e:
                 # Error checking, mark as offline
                 self.services_status[server_name]['status'] = 'offline'
@@ -1753,24 +1754,24 @@ class DashboardData:
                 self.unified_data['services_status'][server_name]['status'] = 'offline'
                 self.unified_data['services_status'][server_name]['last_check'] = datetime.now().isoformat()
                 print(f"❌ {server_name} server check failed: {e}")
-        
+
         print(f"✅ Initial health check complete: {healthy_count}/{len(servers_to_check)} servers healthy")
-        
+
         # Also collect initial organizational metrics
         try:
             print("📊 Collecting initial organizational metrics...")
             import asyncio
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            
+
             # Create HealthDataManager instance to collect metrics
             health_manager = HealthDataManager(self)
             metrics = loop.run_until_complete(health_manager._collect_organizational_metrics())
-            
+
             # Store in unified data
             self.unified_data['organizational_metrics'] = metrics
             print(f"✅ Initial organizational metrics collected")
-            
+
         except Exception as e:
             print(f"⚠️ Failed to collect initial organizational metrics: {e}")
             # Set default metrics
@@ -1780,22 +1781,22 @@ class DashboardData:
                 'leaders': {'total': 0, 'active': 0, 'percentage': 0},
                 'agents': {'total': 0, 'active': 0, 'percentage': 0}
             }
-    
+
     def _calculate_overall_status(self, services_data, agents_data):
         """Calculate overall system status from component health"""
         # Use unified data if available, fallback to passed data
         if hasattr(self, 'unified_data') and self.unified_data.get('services_status'):
             services_data = self.unified_data['services_status']
-        
+
         # Debug: log status calculation
         healthy_services = sum(1 for s in services_data.values() if s.get('status') == 'healthy')
         degraded_services = sum(1 for s in services_data.values() if s.get('status') == 'degraded')
         critical_services = sum(1 for s in services_data.values() if s.get('status') not in ['healthy', 'degraded'])
         running_agents = sum(1 for a in agents_data.values() if a.get('status') == 'running')
         stopped_agents = sum(1 for a in agents_data.values() if a.get('status') != 'running')
-        
+
         print(f"📊 Status calculation: {healthy_services} healthy, {degraded_services} degraded, {critical_services} critical services; {running_agents} running, {stopped_agents} stopped agents")
-        
+
         # Determine overall status with more nuanced logic
         if critical_services > 2 or stopped_agents > 1:
             return 'offline'
@@ -1822,7 +1823,7 @@ class DashboardData:
                 'last_refresh': self.unified_data.get('last_refresh'),
                 'metrics_layer_available': self.metrics_layer is not None
             }
-            
+
             # Add summary metrics
             metrics['summary'] = {
                 'total_agents': len(metrics['agents']),
@@ -1832,21 +1833,21 @@ class DashboardData:
                 'total_departments': len(metrics['departments']),
                 'total_leaders': len(metrics['leaders'])
             }
-            
+
             return metrics
         except Exception as e:
             print(f"Error getting centralized metrics: {e}")
             return {}
-    
+
     def _generate_metrics_page_content(self):
         """Generate comprehensive metrics page content using metrics layer"""
         if not self.metrics_layer:
             return self._generate_metrics_fallback()
-        
+
         try:
             # Pass real server status to metrics layer
             services_status = self.unified_data.get('services_status', {})
-            
+
             # Force Corporate HQ to be healthy since we're running
             if not services_status.get('corporate_headquarters') or services_status.get('corporate_headquarters', {}).get('status') != 'healthy':
                 services_status['corporate_headquarters'] = {
@@ -1856,27 +1857,27 @@ class DashboardData:
                     'category': 'Core Infrastructure',
                     'last_check': datetime.now().isoformat()
                 }
-            
+
             print(f"🔍 Passing {len(services_status)} servers to metrics layer")
             if 'corporate_headquarters' in services_status:
                 print(f"🔍 Corporate HQ status: {services_status['corporate_headquarters'].get('status', 'unknown')}")
             if hasattr(self.metrics_layer, 'set_server_status'):
                 self.metrics_layer.set_server_status(services_status)
-            
+
             # Use the metrics layer to generate the metrics page
             return self.metrics_layer.get_metrics_page_html()
         except Exception as e:
             print(f"Error generating metrics page: {e}")
             return self._generate_metrics_fallback()
-    
+
     def _generate_metrics_fallback(self):
         """Generate fallback metrics display when metrics layer is not available"""
         metrics = self._get_centralized_metrics()
-        
+
         html = f'''
         <div class="metrics-container">
             <h3 style="margin-bottom: 2rem;">System Metrics Overview</h3>
-            
+
             <div class="metrics-summary" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
                 <div class="metric-card" style="background: var(--secondary-bg); padding: 1.5rem; border-radius: 8px;">
                     <h4>Agents</h4>
@@ -1885,7 +1886,7 @@ class DashboardData:
                     </div>
                     <div style="color: var(--secondary-text);">Running Agents</div>
                 </div>
-                
+
                 <div class="metric-card" style="background: var(--secondary-bg); padding: 1.5rem; border-radius: 8px;">
                     <h4>Services</h4>
                     <div style="font-size: 2rem; font-weight: bold; color: var(--success-color);">
@@ -1893,7 +1894,7 @@ class DashboardData:
                     </div>
                     <div style="color: var(--secondary-text);">Healthy Services</div>
                 </div>
-                
+
                 <div class="metric-card" style="background: var(--secondary-bg); padding: 1.5rem; border-radius: 8px;">
                     <h4>Organization</h4>
                     <div style="font-size: 2rem; font-weight: bold; color: var(--warning-color);">
@@ -1902,7 +1903,7 @@ class DashboardData:
                     <div style="color: var(--secondary-text);">Departments</div>
                 </div>
             </div>
-            
+
             <div class="metrics-details">
                 <h4>Raw Metrics Data</h4>
                 <pre style="background: var(--secondary-bg); padding: 1rem; border-radius: 8px; overflow: auto; max-height: 400px;">
@@ -1911,26 +1912,26 @@ class DashboardData:
             </div>
         </div>
         '''
-        
+
         return html
-    
+
     def _generate_server_cards(self, category_name: str) -> str:
         """Generate server cards for a specific category"""
         # Get the most up-to-date services data
         services_data = self.unified_data.get('services_status', {})
         if not services_data:
             services_data = self.services_status
-        
+
         # Define server categories
         category_servers = {
             "Core Systems": ["corporate_headquarters", "agent_cortex", "registry"],
             "MCP Servers": ["filesystem", "database_postgres", "analytics"],
             "Business Services": ["payment", "customer"]
         }
-        
+
         servers = category_servers.get(category_name, [])
         cards_html = []
-        
+
         for server_id in servers:
             server_info = services_data.get(server_id, {})
             status = server_info.get('status', 'unknown')
@@ -1940,7 +1941,7 @@ class DashboardData:
             uptime = server_info.get('uptime', 'Unknown')
             response_time = server_info.get('response_time', 0)
             icon = server_info.get('icon', 'fas fa-server')
-            
+
             # Determine status color and icon
             if status == 'healthy':
                 status_color = 'var(--success-color)'
@@ -1954,7 +1955,7 @@ class DashboardData:
                 status_color = 'var(--danger-color)'
                 status_icon = 'fa-times-circle'
                 status_text = 'Offline'
-            
+
             # Generate server card HTML
             card_html = f'''
             <div class="server-card" style="
@@ -1966,7 +1967,7 @@ class DashboardData:
                 cursor: pointer;
                 position: relative;
                 overflow: hidden;
-            " onmouseover="this.style.borderColor='var(--accent-color)'; this.style.background='rgba(255, 255, 255, 0.08)'" 
+            " onmouseover="this.style.borderColor='var(--accent-color)'; this.style.background='rgba(255, 255, 255, 0.08)'"
               onmouseout="this.style.borderColor='var(--border-color)'; this.style.background='rgba(255, 255, 255, 0.05)'">
                 <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem;">
                     <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -2003,7 +2004,7 @@ class DashboardData:
                         <span>{status_text}</span>
                     </div>
                 </div>
-                
+
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; font-size: 0.85rem;">
                     <div>
                         <span style="color: var(--secondary-text);">Response Time:</span>
@@ -2024,19 +2025,19 @@ class DashboardData:
                         </span>
                     </div>
                 </div>
-                
+
                 <!-- Enhanced details for specific servers -->
                 {self._generate_server_specific_details(server_id, server_info)}
             </div>
             '''
             cards_html.append(card_html)
-        
+
         return '\n'.join(cards_html) if cards_html else '<p style="color: var(--secondary-text); text-align: center;">No servers in this category</p>'
-    
+
     def _generate_server_specific_details(self, server_id: str, server_info: dict) -> str:
         """Generate additional details for specific servers"""
         details_html = ""
-        
+
         # Add specific details for filesystem server
         if server_id == "filesystem" and self.mcp_details.get('filesystem'):
             fs_details = self.mcp_details['filesystem']
@@ -2052,69 +2053,69 @@ class DashboardData:
                     </div>
                 </div>
                 '''
-        
+
         return details_html
 
     def generate_dashboard_html(self):
         """Generate the enhanced dashboard HTML"""
         # Get comprehensive health summary
         health_summary = self.get_health_summary()
-        
+
         # Extract data for widgets
         total_agents = health_summary['agents']['total'] or 2
         active_agents = health_summary['agents']['running']
-        
+
         # Count servers by category for better tracking
         services_data = self.unified_data.get('services_status', self.services_status)
-        
+
         # Core infrastructure servers
         core_servers = ['corporate_headquarters', 'agent_cortex', 'registry']
-        # MCP (Model Context Protocol) servers  
+        # MCP (Model Context Protocol) servers
         mcp_servers = ['filesystem', 'database_postgres', 'analytics']
         # Business services
         business_servers = ['payment', 'customer']
-        
+
         # Calculate totals - we have exactly 8 servers in the system
         total_servers = 8  # 3 Core + 3 MCP + 2 Business = 8 servers
-        
+
         # Count healthy servers from each category
         healthy_core = sum(1 for s in core_servers if s in services_data and services_data[s].get('status') == 'healthy')
-        healthy_mcp = sum(1 for s in mcp_servers if s in services_data and services_data[s].get('status') == 'healthy') 
+        healthy_mcp = sum(1 for s in mcp_servers if s in services_data and services_data[s].get('status') == 'healthy')
         healthy_business = sum(1 for s in business_servers if s in services_data and services_data[s].get('status') == 'healthy')
-        
+
         # Total healthy servers across all categories
         total_healthy_servers = healthy_core + healthy_mcp + healthy_business
-        
+
         # Update to use our calculated server counts
         total_services = total_servers  # Use our fixed count of 8
         healthy_services = total_healthy_servers  # Use calculated healthy count
-        
+
         # For backward compatibility with narrative
         total_mcp_servers = len(mcp_servers)
         healthy_mcp_servers = healthy_mcp
-        
+
         # Get real-time leader data from database
         leaders_data = self._fetch_leaders_data()
         total_leaders = len(leaders_data) if leaders_data else 0
         active_leaders = len([l for l in leaders_data if l.get('active_status', 'active') == 'active']) if leaders_data else 0
-        
+
         # Get real-time department data
         departments_data = self.unified_data.get('departments_data', {})
         total_departments = len(departments_data) if departments_data else self._get_department_count_from_db()
         active_departments = len([d for d in departments_data.values() if d.get('status', 'active') == 'active']) if departments_data else total_departments
-        
+
         # Get real-time divisions count from database
         total_divisions = len(set(l['division_name'] for l in leaders_data)) if leaders_data else self._get_division_count_from_db()
-        
+
         registry_status = health_summary['registry']['status']
         overall_status = health_summary['overall_status']
-        
+
         # Generate smart recommendations based on current metrics
         smart_recommendations = self._generate_smart_recommendations(
-            overall_status, active_agents, total_agents, 
+            overall_status, active_agents, total_agents,
             healthy_services, total_services, active_leaders, total_leaders, registry_status
         )
-        
+
         return f"""<!DOCTYPE html>
 <html>
 <head>
@@ -2232,7 +2233,7 @@ class DashboardData:
             vertical-align: middle;
             margin-right: 6px;
         }}
-        
+
         .nav-link span {{
             vertical-align: middle;
         }}
@@ -2243,11 +2244,11 @@ class DashboardData:
                 padding: 0 15px;
                 font-size: 13px;
             }}
-            
+
             .nav-link span {{
                 display: none;
             }}
-            
+
             .nav-link i {{
                 font-size: 16px;
             }}
@@ -2259,11 +2260,11 @@ class DashboardData:
                 scrollbar-width: none;
                 -ms-overflow-style: none;
             }}
-            
+
             .nav-menu::-webkit-scrollbar {{
                 display: none;
             }}
-            
+
             .nav-link {{
                 padding: 0 12px;
             }}
@@ -2487,12 +2488,12 @@ class DashboardData:
             background-clip: text;
             animation: glow-text 3s ease-in-out infinite alternate;
         }}
-        
+
         @keyframes glow-text {{
-            from {{ 
+            from {{
                 filter: drop-shadow(0 0 5px rgba(99, 102, 241, 0.3));
             }}
-            to {{ 
+            to {{
                 filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.6));
             }}
         }}
@@ -2502,7 +2503,7 @@ class DashboardData:
             align-items: center;
             gap: 1rem;
         }}
-        
+
         .global-refresh-btn {{
             display: flex;
             align-items: center;
@@ -2519,66 +2520,66 @@ class DashboardData:
             box-shadow: 0 2px 6px rgba(99, 102, 241, 0.25);
             height: 32px;
         }}
-        
+
         .global-refresh-btn:hover {{
             background: linear-gradient(135deg, #4f46e5, var(--accent-color));
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
         }}
-        
+
         .global-refresh-btn:disabled {{
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
         }}
-        
+
         .global-refresh-btn .spinning {{
             animation: spin 1s linear infinite;
         }}
-        
-        
+
+
         @keyframes spin {{
             from {{ transform: rotate(0deg); }}
             to {{ transform: rotate(360deg); }}
         }}
-        
+
         /* Component card animations */
         .spinning {{
             animation: spin 1s linear infinite;
         }}
-        
+
         .refresh-component-card {{
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }}
-        
+
         .refresh-component-card:hover {{
             transform: scale(1.02) !important;
         }}
-        
+
         @keyframes componentPulse {{
-            0%, 100% {{ 
+            0%, 100% {{
                 box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
             }}
-            50% {{ 
+            50% {{
                 box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
             }}
         }}
-        
+
         @keyframes componentComplete {{
-            0% {{ 
+            0% {{
                 transform: scale(1);
                 filter: brightness(1);
             }}
-            50% {{ 
+            50% {{
                 transform: scale(1.08);
                 filter: brightness(1.2);
             }}
-            100% {{ 
+            100% {{
                 transform: scale(1.05);
                 filter: brightness(1.15);
             }}
         }}
-        
+
         .system-status {{
             display: flex;
             align-items: center;
@@ -2696,8 +2697,8 @@ class DashboardData:
         .status-dot.online {{ background: var(--success-color); }}
         .status-dot.warning {{ background: var(--warning-color); }}
         .status-dot.offline {{ background: var(--danger-color); }}
-        .status-dot.initializing {{ 
-            background: #3b82f6; 
+        .status-dot.initializing {{
+            background: #3b82f6;
             animation: pulse 1s infinite;
         }}
 
@@ -3099,25 +3100,25 @@ class DashboardData:
             .container {{
                 padding: 1rem;
             }}
-            
+
             .header-content {{
                 flex-direction: column;
                 gap: 1rem;
             }}
-            
+
             .grid {{
                 grid-template-columns: 1fr;
             }}
-            
+
             .widget-grid {{
                 grid-template-columns: 1fr;
                 padding: 1rem;
             }}
-            
+
             .widget-small, .widget-medium, .widget-large, .widget-full {{
                 grid-column: span 1;
             }}
-            
+
             .service-item {{
                 flex-direction: column;
                 align-items: flex-start;
@@ -3129,17 +3130,17 @@ class DashboardData:
             .widget-grid {{
                 grid-template-columns: repeat(3, 1fr);
             }}
-            
+
             .widget-full {{
                 grid-column: span 3;
             }}
         }}
-        
+
         @media (max-width: 900px) {{
             .widget-grid {{
                 grid-template-columns: repeat(2, 1fr);
             }}
-            
+
             .widget-full {{
                 grid-column: span 2;
             }}
@@ -3906,7 +3907,7 @@ class DashboardData:
             border-color: var(--accent-color);
             color: var(--accent-color);
         }}
-        
+
         /* Global Refresh Modal Styles */
         .modal-overlay {{
             position: fixed;
@@ -3921,7 +3922,7 @@ class DashboardData:
             z-index: 2000;
             backdrop-filter: blur(5px);
         }}
-        
+
         .modal-content {{
             background: var(--card-bg);
             border-radius: 16px;
@@ -3931,13 +3932,13 @@ class DashboardData:
             display: flex;
             flex-direction: column;
         }}
-        
+
         .modal-header {{
             padding: 1.5rem;
             border-bottom: 1px solid var(--border-color);
             background: var(--secondary-bg);
         }}
-        
+
         .modal-header h3 {{
             margin: 0;
             color: var(--primary-text);
@@ -3946,20 +3947,20 @@ class DashboardData:
             align-items: center;
             gap: 0.5rem;
         }}
-        
+
         .modal-body {{
             padding: 1.5rem;
             flex: 1;
             overflow-y: auto;
         }}
-        
+
         .modal-footer {{
             padding: 1rem 1.5rem;
             border-top: 1px solid var(--border-color);
             background: var(--secondary-bg);
             text-align: right;
         }}
-        
+
         .modal-footer button {{
             padding: 0.6rem 1.5rem;
             background: var(--accent-color);
@@ -3969,16 +3970,16 @@ class DashboardData:
             cursor: pointer;
             transition: background 0.3s ease;
         }}
-        
+
         .modal-footer button:disabled {{
             background: var(--border-color);
             cursor: not-allowed;
         }}
-        
+
         .progress-container {{
             margin-bottom: 2rem;
         }}
-        
+
         .progress-bar {{
             width: 100%;
             height: 8px;
@@ -3987,27 +3988,27 @@ class DashboardData:
             overflow: hidden;
             margin-bottom: 0.5rem;
         }}
-        
+
         .progress-fill {{
             height: 100%;
             background: linear-gradient(90deg, var(--accent-color), var(--success-color));
             transition: width 0.3s ease;
         }}
-        
+
         .progress-text {{
             display: flex;
             justify-content: space-between;
             color: var(--secondary-text);
             font-size: 0.9rem;
         }}
-        
+
         .component-list {{
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 0.5rem;
             margin-top: 1rem;
         }}
-        
+
         .component-item {{
             display: flex;
             align-items: center;
@@ -4017,20 +4018,20 @@ class DashboardData:
             border-radius: 6px;
             font-size: 0.9rem;
         }}
-        
+
         .component-item .fas.pending {{
             color: var(--border-color);
         }}
-        
+
         .component-item .fas.processing {{
             color: var(--warning-color);
             animation: pulse 1s infinite;
         }}
-        
+
         .component-item .fas.complete {{
             color: var(--success-color);
         }}
-        
+
         /* Enhanced Refresh Steps Styles */
         .refresh-steps-list {{
             max-height: 300px;
@@ -4039,7 +4040,7 @@ class DashboardData:
             border-radius: 8px;
             background: rgba(255, 255, 255, 0.02);
         }}
-        
+
         .refresh-step {{
             display: flex;
             align-items: center;
@@ -4049,25 +4050,25 @@ class DashboardData:
             transition: all 0.3s ease;
             background: transparent;
         }}
-        
+
         .refresh-step:last-child {{
             border-bottom: none;
         }}
-        
+
         .refresh-step.active {{
             background: rgba(99, 102, 241, 0.1);
             border-left: 3px solid var(--accent-color);
         }}
-        
+
         .refresh-step.completed {{
             background: rgba(16, 185, 129, 0.05);
         }}
-        
+
         .refresh-step.error {{
             background: rgba(239, 68, 68, 0.1);
             border-left: 3px solid var(--danger-color);
         }}
-        
+
         .step-indicator {{
             display: flex;
             align-items: center;
@@ -4077,29 +4078,29 @@ class DashboardData:
             width: 24px;
             height: 24px;
         }}
-        
+
         .step-icon {{
             font-size: 0.6rem;
             transition: all 0.3s ease;
         }}
-        
+
         .step-icon.pending {{
             color: var(--border-color);
         }}
-        
+
         .step-icon.active {{
             color: var(--accent-color);
             animation: pulse 1.5s infinite;
         }}
-        
+
         .step-icon.completed {{
             color: var(--success-color);
         }}
-        
+
         .step-icon.error {{
             color: var(--danger-color);
         }}
-        
+
         .step-number {{
             position: absolute;
             font-size: 0.7rem;
@@ -4107,25 +4108,25 @@ class DashboardData:
             color: var(--primary-text);
             opacity: 0.8;
         }}
-        
+
         .step-content {{
             flex: 1;
             min-width: 0;
         }}
-        
+
         .step-title {{
             font-weight: 600;
             color: var(--primary-text);
             margin-bottom: 0.25rem;
             font-size: 0.9rem;
         }}
-        
+
         .step-description {{
             font-size: 0.8rem;
             color: var(--secondary-text);
             line-height: 1.3;
         }}
-        
+
         .step-status {{
             font-size: 0.8rem;
             font-weight: 500;
@@ -4137,22 +4138,22 @@ class DashboardData:
             text-align: center;
             flex-shrink: 0;
         }}
-        
+
         .step-status.active {{
             background: rgba(99, 102, 241, 0.2);
             color: var(--accent-color);
         }}
-        
+
         .step-status.completed {{
             background: rgba(16, 185, 129, 0.2);
             color: var(--success-color);
         }}
-        
+
         .step-status.error {{
             background: rgba(239, 68, 68, 0.2);
             color: var(--danger-color);
         }}
-        
+
         .refresh-summary {{
             text-align: center;
             padding: 1rem;
@@ -4160,14 +4161,14 @@ class DashboardData:
             border-radius: 8px;
             border: 1px solid var(--success-color);
         }}
-        
+
         .summary-stats {{
             display: flex;
             justify-content: space-around;
             margin-top: 1rem;
             font-size: 0.9rem;
         }}
-        
+
         .refresh-details h4 {{
             margin: 0 0 1rem 0;
             color: var(--primary-text);
@@ -4192,7 +4193,7 @@ class DashboardData:
                         <i class="fas fa-chevron-down" style="font-size: 0.8rem; color: var(--secondary-text);"></i>
                     </div>
                 </div>
-                
+
                 <!-- Global Refresh Button -->
                 <button class="global-refresh-btn" onclick="startGlobalRefresh()" id="globalRefreshBtn" title="Refresh All Corporate Headquarters Data">
                     <i class="fas fa-sync-alt"></i>
@@ -4206,7 +4207,7 @@ class DashboardData:
                             {self._get_formatted_timestamp()}
                         </span>
                     </div>
-                    
+
                     <!-- Organization Section -->
                     <div style="padding: 0.5rem 0.75rem; font-size: 0.8rem; font-weight: 600; color: var(--accent-color); background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border-color);">
                         <i class="fas fa-users"></i> Organization
@@ -4253,7 +4254,7 @@ class DashboardData:
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Servers Section -->
                     <div style="padding: 0.5rem 0.75rem; font-size: 0.8rem; font-weight: 600; color: var(--accent-color); background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border-color);">
                         <i class="fas fa-server"></i> Servers
@@ -4290,7 +4291,7 @@ class DashboardData:
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Database Section -->
                     <div style="padding: 0.5rem 0.75rem; font-size: 0.8rem; font-weight: 600; color: var(--accent-color); background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border-color);">
                         <i class="fas fa-database"></i> Database
@@ -4311,7 +4312,7 @@ class DashboardData:
             </div>
         </div>
     </header>
-    
+
     <!-- Global Refresh Progress Modal -->
     <div id="globalRefreshModal" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="width: 900px; height: 700px; max-height: 95vh; overflow: hidden;">
@@ -4342,7 +4343,7 @@ class DashboardData:
                         Preparing to refresh all BoarderframeOS Corporate Headquarters components...
                     </div>
                 </div>
-                
+
                 <div class="refresh-components-container">
                     <h4 style="margin-bottom: 1.5rem; color: var(--primary-text); display: flex; align-items: center; gap: 0.5rem;">
                         <i class="fas fa-grip-horizontal"></i> System Components:
@@ -4360,7 +4361,7 @@ class DashboardData:
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="refresh-component-card" data-component="database_health" style="background: linear-gradient(135deg, #10b981, #059669); border-radius: 12px; padding: 1.25rem; text-align: center; color: white; position: relative; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
                             <div style="position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: rgba(255,255,255,0.1); border-radius: 50%; opacity: 0.5;"></div>
                             <div style="position: relative; z-index: 2;">
@@ -4372,7 +4373,7 @@ class DashboardData:
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="refresh-component-card" data-component="services_status" style="background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 12px; padding: 1.25rem; text-align: center; color: white; position: relative; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">
                             <div style="position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: rgba(255,255,255,0.1); border-radius: 50%; opacity: 0.5;"></div>
                             <div style="position: relative; z-index: 2;">
@@ -4384,7 +4385,7 @@ class DashboardData:
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="refresh-component-card" data-component="agents_status" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 12px; padding: 1.25rem; text-align: center; color: white; position: relative; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);">
                             <div style="position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: rgba(255,255,255,0.1); border-radius: 50%; opacity: 0.5;"></div>
                             <div style="position: relative; z-index: 2;">
@@ -4396,7 +4397,7 @@ class DashboardData:
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Row 2 -->
                         <div class="refresh-component-card" data-component="mcp_servers" style="background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 12px; padding: 1.25rem; text-align: center; color: white; position: relative; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
                             <div style="position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: rgba(255,255,255,0.1); border-radius: 50%; opacity: 0.5;"></div>
@@ -4409,7 +4410,7 @@ class DashboardData:
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="refresh-component-card" data-component="registry_data" style="background: linear-gradient(135deg, #06b6d4, #0891b2); border-radius: 12px; padding: 1.25rem; text-align: center; color: white; position: relative; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);">
                             <div style="position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: rgba(255,255,255,0.1); border-radius: 50%; opacity: 0.5;"></div>
                             <div style="position: relative; z-index: 2;">
@@ -4421,7 +4422,7 @@ class DashboardData:
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="refresh-component-card" data-component="departments_data" style="background: linear-gradient(135deg, #84cc16, #65a30d); border-radius: 12px; padding: 1.25rem; text-align: center; color: white; position: relative; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(132, 204, 22, 0.3);">
                             <div style="position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: rgba(255,255,255,0.1); border-radius: 50%; opacity: 0.5;"></div>
                             <div style="position: relative; z-index: 2;">
@@ -4433,7 +4434,7 @@ class DashboardData:
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="refresh-component-card" data-component="organizational_data" style="background: linear-gradient(135deg, #ec4899, #db2777); border-radius: 12px; padding: 1.25rem; text-align: center; color: white; position: relative; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);">
                             <div style="position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: rgba(255,255,255,0.1); border-radius: 50%; opacity: 0.5;"></div>
                             <div style="position: relative; z-index: 2;">
@@ -4447,7 +4448,7 @@ class DashboardData:
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="refresh-summary" id="refreshSummary" style="display: none; margin-top: 2rem; padding: 1.5rem; background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success-color); border-radius: 8px;">
                     <h4><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Refresh Complete!</h4>
                     <p>All BoarderframeOS Corporate Headquarters data has been updated successfully.</p>
@@ -4474,7 +4475,7 @@ class DashboardData:
             </div>
         </div>
     </div>
-    
+
     <!-- Enhanced Systems Refresh Wizard Modal -->
     <style>
         @keyframes pulseGlow {{{{
@@ -4482,45 +4483,45 @@ class DashboardData:
             70% {{{{ box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }}}}
             100% {{{{ box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }}}}
         }}
-        
+
         @keyframes slideInUp {{
             from {{ transform: translateY(20px); opacity: 0; }}
             to {{ transform: translateY(0); opacity: 1; }}
         }}
-        
+
         @keyframes checkmark {{
             0% {{ stroke-dashoffset: 100; }}
             100% {{ stroke-dashoffset: 0; }}
         }}
-        
+
         @keyframes rotateIcon {{
             from {{ transform: rotate(0deg); }}
             to {{ transform: rotate(360deg); }}
         }}
-        
+
         .wizard-step {{
             opacity: 0;
             transition: all 0.3s ease;
         }}
-        
+
         .wizard-step.active {{
             opacity: 1;
             animation: slideInUp 0.5s ease forwards;
         }}
-        
+
         .wizard-step.completed {{
             opacity: 0.5;
             transform: scale(0.9);
         }}
-        
+
         .system-icon {{
             transition: all 0.3s ease;
         }}
-        
+
         .system-icon.checking {{
             animation: pulseGlow 2s infinite;
         }}
-        
+
         .completion-confetti {{
             position: absolute;
             width: 100%;
@@ -4528,7 +4529,7 @@ class DashboardData:
             pointer-events: none;
             overflow: hidden;
         }}
-        
+
         .particle {{
             position: absolute;
             background: linear-gradient(45deg, #6366f1, #10b981);
@@ -4537,7 +4538,7 @@ class DashboardData:
             border-radius: 50%;
             animation: fall 3s linear forwards;
         }}
-        
+
         @keyframes fall {{
             to {{
                 transform: translateY(600px) rotate(720deg);
@@ -4545,21 +4546,21 @@ class DashboardData:
             }}
         }}
     </style>
-    
+
     <div id="systemsRefreshModal" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="width: 600px; height: 500px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border: 1px solid rgba(99, 102, 241, 0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
             <div class="modal-header" style="background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <h3 style="display: flex; align-items: center; gap: 0.5rem;">
-                    <i class="fas fa-magic" style="color: #6366f1;"></i> 
+                    <i class="fas fa-magic" style="color: #6366f1;"></i>
                     Systems Refresh Wizard
                     <span style="font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-left: auto;">BoarderframeOS v2025</span>
                 </h3>
             </div>
-            
+
             <div class="modal-body" style="padding: 2rem; flex: 1; display: flex; flex-direction: column; position: relative;">
                 <!-- Animated Background -->
                 <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.05; background-image: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.1) 35px, rgba(255,255,255,.1) 70px); pointer-events: none;"></div>
-                
+
                 <!-- Progress Steps -->
                 <div id="wizardProgress" style="display: flex; justify-content: space-between; margin-bottom: 2rem; position: relative; z-index: 1;">
                     <div class="step-indicator" data-step="1" style="flex: 1; text-align: center;">
@@ -4583,7 +4584,7 @@ class DashboardData:
                         <span style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">Complete</span>
                     </div>
                 </div>
-                
+
                 <!-- Main Content Area -->
                 <div id="wizardContent" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative;">
                     <!-- Step 1: Initialize -->
@@ -4594,7 +4595,7 @@ class DashboardData:
                         <h3 style="margin: 0 0 0.5rem 0; color: white;">Initializing Systems Refresh</h3>
                         <p style="color: rgba(255,255,255,0.7); max-width: 400px; margin: 0 auto;">Preparing to scan all BoarderframeOS services and gather real-time health metrics...</p>
                     </div>
-                    
+
                     <!-- Step 2: Scanning -->
                     <div id="step2Content" class="wizard-step" style="width: 100%;">
                         <div id="scanningAnimation" style="margin-bottom: 2rem;">
@@ -4608,7 +4609,7 @@ class DashboardData:
                         </div>
                         <h3 style="margin: 0 0 0.5rem 0; color: white;">Scanning Systems</h3>
                         <p id="scanStatus" style="color: rgba(255,255,255,0.7); margin-bottom: 1.5rem;">Checking Registry Server...</p>
-                        
+
                         <!-- Live Progress -->
                         <div style="width: 100%; max-width: 400px; margin: 0 auto;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
@@ -4619,13 +4620,13 @@ class DashboardData:
                                 <div id="systemsProgressBar" style="height: 100%; background: linear-gradient(90deg, #6366f1, #10b981); width: 0%; transition: width 0.4s ease; box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);"></div>
                             </div>
                         </div>
-                        
+
                         <!-- Systems Grid -->
                         <div id="systemsGrid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 2rem; width: 100%; max-width: 500px;">
                             <!-- Systems will be dynamically added here -->
                         </div>
                     </div>
-                    
+
                     <!-- Step 3: Complete -->
                     <div id="step3Content" class="wizard-step">
                         <div class="completion-confetti" id="confetti"></div>
@@ -4635,7 +4636,7 @@ class DashboardData:
                             </svg>
                         </div>
                         <h3 style="margin: 0 0 1rem 0; color: white;">Refresh Complete!</h3>
-                        
+
                         <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
                             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; text-align: center;">
                                 <div>
@@ -4652,12 +4653,12 @@ class DashboardData:
                                 </div>
                             </div>
                         </div>
-                        
+
                         <p style="color: rgba(255,255,255,0.7);">All systems have been successfully refreshed and are operating normally.</p>
                     </div>
                 </div>
             </div>
-            
+
             <div class="modal-footer" style="background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.1); padding: 1rem 2rem;">
                 <button onclick="closeSystemsRefreshModal()" id="closeSystemsRefreshBtn" disabled style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; padding: 0.75rem 2rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: all 0.3s; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);">
                     <i class="fas fa-times"></i> Close
@@ -4665,7 +4666,7 @@ class DashboardData:
             </div>
         </div>
     </div>
-    
+
     <!-- Navigation Bar -->
     <nav class="navigation-container">
         <div class="navigation-wrapper">
@@ -4711,9 +4712,9 @@ class DashboardData:
                         <i class="fas fa-database"></i>
                         <span>Database</span>
                     </button>
-                
+
                 </li>
-                
+
                 <li class="nav-item">
                     <button class="nav-link" onclick="showTab('metrics')" data-tab="metrics">
                         <i class="fas fa-chart-line"></i>
@@ -4734,7 +4735,7 @@ class DashboardData:
             </ul>
         </div>
     </nav>
-    
+
     <div class="container">
         <!-- Home Tab -->
         <div id="dashboard" class="tab-content active">
@@ -4742,11 +4743,11 @@ class DashboardData:
             <div class="card full-width" style="margin-bottom: 2rem; border: 2px solid {'#10b98120' if overall_status == 'online' else '#f59e0b20' if overall_status == 'warning' else '#ef444420'}; background: linear-gradient(135deg, {'#10b98108, #10b98103' if overall_status == 'online' else '#f59e0b08, #f59e0b03' if overall_status == 'warning' else '#ef444408, #ef444403'});">
                 <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem;">
                     <div style="
-                        width: 80px; height: 80px; 
-                        background: linear-gradient(135deg, {'#10b981, #10b981cc' if overall_status == 'online' else '#f59e0b, #f59e0bcc' if overall_status == 'warning' else '#ef4444, #ef4444cc'}); 
-                        border-radius: 16px; 
-                        display: flex; align-items: center; justify-content: center; 
-                        color: white; font-size: 2.5rem; 
+                        width: 80px; height: 80px;
+                        background: linear-gradient(135deg, {'#10b981, #10b981cc' if overall_status == 'online' else '#f59e0b, #f59e0bcc' if overall_status == 'warning' else '#ef4444, #ef4444cc'});
+                        border-radius: 16px;
+                        display: flex; align-items: center; justify-content: center;
+                        color: white; font-size: 2.5rem;
                         box-shadow: 0 6px 16px {'#10b98140' if overall_status == 'online' else '#f59e0b40' if overall_status == 'warning' else '#ef444440'};
                     ">
                         {'<i class="fas fa-microchip"></i>' if overall_status == 'online' else '⚠️' if overall_status == 'warning' else '🚨'}
@@ -4761,9 +4762,9 @@ class DashboardData:
                     </div>
                     <div style="text-align: right;">
                         <div style="
-                            padding: 0.75rem 1.5rem; 
-                            background: {'#10b98120' if overall_status == 'online' else '#f59e0b20' if overall_status == 'warning' else '#ef444420'}; 
-                            border: 2px solid {'#10b981' if overall_status == 'online' else '#f59e0b' if overall_status == 'warning' else '#ef4444'}; 
+                            padding: 0.75rem 1.5rem;
+                            background: {'#10b98120' if overall_status == 'online' else '#f59e0b20' if overall_status == 'warning' else '#ef444420'};
+                            border: 2px solid {'#10b981' if overall_status == 'online' else '#f59e0b' if overall_status == 'warning' else '#ef4444'};
                             border-radius: 12px;
                         ">
                             <div style="font-size: 0.8rem; color: var(--secondary-text); margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.5px;">System Status</div>
@@ -4773,12 +4774,12 @@ class DashboardData:
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- System Health Narrative -->
                 <div style="
-                    background: var(--card-bg); 
-                    border-radius: 12px; 
-                    padding: 1.5rem; 
+                    background: var(--card-bg);
+                    border-radius: 12px;
+                    padding: 1.5rem;
                     border-left: 4px solid {'#10b981' if overall_status == 'online' else '#f59e0b' if overall_status == 'warning' else '#ef4444'};
                 ">
                     <div style="font-size: 1.1rem; line-height: 1.7; color: var(--secondary-text);">
@@ -4798,8 +4799,8 @@ class DashboardData:
                             </div>
                         </div>
                         <p style="margin: 0;">
-                            👑 <strong>Leadership coordination</strong> spans <span style="color: #8b5cf6; font-weight: 600;">{total_divisions} divisions</span>, 
-                            <span style="color: #ec4899; font-weight: 600;">{total_departments} departments</span> and <span style="color: #f59e0b; font-weight: 600;">{active_leaders} leaders</span>, with the service registry 
+                            👑 <strong>Leadership coordination</strong> spans <span style="color: #8b5cf6; font-weight: 600;">{total_divisions} divisions</span>,
+                            <span style="color: #ec4899; font-weight: 600;">{total_departments} departments</span> and <span style="color: #f59e0b; font-weight: 600;">{active_leaders} leaders</span>, with the service registry
                             <span style="color: {'#10b981' if registry_status == 'healthy' else '#ef4444'}; font-weight: 600;">{registry_status}</span>.
                             <span style="margin-top: 1rem; display: block; padding: 1rem; background: {'#10b98115' if overall_status == 'online' else '#f59e0b15' if overall_status == 'warning' else '#ef444415'}; border-radius: 8px; font-weight: 500; color: {'#10b981' if overall_status == 'online' else '#f59e0b' if overall_status == 'warning' else '#ef4444'}; line-height: 1.6;">
                             💡 <strong>System Intelligence:</strong> {smart_recommendations}
@@ -4809,16 +4810,16 @@ class DashboardData:
                     </div>
                 </div>
             </div>
-            
+
             <!-- System Overview Card -->
             <div class="card full-width" style="margin-bottom: 2rem; border: 2px solid #8b5cf620; background: linear-gradient(135deg, #8b5cf608, #8b5cf603);">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
                     <div style="display: flex; align-items: center; gap: 1rem;">
                         <div style="
-                            width: 60px; height: 60px; 
-                            background: linear-gradient(135deg, #8b5cf6, #8b5cf6cc); 
-                            border-radius: 12px; 
-                            display: flex; align-items: center; justify-content: center; 
+                            width: 60px; height: 60px;
+                            background: linear-gradient(135deg, #8b5cf6, #8b5cf6cc);
+                            border-radius: 12px;
+                            display: flex; align-items: center; justify-content: center;
                             color: white; font-size: 1.5rem; box-shadow: 0 4px 12px #8b5cf640;
                         ">
                             <i class="fas fa-tachometer-alt"></i>
@@ -4837,7 +4838,7 @@ class DashboardData:
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Dashboard Metrics Grid -->
                 <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; align-items: stretch;">
                     <div class="widget widget-small">
@@ -4852,7 +4853,7 @@ class DashboardData:
                         </div>
                         <div class="widget-subtitle">Online/Total</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -4865,7 +4866,7 @@ class DashboardData:
                         </div>
                         <div class="widget-subtitle">Active/Total</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -4878,7 +4879,7 @@ class DashboardData:
                         </div>
                         <div class="widget-subtitle">Active/Total</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -4891,7 +4892,7 @@ class DashboardData:
                         </div>
                         <div class="widget-subtitle">Online/Total</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -4899,7 +4900,7 @@ class DashboardData:
                                 <span>Registry</span>
                             </div>
                         </div>
-                        <div class="widget-value" style="color: {('#10b981' if registry_status == 'healthy' else 'var(--danger-color)')};"> 
+                        <div class="widget-value" style="color: {('#10b981' if registry_status == 'healthy' else 'var(--danger-color)')};">
                             {'✓' if registry_status == 'healthy' else '✗'}
                         </div>
                         <div class="widget-subtitle">{'Healthy' if registry_status == 'healthy' else 'Offline'}</div>
@@ -4915,10 +4916,10 @@ class DashboardData:
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
                     <div style="display: flex; align-items: center; gap: 1rem;">
                         <div style="
-                            width: 60px; height: 60px; 
-                            background: linear-gradient(135deg, #06b6d4, #06b6d4cc); 
-                            border-radius: 12px; 
-                            display: flex; align-items: center; justify-content: center; 
+                            width: 60px; height: 60px;
+                            background: linear-gradient(135deg, #06b6d4, #06b6d4cc);
+                            border-radius: 12px;
+                            display: flex; align-items: center; justify-content: center;
                             color: white; font-size: 1.5rem; box-shadow: 0 4px 12px #06b6d440;
                         ">
                             <i class="fas fa-robot"></i>
@@ -4937,7 +4938,7 @@ class DashboardData:
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Agent Metrics Grid -->
                 <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; align-items: stretch;">
                     <div class="widget widget-small">
@@ -4952,7 +4953,7 @@ class DashboardData:
                         </div>
                         <div class="widget-subtitle">Running</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -4965,7 +4966,7 @@ class DashboardData:
                         </div>
                         <div class="widget-subtitle">Performing</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -4978,7 +4979,7 @@ class DashboardData:
                         </div>
                         <div class="widget-subtitle">Wellness</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -4991,7 +4992,7 @@ class DashboardData:
                         </div>
                         <div class="widget-subtitle">Offline</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -5006,7 +5007,7 @@ class DashboardData:
                     </div>
                 </div>
             </div>
-            
+
             <!-- Agent Status Cards -->
             <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem;">
                 <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
@@ -5018,7 +5019,7 @@ class DashboardData:
                         <p style="margin: 0; color: var(--secondary-text); font-size: 1rem;">Monitor and manage all AI agents and their activities</p>
                     </div>
                 </div>
-                
+
                 <!-- Agent Controls -->
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; gap: 1rem;">
                     <div style="display: flex; align-items: center; gap: 1rem;">
@@ -5046,7 +5047,7 @@ class DashboardData:
                         <span id="agentCount">{total_agents}</span> agents
                     </div>
                 </div>
-                
+
                 <div id="agentGrid" style="display: flex; flex-direction: column; gap: 1rem;">
                     {self._generate_enhanced_agents_html()}
                 </div>
@@ -5071,10 +5072,10 @@ class DashboardData:
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
                     <div style="display: flex; align-items: center; gap: 1rem;">
                         <div style="
-                            width: 60px; height: 60px; 
-                            background: linear-gradient(135deg, #6366f1, #6366f1cc); 
-                            border-radius: 12px; 
-                            display: flex; align-items: center; justify-content: center; 
+                            width: 60px; height: 60px;
+                            background: linear-gradient(135deg, #6366f1, #6366f1cc);
+                            border-radius: 12px;
+                            display: flex; align-items: center; justify-content: center;
                             color: white; font-size: 1.5rem; box-shadow: 0 4px 12px #6366f140;
                         ">
                             <i class="fas fa-network-wired"></i>
@@ -5093,7 +5094,7 @@ class DashboardData:
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Registry Metrics Grid -->
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; align-items: stretch;">
                     <div class="widget widget-small">
@@ -5108,7 +5109,7 @@ class DashboardData:
                         </div>
                         <div class="widget-subtitle">Registered</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -5121,7 +5122,7 @@ class DashboardData:
                         </div>
                         <div class="widget-subtitle">Registered</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -5134,7 +5135,7 @@ class DashboardData:
                         </div>
                         <div class="widget-subtitle">Status</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -5149,7 +5150,7 @@ class DashboardData:
                     </div>
                 </div>
             </div>
-            
+
             <!-- Registry Overview -->
             <div class="widget widget-full" style="margin-top: 1.5rem;">
                 <div class="widget-header">
@@ -5171,10 +5172,10 @@ class DashboardData:
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
                     <div style="display: flex; align-items: center; gap: 1rem;">
                         <div style="
-                            width: 60px; height: 60px; 
-                            background: linear-gradient(135deg, #ec4899, #ec4899cc); 
-                            border-radius: 12px; 
-                            display: flex; align-items: center; justify-content: center; 
+                            width: 60px; height: 60px;
+                            background: linear-gradient(135deg, #ec4899, #ec4899cc);
+                            border-radius: 12px;
+                            display: flex; align-items: center; justify-content: center;
                             color: white; font-size: 1.5rem; box-shadow: 0 4px 12px #ec489940;
                         ">
                             <i class="fas fa-building"></i>
@@ -5193,7 +5194,7 @@ class DashboardData:
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Department Metrics Grid -->
                 <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; align-items: stretch;">
                 <div class="widget widget-small">
@@ -5208,7 +5209,7 @@ class DashboardData:
                     </div>
                     <div class="widget-subtitle">Total Active</div>
                 </div>
-                
+
                 <div class="widget widget-small">
                     <div class="widget-header">
                         <div class="widget-title">
@@ -5221,7 +5222,7 @@ class DashboardData:
                     </div>
                     <div class="widget-subtitle">Organizational Units</div>
                 </div>
-                
+
                 <div class="widget widget-small">
                     <div class="widget-header">
                         <div class="widget-title">
@@ -5234,7 +5235,7 @@ class DashboardData:
                     </div>
                     <div class="widget-subtitle">Department Heads</div>
                 </div>
-                
+
                 <div class="widget widget-small">
                     <div class="widget-header">
                         <div class="widget-title">
@@ -5247,7 +5248,7 @@ class DashboardData:
                     </div>
                     <div class="widget-subtitle">Specialized Agents</div>
                 </div>
-                
+
                 <div class="widget widget-small">
                     <div class="widget-header">
                         <div class="widget-title">
@@ -5262,7 +5263,7 @@ class DashboardData:
                 </div>
             </div>
             </div>
-            
+
             <!-- Organizational Chart -->
             <div class="card full-width">
                 <div style="text-align: center; margin-bottom: 1.5rem;">
@@ -5270,7 +5271,7 @@ class DashboardData:
                         AI-Native Operating System • {total_divisions} Divisions • {total_departments} Departments • {total_leaders} Leaders
                     </div>
                 </div>
-                
+
                 <!-- Controls -->
                 <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 1rem;">
                     <button onclick="expandAllOrgNodes()" style="padding: 0.5rem 1rem; background: var(--accent-color); color: white; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;">
@@ -5280,7 +5281,7 @@ class DashboardData:
                         <i class="fas fa-compress"></i> Collapse All
                     </button>
                 </div>
-                
+
                 <!-- Organizational Chart Container -->
                 <div id="org-chart-container" style="
                     background: var(--secondary-bg);
@@ -5303,10 +5304,10 @@ class DashboardData:
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
                     <div style="display: flex; align-items: center; gap: 1rem;">
                         <div style="
-                            width: 60px; height: 60px; 
-                            background: linear-gradient(135deg, #06b6d4, #06b6d4cc); 
-                            border-radius: 12px; 
-                            display: flex; align-items: center; justify-content: center; 
+                            width: 60px; height: 60px;
+                            background: linear-gradient(135deg, #06b6d4, #06b6d4cc);
+                            border-radius: 12px;
+                            display: flex; align-items: center; justify-content: center;
                             color: white; font-size: 1.5rem; box-shadow: 0 4px 12px #06b6d440;
                         ">
                             <i class="fas fa-chart-line"></i>
@@ -5326,7 +5327,7 @@ class DashboardData:
                     </div>
                 </div>
             </div>
-            
+
             <!-- System Metrics Grid -->
             <div class="grid">
                 <div class="card" style="text-align: center; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(79, 70, 229, 0.05));">
@@ -5341,7 +5342,7 @@ class DashboardData:
                         <div style="height: 100%; width: {self.system_metrics.get('cpu_percent', 0)}%; background: var(--accent-color); border-radius: 2px;"></div>
                     </div>
                 </div>
-                
+
                 <div class="card" style="text-align: center; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05));">
                     <div style="font-size: 2.5rem; color: var(--success-color); margin-bottom: 0.5rem;">
                         <i class="fas fa-memory"></i>
@@ -5354,7 +5355,7 @@ class DashboardData:
                         <div style="height: 100%; width: {self.system_metrics.get('memory_percent', 0)}%; background: var(--success-color); border-radius: 2px;"></div>
                     </div>
                 </div>
-                
+
                 <div class="card" style="text-align: center; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05));">
                     <div style="font-size: 2.5rem; color: var(--warning-color); margin-bottom: 0.5rem;">
                         <i class="fas fa-hdd"></i>
@@ -5367,7 +5368,7 @@ class DashboardData:
                         <div style="height: 100%; width: {self.system_metrics.get('disk_percent', 0)}%; background: var(--warning-color); border-radius: 2px;"></div>
                     </div>
                 </div>
-                
+
                 <div class="card" style="text-align: center; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.05));">
                     <div style="font-size: 2.5rem; color: #8b5cf6; margin-bottom: 0.5rem;">
                         <i class="fas fa-network-wired"></i>
@@ -5381,7 +5382,7 @@ class DashboardData:
                     </div>
                 </div>
             </div>
-            
+
             <!-- System Information -->
             <div class="card full-width" style="margin-top: 2rem;">
                 <h3 style="margin-bottom: 1rem;">
@@ -5417,7 +5418,7 @@ class DashboardData:
                 <h2 style="text-align: center; margin-bottom: 2rem; color: var(--accent-color);">
                     <i class="fas fa-chart-line"></i> Analytics Dashboard
                 </h2>
-                
+
                 <!-- Key Performance Indicators -->
                 <div class="grid" style="margin-bottom: 2rem;">
                     <div class="card" style="text-align: center; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05));">
@@ -5429,7 +5430,7 @@ class DashboardData:
                         </div>
                         <div class="metric-label">System Health</div>
                     </div>
-                    
+
                     <div class="card" style="text-align: center; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(79, 70, 229, 0.05));">
                         <div style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;">
                             <i class="fas fa-users-cog"></i>
@@ -5439,7 +5440,7 @@ class DashboardData:
                         </div>
                         <div class="metric-label">Active Agents</div>
                     </div>
-                    
+
                     <div class="card" style="text-align: center; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05));">
                         <div style="font-size: 2rem; color: var(--warning-color); margin-bottom: 0.5rem;">
                             <i class="fas fa-chart-area"></i>
@@ -5449,7 +5450,7 @@ class DashboardData:
                         </div>
                         <div class="metric-label">CPU Usage</div>
                     </div>
-                    
+
                     <div class="card" style="text-align: center; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.05));">
                         <div style="font-size: 2rem; color: #8b5cf6; margin-bottom: 0.5rem;">
                             <i class="fas fa-building"></i>
@@ -5461,7 +5462,7 @@ class DashboardData:
                     </div>
                 </div>
             </div>
-            
+
             <!-- Real-time Monitoring -->
             <div class="grid" style="gap: 2rem;">
                 <div class="card">
@@ -5496,7 +5497,7 @@ class DashboardData:
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="card">
                     <h3 style="margin-bottom: 1.5rem;">
                         <i class="fas fa-eye"></i> Real-time Overview
@@ -5530,10 +5531,10 @@ class DashboardData:
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
                     <div style="display: flex; align-items: center; gap: 1rem;">
                         <div style="
-                            width: 60px; height: 60px; 
-                            background: linear-gradient(135deg, #f59e0b, #f59e0bcc); 
-                            border-radius: 12px; 
-                            display: flex; align-items: center; justify-content: center; 
+                            width: 60px; height: 60px;
+                            background: linear-gradient(135deg, #f59e0b, #f59e0bcc);
+                            border-radius: 12px;
+                            display: flex; align-items: center; justify-content: center;
                             color: white; font-size: 1.5rem; box-shadow: 0 4px 12px #f59e0b40;
                         ">
                             <i class="fas fa-database"></i>
@@ -5552,15 +5553,15 @@ class DashboardData:
                                 Last updated: <span id="db-last-update">{self.database_health_metrics.get('last_check', 'Never') if hasattr(self, 'database_health_metrics') else 'Never'}</span>
                             </div>
                         </div>
-                        <button 
-                            onclick="refreshDatabaseMetrics()" 
+                        <button
+                            onclick="refreshDatabaseMetrics()"
                             style="
-                                background: linear-gradient(135deg, #10b981, #059669); 
-                                color: white; 
-                                border: none; 
-                                padding: 0.5rem 1rem; 
-                                border-radius: 6px; 
-                                cursor: pointer; 
+                                background: linear-gradient(135deg, #10b981, #059669);
+                                color: white;
+                                border: none;
+                                padding: 0.5rem 1rem;
+                                border-radius: 6px;
+                                cursor: pointer;
                                 font-size: 0.9rem;
                                 display: flex;
                                 align-items: center;
@@ -5576,7 +5577,7 @@ class DashboardData:
                         </button>
                     </div>
                 </div>
-                
+
                 <!-- Database Metrics Grid - Matching Servers Tab Format -->
                 <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; align-items: stretch;">
                     <div class="widget widget-small">
@@ -5591,7 +5592,7 @@ class DashboardData:
                         </div>
                         <div class="widget-label">Total</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -5604,7 +5605,7 @@ class DashboardData:
                         </div>
                         <div class="widget-label">Active</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -5617,7 +5618,7 @@ class DashboardData:
                         </div>
                         <div class="widget-label">Database</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -5630,7 +5631,7 @@ class DashboardData:
                         </div>
                         <div class="widget-label">Hit Ratio</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -5645,7 +5646,7 @@ class DashboardData:
                     </div>
                 </div>
             </div>
-            
+
             <!-- Database Tables Overview -->
             <div class="card full-width" style="margin-bottom: 2rem;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
@@ -5656,17 +5657,17 @@ class DashboardData:
                         PostgreSQL with pgvector extension
                     </div>
                 </div>
-                
+
                 <!-- Filters and Controls -->
                 <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <label for="categoryFilter" style="font-size: 0.9rem; color: var(--secondary-text);">Filter by Category:</label>
                         <select id="categoryFilter" onchange="filterTables()" style="
-                            background: var(--secondary-bg); 
-                            color: var(--primary-text); 
-                            border: 1px solid var(--border-color); 
-                            border-radius: 4px; 
-                            padding: 0.25rem 0.5rem; 
+                            background: var(--secondary-bg);
+                            color: var(--primary-text);
+                            border: 1px solid var(--border-color);
+                            border-radius: 4px;
+                            padding: 0.25rem 0.5rem;
                             font-size: 0.9rem;
                         ">
                             <option value="">All Categories</option>
@@ -5680,58 +5681,58 @@ class DashboardData:
                             <option value="other">Other</option>
                         </select>
                     </div>
-                    
+
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <label for="searchFilter" style="font-size: 0.9rem; color: var(--secondary-text);">Search:</label>
                         <input type="text" id="searchFilter" placeholder="Filter table names..." onkeyup="filterTables()" style="
-                            background: var(--secondary-bg); 
-                            color: var(--primary-text); 
-                            border: 1px solid var(--border-color); 
-                            border-radius: 4px; 
-                            padding: 0.25rem 0.5rem; 
+                            background: var(--secondary-bg);
+                            color: var(--primary-text);
+                            border: 1px solid var(--border-color);
+                            border-radius: 4px;
+                            padding: 0.25rem 0.5rem;
                             font-size: 0.9rem;
                             width: 200px;
                         ">
                     </div>
-                    
+
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <span style="font-size: 0.9rem; color: var(--secondary-text);">Sort by:</span>
                         <button onclick="sortTables('name')" style="
-                            background: var(--secondary-bg); 
-                            color: var(--primary-text); 
-                            border: 1px solid var(--border-color); 
-                            border-radius: 4px; 
-                            padding: 0.25rem 0.5rem; 
-                            font-size: 0.8rem; 
+                            background: var(--secondary-bg);
+                            color: var(--primary-text);
+                            border: 1px solid var(--border-color);
+                            border-radius: 4px;
+                            padding: 0.25rem 0.5rem;
+                            font-size: 0.8rem;
                             cursor: pointer;
                         ">Name</button>
                         <button onclick="sortTables('size')" style="
-                            background: var(--secondary-bg); 
-                            color: var(--primary-text); 
-                            border: 1px solid var(--border-color); 
-                            border-radius: 4px; 
-                            padding: 0.25rem 0.5rem; 
-                            font-size: 0.8rem; 
+                            background: var(--secondary-bg);
+                            color: var(--primary-text);
+                            border: 1px solid var(--border-color);
+                            border-radius: 4px;
+                            padding: 0.25rem 0.5rem;
+                            font-size: 0.8rem;
                             cursor: pointer;
                         ">Size</button>
                         <button onclick="sortTables('category')" style="
-                            background: var(--secondary-bg); 
-                            color: var(--primary-text); 
-                            border: 1px solid var(--border-color); 
-                            border-radius: 4px; 
-                            padding: 0.25rem 0.5rem; 
-                            font-size: 0.8rem; 
+                            background: var(--secondary-bg);
+                            color: var(--primary-text);
+                            border: 1px solid var(--border-color);
+                            border-radius: 4px;
+                            padding: 0.25rem 0.5rem;
+                            font-size: 0.8rem;
                             cursor: pointer;
                         ">Category</button>
                     </div>
-                    
+
                     <div style="margin-left: auto;">
                         <span id="tableCount" style="font-size: 0.9rem; color: var(--secondary-text);">
                             Showing all tables
                         </span>
                     </div>
                 </div>
-                
+
                 <div style="overflow-x: auto;">
                     <table id="databaseTable" style="width: 100%; border-collapse: collapse;">
                         <thead>
@@ -5759,7 +5760,7 @@ class DashboardData:
                     </table>
                 </div>
             </div>
-            
+
             <!-- Database Connection Details -->
             <div class="grid" style="gap: 1.5rem;">
                 <div class="card">
@@ -5775,7 +5776,7 @@ class DashboardData:
                         <div style="margin-bottom: 0.5rem;"><strong>pgvector:</strong> {'Enabled' if (hasattr(self, 'database_health_metrics') and self.database_health_metrics.get('pgvector_enabled')) else 'Unknown'}</div>
                     </div>
                 </div>
-                
+
                 <div class="card">
                     <h4 style="margin: 0 0 1rem 0; color: var(--accent-color);">
                         <i class="fas fa-chart-line"></i> Performance Metrics
@@ -5790,7 +5791,7 @@ class DashboardData:
             </div>
         </div>
 
-        
+
         <!-- Metrics Tab -->
         <div id="metrics" class="tab-content">
             <div class="card full-width" style="margin-bottom: 2rem;">
@@ -5820,7 +5821,7 @@ class DashboardData:
                     </button>
                 </div>
             </div>
-            
+
             <div class="card full-width">
                 <div id="metrics-content">
                     <div style="text-align: center; padding: 2rem;">
@@ -5830,7 +5831,7 @@ class DashboardData:
                 </div>
             </div>
         </div>
-        
+
         <!-- Services Tab -->
         <div id="services" class="tab-content">
             <!-- Services Overview Card -->
@@ -5838,10 +5839,10 @@ class DashboardData:
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
                     <div style="display: flex; align-items: center; gap: 1rem;">
                         <div style="
-                            width: 60px; height: 60px; 
-                            background: linear-gradient(135deg, #06b6d4, #06b6d4cc); 
-                            border-radius: 12px; 
-                            display: flex; align-items: center; justify-content: center; 
+                            width: 60px; height: 60px;
+                            background: linear-gradient(135deg, #06b6d4, #06b6d4cc);
+                            border-radius: 12px;
+                            display: flex; align-items: center; justify-content: center;
                             color: white; font-size: 1.5rem; box-shadow: 0 4px 12px #06b6d440;
                         ">
                             <i class="fas fa-server"></i>
@@ -5860,7 +5861,7 @@ class DashboardData:
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Server Categories Metrics Grid -->
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; align-items: stretch;">
                     <div class="widget widget-small">
@@ -5875,7 +5876,7 @@ class DashboardData:
                         </div>
                         <div class="widget-subtitle">Model Context Protocol</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -5888,7 +5889,7 @@ class DashboardData:
                         </div>
                         <div class="widget-subtitle">Infrastructure</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -5903,7 +5904,7 @@ class DashboardData:
                     </div>
                 </div>
             </div>
-            
+
             <!-- Server Categories Display -->
             <div class="card full-width">
                 <div style="margin-bottom: 2rem;">
@@ -5912,7 +5913,7 @@ class DashboardData:
                             <i class="fas fa-network-wired"></i> Server Infrastructure
                         </h3>
                     </div>
-                    
+
                     <!-- MCP Servers Section -->
                     <div style="margin-bottom: 2rem;">
                         <h4 style="color: var(--accent-color); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
@@ -5923,7 +5924,7 @@ class DashboardData:
                             {self._generate_server_cards('MCP Servers')}
                         </div>
                     </div>
-                    
+
                     <!-- Core Systems Section -->
                     <div style="margin-bottom: 2rem;">
                         <h4 style="color: var(--success-color); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
@@ -5934,7 +5935,7 @@ class DashboardData:
                             {self._generate_server_cards('Core Systems')}
                         </div>
                     </div>
-                    
+
                     <!-- Business Services Section -->
                     <div style="margin-bottom: 2rem;">
                         <h4 style="color: var(--warning-color); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
@@ -5948,7 +5949,7 @@ class DashboardData:
                 </div>
             </div>
         </div>
-        
+
         <!-- Settings Tab -->
         <div id="settings" class="tab-content">
             <div class="card full-width" style="margin-bottom: 2rem;">
@@ -5956,7 +5957,7 @@ class DashboardData:
                     <i class="fas fa-cog"></i> BoarderframeOS Configuration
                 </h2>
             </div>
-            
+
             <!-- Settings Grid -->
             <div class="grid" style="gap: 2rem;">
                 <!-- System Configuration -->
@@ -5997,7 +5998,7 @@ class DashboardData:
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Agent Management -->
                 <div class="card">
                     <h3 style="margin-bottom: 1.5rem;">
@@ -6031,7 +6032,7 @@ class DashboardData:
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Security Settings -->
                 <div class="card">
                     <h3 style="margin-bottom: 1.5rem;">
@@ -6070,7 +6071,7 @@ class DashboardData:
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Organization Settings -->
                 <div class="card">
                     <h3 style="margin-bottom: 1.5rem;">
@@ -6103,7 +6104,7 @@ class DashboardData:
                     </div>
                 </div>
             </div>
-            
+
             <!-- Save Settings Button -->
             <div style="text-align: center; margin-top: 2rem;">
                 <button style="background: var(--accent-color); color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='var(--success-color)'" onmouseout="this.style.background='var(--accent-color)'">
@@ -6129,7 +6130,7 @@ class DashboardData:
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            
+
             <div class="agent-selector">
                 <h4 style="margin: 0 0 1rem 0; color: var(--primary-text); font-size: 0.9rem;">Select Agents to Chat With:</h4>
                 <div class="agent-pills">
@@ -6153,14 +6154,14 @@ class DashboardData:
                     </div>
                 </div>
             </div>
-            
+
             <div class="chat-messages" id="chatMessages">
                 <div style="text-align: center; color: var(--secondary-text); padding: 2rem;">
                     <i class="fas fa-comments" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
                     <p>Select agents above and start chatting with your AI team!</p>
                 </div>
             </div>
-            
+
             <div class="chat-input-area">
                 <textarea class="chat-input" id="chatInput" placeholder="Type your message here..." rows="2"></textarea>
                 <button class="chat-send" onclick="sendMessage()">
@@ -6177,23 +6178,23 @@ class DashboardData:
             // Hide all tab contents
             const tabs = document.querySelectorAll('.tab-content');
             tabs.forEach(tab => tab.classList.remove('active'));
-            
+
             // Remove active class from all nav links
             const navLinks = document.querySelectorAll('.nav-link');
             navLinks.forEach(link => link.classList.remove('active'));
-            
+
             // Show selected tab content
             const selectedTab = document.getElementById(tabName);
             if (selectedTab) {{
                 selectedTab.classList.add('active');
             }}
-            
+
             // Add active class to clicked nav link
             const clickedLink = document.querySelector(`.nav-link[data-tab="${{tabName}}"]`);
             if (clickedLink) {{
                 clickedLink.classList.add('active');
             }}
-            
+
             // Auto-load metrics when metrics tab is shown
             if (tabName === 'metrics') {{
                 // Check if metrics haven't been loaded yet (spinner is showing)
@@ -6204,17 +6205,17 @@ class DashboardData:
                 }}
             }}
         }}
-        
+
         // Load metrics data
         function loadMetricsData() {{
             console.log('[Metrics] Loading metrics data...');
             const timestamp = new Date().toISOString();
             const metricsDiv = document.getElementById('metrics-content');
             metricsDiv.innerHTML = '<div style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--accent-color);"></i><p style="margin-top: 1rem;">Loading metrics...</p></div>';
-            
+
             // Log metrics request
             console.log(`[Metrics] Requesting metrics at ${{timestamp}}`);
-            
+
             // Fetch metrics page HTML from API
             fetch('/api/metrics/page')
                 .then(response => response.json())
@@ -6222,7 +6223,7 @@ class DashboardData:
                     if (data.status === 'success') {{
                         console.log('[Metrics] Successfully loaded metrics from layer');
                         metricsDiv.innerHTML = data.html;
-                        
+
                         // Log metrics summary to console
                         fetch('/api/metrics')
                             .then(r => r.json())
@@ -6289,65 +6290,65 @@ ${{JSON.stringify(data.data, null, 2)}}
             const icon = button.querySelector('i');
             const originalText = button.innerHTML;
             const lastUpdateSpan = document.getElementById('db-last-update');
-            
+
             // Create and show progress popup with detailed steps
             showRefreshProgress('Initializing database refresh...');
-            
+
             // Show loading state
             button.disabled = true;
             icon.classList.add('fa-spin');
             button.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Refreshing...';
-            
+
             try {{
                 console.log('Triggering database refresh...');
-                
+
                 // Step 1: Validation
                 await simulateDelay(300);
                 updateRefreshProgress('🔍 Validating database connection parameters...');
-                
+
                 // Step 2: Connection
                 await simulateDelay(400);
                 updateRefreshProgress('🔌 Establishing connection to PostgreSQL (localhost:5434)...');
-                
+
                 // Step 3: Authentication
                 await simulateDelay(300);
                 updateRefreshProgress('🔐 Authenticating with boarderframeos database...');
-                
+
                 // Step 4: API Call
                 await simulateDelay(200);
                 updateRefreshProgress('📡 Sending refresh request to server...');
-                
+
                 const response = await fetch('/api/database/refresh', {{
                     method: 'POST'
                 }});
-                
+
                 console.log('Response status:', response.status);
-                
+
                 if (response.ok) {{
                     // Step 5: Server Processing
                     updateRefreshProgress('⚙️ Server processing database health check...');
                     await simulateDelay(500);
-                    
+
                     // Step 6: Table Analysis
                     updateRefreshProgress('📊 Analyzing database tables and schemas...');
                     await simulateDelay(400);
-                    
+
                     // Step 7: Connection Stats
                     updateRefreshProgress('📈 Gathering connection statistics...');
                     await simulateDelay(300);
-                    
+
                     // Step 8: Size Calculation
                     updateRefreshProgress('💾 Calculating database and table sizes...');
                     await simulateDelay(400);
-                    
+
                     // Step 9: Performance Metrics
                     updateRefreshProgress('⚡ Collecting cache hit ratios and performance data...');
                     await simulateDelay(350);
-                    
+
                     // Step 10: Extension Check
                     updateRefreshProgress('🔧 Verifying pgvector and PostgreSQL extensions...');
                     await simulateDelay(250);
-                    
+
                     let data;
                     try {{
                         const responseText = await response.text();
@@ -6357,43 +6358,43 @@ ${{JSON.stringify(data.data, null, 2)}}
                         console.error('JSON parse error:', parseError);
                         throw new Error('Invalid response format from server');
                     }}
-                    
+
                     console.log('Parsed response:', data);
-                    
+
                     // Step 11: Data Processing
                     updateRefreshProgress('🧮 Processing and categorizing table data...');
                     await simulateDelay(300);
-                    
+
                     // Step 12: UI Updates
                     updateRefreshProgress('🎨 Updating metrics widgets and visualizations...');
                     await simulateDelay(250);
-                    
+
                     // Update the last update time
                     if (lastUpdateSpan) {{
                         lastUpdateSpan.textContent = new Date().toLocaleString();
                     }}
-                    
+
                     // Show success message briefly
                     button.innerHTML = '<i class="fas fa-check"></i> Refreshed!';
                     button.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-                    
+
                     // Step 13: Final Update
                     updateRefreshProgress('🔄 Refreshing table filters and sorting...');
                     await simulateDelay(200);
-                    
+
                     // Step 14: Success
                     updateRefreshProgress('✅ Database metrics updated successfully!', 'success');
-                    
+
                     setTimeout(() => {{
                         hideRefreshProgress();
                         refreshDatabaseTabContent();
-                        
+
                         // Reset button state
                         button.disabled = false;
                         button.innerHTML = originalText;
                         button.style.background = 'linear-gradient(135deg, #10b981, #059669)';
                     }}, 1500);
-                    
+
                 }} else {{
                     const errorText = await response.text();
                     console.error('Server error response:', errorText);
@@ -6402,23 +6403,23 @@ ${{JSON.stringify(data.data, null, 2)}}
             }} catch (error) {{
                 console.error('Database refresh error:', error);
                 updateRefreshProgress(`❌ Error: ${{error.message}}`, 'error');
-                
+
                 setTimeout(() => {{
                     hideRefreshProgress();
                 }}, 3000);
-                
+
                 // Reset button state on error
                 button.disabled = false;
                 icon.classList.remove('fa-spin');
                 button.innerHTML = originalText;
             }}
         }}
-        
+
         // Helper function for realistic timing simulation
         function simulateDelay(ms) {{
             return new Promise(resolve => setTimeout(resolve, ms));
         }}
-        
+
         // Progress popup functions
         function showRefreshProgress(message) {{
             // Remove existing popup if any
@@ -6426,7 +6427,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             if (existingPopup) {{
                 existingPopup.remove();
             }}
-            
+
             // Create popup overlay
             const popup = document.createElement('div');
             popup.id = 'refreshProgressPopup';
@@ -6443,7 +6444,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 z-index: 10000;
                 backdrop-filter: blur(5px);
             `;
-            
+
             // Create popup content
             const content = document.createElement('div');
             content.style.cssText = `
@@ -6464,7 +6465,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 flex-direction: column;
                 justify-content: space-between;
             `;
-            
+
             content.innerHTML = `
                 <div style="flex-shrink: 0;">
                     <div style="margin-bottom: 1rem;">
@@ -6472,18 +6473,18 @@ ${{JSON.stringify(data.data, null, 2)}}
                     </div>
                     <h3 style="margin: 0 0 1rem 0; color: var(--accent-color);">Database Refresh</h3>
                 </div>
-                
+
                 <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
                         <span id="stepCounter" style="font-size: 0.8rem; color: var(--secondary-text);">Step 1 of 14</span>
                         <span id="progressPercent" style="font-size: 0.8rem; color: var(--secondary-text);">0%</span>
                     </div>
                     <div id="progressMessage" style="
-                        margin-bottom: 1rem; 
-                        color: var(--secondary-text); 
-                        height: 3rem; 
-                        display: flex; 
-                        align-items: center; 
+                        margin-bottom: 1rem;
+                        color: var(--secondary-text);
+                        height: 3rem;
+                        display: flex;
+                        align-items: center;
                         justify-content: center;
                         text-align: center;
                         line-height: 1.4;
@@ -6507,53 +6508,53 @@ ${{JSON.stringify(data.data, null, 2)}}
                         "></div>
                     </div>
                 </div>
-                
+
                 <div style="flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                     <i class="fas fa-sync-alt fa-spin" style="color: var(--accent-color);"></i>
                     <span style="font-size: 0.9rem; color: var(--secondary-text);">Processing database operations...</span>
                 </div>
             `;
-            
+
             popup.appendChild(content);
             document.body.appendChild(popup);
-            
+
             // Initialize progress tracking
             popup.currentStep = 0;
             popup.totalSteps = 14; // Total number of steps in refresh process
         }}
-        
+
         function updateRefreshProgress(message, type = 'info') {{
             const messageDiv = document.getElementById('progressMessage');
             const progressFill = document.getElementById('progressFill');
             const stepCounter = document.getElementById('stepCounter');
             const progressPercent = document.getElementById('progressPercent');
             const popup = document.getElementById('refreshProgressPopup');
-            
+
             if (messageDiv) {{
                 messageDiv.innerHTML = message; // Use innerHTML to support emojis
-                
+
                 // Update progress bar based on steps
                 if (popup && type !== 'error') {{
                     popup.currentStep++;
                     const percent = (popup.currentStep / popup.totalSteps) * 100;
                     const displayPercent = Math.min(percent, 95);
-                    
+
                     // Update step counter
                     if (stepCounter) {{
                         stepCounter.textContent = `Step ${{popup.currentStep}} of ${{popup.totalSteps}}`;
                     }}
-                    
+
                     // Update percentage display
                     if (progressPercent) {{
                         progressPercent.textContent = `${{Math.round(displayPercent)}}%`;
                     }}
-                    
+
                     if (progressFill) {{
                         if (type === 'success') {{
                             progressFill.style.width = '100%';
                             progressFill.style.background = 'var(--success-color)';
                             messageDiv.style.color = 'var(--success-color)';
-                            
+
                             // Update final displays
                             if (stepCounter) stepCounter.textContent = `Completed all ${{popup.totalSteps}} steps`;
                             if (progressPercent) progressPercent.textContent = '100%';
@@ -6574,20 +6575,20 @@ ${{JSON.stringify(data.data, null, 2)}}
                 }}
             }}
         }}
-        
+
         function hideRefreshProgress() {{
             const popup = document.getElementById('refreshProgressPopup');
             if (popup) {{
                 // Fade out animation
                 popup.style.opacity = '0';
                 popup.style.transition = 'opacity 0.3s ease';
-                
+
                 setTimeout(() => {{
                     popup.remove();
                 }}, 300);
             }}
         }}
-        
+
         function refreshDatabaseTabContent() {{
             // Instead of full page reload, just refresh the database tab content
             // by fetching updated HTML for just the database section
@@ -6599,16 +6600,16 @@ ${{JSON.stringify(data.data, null, 2)}}
                     const doc = parser.parseFromString(html, 'text/html');
                     const newDatabaseTab = doc.getElementById('database');
                     const currentDatabaseTab = document.getElementById('database');
-                    
+
                     if (newDatabaseTab && currentDatabaseTab) {{
                         // Preserve the active state
                         if (currentDatabaseTab.classList.contains('active')) {{
                             newDatabaseTab.classList.add('active');
                         }}
-                        
+
                         // Replace the content
                         currentDatabaseTab.innerHTML = newDatabaseTab.innerHTML;
-                        
+
                         console.log('Database tab content refreshed without page reload');
                     }}
                 }})
@@ -6621,23 +6622,23 @@ ${{JSON.stringify(data.data, null, 2)}}
 
         // Database table filtering and sorting functionality
         let currentSort = {{ field: 'category', ascending: true }};
-        
+
         function filterTables() {{
             const categoryFilter = document.getElementById('categoryFilter').value.toLowerCase();
             const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
             const tbody = document.getElementById('databaseTableBody');
             const rows = tbody.querySelectorAll('tr');
-            
+
             let visibleCount = 0;
             let categoryCount = 0;
-            
+
             rows.forEach(row => {{
                 const isHeaderRow = row.cells.length === 1; // Category header rows
-                
+
                 if (isHeaderRow) {{
                     const categoryName = row.textContent.toLowerCase();
                     const matchesCategory = !categoryFilter || categoryName.includes(categoryFilter);
-                    
+
                     if (matchesCategory) {{
                         row.style.display = '';
                         categoryCount++;
@@ -6648,10 +6649,10 @@ ${{JSON.stringify(data.data, null, 2)}}
                     const tableName = row.cells[0].textContent.toLowerCase();
                     const categoryCell = row.cells[4];
                     const categoryText = categoryCell ? categoryCell.textContent.toLowerCase() : '';
-                    
+
                     const matchesSearch = !searchFilter || tableName.includes(searchFilter);
                     const matchesCategory = !categoryFilter || categoryText.includes(categoryFilter);
-                    
+
                     if (matchesSearch && matchesCategory) {{
                         row.style.display = '';
                         visibleCount++;
@@ -6660,7 +6661,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     }}
                 }}
             }});
-            
+
             // Update count display
             const countSpan = document.getElementById('tableCount');
             if (categoryFilter || searchFilter) {{
@@ -6669,15 +6670,15 @@ ${{JSON.stringify(data.data, null, 2)}}
                 countSpan.textContent = 'Showing all tables';
             }}
         }}
-        
+
         function sortTables(field) {{
             const tbody = document.getElementById('databaseTableBody');
             const rows = Array.from(tbody.querySelectorAll('tr'));
-            
+
             // Separate header rows from data rows
             const headerRows = rows.filter(row => row.cells.length === 1);
             const dataRows = rows.filter(row => row.cells.length > 1);
-            
+
             // Toggle sort direction if clicking same field
             if (currentSort.field === field) {{
                 currentSort.ascending = !currentSort.ascending;
@@ -6685,11 +6686,11 @@ ${{JSON.stringify(data.data, null, 2)}}
                 currentSort.field = field;
                 currentSort.ascending = true;
             }}
-            
+
             // Sort data rows
             dataRows.sort((a, b) => {{
                 let aValue, bValue;
-                
+
                 switch (field) {{
                     case 'name':
                         aValue = a.cells[0].textContent.trim();
@@ -6715,23 +6716,23 @@ ${{JSON.stringify(data.data, null, 2)}}
                     default:
                         return 0;
                 }}
-                
+
                 if (typeof aValue === 'string') {{
                     aValue = aValue.toLowerCase();
                     bValue = bValue.toLowerCase();
                 }}
-                
+
                 let result;
                 if (aValue < bValue) result = -1;
                 else if (aValue > bValue) result = 1;
                 else result = 0;
-                
+
                 return currentSort.ascending ? result : -result;
             }});
-            
+
             // Clear tbody and re-add sorted rows
             tbody.innerHTML = '';
-            
+
             if (field === 'category') {{
                 // Group by category when sorting by category
                 const categoryGroups = {{}};
@@ -6742,16 +6743,16 @@ ${{JSON.stringify(data.data, null, 2)}}
                     }}
                     categoryGroups[category].push(row);
                 }});
-                
+
                 Object.keys(categoryGroups).sort().forEach(category => {{
                     // Find the header row for this category
-                    const headerRow = headerRows.find(row => 
+                    const headerRow = headerRows.find(row =>
                         row.textContent.toLowerCase().includes(category.toLowerCase())
                     );
                     if (headerRow) {{
                         tbody.appendChild(headerRow);
                     }}
-                    
+
                     categoryGroups[category].forEach(row => {{
                         tbody.appendChild(row);
                     }});
@@ -6762,11 +6763,11 @@ ${{JSON.stringify(data.data, null, 2)}}
                     tbody.appendChild(row);
                 }});
             }}
-            
+
             // Update sort indicators
             updateSortIndicators(field);
         }}
-        
+
         function parseSizeValue(sizeStr) {{
             const sizeMap = {{ 'bytes': 1, 'kb': 1024, 'mb': 1024*1024, 'gb': 1024*1024*1024 }};
             const match = sizeStr.toLowerCase().match(/([\\d.]+)\\s*(bytes|kb|mb|gb)?/);
@@ -6777,7 +6778,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             }}
             return 0;
         }}
-        
+
         function updateSortIndicators(activeField) {{
             const headers = document.querySelectorAll('#databaseTable th');
             headers.forEach(header => {{
@@ -6787,7 +6788,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     icon.style.opacity = '0.5';
                 }}
             }});
-            
+
             // Update active field indicator
             const fieldMap = {{ name: 0, schema: 1, size: 2, columns: 3, category: 4 }};
             const activeHeader = headers[fieldMap[activeField]];
@@ -6805,7 +6806,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             const dropdown = document.getElementById('statusDropdown');
             dropdown.classList.toggle('show');
         }}
-        
+
         function closeStatusDropdown() {{
             const dropdown = document.getElementById('statusDropdown');
             dropdown.classList.remove('show');
@@ -6821,12 +6822,12 @@ ${{JSON.stringify(data.data, null, 2)}}
         document.addEventListener('click', function(event) {{
             const statusIndicator = document.querySelector('.status-indicator');
             const dropdown = document.getElementById('statusDropdown');
-            
+
             // Close if clicking outside the entire status area
             if (!statusIndicator.contains(event.target) && !dropdown.contains(event.target)) {{
                 dropdown.classList.remove('show');
             }}
-            
+
             // Close if clicking on quick action buttons (except refresh which closes itself)
             if (event.target.closest('button') && dropdown.contains(event.target)) {{
                 if (!event.target.textContent.includes('Refresh')) {{
@@ -6840,7 +6841,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             constructor() {{
                 this.isRefreshing = false;
                 this.components = [
-                    'system_metrics', 'database_health', 'services_status', 
+                    'system_metrics', 'database_health', 'services_status',
                     'agents_status', 'mcp_servers', 'registry_data',
                     'departments_data', 'organizational_data'
                 ];
@@ -6862,7 +6863,7 @@ ${{JSON.stringify(data.data, null, 2)}}
 
                 this.isRefreshing = true;
                 const startTime = Date.now();
-                
+
                 try {{
                     // Setup UI
                     const refreshBtn = document.getElementById(targetButtonId);
@@ -6909,15 +6910,15 @@ ${{JSON.stringify(data.data, null, 2)}}
 
                 }} catch (error) {{
                     console.error('❌ Refresh failed:', error);
-                    
+
                     if (showModal) {{
                         this._showRefreshError(error);
                     }}
-                    
+
                     throw error;
                 }} finally {{
                     this.isRefreshing = false;
-                    
+
                     // Re-enable button
                     const refreshBtn = document.getElementById(targetButtonId);
                     if (refreshBtn) {{
@@ -6935,7 +6936,7 @@ ${{JSON.stringify(data.data, null, 2)}}
 
                 try {{
                     console.log(`🔄 Refreshing component: ${{component}}`);
-                    
+
                     if (showNotification) {{
                         this._showNotification(`Refreshing ${{component}}...`, 'info');
                     }}
@@ -6963,11 +6964,11 @@ ${{JSON.stringify(data.data, null, 2)}}
 
                 }} catch (error) {{
                     console.error(`❌ Component ${{component}} refresh failed:`, error);
-                    
+
                     if (showNotification) {{
                         this._showNotification(`Failed to refresh ${{component}}: ${{error.message}}`, 'error');
                     }}
-                    
+
                     throw error;
                 }}
             }}
@@ -7033,14 +7034,14 @@ ${{JSON.stringify(data.data, null, 2)}}
                     background: ${{type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#6366f1'}};
                 `;
                 notification.textContent = message;
-                
+
                 document.body.appendChild(notification);
-                
+
                 // Animate in
                 setTimeout(() => {{
                     notification.style.transform = 'translateX(0)';
                 }}, 100);
-                
+
                 // Remove after delay
                 setTimeout(() => {{
                     notification.style.transform = 'translateX(100%)';
@@ -7059,7 +7060,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     if (activeTab) {{
                         const tabName = activeTab.getAttribute('data-tab');
                         console.log(`🔄 Refreshing active tab content: ${{tabName}}`);
-                        
+
                         // Trigger specific tab refresh if function exists
                         if (window[`refresh${{tabName}}TabContent`]) {{
                             await window[`refresh${{tabName}}TabContent`]();
@@ -7084,18 +7085,18 @@ ${{JSON.stringify(data.data, null, 2)}}
             const refreshSummary = document.getElementById('refreshSummary');
             const currentStepText = document.getElementById('currentStepText');
             const currentStepDetails = document.getElementById('currentStepDetails');
-            
+
             // Disable refresh button and show modal
             refreshBtn.disabled = true;
             refreshBtn.innerHTML = '<i class="fas fa-sync-alt spinning"></i><span>Refreshing OS...</span>';
             modal.style.display = 'flex';
             closeBtn.disabled = true;
             refreshSummary.style.display = 'none';
-            
+
             // Reset progress
             progressFill.style.width = '0%';
             progressPercent.textContent = '0%';
-            
+
             // Reset all component cards
             const componentCards = document.querySelectorAll('.refresh-component-card');
             componentCards.forEach((card) => {{
@@ -7114,19 +7115,19 @@ ${{JSON.stringify(data.data, null, 2)}}
                 const computedStyle = window.getComputedStyle(card);
                 card.style.boxShadow = computedStyle.getPropertyValue('box-shadow');
             }});
-            
+
             // Set initial current step
             currentStepText.textContent = 'Starting enhanced global refresh...';
             currentStepDetails.textContent = 'Preparing to refresh all BoarderframeOS components using enhanced system...';
-            
+
             const startTime = Date.now();
-            
+
             // Function to update component status
             const updateComponentStatus = (componentId, status) => {{
                 // Find the card by data-component attribute
                 const card = document.querySelector(`[data-component="${{componentId}}"]`);
                 const statusDiv = document.getElementById(`status-${{componentId}}`);
-                
+
                 if (card && statusDiv) {{
                     if (status === 'running') {{
                         statusDiv.innerHTML = '<i class="fas fa-sync-alt spinning" style="color: #6366f1;"></i> Refreshing...';
@@ -7140,9 +7141,9 @@ ${{JSON.stringify(data.data, null, 2)}}
                         card.style.animation = 'componentComplete 0.6s ease-out forwards';
                         card.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.4)';
                         card.style.borderLeft = '4px solid #10b981';
-                        
+
                         // Add a completion glow effect
-                        setTimeout(() => {{ 
+                        setTimeout(() => {{
                             card.style.animation = 'none';
                             card.style.transform = 'scale(1)';
                             card.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
@@ -7168,38 +7169,38 @@ ${{JSON.stringify(data.data, null, 2)}}
             try {{
                 // Start the refresh API call
                 console.log('🔄 Starting enhanced global refresh...');
-                
+
                 // Simulate progressive refresh with realistic timing
                 const simulateProgress = async () => {{
                     let currentComponent = 0;
                     const totalComponents = componentOrder.length;
-                    
+
                     const runNextComponent = () => {{
                         if (currentComponent < totalComponents) {{
                             const component = componentOrder[currentComponent];
                             updateComponentStatus(component, 'running');
                             currentStepText.textContent = `Refreshing ${{component.replace('_', ' ')}}...`;
                             currentStepDetails.textContent = `Processing ${{component}} data layer...`;
-                            
+
                             // Update progress bar
                             const progress = ((currentComponent + 0.5) / totalComponents) * 100;
                             progressFill.style.width = `${{progress}}%`;
                             progressPercent.textContent = `${{Math.round(progress)}}%`;
-                            
+
                             currentComponent++;
-                            
+
                             // Schedule next component (random delay between 300-800ms for realism)
                             setTimeout(runNextComponent, Math.random() * 500 + 300);
                         }}
                     }};
-                    
+
                     // Start the simulation
                     runNextComponent();
                 }};
-                
+
                 // Start the simulation
                 simulateProgress();
-                
+
                 const response = await fetch('/api/enhanced/refresh', {{
                     method: 'POST',
                     headers: {{
@@ -7216,11 +7217,11 @@ ${{JSON.stringify(data.data, null, 2)}}
                 const refreshTime = (Date.now() - startTime) / 1000;
 
                 console.log('✅ Enhanced refresh completed:', result);
-                
+
                 // Show completion sequence for components that were refreshed
                 const refreshedComponents = result.result?.refreshed_components || componentOrder;
                 let completionIndex = 0;
-                
+
                 const showCompletions = () => {{
                     if (completionIndex < refreshedComponents.length) {{
                         const component = refreshedComponents[completionIndex];
@@ -7229,17 +7230,17 @@ ${{JSON.stringify(data.data, null, 2)}}
                         setTimeout(showCompletions, 200); // Quick succession for completion
                     }}
                 }};
-                
+
                 // Wait a moment then show completions and handle skipped components
                 setTimeout(() => {{
                     showCompletions();
-                    
+
                     // Mark any failed components
                     const failedComponents = result.result?.failed_components || [];
                     failedComponents.forEach(component => {{
                         updateComponentStatus(component, 'error');
                     }});
-                    
+
                     // Handle any skipped components
                     const refreshedComponents = result.result?.refreshed_components || componentOrder;
                     componentOrder.forEach(component => {{
@@ -7256,17 +7257,17 @@ ${{JSON.stringify(data.data, null, 2)}}
                         }}
                     }});
                 }}, 500);
-                
+
                 // Update progress to 100%
                 setTimeout(() => {{
                     progressFill.style.width = '100%';
                     progressPercent.textContent = '100%';
                 }}, 2000); // After all components are shown as complete
-                
+
                 // Update current step
                 currentStepText.textContent = 'Enhanced refresh completed successfully!';
                 currentStepDetails.textContent = `Refreshed ${{result.result?.refreshed_components?.length || 8}} components in ${{refreshTime.toFixed(2)}} seconds.`;
-                
+
                 // Show success summary
                 const summary = document.getElementById('refreshSummary');
                 const durationSpan = document.getElementById('refreshDuration');
@@ -7287,11 +7288,11 @@ ${{JSON.stringify(data.data, null, 2)}}
 
             }} catch (error) {{
                 console.error('❌ Enhanced refresh failed:', error);
-                
+
                 // Show error state
                 currentStepText.textContent = 'Enhanced refresh failed';
                 currentStepDetails.textContent = `Error: ${{error.message}}`;
-                
+
                 // Show error summary
                 const summary = document.getElementById('refreshSummary');
                 if (summary) {{
@@ -7349,18 +7350,18 @@ ${{JSON.stringify(data.data, null, 2)}}
             const currentStepText = document.getElementById('currentStepText');
             const currentStepDetails = document.getElementById('currentStepDetails');
             const currentStepIcon = document.getElementById('currentStepIcon');
-            
+
             // Disable refresh button and show modal
             refreshBtn.disabled = true;
             refreshBtn.innerHTML = '<i class="fas fa-sync-alt spinning"></i><span>Refreshing OS...</span>';
             modal.style.display = 'flex';
             closeBtn.disabled = true;
             refreshSummary.style.display = 'none';
-            
+
             // Reset progress
             progressFill.style.width = '0%';
             progressPercent.textContent = '0%';
-            
+
             // Reset all step indicators
             const refreshSteps = document.querySelectorAll('.refresh-step');
             refreshSteps.forEach((step, index) => {{
@@ -7371,15 +7372,15 @@ ${{JSON.stringify(data.data, null, 2)}}
                 status.textContent = 'Pending';
                 status.className = 'step-status';
             }});
-            
+
             // Set initial current step
             currentStepText.textContent = 'Testing API connection...';
             currentStepDetails.textContent = 'Verifying BoarderframeOS Corporate Headquarters API is responsive...';
             currentStepIcon.className = 'fas fa-network-wired';
-            
+
             const startTime = Date.now();
             const totalSteps = 16;
-            
+
             try {{
                 // First test basic API connectivity
                 console.log('🔍 Testing API connectivity...');
@@ -7388,12 +7389,12 @@ ${{JSON.stringify(data.data, null, 2)}}
                     throw new Error(`API test failed: ${{testResponse.status}}`);
                 }}
                 console.log('✅ API connectivity confirmed');
-                
+
                 // Update progress
                 progressText.textContent = 'API connected, starting refresh...';
                 progressPercent.textContent = '10%';
                 progressFill.style.width = '10%';
-                
+
                 // Call the backend global refresh API
                 console.log('🔄 Calling global refresh API...');
                 const response = await fetch('/api/global/refresh', {{
@@ -7402,28 +7403,28 @@ ${{JSON.stringify(data.data, null, 2)}}
                         'Content-Type': 'application/json'
                     }}
                 }});
-                
+
                 console.log('📡 Global refresh response:', response.status, response.statusText);
-                
+
                 if (response.ok) {{
                     const result = await response.json();
-                    
+
                     // Simulate progress updates (in real implementation, this would be real-time)
                     await simulateRefreshProgress();
-                    
+
                     // Show completion
                     const duration = ((Date.now() - startTime) / 1000).toFixed(1);
                     showRefreshComplete(duration, '16');
-                    
+
                     // Reload the page to show updated data
                     setTimeout(() => {{
                         window.location.reload();
                     }}, 2000);
-                    
+
                 }} else {{
                     throw new Error('Refresh failed');
                 }}
-                
+
             }} catch (error) {{
                 console.error('❌ Global refresh failed:', error);
                 console.error('Error details:', {{
@@ -7431,12 +7432,12 @@ ${{JSON.stringify(data.data, null, 2)}}
                     message: error.message,
                     stack: error.stack
                 }});
-                
+
                 progressText.textContent = 'Refresh failed: ' + error.message;
                 progressPercent.textContent = 'Error';
                 progressFill.style.width = '100%';
                 progressFill.style.background = '#ef4444';
-                
+
                 // Show error in summary
                 const errorSummary = document.getElementById('refreshSummary');
                 errorSummary.innerHTML = `
@@ -7455,38 +7456,38 @@ ${{JSON.stringify(data.data, null, 2)}}
                 closeBtn.disabled = false;
             }}
         }}
-        
+
         async function simulateRefreshProgress() {{
             const steps = [
                 'System Resources',
-                'PostgreSQL Database', 
+                'PostgreSQL Database',
                 'MCP Servers (7)',
                 'Running Agents',
                 'Organizational Data',
                 'Service Registry'
             ];
-            
+
             const progressFill = document.getElementById('globalProgressFill');
             const progressText = document.getElementById('globalProgressText');
             const progressPercent = document.getElementById('globalProgressPercent');
             const components = document.querySelectorAll('.component-item');
-            
+
             for (let i = 0; i < steps.length; i++) {{
                 // Update progress
                 const percent = ((i + 1) / steps.length * 100).toFixed(0);
                 progressFill.style.width = percent + '%';
                 progressText.textContent = `Refreshing ${{steps[i]}}...`;
                 progressPercent.textContent = percent + '%';
-                
+
                 // Update component status
                 if (components[i]) {{
                     const icon = components[i].querySelector('.fas');
                     icon.className = 'fas fa-circle processing';
                 }}
-                
+
                 // Wait a bit
                 await new Promise(resolve => setTimeout(resolve, 500));
-                
+
                 // Mark as complete
                 if (components[i]) {{
                     const icon = components[i].querySelector('.fas');
@@ -7494,20 +7495,20 @@ ${{JSON.stringify(data.data, null, 2)}}
                 }}
             }}
         }}
-        
+
         function showRefreshComplete(duration, componentCount) {{
             const refreshSummary = document.getElementById('refreshSummary');
             const durationSpan = document.getElementById('refreshDuration');
             const componentsSpan = document.getElementById('refreshedComponents');
             const statusSpan = document.getElementById('refreshStatus');
-            
+
             durationSpan.textContent = duration;
             componentsSpan.textContent = componentCount;
             statusSpan.textContent = 'Success';
-            
+
             refreshSummary.style.display = 'block';
         }}
-        
+
         function closeGlobalRefreshModal() {{
             document.getElementById('globalRefreshModal').style.display = 'none';
         }}
@@ -7521,17 +7522,17 @@ ${{JSON.stringify(data.data, null, 2)}}
             const refreshBtn = document.getElementById('systemsRefreshBtn');
             const modal = document.getElementById('systemsRefreshModal');
             const closeBtn = document.getElementById('closeSystemsRefreshBtn');
-            
+
             // Disable refresh button and show modal
             refreshBtn.disabled = true;
             refreshBtn.innerHTML = '<i class="fas fa-sync-alt spinning"></i><span>Refreshing Systems...</span>';
             modal.style.display = 'flex';
             closeBtn.disabled = true;
-            
+
             // Debug - check if elements exist
             console.log('Modal element:', modal);
             console.log('Step 1 element:', document.getElementById('step1Content'));
-            
+
             // Make sure step 1 is visible
             const step1 = document.getElementById('step1Content');
             if (step1) {{
@@ -7539,15 +7540,15 @@ ${{JSON.stringify(data.data, null, 2)}}
                 step1.style.display = 'block';
                 console.log('Step 1 made visible');
             }}
-            
+
             const startTime = Date.now();
-            
+
             try {{
                 // Wait for user to see initialization
                 await new Promise(resolve => setTimeout(resolve, 2000));
-                
+
                 console.log('Moving to step 2...');
-                
+
                 // Hide step 1, show step 2
                 if (step1) step1.style.display = 'none';
                 const step2 = document.getElementById('step2Content');
@@ -7556,10 +7557,10 @@ ${{JSON.stringify(data.data, null, 2)}}
                     step2.style.opacity = '1';
                     step2.style.display = 'block';
                 }}
-                
+
                 // Start animated scanning
                 const scanPromise = animateScanningProgress();
-                
+
                 // Call the actual API to refresh systems
                 const response = await fetch('/api/systems/refresh', {{
                     method: 'POST',
@@ -7567,40 +7568,40 @@ ${{JSON.stringify(data.data, null, 2)}}
                         'Content-Type': 'application/json'
                     }}
                 }});
-                
+
                 const result = await response.json();
-                
+
                 if (response.ok && result.status === 'success') {{
                     // Wait for scanning animation to complete
                     await scanPromise;
-                    
+
                     // Calculate final duration
                     const duration = ((Date.now() - startTime) / 1000).toFixed(1);
                     document.getElementById('systemsRefreshDuration').textContent = duration;
                     document.getElementById('systemsRefreshedComponents').textContent = result.systems_checked || 11;
-                    
+
                     // Move to step 3 (Complete)
                     console.log('Moving to step 3 - Complete');
                     const step2El = document.getElementById('step2Content');
                     if (step2El) step2El.style.display = 'none';
-                    
+
                     const step3 = document.getElementById('step3Content');
                     if (step3) {{
                         step3.classList.add('active');
                         step3.style.opacity = '1';
                         step3.style.display = 'block';
                     }}
-                    
+
                     // Add confetti celebration effect
                     createConfetti();
-                    
+
                     // Update the last updated timestamp
                     const lastUpdateSpan = document.getElementById('systems-last-update');
                     if (lastUpdateSpan) {{
                         const now = new Date();
                         lastUpdateSpan.textContent = now.toLocaleString();
                     }}
-                    
+
                     // Update the header status dropdown with fresh data
                     try {{
                         const headerResponse = await fetch('/api/header-status-dropdown');
@@ -7616,18 +7617,18 @@ ${{JSON.stringify(data.data, null, 2)}}
                     }} catch (headerError) {{
                         console.warn('Failed to update header dropdown:', headerError);
                     }}
-                    
+
                     // Enable close button - modal stays open until user clicks close
                     closeBtn.disabled = false;
                     closeBtn.style.opacity = '1';
-                    
+
                 }} else {{
                     throw new Error(result.message || 'Systems refresh failed');
                 }}
-                
+
             }} catch (error) {{
                 console.error('Systems refresh failed:', error);
-                
+
                 // Show error state in the scanning step
                 const scanStatus = document.getElementById('scanStatus');
                 if (scanStatus) {{
@@ -7638,7 +7639,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 if (progressBar) {{
                     progressBar.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
                 }}
-                
+
             }} finally {{
                 // Re-enable controls
                 closeBtn.disabled = false;
@@ -7650,28 +7651,28 @@ ${{JSON.stringify(data.data, null, 2)}}
 
         function closeSystemsRefreshModal() {{
             document.getElementById('systemsRefreshModal').style.display = 'none';
-            
+
             // Reload the page to show refreshed data, staying on Systems tab
             showTab('services');
             location.reload();
         }}
-        
+
         // Wizard helper functions
         function showWizardStep(step) {{
             // Hide all steps
             document.querySelectorAll('.wizard-step').forEach(el => {{
                 el.classList.remove('active');
             }});
-            
+
             // Show current step
             document.getElementById(`step${{step}}Content`).classList.add('active');
-            
+
             // Update progress indicators
             document.querySelectorAll('.step-indicator').forEach((indicator, index) => {{
                 const indicatorStep = index + 1;
                 const circle = indicator.querySelector('div');
                 const icon = circle.querySelector('i');
-                
+
                 if (indicatorStep < step) {{
                     // Completed step
                     circle.style.background = '#10b981';
@@ -7690,13 +7691,13 @@ ${{JSON.stringify(data.data, null, 2)}}
                 }}
             }});
         }}
-        
+
         async function animateScanningProgress() {{
             const progressBar = document.getElementById('systemsProgressBar');
             const progressText = document.getElementById('systemsProgressText');
             const scanStatus = document.getElementById('scanStatus');
             const systemsGrid = document.getElementById('systemsGrid');
-            
+
             const systems = [
                 {{ name: 'Registry', icon: 'fa-server', delay: 300 }},
                 {{ name: 'Filesystem', icon: 'fa-folder-tree', delay: 500 }},
@@ -7707,7 +7708,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 {{ name: 'Agent Cortex', icon: 'fa-brain', delay: 550 }},
                 {{ name: 'PostgreSQL', icon: 'fa-database', delay: 400 }}
             ];
-            
+
             // Create system icons grid
             systemsGrid.innerHTML = systems.map((sys, i) => `
                 <div id="system-${{i}}" style="display: flex; flex-direction: column; align-items: center; opacity: 0.3; transition: all 0.3s;">
@@ -7717,35 +7718,35 @@ ${{JSON.stringify(data.data, null, 2)}}
                     <span style="font-size: 0.7rem; color: rgba(255,255,255,0.5);">${{sys.name}}</span>
                 </div>
             `).join('');
-            
+
             // Animate each system check
             for (let i = 0; i < systems.length; i++) {{
                 const progress = ((i + 1) / systems.length * 100).toFixed(0);
                 progressBar.style.width = progress + '%';
                 progressText.textContent = progress + '%';
                 scanStatus.textContent = `Checking ${{systems[i].name}} Server...`;
-                
+
                 // Highlight current system
                 const systemEl = document.getElementById(`system-${{i}}`);
                 systemEl.style.opacity = '1';
                 systemEl.querySelector('div').style.background = 'rgba(99, 102, 241, 0.3)';
                 systemEl.querySelector('i').style.color = '#6366f1';
-                
+
                 await sleep(systems[i].delay);
-                
+
                 // Mark as complete
                 systemEl.querySelector('div').style.background = 'rgba(16, 185, 129, 0.3)';
                 systemEl.querySelector('i').style.color = '#10b981';
             }}
-            
+
             scanStatus.textContent = 'All systems scanned successfully!';
             await sleep(500);
         }}
-        
+
         function createConfetti() {{
             const confettiContainer = document.getElementById('confetti');
             const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-            
+
             for (let i = 0; i < 50; i++) {{
                 setTimeout(() => {{
                     const particle = document.createElement('div');
@@ -7755,12 +7756,12 @@ ${{JSON.stringify(data.data, null, 2)}}
                     particle.style.animationDelay = Math.random() * 0.5 + 's';
                     particle.style.animationDuration = (2 + Math.random() * 1) + 's';
                     confettiContainer.appendChild(particle);
-                    
+
                     setTimeout(() => particle.remove(), 3000);
                 }}, i * 30);
             }}
         }}
-        
+
         function sleep(ms) {{
             return new Promise(resolve => setTimeout(resolve, ms));
         }}
@@ -7782,7 +7783,7 @@ ${{JSON.stringify(data.data, null, 2)}}
         function toggleAgent(agentName) {{
             const pill = document.querySelector(`[data-agent="${{agentName}}"]`);
             const isActive = pill.classList.contains('active');
-            
+
             if (isActive) {{
                 // Don't allow deselecting the last agent
                 if (selectedAgents.length === 1) {{
@@ -7794,7 +7795,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 pill.classList.add('active');
                 selectedAgents.push(agentName);
             }}
-            
+
             updateChatHeader();
         }}
 
@@ -7807,15 +7808,15 @@ ${{JSON.stringify(data.data, null, 2)}}
         async function sendMessage() {{
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
-            
+
             if (!message) return;
-            
+
             // Add user message to chat
             addMessageToChat('user', 'You', message);
-            
+
             // Clear input
             input.value = '';
-            
+
             // Send message to selected agents via the backend
             for (const agent of selectedAgents) {{
                 try {{
@@ -7829,7 +7830,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                             message: message
                         }})
                     }});
-                    
+
                     if (response.ok) {{
                         const data = await response.json();
                         const agentName = agent.charAt(0).toUpperCase() + agent.slice(1);
@@ -7848,33 +7849,33 @@ ${{JSON.stringify(data.data, null, 2)}}
 
         function addMessageToChat(type, sender, message) {{
             const messagesContainer = document.getElementById('chatMessages');
-            
+
             // Clear placeholder if this is the first message
             if (chatMessages.length === 0) {{
                 messagesContainer.innerHTML = '';
             }}
-            
+
             const messageElement = document.createElement('div');
             messageElement.style.cssText = `
                 margin-bottom: 1rem;
                 padding: 1rem;
                 border-radius: 12px;
-                ${{type === 'user' ? 
-                    'background: var(--accent-color); color: white; margin-left: 2rem; text-align: right;' : 
+                ${{type === 'user' ?
+                    'background: var(--accent-color); color: white; margin-left: 2rem; text-align: right;' :
                     'background: var(--card-bg); color: var(--primary-text); margin-right: 2rem;'
                 }}
             `;
-            
+
             messageElement.innerHTML = `
                 <div style="font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem;">
                     ${{type === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>'}} ${{sender}}
                 </div>
                 <div>${{message}}</div>
             `;
-            
+
             messagesContainer.appendChild(messageElement);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            
+
             chatMessages.push({{type, sender, message, timestamp: new Date()}});
         }}
 
@@ -7895,12 +7896,12 @@ ${{JSON.stringify(data.data, null, 2)}}
         let refreshCounter = 30;
         let refreshInterval;
         let isRefreshing = false;
-        
+
         function updateDateTime() {{
             const now = new Date();
             const options = {{
                 year: 'numeric',
-                month: '2-digit', 
+                month: '2-digit',
                 day: '2-digit',
                 hour: '2-digit',
                 minute: '2-digit',
@@ -7908,32 +7909,32 @@ ${{JSON.stringify(data.data, null, 2)}}
                 hour12: false
             }};
             const dateTimeString = now.toLocaleString('en-US', options);
-            
+
             const indicator = document.querySelector('#live-datetime');
             if (indicator) {{
                 indicator.textContent = dateTimeString;
             }}
         }}
-        
+
         async function refreshContent() {{
             if (isRefreshing) return;
-            
+
             isRefreshing = true;
             updateRefreshDisplay();
-            
+
             // Add subtle updating effect
             const mainContent = document.querySelector('.main-content');
             if (mainContent) {{
                 mainContent.classList.add('updating');
             }}
-            
+
             try {{
                 const response = await fetch(window.location.href);
                 if (response.ok) {{
                     const html = await response.text();
                     const parser = new DOMParser();
                     const newDoc = parser.parseFromString(html, 'text/html');
-                    
+
                     // Update main content areas without full page reload
                     const contentSelectors = ['.grid', '.agents-grid'];
                     contentSelectors.forEach(selector => {{
@@ -7943,7 +7944,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                             oldElement.innerHTML = newElement.innerHTML;
                         }}
                     }});
-                    
+
                     // Update system metrics
                     const metricsElement = document.querySelector('.metrics-grid');
                     const newMetrics = newDoc.querySelector('.metrics-grid');
@@ -7958,7 +7959,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             }} finally {{
                 isRefreshing = false;
                 updateRefreshDisplay();
-                
+
                 // Remove updating effect
                 const mainContent = document.querySelector('.main-content');
                 if (mainContent) {{
@@ -7966,31 +7967,31 @@ ${{JSON.stringify(data.data, null, 2)}}
                 }}
             }}
         }}
-        
+
         function startRefreshCountdown() {{
             refreshInterval = setInterval(() => {{
                 refreshCounter--;
                 updateRefreshDisplay();
-                
+
                 if (refreshCounter <= 0) {{
                     refreshContent();
                     refreshCounter = 30;
                 }}
             }}, 1000);
         }}
-        
+
         // Reset refresh timer on user interaction
         function resetRefreshTimer() {{
             refreshCounter = 30;
             updateRefreshDisplay();
         }}
-        
+
         // Agent management function
         function startAgent(agentId) {{
             // This would eventually call an API endpoint to start the agent
             alert(`Starting agent: ${{agentId}}. This feature will be implemented soon!`);
         }}
-        
+
         // Department functions
         function toggleCategoryDetails(category) {{
             const details = document.getElementById(`category-${{category}}`);
@@ -8002,28 +8003,28 @@ ${{JSON.stringify(data.data, null, 2)}}
                 }}
             }}
         }}
-        
+
         function openDepartmentBrowser() {{
             // Open enhanced department browser in new tab
             window.open('http://localhost:8502', '_blank');
         }}
-        
+
         function refreshDepartmentData() {{
             // This would eventually refresh department data
             alert('Department data refresh will be implemented soon!');
         }}
-        
+
         // Start the refresh system
         document.addEventListener('DOMContentLoaded', () => {{
             document.body.style.opacity = '1';\n            \n            // Initialize BoarderframeOS components\n            initializeBoarderframeOSComponents();
-            
+
             // Start live datetime updates
             updateDateTime();
             setInterval(updateDateTime, 1000);
-            
+
             // Start auto-refresh system
             startRefreshCountdown();
-            
+
             // Reset timer on user interactions
             ['click', 'scroll', 'keypress', 'mousemove'].forEach(event => {{
                 document.addEventListener(event, resetRefreshTimer, {{ passive: true, once: false }});
@@ -8123,8 +8124,8 @@ ${{JSON.stringify(data.data, null, 2)}}
                         show = status === 'active' || status === 'running';
                         break;
                     case 'productive':
-                        show = (status === 'active' || status === 'running') && 
-                               (health === 'good' || health === 'healthy') && 
+                        show = (status === 'active' || status === 'running') &&
+                               (health === 'good' || health === 'healthy') &&
                                cpu < 80;
                         break;
                     case 'healthy':
@@ -8190,11 +8191,11 @@ ${{JSON.stringify(data.data, null, 2)}}
                 'medium': {{ icon: '1.5rem', text: '1.2rem', gap: '0.75rem' }},
                 'large': {{ icon: '2rem', text: '1.5rem', gap: '1rem' }}
             }};
-            
+
             const sizeConfig = sizes[size] || sizes.medium;
             const iconColor = color || 'var(--accent-color)';
             const textColor = color || 'var(--accent-color)';
-            
+
             return `
                 <div style="display: flex; align-items: center; gap: ${{sizeConfig.gap}};">
                     <i class="fas fa-microchip" style="
@@ -8215,7 +8216,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 </div>
             `;
         }}
-        
+
         // Initialize BoarderframeOS components on page load
         function initializeBoarderframeOSComponents() {{
             const components = document.querySelectorAll('.boarderframe-logo-component');
@@ -8232,19 +8233,19 @@ ${{JSON.stringify(data.data, null, 2)}}
             const allLeaderLists = document.querySelectorAll('.leaders-list');
             const allDivisionCards = document.querySelectorAll('.division-card');
             const allDepartmentCards = document.querySelectorAll('.department-card');
-            
+
             allDepartmentLists.forEach(dept => {{
                 dept.style.display = 'block';
             }});
-            
+
             allLeaderLists.forEach(leaders => {{
                 leaders.style.display = 'block';
             }});
-            
+
             allDivisionCards.forEach(card => {{
                 card.classList.add('expanded');
             }});
-            
+
             allDepartmentCards.forEach(card => {{
                 card.classList.add('expanded');
             }});
@@ -8255,19 +8256,19 @@ ${{JSON.stringify(data.data, null, 2)}}
             const allLeaderLists = document.querySelectorAll('.leaders-list');
             const allDivisionCards = document.querySelectorAll('.division-card');
             const allDepartmentCards = document.querySelectorAll('.department-card');
-            
+
             allDepartmentLists.forEach(dept => {{
                 dept.style.display = 'none';
             }});
-            
+
             allLeaderLists.forEach(leaders => {{
                 leaders.style.display = 'none';
             }});
-            
+
             allDivisionCards.forEach(card => {{
                 card.classList.remove('expanded');
             }});
-            
+
             allDepartmentCards.forEach(card => {{
                 card.classList.remove('expanded');
             }});
@@ -8278,7 +8279,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             const departmentsContainer = document.getElementById(`${{divisionId}}-departments`);
             const divisionCard = document.getElementById(divisionId);
             const expandIcon = divisionCard.querySelector('.division-expand-icon');
-            
+
             if (departmentsContainer) {{
                 if (departmentsContainer.style.display === 'none' || !departmentsContainer.style.display) {{
                     departmentsContainer.style.display = 'block';
@@ -8286,13 +8287,13 @@ ${{JSON.stringify(data.data, null, 2)}}
                 }} else {{
                     departmentsContainer.style.display = 'none';
                     divisionCard.classList.remove('expanded');
-                    
+
                     // Also collapse all departments within this division
                     const departmentLeaders = departmentsContainer.querySelectorAll('.leaders-list');
                     departmentLeaders.forEach(leaders => {{
                         leaders.style.display = 'none';
                     }});
-                    
+
                     // Reset department expand icons
                     const deptCards = departmentsContainer.querySelectorAll('.department-card');
                     deptCards.forEach(card => {{
@@ -8307,10 +8308,10 @@ ${{JSON.stringify(data.data, null, 2)}}
             if (event) {{
                 event.stopPropagation();
             }}
-            
+
             const leadersContainer = document.getElementById(`department-${{deptId}}-leaders`);
             const deptCard = document.getElementById(deptId);
-            
+
             if (leadersContainer && deptCard) {{
                 if (leadersContainer.style.display === 'none' || !leadersContainer.style.display) {{
                     leadersContainer.style.display = 'block';
@@ -8329,37 +8330,37 @@ ${{JSON.stringify(data.data, null, 2)}}
         """Generate enhanced services HTML organized by category"""
         if not self.services_status:
             return '<div style="text-align: center; color: var(--secondary-text); padding: 2rem;">No services detected</div>'
-        
+
         # Organize services by category
         categories = {
             "Tech Ops": [],
             "Departments": [],
             "Service": []
         }
-        
+
         for service_id, service in self.services_status.items():
             category = service.get("category", "Service")
             categories[category].append((service_id, service))
-        
+
         services_html = ""
-        
+
         # Generate HTML for each category
         for category_name, category_services in categories.items():
             if not category_services:
                 continue
-                
+
             services_html += f'''
                 <div class="category-section">
                     <h3 class="category-title">{category_name}</h3>
                     <div class="category-services">
             '''
-            
+
             for service_id, service in category_services:
                 status_class = service.get("status", "critical")
                 border_class = f"server-{service_id}"
                 response_time = service.get("response_time", 0)
                 port = service.get("port", "Unknown")
-                
+
                 services_html += f'''
                     <div class="service-item {border_class}">
                         <div class="service-info">
@@ -8377,19 +8378,19 @@ ${{JSON.stringify(data.data, null, 2)}}
                         </div>
                     </div>
                 '''
-            
+
             services_html += '''
                     </div>
                 </div>
             '''
-        
+
         return services_html
 
     def _generate_enhanced_services_html(self):
         """Generate enhanced services HTML with tool charms organized by category"""
         if not self.services_status:
             return '<div style="text-align: center; color: var(--secondary-text); padding: 2rem;">No services detected</div>'
-        
+
         # Define tools/capabilities for each MCP server
         server_tools = {
             "registry": {
@@ -8425,43 +8426,43 @@ ${{JSON.stringify(data.data, null, 2)}}
                 "color": "#7c2d92"
             }
         }
-        
+
         # Organize services by category
         categories = {
             "Tech Ops": [],
             "Departments": [],
             "Service": []
         }
-        
+
         for service_id, service in self.services_status.items():
             category = service.get("category", "Service")
             categories[category].append((service_id, service))
-        
+
         services_html = ""
-        
+
         # Generate HTML for each category
         for category_name, category_services in categories.items():
             if not category_services:
                 continue
-                
+
             services_html += f'''
                 <div class="category-section">
                     <h3 class="category-title">{category_name}</h3>
                     <div class="category-services">
             '''
-            
+
             for service_id, service in category_services:
                 status_class = service.get("status", "critical")
                 border_class = f"server-{service_id}"
                 response_time = service.get("response_time", 0)
                 port = service.get("port", "Unknown")
                 tools = server_tools.get(service_id, {"tools": ["🔧 General Tools"], "color": "#6B7280"})
-                
+
                 # Generate tool charms
                 tool_charms = ""
                 for tool in tools["tools"]:
                     tool_charms += f'<div class="tool-charm">{tool}</div>'
-                
+
                 services_html += f'''
                     <div class="enhanced-service-card {border_class}">
                         <div class="service-header">
@@ -8488,21 +8489,21 @@ ${{JSON.stringify(data.data, null, 2)}}
                         </div>
                     </div>
                 '''
-            
+
             services_html += '''
                     </div>
                 </div>
             '''
-        
+
         return services_html
 
     def _generate_enhanced_agents_html(self):
         """Generate enhanced agents HTML with detailed UI including model information using centralized data"""
         # Use centralized data when available, fallback to legacy
         agents_data = self.unified_data.get('agents_status', self.running_agents)
-        
+
         agents_html = ""
-        
+
         # Get all configured agents
         try:
             from scripts.start_agents import AgentManager
@@ -8510,17 +8511,17 @@ ${{JSON.stringify(data.data, null, 2)}}
             all_agents = list(agent_manager.agent_configs.keys())
         except ImportError:
             all_agents = ["solomon", "david"]
-        
+
         for agent_id in all_agents:
             if agent_id in agents_data:
                 # Agent is currently running
                 agent = agents_data[agent_id]
-                
+
                 # Format uptime
                 uptime_display = "Running"
                 if agent.get('start_time'):
                     uptime_display = f"Since {agent['start_time']}"
-                
+
                 agents_html += f'''
                     <div class="enhanced-agent-card active" data-agent-status="active" data-agent-name="{agent['name']}" data-agent-health="{agent.get('health', 'unknown')}" data-agent-cpu="{agent.get('cpu_percent', 0)}">
                         <div class="agent-avatar">
@@ -8569,7 +8570,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             else:
                 # Agent not running
                 agent_name = agent_id.replace('_', ' ').title()
-                
+
                 # Get config info if available
                 try:
                     from scripts.start_agents import AgentManager
@@ -8582,7 +8583,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     model = 'claude-3-5-sonnet-latest'
                     description = 'AI Assistant'
                     priority = 'N/A'
-                
+
                 agents_html += f'''
                     <div class="enhanced-agent-card inactive" data-agent-status="inactive" data-agent-name="{agent_name}" data-agent-health="unknown" data-agent-cpu="0">
                         <div class="agent-avatar offline">
@@ -8615,7 +8616,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                         </div>
                     </div>
                 '''
-                
+
         return agents_html
 
     def _get_agent_capabilities(self, agent_id: str, active: bool = True) -> str:
@@ -8625,10 +8626,10 @@ ${{JSON.stringify(data.data, null, 2)}}
             "david": ["💬 Communication", "📝 Documentation", "🎯 Task Execution", "👥 Leadership"],
             "eve": ["🧬 System Evolution", "🔄 Adaptation", "🌱 Growth Management", "⚡ Optimization"]
         }
-        
+
         agent_caps = capabilities.get(agent_id, ["🤖 AI Assistant"])
         status_class = "" if active else " disabled"
-        
+
         return "".join([f'<div class="capability-tag{status_class}">{cap}</div>' for cap in agent_caps])
 
     def _get_agent_department_info(self, agent_id: str) -> str:
@@ -8637,7 +8638,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             dept_info = self.agent_department_mapping[agent_id]
             dept_name = dept_info['department_name']
             category = dept_info['category']
-            
+
             # Get icon based on category
             category_icon = {
                 'Executive': 'fas fa-crown',
@@ -8646,16 +8647,16 @@ ${{JSON.stringify(data.data, null, 2)}}
                 'Business': 'fas fa-briefcase',
                 'Support': 'fas fa-hands-helping'
             }.get(category, 'fas fa-building')
-            
+
             return f'<span class="agent-department"><i class="{category_icon}"></i> {dept_name}</span>'
-        
+
         return ''
 
     def _generate_department_overview_html(self):
         """Generate department overview HTML with statistics and quick navigation using centralized data"""
         # Use centralized data when available, fallback to legacy
         departments_data = self.unified_data.get('departments_data', self.departments_data)
-        
+
         if not departments_data:
             return '''
                 <div style="text-align: center; padding: 2rem; color: var(--secondary-text);">
@@ -8664,9 +8665,9 @@ ${{JSON.stringify(data.data, null, 2)}}
                     <p>The department configuration file was not found or could not be loaded.</p>
                 </div>
             '''
-        
+
         dept_summary = self.get_department_summary(departments_data)
-        
+
         # Generate category statistics
         category_cards = ""
         for category, count in dept_summary['categories'].items():
@@ -8674,7 +8675,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             category_depts = dept_summary['departments_by_category'].get(category, [])
             leaders_count = sum(len(dept.get('leaders', [])) for dept in category_depts)
             agents_count = sum(len(dept.get('native_agents', [])) for dept in category_depts)
-            
+
             category_icon = {
                 'Executive': 'fas fa-crown',
                 'Operations': 'fas fa-cogs',
@@ -8683,7 +8684,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 'Support': 'fas fa-hands-helping',
                 'Other': 'fas fa-building'
             }.get(category, 'fas fa-building')
-            
+
             category_cards += f'''
                 <div class="department-category-card" onclick="toggleCategoryDetails('{category}')">
                     <div class="category-header">
@@ -8710,12 +8711,12 @@ ${{JSON.stringify(data.data, null, 2)}}
                     </div>
                 </div>
             '''
-        
+
         # Generate overall statistics
         total_depts = dept_summary['total_departments']
         total_leaders = dept_summary['total_leaders']
         total_agents = dept_summary['total_agents']
-        
+
         return f'''
             <div class="department-overview">
                 <div class="department-stats-bar">
@@ -8748,11 +8749,11 @@ ${{JSON.stringify(data.data, null, 2)}}
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="department-categories">
                     {category_cards}
                 </div>
-                
+
                 <div class="department-actions">
                     <button class="department-btn" onclick="openDepartmentBrowser()">
                         <i class="fas fa-external-link-alt"></i>
@@ -8770,17 +8771,17 @@ ${{JSON.stringify(data.data, null, 2)}}
         """Generate HTML for departments within a category"""
         if not category_depts:
             return '<div style="text-align: center; color: var(--secondary-text); padding: 1rem;">No departments found</div>'
-        
+
         depts_html = ""
         for dept in category_depts:
             dept_name = dept.get('department_name', 'Unknown Department')
             leader_count = len(dept.get('leaders', []))
             agent_count = len(dept.get('native_agents', []))
-            
+
             # Get first leader for display
             first_leader = dept.get('leaders', [{}])[0]
             leader_name = first_leader.get('name', 'No leader assigned') if first_leader else 'No leader assigned'
-            
+
             depts_html += f'''
                 <div class="mini-dept-card">
                     <div class="mini-dept-name">{dept_name}</div>
@@ -8791,7 +8792,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     </div>
                 </div>
             '''
-        
+
         return f'<div class="mini-dept-grid">{depts_html}</div>'
 
     def _generate_agent_department_analytics_html(self):
@@ -8804,43 +8805,43 @@ ${{JSON.stringify(data.data, null, 2)}}
                     <p>Insufficient data for agent-department analytics.</p>
                 </div>
             '''
-        
+
         # Analyze agent distribution by department
         dept_agent_count = {}
         active_agents_by_dept = {}
-        
+
         for agent_id, dept_info in self.agent_department_mapping.items():
             dept_key = dept_info['department_key']
             dept_name = dept_info['department_name']
-            
+
             if dept_name not in dept_agent_count:
                 dept_agent_count[dept_name] = 0
                 active_agents_by_dept[dept_name] = 0
-            
+
             dept_agent_count[dept_name] += 1
-            
+
             # Check if agent is currently running
             if agent_id in self.running_agents:
                 active_agents_by_dept[dept_name] += 1
-        
+
         # Generate department cards with agent info
         dept_cards = ""
         for dept_name, total_agents in dept_agent_count.items():
             active_agents = active_agents_by_dept.get(dept_name, 0)
             activity_percentage = (active_agents / total_agents * 100) if total_agents > 0 else 0
-            
+
             # Find the department data for additional info
             dept_data = None
             for dept_info in self.departments_data.values():
                 if dept_info.get('department_name') == dept_name:
                     dept_data = dept_info
                     break
-            
+
             if dept_data:
                 category = dept_data.get('category', 'Other')
                 leaders_count = len(dept_data.get('leaders', []))
                 total_teams = len(dept_data.get('native_agents', []))
-                
+
                 category_icon = {
                     'Executive': 'fas fa-crown',
                     'Operations': 'fas fa-cogs',
@@ -8848,9 +8849,9 @@ ${{JSON.stringify(data.data, null, 2)}}
                     'Business': 'fas fa-briefcase',
                     'Support': 'fas fa-hands-helping'
                 }.get(category, 'fas fa-building')
-                
+
                 status_class = "active" if active_agents > 0 else "inactive"
-                
+
                 dept_cards += f'''
                     <div class="dept-analytics-card {status_class}">
                         <div class="dept-analytics-header">
@@ -8890,12 +8891,12 @@ ${{JSON.stringify(data.data, null, 2)}}
                         </div>
                     </div>
                 '''
-        
+
         # Generate summary statistics
         total_configured = len(self.agent_department_mapping)
         total_active = len(self.running_agents)
         total_departments_with_agents = len(dept_agent_count)
-        
+
         return f'''
             <div class="analytics-overview">
                 <div class="analytics-summary">
@@ -8916,7 +8917,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                         <div class="analytics-stat-label">System Activity</div>
                     </div>
                 </div>
-                
+
                 <div class="analytics-departments">
                     {dept_cards}
                 </div>
@@ -8931,9 +8932,9 @@ ${{JSON.stringify(data.data, null, 2)}}
         """Generate detailed filesystem server information"""
         if "filesystem" not in self.mcp_details:
             return ""
-        
+
         details = self.mcp_details["filesystem"]
-        
+
         return f'''
             <div class="card">
                 <h3><i class="fas fa-folder-tree"></i> Filesystem Server Details</h3>
@@ -8968,7 +8969,7 @@ ${{JSON.stringify(data.data, null, 2)}}
         """Generate simple, clean server status cards"""
         if not self.services_status:
             return '<div style="text-align: center; color: var(--secondary-text); padding: 2rem;">No servers detected</div>'
-        
+
         # Define server info
         servers = {
             "registry": {"name": "Registry Server", "icon": "fas fa-server", "port": 8009},
@@ -8982,11 +8983,11 @@ ${{JSON.stringify(data.data, null, 2)}}
             "llm": {"name": "LLM Server", "icon": "fas fa-robot", "port": 8005},
             "corporate_headquarters": {"name": "Corporate Headquarters", "icon": "fas fa-chart-line", "port": 8888}
         }
-        
+
         html = ""
         for server_id, server_info in servers.items():
             service = self.services_status.get(server_id, {})
-            
+
             # Special handling for Corporate Headquarters - if we're serving this page, we're online
             if server_id == "corporate_headquarters":
                 status = service.get("status", "healthy")
@@ -8995,7 +8996,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     status = "healthy"
             else:
                 status = service.get("status", "offline")
-            
+
             # Status colors and indicators
             if status == "healthy":
                 status_color = "var(--success-color)"
@@ -9007,7 +9008,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 status_bg = "rgba(239, 68, 68, 0.1)"
                 status_text = "Offline"
                 status_icon = "fas fa-times-circle"
-            
+
             html += f'''
             <div style="background: {status_bg}; border: 1px solid {status_color}; border-radius: 12px; padding: 1.5rem; transition: all 0.3s ease;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
@@ -9027,19 +9028,19 @@ ${{JSON.stringify(data.data, null, 2)}}
                         <div style="color: {status_color}; font-weight: 600; font-size: 0.9rem;">{status_text}</div>
                     </div>
                 </div>
-                
+
                 <!-- Optional: Show basic metrics if available -->
                 {f'<div style="font-size: 0.85rem; color: var(--secondary-text);">Uptime: {service.get("uptime", "Unknown")}</div>' if service.get("uptime") else ""}
             </div>
             '''
-        
+
         return html
-    
+
     def _format_uptime(self, uptime_value):
         """Format uptime value to be user-friendly"""
         if uptime_value in ["Unknown", "Active", "Offline"]:
             return uptime_value
-        
+
         try:
             # If it's a number (seconds), convert to readable format
             if isinstance(uptime_value, (int, float)):
@@ -9057,25 +9058,25 @@ ${{JSON.stringify(data.data, null, 2)}}
                     days = seconds // 86400
                     hours = (seconds % 86400) // 3600
                     return f"{days}d {hours}h"
-            
+
             # If it's a string that might be a number
             if isinstance(uptime_value, str) and uptime_value.replace('.', '').isdigit():
                 return self._format_uptime(float(uptime_value))
-                
+
             # Otherwise return as-is
             return str(uptime_value)
-            
+
         except (ValueError, TypeError):
             return "Active"
-    
+
     def _get_average_response_time(self):
         """Calculate average response time across all healthy services"""
         try:
             services_data = self.unified_data.get('services_status', self.services_status)
-            
+
             if not services_data:
                 return "0"
-            
+
             response_times = []
             for service in services_data.values():
                 if service.get('status') in ['healthy', 'online'] and 'response_time' in service:
@@ -9084,16 +9085,16 @@ ${{JSON.stringify(data.data, null, 2)}}
                         response_times.append(rt * 1000)  # Convert to milliseconds
                     except (ValueError, TypeError):
                         continue
-            
+
             if response_times:
                 avg_ms = sum(response_times) / len(response_times)
                 return f"{avg_ms:.0f}"
             else:
                 return "0"
-                
+
         except Exception:
             return "0"
-    
+
     def _generate_header_status_dropdown(self):
         """Generate the header status dropdown content with navigation links"""
         return f'''
@@ -9103,7 +9104,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                             {self._get_formatted_timestamp()}
                         </span>
                     </div>
-                    
+
                     <!-- Organization Section -->
                     <div style="padding: 0.5rem 0.75rem; font-size: 0.8rem; font-weight: 600; color: var(--accent-color); background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border-color);">
                         <i class="fas fa-users"></i> Organization
@@ -9150,7 +9151,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Servers Section -->
                     <div style="padding: 0.5rem 0.75rem; font-size: 0.8rem; font-weight: 600; color: var(--accent-color); background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border-color);">
                         <i class="fas fa-server"></i> Servers
@@ -9187,7 +9188,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Database Section -->
                     <div style="padding: 0.5rem 0.75rem; font-size: 0.8rem; font-weight: 600; color: var(--accent-color); background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border-color);">
                         <i class="fas fa-database"></i> Database
@@ -9205,15 +9206,15 @@ ${{JSON.stringify(data.data, null, 2)}}
                         </div>
                     </div>
         '''
-    
+
     def _generate_enhanced_server_status(self):
         """Generate enhanced, grouped server status cards by category and importance"""
         # Use centralized data when available, fallback to legacy
         services_data = self.unified_data.get('services_status', self.services_status)
-        
+
         if not services_data:
             return '<div style="text-align: center; color: var(--secondary-text); padding: 2rem;">No servers detected</div>'
-        
+
         # Enhanced server info organized by category and priority
         server_categories = {
             "Core Systems": {
@@ -9221,24 +9222,24 @@ ${{JSON.stringify(data.data, null, 2)}}
                 "description": "Essential system components",
                 "servers": {
                     "corporate_headquarters": {
-                        "name": "Corporate Headquarters", 
-                        "icon": "fas fa-building", 
+                        "name": "Corporate Headquarters",
+                        "icon": "fas fa-building",
                         "port": 8888,
                         "description": "Main management and monitoring interface",
                         "emoji": "🏢",
                         "priority": 1
                     },
                     "agent_cortex": {
-                        "name": "Agent Cortex", 
-                        "icon": "fas fa-brain", 
+                        "name": "Agent Cortex",
+                        "icon": "fas fa-brain",
                         "port": 8889,
                         "description": "Intelligent model orchestration and optimization",
                         "emoji": "🧠",
                         "priority": 2
                     },
                     "registry": {
-                        "name": "Registry Server", 
-                        "icon": "fas fa-server", 
+                        "name": "Registry Server",
+                        "icon": "fas fa-server",
                         "port": 8009,
                         "description": "Agent and service discovery management",
                         "emoji": "📋",
@@ -9251,24 +9252,24 @@ ${{JSON.stringify(data.data, null, 2)}}
                 "description": "Model Context Protocol services",
                 "servers": {
                     "filesystem": {
-                        "name": "Filesystem Server", 
-                        "icon": "fas fa-folder-tree", 
+                        "name": "Filesystem Server",
+                        "icon": "fas fa-folder-tree",
                         "port": 8001,
                         "description": "File operations and management",
                         "emoji": "📁",
                         "priority": 4
                     },
                     "database_postgres": {
-                        "name": "PostgreSQL Database Server", 
-                        "icon": "fas fa-database", 
+                        "name": "PostgreSQL Database Server",
+                        "icon": "fas fa-database",
                         "port": 8010,
                         "description": "Data storage and retrieval operations",
                         "emoji": "💾",
                         "priority": 5
                     },
                     "analytics": {
-                        "name": "Analytics Server", 
-                        "icon": "fas fa-chart-bar", 
+                        "name": "Analytics Server",
+                        "icon": "fas fa-chart-bar",
                         "port": 8007,
                         "description": "Business intelligence and metrics",
                         "emoji": "📊",
@@ -9281,16 +9282,16 @@ ${{JSON.stringify(data.data, null, 2)}}
                 "description": "Revenue and customer management",
                 "servers": {
                     "payment": {
-                        "name": "Payment Server", 
-                        "icon": "fas fa-credit-card", 
+                        "name": "Payment Server",
+                        "icon": "fas fa-credit-card",
                         "port": 8006,
                         "description": "Payment processing and billing",
                         "emoji": "💳",
                         "priority": 9
                     },
                     "customer": {
-                        "name": "Customer Server", 
-                        "icon": "fas fa-users", 
+                        "name": "Customer Server",
+                        "icon": "fas fa-users",
                         "port": 8008,
                         "description": "Customer relationship management",
                         "emoji": "👥",
@@ -9299,21 +9300,21 @@ ${{JSON.stringify(data.data, null, 2)}}
                 }
             }
         }
-        
+
         html = ""
-        
+
         # Generate grouped server displays
         for category_name, category_info in server_categories.items():
             # Category header
             online_count = 0
             total_count = len(category_info["servers"])
-            
+
             # Count online servers in this category
             for server_id in category_info["servers"]:
                 service = services_data.get(server_id, {})
                 if service.get("status") == "healthy":
                     online_count += 1
-            
+
             # Category status color
             if online_count == total_count:
                 category_color = "var(--success-color)"
@@ -9324,7 +9325,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             else:
                 category_color = "var(--danger-color)"
                 category_bg = "rgba(239, 68, 68, 0.1)"
-            
+
             html += f'''
             <div style="margin-bottom: 2.5rem;">
                 <!-- Category Header -->
@@ -9345,17 +9346,17 @@ ${{JSON.stringify(data.data, null, 2)}}
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Servers Grid -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem;">
             '''
-            
+
             # Generate server cards for this category (sorted by priority)
             sorted_servers = sorted(category_info["servers"].items(), key=lambda x: x[1]["priority"])
-            
+
             for server_id, server_info in sorted_servers:
                 service = services_data.get(server_id, {})
-                
+
                 # Special handling for Corporate Headquarters - if we're serving this page, we're online
                 if server_id == "corporate_headquarters":
                     status = service.get("status", "healthy")
@@ -9364,7 +9365,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                         status = "healthy"
                 else:
                     status = service.get("status", "offline")
-                
+
                 # Enhanced status styling
                 if status == "healthy":
                     status_color = "var(--success-color)"
@@ -9384,7 +9385,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     status_text = "Offline"
                     status_emoji = "❌"
                     border_color = "rgba(239, 68, 68, 0.2)"
-                
+
                 # Get last check timestamp and format it nicely
                 last_check = service.get("last_check", "")
                 if last_check:
@@ -9396,7 +9397,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                         last_check_formatted = "Just now"
                 else:
                     last_check_formatted = "Starting..."
-                
+
                 # Additional server-specific info
                 server_details = ""
                 if server_id == "corporate_headquarters":
@@ -9415,14 +9416,14 @@ ${{JSON.stringify(data.data, null, 2)}}
                     server_details = "💳 Revenue processing"
                 elif server_id == "customer":
                     server_details = "👥 CRM system"
-                
+
                 html += f'''
                 <div data-server-status="{status}" data-server-name="{server_info['name']}" data-server-port="{server_info['port']}" data-server-category="{category_name}" style="background: {status_bg}; border: 1px solid {border_color}; border-radius: 12px; padding: 1.5rem; transition: all 0.3s ease; position: relative; overflow: hidden; min-height: 200px; display: flex; flex-direction: column;">
                     <!-- Priority Badge -->
                     <div style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 0.25rem 0.5rem; font-size: 0.7rem; color: var(--secondary-text); font-weight: 600;">
                         P{server_info['priority']}
                     </div>
-                    
+
                     <!-- Header -->
                     <div style="display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 1rem; margin-right: 2rem;">
                         <div style="width: 48px; height: 48px; background: rgba(255, 255, 255, 0.1); border: 1px solid var(--border-color); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: {status_color}; font-size: 1.3rem; flex-shrink: 0;">
@@ -9436,7 +9437,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                             {f'<p style="margin: 0; color: var(--accent-color); font-size: 0.75rem; font-weight: 500;">{server_details}</p>' if server_details else ''}
                         </div>
                     </div>
-                    
+
                     <!-- Status Info -->
                     <div style="margin-top: auto;">
                         <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; background: rgba(255, 255, 255, 0.03); border-radius: 8px; margin-bottom: 0.5rem;">
@@ -9452,33 +9453,34 @@ ${{JSON.stringify(data.data, null, 2)}}
                             Last checked: {last_check_formatted}
                         </div>
                     </div>
-                    
+
                 </div>
                 '''
-            
+
             html += '''
                 </div>
             </div>
             '''
-        
+
         return html
 
     def _fetch_organizational_data(self):
         """Fetch organizational structure from database with descriptions and details"""
         try:
-            import asyncpg
             import asyncio
-            
+
+            import asyncpg
+
             # Database connection details
             db_url = "postgresql://boarderframe:boarderframe_secure_2025@localhost:5434/boarderframeos"
-            
+
             async def fetch_data():
                 try:
                     conn = await asyncpg.connect(db_url)
-                    
+
                     # Fetch divisions with their details
                     divisions_query = """
-                        SELECT 
+                        SELECT
                             div.division_key,
                             div.division_name,
                             div.division_description,
@@ -9494,12 +9496,12 @@ ${{JSON.stringify(data.data, null, 2)}}
                         GROUP BY div.id, div.division_key, div.division_name, div.division_description, div.division_purpose, div.priority
                         ORDER BY div.priority
                     """
-                    
+
                     divisions = await conn.fetch(divisions_query)
-                    
+
                     # Fetch departments with their details
                     departments_query = """
-                        SELECT 
+                        SELECT
                             d.department_key,
                             d.department_name,
                             d.description,
@@ -9515,16 +9517,16 @@ ${{JSON.stringify(data.data, null, 2)}}
                         JOIN divisions div ON d.division_id = div.id
                         LEFT JOIN department_leaders dl ON d.id = dl.department_id AND dl.active_status = 'active'
                         WHERE d.is_active = true AND div.is_active = true
-                        GROUP BY d.id, d.department_key, d.department_name, d.description, d.department_purpose, 
+                        GROUP BY d.id, d.department_key, d.department_name, d.description, d.department_purpose,
                                  d.category, d.priority, d.operational_status, d.agent_capacity, div.division_key, div.priority
                         ORDER BY div.priority, d.priority
                     """
-                    
+
                     departments = await conn.fetch(departments_query)
-                    
+
                     # Fetch leaders with their details
                     leaders_query = """
-                        SELECT 
+                        SELECT
                             dl.name,
                             dl.title,
                             dl.description,
@@ -9540,18 +9542,18 @@ ${{JSON.stringify(data.data, null, 2)}}
                         WHERE dl.active_status = 'active' AND d.is_active = true AND div.is_active = true
                         ORDER BY div.priority, d.priority, dl.authority_level DESC, dl.name
                     """
-                    
+
                     leaders = await conn.fetch(leaders_query)
-                    
+
                     await conn.close()
-                    
+
                     # Build organizational structure
                     org_structure = {}
-                    
+
                     # Color mapping for divisions
                     division_colors = {
                         'executive': '#6366f1',
-                        'programming_development': '#10b981', 
+                        'programming_development': '#10b981',
                         'information_technology': '#f59e0b',
                         'product_operations': '#8b5cf6',
                         'revenue_generation': '#ef4444',
@@ -9560,7 +9562,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                         'content_generation': '#ec4899',
                         'continuous_improvement': '#84cc16'
                     }
-                    
+
                     # Icon mapping for divisions
                     division_icons = {
                         'executive': 'fas fa-crown',
@@ -9573,7 +9575,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                         'content_generation': 'fas fa-palette',
                         'continuous_improvement': 'fas fa-lightbulb'
                     }
-                    
+
                     # Process divisions
                     for div in divisions:
                         div_key = div['division_key']
@@ -9586,7 +9588,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                             'priority': div['priority'],
                             'departments': {}
                         }
-                    
+
                     # Process departments
                     for dept in departments:
                         div_key = dept['division_key']
@@ -9595,7 +9597,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                             if div['division_key'] == div_key:
                                 div_name = div['division_name']
                                 break
-                        
+
                         if div_name and div_name in org_structure:
                             org_structure[div_name]['departments'][dept['department_name']] = {
                                 'key': dept['department_key'],
@@ -9607,12 +9609,12 @@ ${{JSON.stringify(data.data, null, 2)}}
                                 'leader_count': dept['leader_count'] or 0,
                                 'leaders': []
                             }
-                    
+
                     # Process leaders
                     for leader in leaders:
                         div_key = leader['division_key']
                         dept_key = leader['department_key']
-                        
+
                         # Find the division and department
                         for div_name, div_data in org_structure.items():
                             if div_data['key'] == div_key:
@@ -9630,16 +9632,16 @@ ${{JSON.stringify(data.data, null, 2)}}
                                         dept_data['leaders'].append(leader_info)
                                         break
                                 break
-                    
+
                     print(f"✅ Successfully loaded organizational data: {len(org_structure)} divisions")
                     return org_structure
-                    
+
                 except Exception as e:
                     print(f"Database fetch error: {e}")
                     import traceback
                     traceback.print_exc()
                     return None
-            
+
             # Run the async function
             try:
                 loop = asyncio.get_event_loop()
@@ -9647,17 +9649,17 @@ ${{JSON.stringify(data.data, null, 2)}}
             except RuntimeError:
                 # If no event loop, create a new one
                 return asyncio.run(fetch_data())
-                
+
         except Exception as e:
             print(f"Error fetching organizational data: {e}")
             return None
 
     def _generate_organizational_chart(self):
         """Generate interactive organizational chart with divisions, departments, and leaders"""
-        
+
         # Try to fetch real data from database, fallback to mock data
         org_structure = self._fetch_organizational_data()
-        
+
         if not org_structure:
             # Fallback to mock data if database unavailable
             org_structure = {
@@ -9672,7 +9674,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     },
                     "Strategic Planning": {
                         "leaders": ["Joseph (Chief Strategy Officer)"],
-                        "status": "operational", 
+                        "status": "operational",
                         "agents": 10
                     },
                     "Coordination & Orchestration": {
@@ -9881,7 +9883,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 }
             }
         }
-        
+
         html = '''
         <div class="org-chart" style="
             display: flex;
@@ -9899,16 +9901,16 @@ ${{JSON.stringify(data.data, null, 2)}}
                 width: 100%;
             ">
         '''
-        
+
         # Generate division cards
         for i, (division_name, division_data) in enumerate(org_structure.items()):
             dept_count = len(division_data["departments"])
             total_agents = sum(dept["agents"] for dept in division_data["departments"].values())
             operational_depts = len([d for d in division_data["departments"].values() if d["status"] == "operational"])
-            
+
             # Create unique ID for the division
             division_id = f"division-{division_name.lower().replace(' ', '-').replace('&', 'and')}"
-            
+
             html += f'''
             <div class="division-card" id="{division_id}" style="
                 background: var(--card-bg);
@@ -9943,7 +9945,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Division Stats -->
                 <div class="division-stats" style="
                     padding: 1rem;
@@ -9969,10 +9971,10 @@ ${{JSON.stringify(data.data, null, 2)}}
                     {f'''
                     <!-- Division Purpose -->
                     <div style="
-                        padding: 0.75rem 1rem; 
-                        background: var(--accent-bg); 
+                        padding: 0.75rem 1rem;
+                        background: var(--accent-bg);
                         border-top: 1px solid var(--border-color);
-                        font-size: 0.85rem; 
+                        font-size: 0.85rem;
                         color: var(--secondary-text);
                         line-height: 1.4;
                         font-style: italic;
@@ -9982,20 +9984,20 @@ ${{JSON.stringify(data.data, null, 2)}}
                     </div>
                     ''' if division_data.get("purpose") else ""}
                 </div>
-                
+
                 <!-- Departments List (Initially Hidden) -->
                 <div id="{division_id}-departments" class="departments-list" style="
                     display: none;
                     background: var(--card-bg);
                 ">
             '''
-            
+
             # Generate department cards within the division
             for dept_name, dept_data in division_data["departments"].items():
                 dept_id = f"dept-{division_name.lower().replace(' ', '-')}-{dept_name.lower().replace(' ', '-').replace('&', 'and')}"
                 status_color = "#10b981" if dept_data["status"] == "active" else "#f59e0b"
                 status_icon = "fas fa-check-circle" if dept_data["status"] == "active" else "fas fa-clock"
-                
+
                 html += f'''
                 <div class="department-card" id="{dept_id}" style="
                     padding: 1rem;
@@ -10030,7 +10032,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                                 <div style="font-size: 0.7rem; color: var(--accent-color); font-weight: 500; margin-bottom: 0.75rem;">
                                     <i class="fas fa-user-tie" style="margin-right: 0.5rem;"></i>
                                     {', '.join([
-                                        f"{leader.get('name', str(leader))} - {leader.get('title', '')} • {leader.get('description', '')}" 
+                                        f"{leader.get('name', str(leader))} - {leader.get('title', '')} • {leader.get('description', '')}"
                                         if isinstance(leader, dict) and leader.get('title') and leader.get('description')
                                         else str(leader).replace('(', '- ').replace(')', ' • Leadership and strategic oversight')
                                         for leader in dept_data.get('leaders', [])
@@ -10047,16 +10049,16 @@ ${{JSON.stringify(data.data, null, 2)}}
                             <i class="fas fa-chevron-right"></i>
                         </div>
                     </div>
-                    
+
                     {f'''
                     <!-- Department Purpose -->
                     <div style="
-                        padding: 0.4rem 0.75rem 0.4rem 0; 
+                        padding: 0.4rem 0.75rem 0.4rem 0;
                         margin-left: 2.5rem;
                         margin-top: 0.75rem;
-                        background: var(--accent-bg); 
+                        background: var(--accent-bg);
                         border-top: 1px solid var(--border-color);
-                        font-size: 0.75rem; 
+                        font-size: 0.75rem;
                         color: var(--secondary-text);
                         line-height: 1.4;
                         font-style: italic;
@@ -10066,7 +10068,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                         {dept_data.get("purpose", "")}
                     </div>
                     ''' if dept_data.get("purpose") else ""}
-                    
+
                     <!-- Leaders List (Initially Hidden) -->
                     <div id="department-{dept_id}-leaders" class="leaders-list" style="
                         display: none;
@@ -10077,7 +10079,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                                 <i class="fas fa-crown"></i> Leadership
                             </div>
                 '''
-                
+
                 # Add leaders - check if leaders is a list of strings (fallback) or objects (database)
                 for leader in dept_data["leaders"]:
                     # Handle both old string format and new object format
@@ -10093,11 +10095,11 @@ ${{JSON.stringify(data.data, null, 2)}}
                         leader_desc = leader.get('description', '')
                         leader_archetype = leader.get('archetype', '')
                         is_primary = leader.get('is_primary', False)
-                    
+
                     # Style primary leaders differently
                     bg_color = division_data['color'] if is_primary else f"{division_data['color']}66"
                     border_style = f"border: 2px solid {division_data['color']};" if is_primary else ""
-                    
+
                     html += f'''
                     <div style="
                         display: flex;
@@ -10112,11 +10114,11 @@ ${{JSON.stringify(data.data, null, 2)}}
                         position: relative;
                         transition: all 0.3s ease;
                         cursor: pointer;
-                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='{f'0 6px 20px {division_data["color"]}60' if is_primary else '0 4px 16px rgba(0, 0, 0, 0.15)'}'" 
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='{f'0 6px 20px {division_data["color"]}60' if is_primary else '0 4px 16px rgba(0, 0, 0, 0.15)'}'"
                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='{f'0 4px 12px {division_data["color"]}40' if is_primary else '0 2px 8px rgba(0, 0, 0, 0.1)'}'">
-                        
+
                         {f'<div style="position: absolute; top: 0.5rem; right: 0.5rem; font-size: 0.65rem; color: {division_data["color"]}; font-weight: 600; background: {division_data["color"]}15; padding: 0.15rem 0.5rem; border-radius: 8px; border: 1px solid {division_data["color"]}40;"><i class="fas fa-star" style="margin-right: 0.25rem;"></i>PRIMARY</div>' if is_primary else ''}
-                        
+
                         <div style="
                             width: 48px;
                             height: 48px;
@@ -10134,7 +10136,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                             <i class="fas fa-crown"></i>
                             {f'<div style="position: absolute; top: -2px; right: -2px; width: 12px; height: 12px; background: #10b981; border-radius: 50%; border: 2px solid white;"></div>' if is_primary else ''}
                         </div>
-                        
+
                         <div style="flex: 1; min-width: 0;">
                             <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.5rem;">
                                 <div>
@@ -10142,36 +10144,36 @@ ${{JSON.stringify(data.data, null, 2)}}
                                     {f'<div style="font-size: 0.8rem; color: {division_data["color"]}; margin-bottom: 0.4rem; font-weight: 600;">{leader_title}</div>' if leader_title else ''}
                                 </div>
                             </div>
-                            
+
                             {f'<div style="font-size: 0.75rem; color: var(--secondary-text); line-height: 1.4; margin-bottom: 0.75rem; padding: 0.5rem; background: var(--accent-bg); border-radius: 6px; border-left: 3px solid {division_data["color"]};">{leader_desc}</div>' if leader_desc else ''}
-                            
+
                             <div style="display: flex; align-items: center; justify-content: space-between;">
                                 {f'<div style="font-size: 0.7rem; color: {division_data["color"]}; font-weight: 500; display: flex; align-items: center; gap: 0.25rem; background: {division_data["color"]}10; padding: 0.25rem 0.5rem; border-radius: 6px;"><i class="fas fa-star"></i> {leader_archetype} Archetype</div>' if leader_archetype else '<div></div>'}
-                                
+
                                 <div style="display: flex; gap: 0.5rem;">
                                     <div style="
-                                        font-size: 0.7rem; 
-                                        color: var(--accent-color); 
-                                        background: var(--accent-bg); 
-                                        padding: 0.25rem 0.5rem; 
-                                        border-radius: 6px; 
+                                        font-size: 0.7rem;
+                                        color: var(--accent-color);
+                                        background: var(--accent-bg);
+                                        padding: 0.25rem 0.5rem;
+                                        border-radius: 6px;
                                         cursor: pointer;
                                         transition: all 0.2s ease;
                                         border: 1px solid var(--border-color);
-                                    " onmouseover="this.style.background='{division_data["color"]}20'; this.style.borderColor='{division_data["color"]}'" 
+                                    " onmouseover="this.style.background='{division_data["color"]}20'; this.style.borderColor='{division_data["color"]}'"
                                        onmouseout="this.style.background='var(--accent-bg)'; this.style.borderColor='var(--border-color)'">
                                         <i class="fas fa-comment"></i> Chat
                                     </div>
                                     <div style="
-                                        font-size: 0.7rem; 
-                                        color: var(--secondary-text); 
-                                        background: var(--secondary-bg); 
-                                        padding: 0.25rem 0.5rem; 
-                                        border-radius: 6px; 
+                                        font-size: 0.7rem;
+                                        color: var(--secondary-text);
+                                        background: var(--secondary-bg);
+                                        padding: 0.25rem 0.5rem;
+                                        border-radius: 6px;
                                         cursor: pointer;
                                         transition: all 0.2s ease;
                                         border: 1px solid var(--border-color);
-                                    " onmouseover="this.style.background='{division_data["color"]}20'; this.style.borderColor='{division_data["color"]}'" 
+                                    " onmouseover="this.style.background='{division_data["color"]}20'; this.style.borderColor='{division_data["color"]}'"
                                        onmouseout="this.style.background='var(--secondary-bg)'; this.style.borderColor='var(--border-color)'">
                                         <i class="fas fa-user"></i> Profile
                                     </div>
@@ -10180,74 +10182,74 @@ ${{JSON.stringify(data.data, null, 2)}}
                         </div>
                     </div>
                     '''
-                
+
                 html += '''
                         </div>
                     </div>
                 </div>
                 '''
-            
+
             html += '''
                 </div>
             </div>
             '''
-        
+
         html += '''
             </div>
         </div>
-        
+
         <style>
         .division-card {
             width: 100%;
             margin-bottom: 1rem;
         }
-        
+
         .division-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
-        
+
         .division-card.expanded .division-expand-icon {
             transform: rotate(45deg);
         }
-        
+
         .department-card:hover {
             background: var(--secondary-bg) !important;
         }
-        
+
         .department-card.expanded .dept-expand-icon {
             transform: rotate(90deg);
         }
-        
+
         .divisions-grid {
             width: 100%;
         }
-        
+
         @media (max-width: 768px) {
             .division-card {
                 margin-bottom: 0.5rem;
             }
-            
+
             .org-chart {
                 padding: 1rem;
             }
         }
         </style>
         '''
-        
+
         return html
 
     def _generate_detailed_server_widgets(self):
         """Generate detailed widgets for each MCP server"""
         widgets_html = ""
-        
+
         for service_id, service in self.services_status.items():
             if service.get("status") != "healthy":
                 continue
-                
+
             status_class = service.get("status", "critical")
             border_class = f"server-{service_id}"
-            
+
             # Generate specific widget content based on server type
             if service_id == "filesystem":
                 widget_content = self._generate_filesystem_widget_content()
@@ -10265,17 +10267,17 @@ ${{JSON.stringify(data.data, null, 2)}}
             else:
                 widget_content = self._generate_generic_widget_content(service)
                 server_title = f"{service.get('name', service_id.title())} Details"
-            
+
             widgets_html += f'''
                 <div class="card {border_class}">
                     <h3>
-                        <i class="{service.get('icon', 'fas fa-server')}"></i> 
+                        <i class="{service.get('icon', 'fas fa-server')}"></i>
                         {server_title}
                     </h3>
                     {widget_content}
                 </div>
             '''
-        
+
         return widgets_html
 
     def _generate_filesystem_widget_content(self):
@@ -10285,7 +10287,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             fs_service = self.services_status.get("filesystem", {})
             if not fs_service:
                 return '<div style="text-align: center; color: var(--secondary-text); padding: 1rem;">File System Server not available</div>'
-            
+
             # Show basic info if detailed data is not available
             return f'''
                 <div class="metrics-grid">
@@ -10315,7 +10317,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     </p>
                 </div>
             '''
-        
+
         details = self.mcp_details["filesystem"]
         return f'''
             <div class="metrics-grid">
@@ -10351,7 +10353,7 @@ ${{JSON.stringify(data.data, null, 2)}}
         """Generate registry server widget content"""
         registry_service = self.services_status.get("registry", {})
         details = registry_service.get("details", {})
-        
+
         return f'''
             <div class="metrics-grid">
                 <div class="metric-item">
@@ -10383,33 +10385,33 @@ ${{JSON.stringify(data.data, null, 2)}}
         """Get comprehensive database health and metrics with improved accuracy"""
         try:
             import asyncpg
-            
+
             # Database connection details
             db_url = "postgresql://boarderframe:boarderframe_secure_2025@localhost:5434/boarderframeos"
-            
+
             # Connect to PostgreSQL
             conn = await asyncpg.connect(db_url)
-            
+
             # Get database metrics
             metrics = {}
-            
+
             # Basic database info
             db_size_query = "SELECT pg_size_pretty(pg_database_size('boarderframeos')) as size"
             db_size_result = await conn.fetchrow(db_size_query)
             metrics['database_size'] = db_size_result['size'] if db_size_result else 'Unknown'
-            
+
             # Get table count and info
             tables_query = """
-                SELECT schemaname, tablename, 
+                SELECT schemaname, tablename,
                        pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size,
-                       (SELECT count(*) FROM information_schema.columns 
+                       (SELECT count(*) FROM information_schema.columns
                         WHERE table_name = tablename AND table_schema = schemaname) as columns
-                FROM pg_tables 
+                FROM pg_tables
                 WHERE schemaname NOT IN ('information_schema', 'pg_catalog')
                 ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC
             """
             tables_result = await conn.fetch(tables_query)
-            
+
             table_info = []
             for row in tables_result:
                 table_info.append({
@@ -10418,18 +10420,18 @@ ${{JSON.stringify(data.data, null, 2)}}
                     'size': row['size'],
                     'columns': row['columns']
                 })
-            
+
             metrics['tables'] = table_info
             metrics['total_tables'] = len(table_info)
-            
+
             # More accurate connection stats - filter out background processes
             connections_query = """
-                SELECT 
+                SELECT
                     count(*) FILTER (WHERE state IS NOT NULL AND usename IS NOT NULL) as active_connections,
                     (SELECT setting::int FROM pg_settings WHERE name = 'max_connections') as max_connections,
                     count(*) FILTER (WHERE state = 'active') as active_queries,
                     count(*) FILTER (WHERE state = 'idle') as idle_connections
-                FROM pg_stat_activity 
+                FROM pg_stat_activity
                 WHERE datname = 'boarderframeos'
             """
             conn_result = await conn.fetchrow(connections_query)
@@ -10444,7 +10446,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 metrics['active_connections'] = 0
                 metrics['max_connections'] = 0
                 metrics['available_connections'] = 0
-            
+
             # Database activity stats for our specific database
             activity_query = """
                 SELECT numbackends as backends,
@@ -10457,7 +10459,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                        tup_inserted,
                        tup_updated,
                        tup_deleted
-                FROM pg_stat_database 
+                FROM pg_stat_database
                 WHERE datname = 'boarderframeos'
             """
             activity_result = await conn.fetchrow(activity_query)
@@ -10472,7 +10474,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 metrics['tuples_inserted'] = activity_result['tup_inserted'] or 0
                 metrics['tuples_updated'] = activity_result['tup_updated'] or 0
                 metrics['tuples_deleted'] = activity_result['tup_deleted'] or 0
-                
+
                 # Calculate cache hit ratio
                 total_blocks = (activity_result['blocks_read'] or 0) + (activity_result['blocks_hit'] or 0)
                 if total_blocks > 0:
@@ -10484,7 +10486,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 metrics['commits'] = 0
                 metrics['rollbacks'] = 0
                 metrics['cache_hit_ratio'] = 0
-            
+
             # Get PostgreSQL version
             version_query = "SELECT version()"
             version_result = await conn.fetchrow(version_query)
@@ -10496,22 +10498,22 @@ ${{JSON.stringify(data.data, null, 2)}}
                 metrics['version'] = version_match.group(1) if version_match else version_full
             else:
                 metrics['version'] = 'Unknown'
-            
+
             # Check if pgvector extension is available
             pgvector_query = "SELECT extname FROM pg_extension WHERE extname = 'vector'"
             pgvector_result = await conn.fetchrow(pgvector_query)
             metrics['pgvector_enabled'] = bool(pgvector_result)
-            
+
             # Get current time for last update
             metrics['last_check'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            
+
             await conn.close()
-            
+
             metrics['status'] = 'healthy'
             print(f"✅ Database health check completed - Active connections: {metrics['active_connections']}")
-            
+
             return metrics
-            
+
         except Exception as e:
             print(f"❌ Database health check failed: {e}")
             return {
@@ -10529,41 +10531,41 @@ ${{JSON.stringify(data.data, null, 2)}}
     def _categorize_table(self, table_name):
         """Categorize a table based on its name"""
         table_name_lower = table_name.lower()
-        
+
         # System and Core Tables
         if any(keyword in table_name_lower for keyword in ['pg_', 'information_schema', 'sql_', 'sys_']):
             return 'system', 'fas fa-cogs', '#6b7280'
-        
+
         # Agent-related tables
         if any(keyword in table_name_lower for keyword in ['agent', 'solomon', 'david', 'adam', 'eve', 'bezalel', 'michael']):
             return 'agents', 'fas fa-robot', '#3b82f6'
-        
+
         # Division tables
         if any(keyword in table_name_lower for keyword in ['division', 'leadership', 'coordination', 'executive']):
             return 'divisions', 'fas fa-sitemap', '#8b5cf6'
-        
+
         # Department tables
         if any(keyword in table_name_lower for keyword in [
-            'department', 'finance', 'legal', 'sales', 'marketing', 'procurement', 
-            'engineering', 'research', 'innovation', 'operations', 'security', 
-            'data_management', 'infrastructure', 'learning', 'human_resources', 
-            'production', 'quality', 'customer_service', 'supply_chain', 
+            'department', 'finance', 'legal', 'sales', 'marketing', 'procurement',
+            'engineering', 'research', 'innovation', 'operations', 'security',
+            'data_management', 'infrastructure', 'learning', 'human_resources',
+            'production', 'quality', 'customer_service', 'supply_chain',
             'communications', 'strategic', 'technology', 'business', 'creative'
         ]):
             return 'departments', 'fas fa-building', '#10b981'
-        
+
         # Registry and service tables
         if any(keyword in table_name_lower for keyword in ['registry', 'server', 'service', 'mcp']):
             return 'registry', 'fas fa-network-wired', '#f59e0b'
-        
+
         # Message and communication tables
         if any(keyword in table_name_lower for keyword in ['message', 'chat', 'communication', 'log']):
             return 'messaging', 'fas fa-comments', '#ec4899'
-        
+
         # Migration and schema tables
         if any(keyword in table_name_lower for keyword in ['migration', 'schema', 'version']):
             return 'migrations', 'fas fa-database', '#ef4444'
-        
+
         # Default category
         return 'other', 'fas fa-table', '#6b7280'
 
@@ -10577,7 +10579,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     </td>
                 </tr>
             '''
-        
+
         tables = self.database_health_metrics.get('tables', [])
         if not tables:
             return '''
@@ -10587,7 +10589,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     </td>
                 </tr>
             '''
-        
+
         # Categorize and sort tables
         categorized_tables = {}
         for table in tables:
@@ -10595,18 +10597,18 @@ ${{JSON.stringify(data.data, null, 2)}}
             if category not in categorized_tables:
                 categorized_tables[category] = {'tables': [], 'icon': icon, 'color': color}
             categorized_tables[category]['tables'].append(table)
-        
+
         # Sort categories by priority
         category_order = ['agents', 'divisions', 'departments', 'registry', 'messaging', 'migrations', 'system', 'other']
-        
+
         rows_html = ""
         for category in category_order:
             if category not in categorized_tables:
                 continue
-                
+
             category_data = categorized_tables[category]
             category_tables = sorted(category_data['tables'], key=lambda x: x.get('name', ''))
-            
+
             # Add category header
             category_display = category.replace('_', ' ').title()
             rows_html += f'''
@@ -10617,7 +10619,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     </td>
                 </tr>
             '''
-            
+
             # Add tables in this category
             for table in category_tables:
                 rows_html += f'''
@@ -10642,7 +10644,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                         </td>
                     </tr>
                 '''
-        
+
         return rows_html
 
     def _generate_database_widget_content(self):
@@ -10651,10 +10653,10 @@ ${{JSON.stringify(data.data, null, 2)}}
         services_data = self.unified_data.get('services_status', self.services_status)
         db_service = services_data.get("database", {})
         details = db_service.get("details", {})
-        
+
         # Use centralized database health metrics
         db_metrics = self.unified_data.get('database_health', getattr(self, 'database_health_metrics', {}))
-        
+
         return f'''
             <div class="metrics-grid">
                 <div class="metric-item">
@@ -10686,7 +10688,7 @@ ${{JSON.stringify(data.data, null, 2)}}
         """Generate Cortex widget content"""
         agent_cortex_service = self.services_status.get("agent_cortex", {})
         details = agent_cortex_service.get("details", {})
-        
+
         return f'''
             <div class="metrics-grid">
                 <div class="metric-item">
@@ -10717,7 +10719,7 @@ ${{JSON.stringify(data.data, null, 2)}}
     def _generate_generic_widget_content(self, service):
         """Generate generic widget content for unknown services"""
         details = service.get("details", {})
-        
+
         return f'''
             <div class="metrics-grid">
                 <div class="metric-item">
@@ -10749,11 +10751,12 @@ ${{JSON.stringify(data.data, null, 2)}}
         """Generate comprehensive leaders overview HTML with database integration"""
         try:
             import asyncio
+
             import asyncpg
-            
+
             # Get leaders data from database
             leaders_data = self._fetch_leaders_data()
-            
+
             if not leaders_data:
                 return '''
                     <div style="text-align: center; padding: 2rem; color: var(--secondary-text);">
@@ -10762,12 +10765,12 @@ ${{JSON.stringify(data.data, null, 2)}}
                         <p>Unable to load leadership information from database.</p>
                     </div>
                 '''
-            
+
             # Group leaders by division for better organization
             divisions_leaders = {}
             division_colors = {
                 'Executive Division': '#6366f1',
-                'Programming & Development Division': '#10b981', 
+                'Programming & Development Division': '#10b981',
                 'Information Technology Division': '#06b6d4',
                 'Customer Experience Division': '#ec4899',
                 'Content Generation Division': '#84cc16',
@@ -10776,7 +10779,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 'Operations Division': '#ef4444',
                 'Human Resources Division': '#14b8a6'
             }
-            
+
             for leader in leaders_data:
                 div_name = leader['division_name']
                 if div_name not in divisions_leaders:
@@ -10791,17 +10794,17 @@ ${{JSON.stringify(data.data, null, 2)}}
                     divisions_leaders[div_name]['total_departments'] += 1
                     if leader['operational_status'] == 'active':
                         divisions_leaders[div_name]['active_departments'] += 1
-            
+
             html = '''
                 <!-- Leaders Overview Card -->
                 <div class="card full-width" style="margin-bottom: 2rem; border: 2px solid #f59e0b20; background: linear-gradient(135deg, #f59e0b08, #f59e0b03);">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
                         <div style="display: flex; align-items: center; gap: 1rem;">
                             <div style="
-                                width: 60px; height: 60px; 
-                                background: linear-gradient(135deg, #f59e0b, #f59e0bcc); 
-                                border-radius: 12px; 
-                                display: flex; align-items: center; justify-content: center; 
+                                width: 60px; height: 60px;
+                                background: linear-gradient(135deg, #f59e0b, #f59e0bcc);
+                                border-radius: 12px;
+                                display: flex; align-items: center; justify-content: center;
                                 color: white; font-size: 1.5rem; box-shadow: 0 4px 12px #f59e0b40;
                             ">
                                 <i class="fas fa-crown"></i>
@@ -10820,7 +10823,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Leaders Metrics Grid -->
                     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; align-items: stretch;">
                         <div class="widget widget-small">
@@ -10865,25 +10868,25 @@ ${{JSON.stringify(data.data, null, 2)}}
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Division Leadership Overview -->
             '''
-            
+
             for division_name, division_data in divisions_leaders.items():
                 division_color = division_data['color']
                 leaders = division_data['leaders']
                 active_depts = division_data['active_departments']
                 total_depts = division_data['total_departments']
-                
+
                 html += f'''
                     <div class="card full-width" style="margin-bottom: 2rem; border: 2px solid {division_color}20; background: linear-gradient(135deg, {division_color}08, {division_color}03);">
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
                             <div style="display: flex; align-items: center; gap: 1rem;">
                                 <div style="
-                                    width: 60px; height: 60px; 
-                                    background: linear-gradient(135deg, {division_color}, {division_color}cc); 
-                                    border-radius: 12px; 
-                                    display: flex; align-items: center; justify-content: center; 
+                                    width: 60px; height: 60px;
+                                    background: linear-gradient(135deg, {division_color}, {division_color}cc);
+                                    border-radius: 12px;
+                                    display: flex; align-items: center; justify-content: center;
                                     color: white; font-size: 1.5rem; box-shadow: 0 4px 12px {division_color}40;
                                 ">
                                     <i class="fas fa-users"></i>
@@ -10902,31 +10905,31 @@ ${{JSON.stringify(data.data, null, 2)}}
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Leaders Grid -->
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1rem;">
                 '''
-                
+
                 for leader in leaders:
                     archetype_icon = {
                         'Visionary': 'fas fa-eye',
-                        'Commander': 'fas fa-shield-alt', 
+                        'Commander': 'fas fa-shield-alt',
                         'Creator': 'fas fa-hammer',
                         'Builder': 'fas fa-tools',
                         'Guardian': 'fas fa-shield',
                         'Shepherd': 'fas fa-heart',
                         'Prophet': 'fas fa-bolt'
                     }.get(leader.get('biblical_archetype', ''), 'fas fa-crown')
-                    
+
                     status_color = '#10b981' if leader['operational_status'] == 'active' else '#f59e0b'
                     status_text = 'Operational' if leader['operational_status'] == 'active' else 'Planning'
-                    
+
                     html += f'''
                         <div style="
-                            background: var(--card-bg); 
-                            border: 1px solid var(--border-color); 
-                            border-radius: 12px; 
-                            padding: 1.25rem; 
+                            background: var(--card-bg);
+                            border: 1px solid var(--border-color);
+                            border-radius: 12px;
+                            padding: 1.25rem;
                             padding-top: 2.5rem;
                             position: relative;
                             transition: all 0.3s ease;
@@ -10935,18 +10938,18 @@ ${{JSON.stringify(data.data, null, 2)}}
                             display: flex;
                             flex-direction: column;
                             {f'box-shadow: 0 4px 12px {division_color}30; border: 2px solid {division_color};' if leader['is_primary'] else 'box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);'}
-                        " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='{f'0 8px 25px {division_color}40' if leader['is_primary'] else '0 6px 20px rgba(0, 0, 0, 0.15)'}'" 
+                        " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='{f'0 8px 25px {division_color}40' if leader['is_primary'] else '0 6px 20px rgba(0, 0, 0, 0.15)'}'"
                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='{f'0 4px 12px {division_color}30' if leader['is_primary'] else '0 2px 8px rgba(0, 0, 0, 0.1)'}'">
-                            
+
                             {f'<div style="position: absolute; top: 0.75rem; right: 0.75rem; background: {division_color}15; color: {division_color}; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.65rem; font-weight: 600; border: 1px solid {division_color}40; z-index: 10;"><i class="fas fa-star" style="margin-right: 0.25rem;"></i>PRIMARY</div>' if leader['is_primary'] else ''}
-                            
+
                             <div style="display: flex; align-items: flex-start; gap: 1rem; height: 100%;">
                                 <div style="
-                                    width: 64px; height: 64px; 
-                                    background: linear-gradient(135deg, {division_color}, {division_color}cc); 
-                                    border-radius: 50%; 
-                                    display: flex; align-items: center; justify-content: center; 
-                                    color: white; font-size: 1.5rem; 
+                                    width: 64px; height: 64px;
+                                    background: linear-gradient(135deg, {division_color}, {division_color}cc);
+                                    border-radius: 50%;
+                                    display: flex; align-items: center; justify-content: center;
+                                    color: white; font-size: 1.5rem;
                                     box-shadow: 0 4px 12px {division_color}50;
                                     position: relative;
                                     flex-shrink: 0;
@@ -10954,7 +10957,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                                     <i class="{archetype_icon}"></i>
                                     {f'<div style="position: absolute; bottom: -2px; right: -2px; width: 20px; height: 20px; background: {status_color}; border-radius: 50%; border: 3px solid var(--card-bg); display: flex; align-items: center; justify-content: center;"><i class="fas fa-check" style="font-size: 0.6rem; color: white;"></i></div>' if leader['operational_status'] == 'active' else ''}
                                 </div>
-                                
+
                                 <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100%;">
                                     <!-- Header Section - Fixed Height -->
                                     <div style="height: 5.5rem; margin-bottom: 0.75rem; display: flex; flex-direction: column;">
@@ -10966,14 +10969,14 @@ ${{JSON.stringify(data.data, null, 2)}}
                                                 <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{leader['department_name']}</span>
                                             </div>
                                             <div style="
-                                                background: {status_color}20; 
-                                                color: {status_color}; 
-                                                padding: 0.15rem 0.5rem; 
-                                                border-radius: 4px; 
-                                                font-size: 0.7rem; 
-                                                font-weight: 500; 
-                                                display: flex; 
-                                                align-items: center; 
+                                                background: {status_color}20;
+                                                color: {status_color};
+                                                padding: 0.15rem 0.5rem;
+                                                border-radius: 4px;
+                                                font-size: 0.7rem;
+                                                font-weight: 500;
+                                                display: flex;
+                                                align-items: center;
                                                 gap: 0.25rem;
                                                 border: 1px solid {status_color}40;
                                                 flex-shrink: 0;
@@ -10983,46 +10986,46 @@ ${{JSON.stringify(data.data, null, 2)}}
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Description Section - Flexible Height -->
                                     <div style="flex: 1; margin-bottom: 0.75rem;">
                                         {f'<div style="background: var(--accent-bg); border-radius: 8px; padding: 0.75rem; border-left: 3px solid {division_color}; font-size: 0.8rem; line-height: 1.4; color: var(--secondary-text); height: 100%; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">{leader.get("description", "")}</div>' if leader.get('description') else '<div style="height: 100%;"></div>'}
                                     </div>
-                                    
+
                                     <!-- Footer Section - Fixed Height -->
                                     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-top: auto; min-height: 2rem;">
                                         {f'<div style="background: {division_color}15; color: {division_color}; padding: 0.25rem 0.75rem; border-radius: 6px; font-size: 0.7rem; font-weight: 500; display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fas fa-star"></i> {leader.get("biblical_archetype", "Leader")}</div>' if leader.get('biblical_archetype') else '<div style="flex: 1;"></div>'}
-                                        
+
                                         <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
                                             <div style="
-                                                background: var(--accent-bg); 
-                                                color: var(--accent-color); 
-                                                padding: 0.3rem 0.6rem; 
-                                                border-radius: 6px; 
-                                                font-size: 0.7rem; 
+                                                background: var(--accent-bg);
+                                                color: var(--accent-color);
+                                                padding: 0.3rem 0.6rem;
+                                                border-radius: 6px;
+                                                font-size: 0.7rem;
                                                 cursor: pointer;
                                                 transition: all 0.2s ease;
                                                 border: 1px solid var(--border-color);
                                                 display: flex;
                                                 align-items: center;
                                                 justify-content: center;
-                                            " onmouseover="this.style.background='{division_color}20'; this.style.borderColor='{division_color}'" 
+                                            " onmouseover="this.style.background='{division_color}20'; this.style.borderColor='{division_color}'"
                                                onmouseout="this.style.background='var(--accent-bg)'; this.style.borderColor='var(--border-color)'">
                                                 <i class="fas fa-comment"></i>
                                             </div>
                                             <div style="
-                                                background: var(--secondary-bg); 
-                                                color: var(--secondary-text); 
-                                                padding: 0.3rem 0.6rem; 
-                                                border-radius: 6px; 
-                                                font-size: 0.7rem; 
+                                                background: var(--secondary-bg);
+                                                color: var(--secondary-text);
+                                                padding: 0.3rem 0.6rem;
+                                                border-radius: 6px;
+                                                font-size: 0.7rem;
                                                 cursor: pointer;
                                                 transition: all 0.2s ease;
                                                 border: 1px solid var(--border-color);
                                                 display: flex;
                                                 align-items: center;
                                                 justify-content: center;
-                                            " onmouseover="this.style.background='{division_color}20'; this.style.borderColor='{division_color}'" 
+                                            " onmouseover="this.style.background='{division_color}20'; this.style.borderColor='{division_color}'"
                                                onmouseout="this.style.background='var(--secondary-bg)'; this.style.borderColor='var(--border-color)'">
                                                 <i class="fas fa-user"></i>
                                             </div>
@@ -11032,14 +11035,14 @@ ${{JSON.stringify(data.data, null, 2)}}
                             </div>
                         </div>
                     '''
-                
+
                 html += '''
                         </div>
                     </div>
                 '''
-            
+
             return html
-            
+
         except Exception as e:
             print(f"Error generating leaders HTML: {e}")
             return '''
@@ -11055,7 +11058,7 @@ ${{JSON.stringify(data.data, null, 2)}}
         try:
             # Get leaders data to extract division information
             leaders_data = self._fetch_leaders_data()
-            
+
             if not leaders_data:
                 return '''
                     <div style="text-align: center; padding: 2rem; color: var(--secondary-text);">
@@ -11064,12 +11067,12 @@ ${{JSON.stringify(data.data, null, 2)}}
                         <p>Unable to load division information from database.</p>
                     </div>
                 '''
-            
+
             # Group and analyze divisions
             divisions_data = {}
             division_colors = {
                 'Executive Division': '#6366f1',
-                'Programming & Development Division': '#10b981', 
+                'Programming & Development Division': '#10b981',
                 'Information Technology Division': '#06b6d4',
                 'Customer Experience Division': '#ec4899',
                 'Content Generation Division': '#84cc16',
@@ -11078,11 +11081,11 @@ ${{JSON.stringify(data.data, null, 2)}}
                 'Operations Division': '#ef4444',
                 'Human Resources Division': '#14b8a6'
             }
-            
+
             for leader in leaders_data:
                 div_name = leader['division_name']
                 div_desc = leader.get('division_description', 'Strategic organizational division')
-                
+
                 if div_name not in divisions_data:
                     divisions_data[div_name] = {
                         'name': div_name,
@@ -11094,21 +11097,21 @@ ${{JSON.stringify(data.data, null, 2)}}
                         'active_leaders': 0,
                         'primary_leaders': 0
                     }
-                
+
                 divisions_data[div_name]['leaders'].append(leader)
                 divisions_data[div_name]['departments'].add(leader['department_name'])
                 divisions_data[div_name]['total_leaders'] += 1
-                
+
                 if leader.get('active_status', 'active') == 'active':
                     divisions_data[div_name]['active_leaders'] += 1
                 if leader.get('is_primary', False):
                     divisions_data[div_name]['primary_leaders'] += 1
-            
+
             # Convert departments set to count
             for div_name in divisions_data:
                 divisions_data[div_name]['total_departments'] = len(divisions_data[div_name]['departments'])
                 divisions_data[div_name]['departments'] = list(divisions_data[div_name]['departments'])
-            
+
             # Get organizational metrics from unified data
             org_metrics = self.unified_data.get('organizational_metrics', {
                 'divisions': {'total': 0, 'active': 0, 'percentage': 0},
@@ -11116,17 +11119,17 @@ ${{JSON.stringify(data.data, null, 2)}}
                 'leaders': {'total': 0, 'active': 0, 'percentage': 0},
                 'agents': {'total': 0, 'active': 0, 'percentage': 0}
             })
-            
+
             html = f'''
                 <!-- Divisions Overview Card -->
                 <div class="card full-width" style="margin-bottom: 2rem; border: 2px solid #8b5cf620; background: linear-gradient(135deg, #8b5cf608, #8b5cf603);">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
                         <div style="display: flex; align-items: center; gap: 1rem;">
                             <div style="
-                                width: 60px; height: 60px; 
-                                background: linear-gradient(135deg, #8b5cf6, #8b5cf6cc); 
-                                border-radius: 12px; 
-                                display: flex; align-items: center; justify-content: center; 
+                                width: 60px; height: 60px;
+                                background: linear-gradient(135deg, #8b5cf6, #8b5cf6cc);
+                                border-radius: 12px;
+                                display: flex; align-items: center; justify-content: center;
                                 color: white; font-size: 1.5rem; box-shadow: 0 4px 12px #8b5cf640;
                             ">
                                 <i class="fas fa-sitemap"></i>
@@ -11146,7 +11149,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Enhanced Organizational Metrics Cards -->
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
                     <!-- Divisions Card -->
@@ -11167,7 +11170,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                             <span style="font-size: 0.75rem; color: var(--secondary-text);">Active/Total</span>
                         </div>
                     </div>
-                    
+
                     <!-- Departments Card -->
                     <div class="card" style="background: linear-gradient(135deg, #10b98108, #10b98103); border: 1px solid #10b98120; padding: 1.5rem;">
                         <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
@@ -11186,7 +11189,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                             <span style="font-size: 0.75rem; color: var(--secondary-text);">Active/Total</span>
                         </div>
                     </div>
-                    
+
                     <!-- Leaders Card -->
                     <div class="card" style="background: linear-gradient(135deg, #f59e0b08, #f59e0b03); border: 1px solid #f59e0b20; padding: 1.5rem;">
                         <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
@@ -11205,7 +11208,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                             <span style="font-size: 0.75rem; color: var(--secondary-text);">Active/Total</span>
                         </div>
                     </div>
-                    
+
                     <!-- Agents Card -->
                     <div class="card" style="background: linear-gradient(135deg, #06b6d408, #06b6d403); border: 1px solid #06b6d420; padding: 1.5rem;">
                         <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
@@ -11225,14 +11228,14 @@ ${{JSON.stringify(data.data, null, 2)}}
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Divisions Grid -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
             '''
-            
+
             # Get division-specific metrics from data layer
             div_metrics = org_metrics.get('by_division', {})
-            
+
             # Generate division cards
             for div_name, division in divisions_data.items():
                 # Get metrics for this division from data layer
@@ -11241,17 +11244,17 @@ ${{JSON.stringify(data.data, null, 2)}}
                     'leaders': {'total': division['total_leaders'], 'active': division['active_leaders'], 'percentage': 0},
                     'agents': {'total': 0, 'active': 0, 'percentage': 0}
                 })
-                
+
                 html += f'''
                     <div class="card" style="border-left: 4px solid {division['color']}; background: linear-gradient(135deg, {division['color']}08, {division['color']}03);">
                         <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem;">
                             <div style="flex: 1;">
                                 <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
                                     <div style="
-                                        width: 40px; height: 40px; 
-                                        background: linear-gradient(135deg, {division['color']}, {division['color']}cc); 
-                                        border-radius: 10px; 
-                                        display: flex; align-items: center; justify-content: center; 
+                                        width: 40px; height: 40px;
+                                        background: linear-gradient(135deg, {division['color']}, {division['color']}cc);
+                                        border-radius: 10px;
+                                        display: flex; align-items: center; justify-content: center;
                                         color: white; font-size: 1rem; box-shadow: 0 3px 8px {division['color']}50;
                                     ">
                                         <i class="fas fa-sitemap"></i>
@@ -11265,7 +11268,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                                 </p>
                             </div>
                         </div>
-                        
+
                         <!-- Division Stats with Active/Total -->
                         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1rem;">
                             <div style="text-align: center; padding: 0.75rem; background: var(--secondary-bg); border-radius: 8px; border: 1px solid var(--border-color);">
@@ -11290,53 +11293,53 @@ ${{JSON.stringify(data.data, null, 2)}}
                                 <div style="font-size: 0.7rem; color: var(--secondary-text);">Agents</div>
                             </div>
                         </div>
-                        
+
                         <!-- Department List -->
                         <div style="margin-bottom: 1rem;">
                             <div style="font-size: 0.8rem; font-weight: 600; color: var(--primary-text); margin-bottom: 0.5rem;">Departments:</div>
                             <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
                 '''
-                
+
                 # Sort departments alphabetically
                 sorted_departments = sorted(division['departments'])
-                
+
                 for dept in sorted_departments[:6]:  # Show first 6 departments
                     html += f'''
                         <span style="
-                            font-size: 0.7rem; 
-                            background: {division['color']}15; 
-                            color: {division['color']}; 
-                            padding: 0.25rem 0.5rem; 
-                            border-radius: 4px; 
+                            font-size: 0.7rem;
+                            background: {division['color']}15;
+                            color: {division['color']};
+                            padding: 0.25rem 0.5rem;
+                            border-radius: 4px;
                             border: 1px solid {division['color']}30;
                             white-space: nowrap;
                         ">{dept}</span>
                     '''
-                
+
                 if len(sorted_departments) > 6:
                     html += f'''
                         <span style="
-                            font-size: 0.7rem; 
-                            background: var(--secondary-bg); 
-                            color: var(--secondary-text); 
-                            padding: 0.25rem 0.5rem; 
-                            border-radius: 4px; 
+                            font-size: 0.7rem;
+                            background: var(--secondary-bg);
+                            color: var(--secondary-text);
+                            padding: 0.25rem 0.5rem;
+                            border-radius: 4px;
                             border: 1px solid var(--border-color);
                         ">+{len(sorted_departments) - 6} more</span>
                     '''
-                
+
                 html += '''
                             </div>
                         </div>
                     </div>
                 '''
-            
+
             html += '''
                 </div>
             '''
-            
+
             return html
-            
+
         except Exception as e:
             print(f"Error generating divisions HTML: {e}")
             return f'''
@@ -11350,19 +11353,20 @@ ${{JSON.stringify(data.data, null, 2)}}
     def _fetch_leaders_data(self):
         """Fetch comprehensive leaders data from database"""
         try:
-            import asyncpg
             import asyncio
-            
+
+            import asyncpg
+
             # Database connection details
             db_url = "postgresql://boarderframe:boarderframe_secure_2025@localhost:5434/boarderframeos"
-            
+
             async def fetch_data():
                 try:
                     conn = await asyncpg.connect(db_url)
-                    
+
                     # Comprehensive query to get leaders with division and department info
                     leaders_query = """
-                        SELECT 
+                        SELECT
                             dl.name,
                             dl.title,
                             dl.description,
@@ -11379,15 +11383,15 @@ ${{JSON.stringify(data.data, null, 2)}}
                         FROM department_leaders dl
                         JOIN departments d ON dl.department_id = d.id
                         JOIN divisions div ON d.division_id = div.id
-                        WHERE dl.active_status = 'active' 
-                            AND d.is_active = true 
+                        WHERE dl.active_status = 'active'
+                            AND d.is_active = true
                             AND div.is_active = true
                         ORDER BY div.priority, d.priority, dl.authority_level DESC, dl.name
                     """
-                    
+
                     leaders = await conn.fetch(leaders_query)
                     await conn.close()
-                    
+
                     # Convert to list of dictionaries for easier processing
                     leaders_list = []
                     for leader in leaders:
@@ -11406,14 +11410,14 @@ ${{JSON.stringify(data.data, null, 2)}}
                             'division_name': leader['division_name'],
                             'division_description': leader['division_description'] or ''
                         })
-                    
+
                     print(f"✅ Successfully loaded {len(leaders_list)} leaders from database")
                     return leaders_list
-                    
+
                 except Exception as e:
                     print(f"Database leaders fetch error: {e}")
                     return None
-            
+
             # Run the async function
             try:
                 loop = asyncio.get_event_loop()
@@ -11421,7 +11425,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             except RuntimeError:
                 # If no event loop, create a new one
                 return asyncio.run(fetch_data())
-                
+
         except Exception as e:
             print(f"Error fetching leaders data: {e}")
             return None
@@ -11435,32 +11439,32 @@ ${{JSON.stringify(data.data, null, 2)}}
                     db_health = self.unified_data.get('database_health', {})
                     if db_health.get('status') != 'connected':
                         return 0
-                    
+
                     # Get department count from PostgreSQL
                     import asyncpg
                     connection = await asyncpg.connect(
                         host="localhost",
                         port=5434,
-                        user="boarderframe", 
+                        user="boarderframe",
                         password="boarderframe123",
                         database="boarderframeos"
                     )
-                    
+
                     count = await connection.fetchval("SELECT COUNT(*) FROM departments")
                     await connection.close()
                     return count or 0
-                    
+
                 except Exception as e:
                     print(f"Database department count error: {e}")
                     return 0
-            
+
             # Run the async function
             try:
                 loop = asyncio.get_event_loop()
                 return loop.run_until_complete(fetch_count())
             except RuntimeError:
                 return asyncio.run(fetch_count())
-                
+
         except Exception as e:
             print(f"Error getting department count: {e}")
             return 0
@@ -11474,32 +11478,32 @@ ${{JSON.stringify(data.data, null, 2)}}
                     db_health = self.unified_data.get('database_health', {})
                     if db_health.get('status') != 'connected':
                         return 0
-                    
+
                     # Get division count from PostgreSQL
                     import asyncpg
                     connection = await asyncpg.connect(
                         host="localhost",
                         port=5434,
                         user="boarderframe",
-                        password="boarderframe123", 
+                        password="boarderframe123",
                         database="boarderframeos"
                     )
-                    
+
                     count = await connection.fetchval("SELECT COUNT(DISTINCT division_name) FROM divisions")
                     await connection.close()
                     return count or 0
-                    
+
                 except Exception as e:
                     print(f"Database division count error: {e}")
                     return 0
-            
+
             # Run the async function
             try:
                 loop = asyncio.get_event_loop()
                 return loop.run_until_complete(fetch_count())
             except RuntimeError:
                 return asyncio.run(fetch_count())
-                
+
         except Exception as e:
             print(f"Error getting division count: {e}")
             return 0
@@ -11510,7 +11514,7 @@ ${{JSON.stringify(data.data, null, 2)}}
         leaders_data = self.unified_data.get('leaders_data', [])
         if leaders_data:
             return len(leaders_data)
-        
+
         # Fallback to fresh database query
         fresh_leaders = self._fetch_leaders_data()
         return len(fresh_leaders) if fresh_leaders else 0
@@ -11521,7 +11525,7 @@ ${{JSON.stringify(data.data, null, 2)}}
         leaders_data = self.unified_data.get('leaders_data', [])
         if leaders_data:
             return len([l for l in leaders_data if l.get('active_status', 'active') == 'active'])
-        
+
         # Fallback to fresh database query
         fresh_leaders = self._fetch_leaders_data()
         return len([l for l in fresh_leaders if l.get('active_status', 'active') == 'active']) if fresh_leaders else 0
@@ -11529,7 +11533,7 @@ ${{JSON.stringify(data.data, null, 2)}}
     def _generate_smart_recommendations(self, overall_status, active_agents, total_agents, healthy_services, total_services, active_leaders, total_leaders, registry_status):
         """Generate intelligent recommendations based on system metrics"""
         recommendations = []
-        
+
         # Agent workforce analysis
         agent_ratio = active_agents / total_agents if total_agents > 0 else 0
         if agent_ratio == 1.0:
@@ -11540,7 +11544,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             recommendations.append(f"⚠️ {total_agents - active_agents} agents offline - check agent health")
         else:
             recommendations.append(f"🚨 Critical: {total_agents - active_agents} agents down - immediate intervention needed")
-        
+
         # Infrastructure analysis
         service_ratio = healthy_services / total_services if total_services > 0 else 0
         if service_ratio == 1.0:
@@ -11551,7 +11555,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             recommendations.append(f"⚠️ {total_services - healthy_services} MCP servers need attention")
         else:
             recommendations.append(f"🚨 Infrastructure crisis: {total_services - healthy_services} servers failing")
-        
+
         # Leadership analysis
         leader_ratio = active_leaders / total_leaders if total_leaders > 0 else 0
         if leader_ratio >= 0.9:
@@ -11560,13 +11564,13 @@ ${{JSON.stringify(data.data, null, 2)}}
             recommendations.append("👑 Most leaders active and coordinating")
         else:
             recommendations.append("⚠️ Leadership capacity reduced - check key agents")
-        
+
         # Registry health
         if registry_status == 'healthy':
             recommendations.append("🌐 Service registry providing full coordination")
         else:
             recommendations.append("🚨 Service registry issues affecting coordination")
-        
+
         # System performance recommendation
         if overall_status == 'online':
             recommendations.append("✅ Continue monitoring for peak efficiency")
@@ -11574,26 +11578,26 @@ ${{JSON.stringify(data.data, null, 2)}}
             recommendations.append("⚠️ Run system diagnostics and address failing components")
         else:
             recommendations.append("🚨 Emergency protocols: restart critical services immediately")
-        
+
         return " • ".join(recommendations)
 
     def _generate_registry_overview_html(self):
         """Generate comprehensive registry visualization with enhanced data"""
         try:
-            import subprocess
             import json
-            
+            import subprocess
+
             # Check if Docker is available first
             docker_check = subprocess.run(["docker", "ps"], capture_output=True, timeout=3)
             if docker_check.returncode != 0:
                 return self._generate_fallback_registry_html("Docker not available")
-            
+
             # Get comprehensive registry data
             registry_data = self._fetch_registry_data()
-            
+
             if not registry_data:
                 return self._generate_fallback_registry_html("Registry data unavailable")
-            
+
             # Generate visualization HTML
             return f'''
                 <!-- Registry Statistics Overview -->
@@ -11740,25 +11744,25 @@ ${{JSON.stringify(data.data, null, 2)}}
                         if (!events || events.length === 0) {{
                             return '<div style="text-align: center; color: var(--secondary-text); padding: 2rem;">No recent events</div>';
                         }}
-                        
+
                         const eventColors = {{
                             'REGISTERED': '#10b981',
                             'UNREGISTERED': '#ef4444',
                             'STATUS_CHANGED': '#f59e0b',
                             'HEARTBEAT': '#6366f1'
                         }};
-                        
+
                         const eventIcons = {{
                             'REGISTERED': 'fa-plus-circle',
                             'UNREGISTERED': 'fa-minus-circle',
                             'STATUS_CHANGED': 'fa-exchange-alt',
                             'HEARTBEAT': 'fa-heartbeat'
                         }};
-                        
+
                         return events.map(event => {{
                             const color = eventColors[event.type] || '#6b7280';
                             const icon = eventIcons[event.type] || 'fa-circle';
-                            
+
                             return `
                                 <div style="padding: 0.75rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 1rem;">
                                     <div style="color: ${'${color}'};">
@@ -11775,20 +11779,20 @@ ${{JSON.stringify(data.data, null, 2)}}
                     }}
                 </script>
             '''
-            
+
         except Exception as e:
             return self._generate_fallback_registry_html(str(e)[:100])
-    
+
     def _fetch_registry_data(self):
         """Fetch comprehensive data from registry database"""
         try:
-            import subprocess
             import json
-            
+            import subprocess
+
             # Complex query to get all registry data
             query = """
             WITH registry_stats AS (
-                SELECT 
+                SELECT
                     'agents' as type,
                     COUNT(*) as total,
                     COUNT(*) FILTER (WHERE status = 'online') as online,
@@ -11797,7 +11801,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     COUNT(*) FILTER (WHERE health_status = 'critical') as critical
                 FROM agent_registry WHERE agent_type = 'agent'
                 UNION ALL
-                SELECT 
+                SELECT
                     'leaders' as type,
                     COUNT(*) as total,
                     COUNT(*) FILTER (WHERE status = 'online') as online,
@@ -11806,7 +11810,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     COUNT(*) FILTER (WHERE health_status = 'critical') as critical
                 FROM agent_registry WHERE agent_type = 'leader'
                 UNION ALL
-                SELECT 
+                SELECT
                     'servers' as type,
                     COUNT(*) as total,
                     COUNT(*) FILTER (WHERE status = 'online') as online,
@@ -11815,7 +11819,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     COUNT(*) FILTER (WHERE health_status = 'critical') as critical
                 FROM server_registry
                 UNION ALL
-                SELECT 
+                SELECT
                     'databases' as type,
                     COUNT(*) as total,
                     COUNT(*) FILTER (WHERE status = 'online') as online,
@@ -11824,7 +11828,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     COUNT(*) FILTER (WHERE health_status = 'critical') as critical
                 FROM database_registry
                 UNION ALL
-                SELECT 
+                SELECT
                     'departments' as type,
                     COUNT(*) as total,
                     COUNT(*) FILTER (WHERE status = 'operational') as online,
@@ -11833,7 +11837,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     0 as critical
                 FROM department_registry
                 UNION ALL
-                SELECT 
+                SELECT
                     'divisions' as type,
                     COUNT(*) as total,
                     COUNT(*) FILTER (WHERE is_active = true) as online,
@@ -11844,18 +11848,18 @@ ${{JSON.stringify(data.data, null, 2)}}
             )
             SELECT json_agg(row_to_json(registry_stats)) FROM registry_stats;
             """
-            
+
             result = subprocess.run([
                 "docker", "exec", "boarderframeos_postgres",
                 "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", query
             ], capture_output=True, text=True, timeout=5)
-            
+
             if result.returncode != 0:
                 return None
-                
+
             try:
                 stats_data = json.loads(result.stdout.strip())
-                
+
                 # Process the data
                 registry_data = {
                     'totals': {},
@@ -11870,28 +11874,28 @@ ${{JSON.stringify(data.data, null, 2)}}
                         'uptime': '99.9'
                     }
                 }
-                
+
                 for stat in stats_data:
                     registry_data['totals'][stat['type']] = stat['total']
                     registry_data['health_distribution']['healthy'] += stat['healthy']
                     registry_data['health_distribution']['warning'] += stat['warning']
                     registry_data['health_distribution']['critical'] += stat['critical']
-                
+
                 # Get agents by department
                 dept_query = """
-                SELECT d.name as department, COUNT(ar.id) as agent_count 
-                FROM departments d 
-                LEFT JOIN agent_registry ar ON ar.department_id = d.id::text 
-                GROUP BY d.name 
-                ORDER BY agent_count DESC 
+                SELECT d.name as department, COUNT(ar.id) as agent_count
+                FROM departments d
+                LEFT JOIN agent_registry ar ON ar.department_id = d.id::text
+                GROUP BY d.name
+                ORDER BY agent_count DESC
                 LIMIT 10;
                 """
-                
+
                 dept_result = subprocess.run([
                     "docker", "exec", "boarderframeos_postgres",
                     "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", dept_query
                 ], capture_output=True, text=True, timeout=5)
-                
+
                 if dept_result.returncode == 0:
                     for line in dept_result.stdout.strip().split('\n'):
                         if '|' in line:
@@ -11900,20 +11904,20 @@ ${{JSON.stringify(data.data, null, 2)}}
                                 dept_name = parts[0].strip()
                                 agent_count = int(parts[1].strip()) if parts[1].strip().isdigit() else 0
                                 registry_data['agents_by_department'][dept_name] = agent_count
-                
+
                 # Get server details
                 server_query = """
-                SELECT name, server_type, status, health_status, endpoint_url 
-                FROM server_registry 
-                ORDER BY name 
+                SELECT name, server_type, status, health_status, endpoint_url
+                FROM server_registry
+                ORDER BY name
                 LIMIT 20;
                 """
-                
+
                 server_result = subprocess.run([
                     "docker", "exec", "boarderframeos_postgres",
                     "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", server_query
                 ], capture_output=True, text=True, timeout=5)
-                
+
                 if server_result.returncode == 0:
                     for line in server_result.stdout.strip().split('\n'):
                         if '|' in line:
@@ -11926,27 +11930,27 @@ ${{JSON.stringify(data.data, null, 2)}}
                                     'health': parts[3].strip(),
                                     'url': parts[4].strip()
                                 })
-                
+
                 return registry_data
-                
+
             except Exception as e:
                 print(f"Error parsing registry data: {e}")
                 return None
-                
+
         except Exception as e:
             print(f"Error fetching registry data: {e}")
             return None
-    
+
     def _generate_health_bar_chart(self, health_data):
         """Generate a simple bar chart for health distribution"""
         total = sum(health_data.values())
         if total == 0:
             return '<div style="text-align: center; color: var(--secondary-text);">No data available</div>'
-            
+
         healthy_pct = (health_data['healthy'] / total) * 100
         warning_pct = (health_data['warning'] / total) * 100
         critical_pct = (health_data['critical'] / total) * 100
-        
+
         return f'''
         <div style="display: flex; height: 20px; border-radius: 10px; overflow: hidden; background: var(--border-color);">
             <div style="width: {healthy_pct}%; background: #10b981; transition: width 0.3s;"></div>
@@ -11954,12 +11958,12 @@ ${{JSON.stringify(data.data, null, 2)}}
             <div style="width: {critical_pct}%; background: #ef4444; transition: width 0.3s;"></div>
         </div>
         '''
-    
+
     def _generate_department_agent_list(self, dept_data):
         """Generate department agent count list"""
         if not dept_data:
             return '<div style="text-align: center; color: var(--secondary-text);">No department data available</div>'
-            
+
         html = ''
         for dept, count in sorted(dept_data.items(), key=lambda x: x[1], reverse=True):
             html += f'''
@@ -11969,17 +11973,17 @@ ${{JSON.stringify(data.data, null, 2)}}
             </div>
             '''
         return html
-    
+
     def _generate_server_status_list(self, servers):
         """Generate server status list"""
         if not servers:
             return '<div style="text-align: center; color: var(--secondary-text);">No servers registered</div>'
-            
+
         html = ''
         for server in servers:
             status_color = '#10b981' if server['status'] == 'online' else '#ef4444'
             health_icon = 'fa-check-circle' if server['health'] == 'healthy' else 'fa-exclamation-circle'
-            
+
             html += f'''
             <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px;">
                 <div style="color: {status_color};">
@@ -11993,12 +11997,12 @@ ${{JSON.stringify(data.data, null, 2)}}
             </div>
             '''
         return html
-    
+
     def _generate_registry_events(self, events):
         """Generate registry events list"""
         if not events:
             return '<div style="text-align: center; color: var(--secondary-text); padding: 2rem;">No recent events</div>'
-            
+
         # For now, return placeholder since we don't have real events yet
         return '''
         <div style="text-align: center; color: var(--secondary-text); padding: 2rem;">
@@ -12006,7 +12010,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             <p>Event streaming will be available when registry service is running</p>
         </div>
         '''
-    
+
     def _generate_dependency_visualization(self, dependencies):
         """Generate service dependency visualization"""
         return '''
@@ -12023,7 +12027,7 @@ ${{JSON.stringify(data.data, null, 2)}}
         local_agents = len(self.running_agents)
         total_services = len(self.services_status)
         healthy_services = len([s for s in self.services_status.values() if s.get('status') == 'healthy'])
-        
+
         return f'''
             <div class="card">
                 <h4 style="color: var(--accent-color); margin-bottom: 1rem;">
@@ -12044,7 +12048,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     </div>
                 </div>
             </div>
-            
+
             <div class="card">
                 <h4 style="color: var(--accent-color); margin-bottom: 1rem;">
                     <i class="fas fa-server"></i> Local Server Status
@@ -12064,7 +12068,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     </div>
                 </div>
             </div>
-            
+
             <div class="card">
                 <h4 style="color: var(--warning-color); margin-bottom: 1rem;">
                     <i class="fas fa-exclamation-triangle"></i> Registry Database Status
@@ -12095,7 +12099,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
-            
+
             html_content = dashboard_data.generate_dashboard_html()
             self.wfile.write(html_content.encode('utf-8'))
         elif self.path == "/health":
@@ -12103,7 +12107,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            
+
             health_data = {
                 "status": "healthy",
                 "uptime": "Active",
@@ -12119,7 +12123,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                
+
                 response = {
                     "screenshot": screenshot_data,
                     "timestamp": datetime.now().isoformat(),
@@ -12131,7 +12135,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(500)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                
+
                 error_response = {
                     "status": "error",
                     "message": str(e),
@@ -12146,7 +12150,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                
+
                 response = {
                     "screenshot": screenshot_data,
                     "timestamp": datetime.now().isoformat(),
@@ -12158,7 +12162,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(500)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                
+
                 error_response = {
                     "status": "error",
                     "message": str(e),
@@ -12170,7 +12174,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            
+
             response = {
                 "status": "success",
                 "message": "API routing is working",
@@ -12179,7 +12183,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps(response).encode('utf-8'))
         else:
             super().do_GET()
-    
+
     def _handle_enhanced_global_refresh(self):
         """Enhanced global refresh with component selection"""
         try:
@@ -12194,26 +12198,26 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                     components = None
             else:
                 components = None
-            
+
             print(f"🔄 Starting enhanced global refresh with components: {components}")
-            
+
             # Check if health_manager exists
             if not hasattr(dashboard_data, 'health_manager'):
                 raise Exception("HealthDataManager not initialized")
-            
+
             # Run enhanced refresh
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            
+
             try:
                 result = loop.run_until_complete(
                     dashboard_data.health_manager.enhanced_global_refresh(components)
                 )
-                
+
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                
+
                 response = {
                     "status": "success",
                     "message": "Enhanced global refresh completed",
@@ -12222,48 +12226,48 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 }
                 self.wfile.write(json.dumps(response).encode('utf-8'))
                 print("✅ Enhanced global refresh API response sent successfully")
-                
+
             finally:
                 loop.close()
-                
+
         except Exception as e:
             print(f"❌ Enhanced global refresh API failed: {str(e)}")
             import traceback
             traceback.print_exc()
-            
+
             self.send_response(500)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            
+
             error_response = {
                 "status": "error",
                 "message": f"Enhanced global refresh failed: {str(e)}",
                 "timestamp": datetime.now().isoformat()
             }
             self.wfile.write(json.dumps(error_response).encode('utf-8'))
-    
+
     def _handle_component_refresh(self, component):
         """Handle specific component refresh requests"""
         try:
             print(f"🔄 Starting component refresh for: {component}")
-            
+
             # Check if health_manager exists
             if not hasattr(dashboard_data, 'health_manager'):
                 raise Exception("HealthDataManager not initialized")
-            
+
             # Run component refresh
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            
+
             try:
                 success = loop.run_until_complete(
                     dashboard_data.health_manager._refresh_component(component)
                 )
-                
+
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                
+
                 response = {
                     "status": "success" if success else "partial_success",
                     "message": f"Component {component} refresh completed",
@@ -12273,19 +12277,19 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 }
                 self.wfile.write(json.dumps(response).encode('utf-8'))
                 print(f"✅ Component {component} refresh API response sent successfully")
-                
+
             finally:
                 loop.close()
-                
+
         except Exception as e:
             print(f"❌ Component {component} refresh API failed: {str(e)}")
             import traceback
             traceback.print_exc()
-            
+
             self.send_response(500)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            
+
             error_response = {
                 "status": "error",
                 "message": f"Component {component} refresh failed: {str(e)}",
@@ -12293,7 +12297,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 "timestamp": datetime.now().isoformat()
             }
             self.wfile.write(json.dumps(error_response).encode('utf-8'))
-    
+
     def do_POST(self):
         if self.path == "/api/enhanced/refresh":
             # Enhanced global refresh with component selection
@@ -12310,23 +12314,23 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 asyncio.set_event_loop(loop)
                 loop.run_until_complete(dashboard_data._update_database_health())
                 loop.close()
-                
+
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                
+
                 response = {
                     "status": "success",
                     "message": "Database metrics refreshed successfully",
                     "timestamp": datetime.now().isoformat()
                 }
                 self.wfile.write(json.dumps(response).encode('utf-8'))
-                
+
             except Exception as e:
                 self.send_response(500)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                
+
                 error_response = {
                     "status": "error",
                     "message": str(e),
@@ -12344,31 +12348,31 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
             # Handle global refresh request (legacy)
             try:
                 print("🔄 Starting global refresh API call...")
-                
+
                 # Check if health_manager exists
                 if not hasattr(dashboard_data, 'health_manager'):
                     raise Exception("HealthDataManager not initialized")
-                
+
                 print("✅ HealthDataManager found, starting refresh...")
-                
+
                 # Trigger comprehensive global refresh
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
-                
+
                 try:
                     # Simplified global refresh - just run basic health check
                     print("🔄 Running simplified global refresh...")
-                    
+
                     # Just run the initial health check again
                     dashboard_data._run_initial_health_check()
-                    
+
                     # Mark as success
                     success = True
                     dashboard_data.unified_data['last_refresh'] = datetime.now().isoformat()
                     dashboard_data.last_update = datetime.now().isoformat()
-                    
+
                     print(f"✅ Simplified global refresh completed successfully")
-                    
+
                 except Exception as refresh_error:
                     print(f"❌ Refresh execution failed: {refresh_error}")
                     import traceback
@@ -12376,12 +12380,12 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                     raise refresh_error
                 finally:
                     loop.close()
-                
+
                 if success:
                     self.send_response(200)
                     self.send_header('Content-type', 'application/json')
                     self.end_headers()
-                    
+
                     response = {
                         "status": "success",
                         "message": "Global refresh completed successfully",
@@ -12392,16 +12396,16 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                     print("✅ Global refresh API response sent successfully")
                 else:
                     raise Exception("Global refresh returned False")
-                
+
             except Exception as e:
                 print(f"❌ Global refresh API failed: {str(e)}")
                 import traceback
                 traceback.print_exc()
-                
+
                 self.send_response(500)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                
+
                 error_response = {
                     "status": "error",
                     "message": f"Global refresh failed: {str(e)}",
@@ -12414,29 +12418,29 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 content_length = int(self.headers['Content-Length'])
                 post_data = self.rfile.read(content_length)
                 data = json.loads(post_data.decode('utf-8'))
-                
+
                 agent_name = data.get('agent', '')
                 message = data.get('message', '')
-                
+
                 # Send message to agent via message bus
                 response_text = self._send_to_agent(agent_name, message)
-                
+
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                
+
                 response = {
                     "status": "success",
                     "agent": agent_name,
                     "response": response_text
                 }
                 self.wfile.write(json.dumps(response).encode('utf-8'))
-                
+
             except Exception as e:
                 self.send_response(500)
-                self.send_header('Content-type', 'application/json') 
+                self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                
+
                 error_response = {
                     "status": "error",
                     "message": str(e)
@@ -12444,17 +12448,17 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 self.wfile.write(json.dumps(error_response).encode('utf-8'))
         else:
             super().do_POST()
-    
+
     def _send_to_agent(self, agent_name: str, message: str) -> str:
         """Send message to fresh agents with Cortex + LangGraph integration"""
         try:
             # Import here to avoid circular imports
             import asyncio
-            
+
             # Create new event loop for this request
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            
+
             try:
                 # Route to fresh agents using Cortex + LangGraph
                 if agent_name.lower() == "solomon":
@@ -12462,49 +12466,49 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                     agent = loop.run_until_complete(create_fresh_solomon())
                     response = loop.run_until_complete(agent.handle_user_chat(message))
                     return response
-                    
+
                 elif agent_name.lower() == "david":
                     from agents.david.david_fresh import create_fresh_david
                     agent = loop.run_until_complete(create_fresh_david())
                     response = loop.run_until_complete(agent.handle_user_chat(message))
                     return response
-                    
+
                 elif agent_name.lower() == "adam":
                     # Use orchestrator for agent creation requests
                     from core.cortex_langgraph_orchestrator import get_orchestrator
                     orchestrator = loop.run_until_complete(get_orchestrator())
                     result = loop.run_until_complete(orchestrator.process_user_request(message))
                     return result["response"]
-                    
+
                 else:
                     # For other agents, use orchestrator as well
                     from core.cortex_langgraph_orchestrator import get_orchestrator
                     orchestrator = loop.run_until_complete(get_orchestrator())
                     result = loop.run_until_complete(orchestrator.process_user_request(message))
                     return result["response"]
-                
+
             finally:
                 loop.close()
-                
+
         except Exception as e:
             return f"Error communicating with {agent_name.title()}: {str(e)}. Please try again or contact support."
-    
+
     def _capture_screenshot(self) -> str:
         """Capture screenshot with multi-monitor support for macOS"""
-        import subprocess
         import base64
-        import tempfile
         import os
+        import subprocess
+        import tempfile
         from datetime import datetime
-        
+
         try:
             # Create temporary file
             with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp_file:
                 temp_path = tmp_file.name
-            
+
             # Try multiple approaches to find the Corporate Headquarters
             screenshot_captured = False
-            
+
             # Approach 1: Try to find and focus Safari with Corporate Headquarters
             try:
                 # Find Safari windows with Corporate Headquarters
@@ -12528,14 +12532,14 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                     return false
                 end tell
                 '''
-                
+
                 result = subprocess.run([
                     'osascript', '-e', applescript
                 ], timeout=3, capture_output=True, text=True)
-                
+
                 if result.returncode == 0 and "true" in result.stdout:
                     time.sleep(1)  # Wait for window to come to front
-                    
+
                     # Capture the active window
                     capture_result = subprocess.run([
                         'screencapture',
@@ -12544,13 +12548,13 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                         '-w',  # Capture active window
                         temp_path
                     ], timeout=10, capture_output=True)
-                    
+
                     if capture_result.returncode == 0:
                         screenshot_captured = True
-                        
+
             except Exception as e:
                 pass  # Continue to next approach
-            
+
             # Approach 2: If window capture failed, try built-in MacBook display
             if not screenshot_captured:
                 # Capture built-in display (display 1) directly
@@ -12562,13 +12566,13 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                         '-D', '1',  # Built-in MacBook display
                         temp_path
                     ], timeout=10, capture_output=True)
-                    
+
                     if capture_result.returncode == 0:
                         screenshot_captured = True
-                        
+
                 except Exception:
                     pass
-            
+
             # Approach 3: Fallback to default full screen
             if not screenshot_captured:
                 subprocess.run([
@@ -12578,35 +12582,35 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                     temp_path
                 ], timeout=10, capture_output=True)
                 screenshot_captured = True
-            
+
             # Read and encode the screenshot
             with open(temp_path, 'rb') as f:
                 screenshot_bytes = f.read()
                 screenshot_base64 = base64.b64encode(screenshot_bytes).decode('utf-8')
-            
+
             # Cleanup
             os.unlink(temp_path)
-            
+
             return screenshot_base64
-            
+
         except Exception as e:
             # Cleanup on error
             if 'temp_path' in locals() and os.path.exists(temp_path):
                 os.unlink(temp_path)
             raise Exception(f"Screenshot capture failed: {str(e)}")
-    
+
     def _capture_specific_display(self, display_num: int) -> str:
         """Capture screenshot from a specific display"""
-        import subprocess
         import base64
-        import tempfile
         import os
-        
+        import subprocess
+        import tempfile
+
         try:
             # Create temporary file
             with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp_file:
                 temp_path = tmp_file.name
-            
+
             # If display_num is 0, try Safari-specific capture on built-in display
             if display_num == 0:
                 # Focus Safari with Corporate Headquarters first
@@ -12631,15 +12635,15 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                         return false
                     end tell
                     '''
-                    
+
                     result = subprocess.run([
                         'osascript', '-e', applescript
                     ], timeout=3, capture_output=True, text=True)
-                    
+
                     if result.returncode == 0 and "true" in result.stdout:
                         import time
                         time.sleep(1)  # Wait for window to come to front
-                        
+
                         # Capture the built-in display (usually display 1)
                         capture_result = subprocess.run([
                             'screencapture',
@@ -12648,20 +12652,20 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                             '-D', '1',  # Built-in display
                             temp_path
                         ], timeout=10, capture_output=True)
-                        
+
                         if capture_result.returncode == 0:
                             # Read and encode the screenshot
                             with open(temp_path, 'rb') as f:
                                 screenshot_bytes = f.read()
                                 screenshot_base64 = base64.b64encode(screenshot_bytes).decode('utf-8')
-                            
+
                             # Cleanup
                             os.unlink(temp_path)
                             return screenshot_base64
-                        
+
                 except Exception:
                     pass  # Fallback to display capture
-            
+
             # Fallback: capture specified display directly
             capture_result = subprocess.run([
                 'screencapture',
@@ -12670,19 +12674,19 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 '-D', str(display_num) if display_num > 0 else '1',
                 temp_path
             ], timeout=10, capture_output=True)
-            
+
             if capture_result.returncode == 0:
                 # Read and encode the screenshot
                 with open(temp_path, 'rb') as f:
                     screenshot_bytes = f.read()
                     screenshot_base64 = base64.b64encode(screenshot_bytes).decode('utf-8')
-                
+
                 # Cleanup
                 os.unlink(temp_path)
                 return screenshot_base64
             else:
                 raise Exception(f"screencapture failed with return code {capture_result.returncode}")
-                
+
         except Exception as e:
             # Cleanup on error
             if 'temp_path' in locals() and os.path.exists(temp_path):
@@ -12694,12 +12698,13 @@ def _send_to_agent_flask(agent_name: str, message: str) -> str:
     try:
         # Import here to avoid circular imports
         import asyncio
-        from core.message_bus import send_task_request, MessagePriority
-        
+
+        from core.message_bus import MessagePriority, send_task_request
+
         # Create new event loop for this request
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        
+
         try:
             # Send message to agent
             correlation_id = loop.run_until_complete(
@@ -12714,14 +12719,14 @@ def _send_to_agent_flask(agent_name: str, message: str) -> str:
                     priority=MessagePriority.NORMAL
                 )
             )
-            
+
             # For now, return a confirmation message
             # In a full implementation, you'd wait for the response
             return f"Message sent to {agent_name.title()} successfully. Real-time responses coming in next phase!"
-            
+
         finally:
             loop.close()
-            
+
     except Exception as e:
         return f"Error communicating with {agent_name.title()}: {str(e)}"
 
@@ -12736,17 +12741,17 @@ def main():
     parser.add_argument('--no-flask', action='store_true', help='Use original HTTP server instead of Flask')
     parser.add_argument('--enable-reload', action='store_true', help='Enable Flask auto-reload (disabled by default)')
     args = parser.parse_args()
-    
+
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-    
+
     print("🚀 Starting BoarderframeOS Corporate Headquarters...")
     print(f"📍 Corporate Headquarters URL: http://localhost:{PORT}")
     print("🔄 Real-time updates enabled (30s intervals)")
-    
+
     use_flask = not args.no_flask
     enable_reload = args.enable_reload and use_flask
-    
+
     if use_flask:
         if enable_reload:
             print("⚡ Flask development server with auto-reload enabled")
@@ -12757,21 +12762,21 @@ def main():
         print("🔧 Using original HTTP server")
     print("🛑 Press Ctrl+C to stop")
     print()
-    
+
     # Start background updates
     dashboard_data.start_updates()
-    
+
     try:
         if use_flask:
             # Use Flask development server with auto-reload
-            from flask import Flask, request, jsonify
+            from flask import Flask, jsonify, request
             app = Flask(__name__)
             app.config['TEMPLATES_AUTO_RELOAD'] = True
-            
+
             @app.route('/')
             def dashboard():
                 return dashboard_data.generate_dashboard_html()
-            
+
             @app.route('/health')
             def health():
                 return {
@@ -12780,12 +12785,12 @@ def main():
                     "services": len(dashboard_data.services_status),
                     "agents": len(dashboard_data.running_agents)
                 }
-            
+
             @app.route('/api/health-summary')
             def health_summary():
                 """Get comprehensive health summary"""
                 return jsonify(dashboard_data.get_health_summary())
-            
+
             @app.route('/api/health-history/<component>')
             def health_history(component):
                 """Get health history for a specific component"""
@@ -12794,28 +12799,28 @@ def main():
                     'component': component,
                     'history': history[-20:]  # Last 20 events
                 })
-            
+
             @app.route('/api/monitoring-config')
             def monitoring_config():
                 """Get current monitoring configuration"""
                 return jsonify(dashboard_data.monitoring_config)
-            
+
             @app.route('/api/chat', methods=['POST'])
             def chat():
                 try:
                     data = request.get_json()
                     agent_name = data.get('agent', '')
                     message = data.get('message', '')
-                    
+
                     # Send message to agent via message bus
                     response_text = _send_to_agent_flask(agent_name, message)
-                    
+
                     return jsonify({
                         "status": "success",
                         "agent": agent_name,
                         "response": response_text
                     })
-                    
+
                 except Exception as e:
                     return jsonify({
                         "status": "error",
@@ -12831,20 +12836,20 @@ def main():
                     asyncio.set_event_loop(loop)
                     loop.run_until_complete(dashboard_data._update_database_health())
                     loop.close()
-                    
+
                     return jsonify({
                         "status": "success",
                         "message": "Database metrics refreshed successfully",
                         "timestamp": datetime.now().isoformat()
                     })
-                    
+
                 except Exception as e:
                     return jsonify({
                         "status": "error",
                         "message": str(e),
                         "timestamp": datetime.now().isoformat()
                     }), 500
-            
+
             @app.route('/api/screenshot')
             def screenshot():
                 try:
@@ -12852,10 +12857,10 @@ def main():
                     class MockHandler:
                         def _capture_screenshot(self):
                             return EnhancedHandler()._capture_screenshot()
-                    
+
                     mock_handler = MockHandler()
                     screenshot_data = mock_handler._capture_screenshot()
-                    
+
                     return jsonify({
                         "screenshot": screenshot_data,
                         "timestamp": datetime.now().isoformat(),
@@ -12868,7 +12873,7 @@ def main():
                         "message": str(e),
                         "timestamp": datetime.now().isoformat()
                     }), 500
-            
+
             @app.route('/api/test')
             def api_test():
                 """Simple test endpoint to verify API routing works"""
@@ -12877,38 +12882,38 @@ def main():
                     "message": "API routing is working",
                     "timestamp": datetime.now().isoformat()
                 })
-            
+
             @app.route('/api/global/refresh', methods=['POST'])
             def global_refresh():
                 """Handle global refresh request"""
                 try:
                     print("🔄 Starting global refresh API call...")
-                    
+
                     # Check if health_manager exists
                     if not hasattr(dashboard_data, 'health_manager'):
                         raise Exception("HealthDataManager not initialized")
-                    
+
                     print("✅ HealthDataManager found, starting refresh...")
-                    
+
                     # Trigger comprehensive global refresh
                     import asyncio
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
-                    
+
                     try:
                         # Simplified global refresh - just run basic health check
                         print("🔄 Running simplified global refresh...")
-                        
+
                         # Just run the initial health check again
                         dashboard_data._run_initial_health_check()
-                        
+
                         # Mark as success
                         success = True
                         dashboard_data.unified_data['last_refresh'] = datetime.now().isoformat()
                         dashboard_data.last_update = datetime.now().isoformat()
-                        
+
                         print(f"✅ Simplified global refresh completed successfully")
-                        
+
                     except Exception as refresh_error:
                         print(f"❌ Refresh execution failed: {refresh_error}")
                         import traceback
@@ -12916,7 +12921,7 @@ def main():
                         raise refresh_error
                     finally:
                         loop.close()
-                    
+
                     if success:
                         return jsonify({
                             "status": "success",
@@ -12926,50 +12931,50 @@ def main():
                         })
                     else:
                         raise Exception("Global refresh returned False")
-                        
+
                 except Exception as e:
                     print(f"❌ Global refresh API failed: {str(e)}")
                     import traceback
                     traceback.print_exc()
-                    
+
                     return jsonify({
                         "status": "error",
                         "message": str(e),
                         "timestamp": datetime.now().isoformat()
                     }), 500
-            
+
             @app.route('/api/systems/refresh', methods=['POST'])
             def systems_refresh():
                 """Handle systems refresh request"""
                 try:
                     print("🔄 Starting systems refresh API call...")
-                    
+
                     # Trigger systems health check refresh
                     import asyncio
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
-                    
+
                     try:
                         print("🔄 Running systems health check refresh...")
-                        
+
                         # Run enhanced server status check
                         dashboard_data._generate_enhanced_server_status()
-                        
-                        # Update server health metrics 
+
+                        # Update server health metrics
                         dashboard_data._run_initial_health_check()
-                        
+
                         # Update database health specifically
                         loop.run_until_complete(dashboard_data._update_database_health())
-                        
+
                         # Ensure database health is synced to unified_data
                         dashboard_data.unified_data['database_health'] = getattr(dashboard_data, 'database_health_metrics', {})
-                        
+
                         # Update timestamp
                         dashboard_data.unified_data['last_systems_refresh'] = datetime.now().isoformat()
                         dashboard_data.last_update = datetime.now().isoformat()
-                        
+
                         print(f"✅ Systems refresh completed successfully")
-                        
+
                     except Exception as refresh_error:
                         print(f"❌ Systems refresh execution failed: {refresh_error}")
                         import traceback
@@ -12977,25 +12982,25 @@ def main():
                         raise refresh_error
                     finally:
                         loop.close()
-                    
+
                     return jsonify({
-                        "status": "success", 
+                        "status": "success",
                         "message": "Systems refresh completed successfully",
                         "systems_checked": 11,
                         "timestamp": datetime.now().isoformat()
                     })
-                        
+
                 except Exception as e:
                     print(f"❌ Systems refresh API failed: {str(e)}")
                     import traceback
                     traceback.print_exc()
-                    
+
                     return jsonify({
                         "status": "error",
                         "message": str(e),
                         "timestamp": datetime.now().isoformat()
                     }), 500
-            
+
             @app.route('/api/enhanced/refresh', methods=['POST'])
             def enhanced_global_refresh():
                 """Enhanced global refresh with component selection"""
@@ -13005,64 +13010,64 @@ def main():
                     if request.is_json:
                         data = request.get_json()
                         components = data.get('components', None) if data else None
-                    
+
                     print(f"🔄 Starting enhanced global refresh with components: {components}")
-                    
+
                     # Check if health_manager exists
                     if not hasattr(dashboard_data, 'health_manager'):
                         raise Exception("HealthDataManager not initialized")
-                    
+
                     # Run enhanced refresh
                     import asyncio
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
-                    
+
                     try:
                         result = loop.run_until_complete(
                             dashboard_data.health_manager.enhanced_global_refresh(components)
                         )
-                        
+
                         return jsonify({
                             "status": "success",
                             "message": "Enhanced global refresh completed",
                             "result": result,
                             "timestamp": datetime.now().isoformat()
                         })
-                        
+
                     finally:
                         loop.close()
-                        
+
                 except Exception as e:
                     print(f"❌ Enhanced global refresh API failed: {str(e)}")
                     import traceback
                     traceback.print_exc()
-                    
+
                     return jsonify({
                         "status": "error",
                         "message": f"Enhanced global refresh failed: {str(e)}",
                         "timestamp": datetime.now().isoformat()
                     }), 500
-            
+
             @app.route('/api/refresh/<component>', methods=['POST'])
             def component_refresh(component):
                 """Handle specific component refresh requests"""
                 try:
                     print(f"🔄 Starting component refresh for: {component}")
-                    
+
                     # Check if health_manager exists
                     if not hasattr(dashboard_data, 'health_manager'):
                         raise Exception("HealthDataManager not initialized")
-                    
+
                     # Run component refresh
                     import asyncio
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
-                    
+
                     try:
                         success = loop.run_until_complete(
                             dashboard_data.health_manager._refresh_component(component)
                         )
-                        
+
                         return jsonify({
                             "status": "success" if success else "partial_success",
                             "message": f"Component {component} refresh completed",
@@ -13070,22 +13075,22 @@ def main():
                             "success": success,
                             "timestamp": datetime.now().isoformat()
                         })
-                        
+
                     finally:
                         loop.close()
-                        
+
                 except Exception as e:
                     print(f"❌ Component {component} refresh API failed: {str(e)}")
                     import traceback
                     traceback.print_exc()
-                    
+
                     return jsonify({
                         "status": "error",
                         "message": f"Component {component} refresh failed: {str(e)}",
                         "component": component,
                         "timestamp": datetime.now().isoformat()
                     }), 500
-            
+
             @app.route('/api/header-status-dropdown')
             def get_header_status_dropdown():
                 """Get updated header status dropdown content"""
@@ -13099,21 +13104,21 @@ def main():
                     })
                 except Exception as e:
                     return jsonify({
-                        "status": "error", 
+                        "status": "error",
                         "message": str(e),
                         "timestamp": datetime.now().isoformat()
                     }), 500
-            
+
             @app.route('/api/registry/events')
             def registry_events():
                 """Get recent registry events"""
                 try:
-                    import subprocess
                     import json
-                    
+                    import subprocess
+
                     # Query recent events from registry_event_log
                     query = """
-                    SELECT 
+                    SELECT
                         event_type,
                         entity_type,
                         entity_id,
@@ -13123,14 +13128,14 @@ def main():
                     ORDER BY event_timestamp DESC
                     LIMIT 20;
                     """
-                    
+
                     result = subprocess.run([
                         "docker", "exec", "boarderframeos_postgres",
                         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", query
                     ], capture_output=True, text=True, timeout=5)
-                    
+
                     events = []
-                    
+
                     if result.returncode == 0:
                         for line in result.stdout.strip().split('\n'):
                             if '|' in line:
@@ -13141,13 +13146,13 @@ def main():
                                         event_data = json.loads(parts[4].strip()) if parts[4].strip() else {}
                                     except:
                                         pass
-                                    
+
                                     # Format event for display
                                     event_type = parts[0].strip()
                                     entity_type = parts[1].strip()
                                     entity_id = parts[2].strip()
                                     timestamp = parts[3].strip()
-                                    
+
                                     # Create human-readable description
                                     description = ""
                                     if event_type == "REGISTERED":
@@ -13162,7 +13167,7 @@ def main():
                                         description = "Heartbeat received"
                                     else:
                                         description = event_type.replace('_', ' ').title()
-                                    
+
                                     events.append({
                                         'type': event_type,
                                         'entity_type': entity_type,
@@ -13171,7 +13176,7 @@ def main():
                                         'description': description,
                                         'timestamp': timestamp.split('.')[0] if '.' in timestamp else timestamp
                                     })
-                    
+
                     # If no events from database, generate some sample events
                     if not events:
                         from datetime import datetime, timedelta
@@ -13203,36 +13208,36 @@ def main():
                             }
                         ]
                         events = sample_events
-                    
+
                     return jsonify({'events': events})
-                    
+
                 except Exception as e:
                     return jsonify({
                         'events': [],
                         'error': str(e)
                     })
-            
+
             @app.route('/api/metrics')
             def api_metrics():
                 """API endpoint for metrics data"""
                 try:
                     print(f"📊 [Metrics API] Fetching metrics data at {datetime.now().isoformat()}")
-                    
+
                     # Get all metrics
                     all_metrics = dashboard_data._get_centralized_metrics()
-                    
+
                     # Add metrics layer status
                     metrics_status = {
                         'metrics_layer_available': dashboard_data.metrics_layer is not None,
                         'timestamp': datetime.now().isoformat()
                     }
-                    
+
                     # Log summary
                     print(f"📊 [Metrics API] Metrics summary: Agents={all_metrics.get('summary', {}).get('total_agents', 0)}, " +
                           f"Departments={all_metrics.get('summary', {}).get('total_departments', 0)}, " +
                           f"Services={all_metrics.get('summary', {}).get('total_services', 0)}, " +
                           f"Leaders={all_metrics.get('summary', {}).get('total_leaders', 0)}")
-                    
+
                     return jsonify({
                         'status': 'success',
                         'data': all_metrics,
@@ -13244,20 +13249,20 @@ def main():
                         'status': 'error',
                         'message': str(e)
                     }), 500
-            
+
             @app.route('/api/metrics/page')
             def api_metrics_page():
                 """API endpoint for metrics page HTML"""
                 try:
                     print(f"📊 [Metrics Page API] Generating metrics page at {datetime.now().isoformat()}")
-                    
+
                     if dashboard_data.metrics_layer:
                         print("📊 [Metrics Page API] Using metrics layer to generate page")
                         html = dashboard_data._generate_metrics_page_content()
                     else:
                         print("⚠️ [Metrics Page API] Metrics layer not available, using fallback")
                         html = dashboard_data._generate_metrics_fallback()
-                    
+
                     print("✅ [Metrics Page API] Successfully generated metrics page")
                     return jsonify({
                         'status': 'success',
@@ -13272,12 +13277,12 @@ def main():
                         'message': str(e),
                         'html': f'<div class="alert alert-danger">Error loading metrics: {str(e)}</div>'
                     }), 500
-            
+
             # Run Flask with development features
             app.run(
-                host="0.0.0.0", 
-                port=PORT, 
-                debug=True, 
+                host="0.0.0.0",
+                port=PORT,
+                debug=True,
                 use_reloader=enable_reload,
                 threaded=True
             )
@@ -13288,7 +13293,7 @@ def main():
                 print(f"🎯 Access at: http://localhost:{PORT}")
                 print()
                 httpd.serve_forever()
-            
+
     except OSError as e:
         if "Address already in use" in str(e):
             print(f"❌ Port {PORT} is already in use")

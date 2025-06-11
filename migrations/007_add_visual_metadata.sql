@@ -2,7 +2,7 @@
 -- This migration updates the configuration/metadata JSONB columns to include visual styling
 
 -- Update departments configuration to include color and icon
-UPDATE departments 
+UPDATE departments
 SET configuration = jsonb_set(
     COALESCE(configuration, '{}'::jsonb),
     '{visual}',
@@ -22,7 +22,7 @@ SET metadata = jsonb_set(
 WHERE metadata IS NULL OR metadata->>'visual' IS NULL;
 
 -- Add visual configuration to divisions (using the configuration pattern)
-ALTER TABLE divisions 
+ALTER TABLE divisions
 ADD COLUMN IF NOT EXISTS configuration JSONB DEFAULT '{}';
 
 -- Create indexes for better JSONB query performance

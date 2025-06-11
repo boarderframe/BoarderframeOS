@@ -1,15 +1,15 @@
 {
-  "name": "solomon",
-  "role": "Solomon Agent",
   "goals": [
     "Assist with solomon related tasks"
   ],
+  "max_concurrent_tasks": 5,
+  "model": "claude-opus-4-20250514",
+  "name": "solomon",
+  "provider": "anthropic",
+  "role": "Solomon Agent",
+  "temperature": 0.3,
   "tools": [
     "mcp_filesystem"
   ],
-  "zone": "demo_zone",
-  "model": "claude-opus-4-20250514",
-  "temperature": 0.3,
-  "max_concurrent_tasks": 5,
-  "provider": "anthropic"
+  "zone": "demo_zone"
 }

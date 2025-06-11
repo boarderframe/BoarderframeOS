@@ -3,18 +3,19 @@
 Register divisions in the registry system
 """
 
-import subprocess
 import json
+import subprocess
 from datetime import datetime
+
 
 def register_divisions():
     """Ensure divisions table exists in registry and populate it"""
     print("🏛️ BoarderframeOS Division Registration")
     print("=" * 50)
-    
+
     # First, create division_registry table if it doesn't exist
     print("\n📊 Creating division_registry table...")
-    
+
     create_table_query = """
     CREATE TABLE IF NOT EXISTS division_registry (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -35,26 +36,26 @@ def register_divisions():
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (division_id) REFERENCES divisions(id) ON DELETE CASCADE
     );
-    
+
     CREATE INDEX IF NOT EXISTS idx_division_registry_status ON division_registry(status);
     CREATE INDEX IF NOT EXISTS idx_division_registry_priority ON division_registry(priority);
     """
-    
+
     result = subprocess.run([
         "docker", "exec", "boarderframeos_postgres",
         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", create_table_query
     ], capture_output=True, text=True)
-    
+
     if result.returncode == 0 or "already exists" in result.stderr:
         print("   ✅ Division registry table ready")
     else:
         print(f"   ❌ Failed to create table: {result.stderr[:100]}")
-    
+
     # Get all divisions with their statistics
     print("\n📊 Gathering division data...")
-    
+
     division_query = """
-    SELECT 
+    SELECT
         d.id,
         d.division_name,
         d.division_key,
@@ -73,12 +74,12 @@ def register_divisions():
     GROUP BY d.id, d.division_name, d.division_key, d.priority, d.is_active
     ORDER BY d.priority;
     """
-    
+
     result = subprocess.run([
         "docker", "exec", "boarderframeos_postgres",
         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", division_query
     ], capture_output=True, text=True)
-    
+
     divisions = []
     if result.returncode == 0 and result.stdout:
         for line in result.stdout.strip().split('\n'):
@@ -98,21 +99,21 @@ def register_divisions():
                         "total_capacity": int(parts[9] or 0),
                         "dept_names": parts[10].split('|') if parts[10] else []
                     })
-    
+
     print(f"   Found {len(divisions)} divisions to register")
-    
+
     # Register each division
     print("\n📝 Registering divisions...")
-    
+
     for div in divisions:
         # Prepare department and leader lists
         departments = []
         leaders = []
-        
+
         if div["dept_names"]:
             # Get department details
             dept_detail_query = f"""
-            SELECT 
+            SELECT
                 dept.id,
                 dept.name,
                 dept.operational_status,
@@ -122,12 +123,12 @@ def register_divisions():
             WHERE dept.division_id = '{div["id"]}'::uuid
             GROUP BY dept.id, dept.name, dept.operational_status;
             """
-            
+
             dept_result = subprocess.run([
                 "docker", "exec", "boarderframeos_postgres",
                 "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", dept_detail_query
             ], capture_output=True, text=True)
-            
+
             if dept_result.returncode == 0 and dept_result.stdout:
                 for line in dept_result.stdout.strip().split('\n'):
                     if '|' in line:
@@ -139,7 +140,7 @@ def register_divisions():
                                 "status": parts[2],
                                 "agents": int(parts[3] or 0)
                             })
-        
+
         # Define division objectives based on key
         objectives_map = {
             "executive": ["Strategic leadership", "Organizational governance", "Vision setting"],
@@ -152,9 +153,9 @@ def register_divisions():
             "content_generation": ["Content creation", "Brand messaging", "Media production"],
             "continuous_improvement": ["Innovation", "Learning", "Process improvement"]
         }
-        
+
         objectives = objectives_map.get(div["key"], ["Divisional excellence", "Team collaboration"])
-        
+
         # Register the division
         register_query = f"""
         INSERT INTO division_registry (
@@ -189,53 +190,53 @@ def register_divisions():
             metadata = EXCLUDED.metadata,
             updated_at = CURRENT_TIMESTAMP;
         """
-        
+
         result = subprocess.run([
             "docker", "exec", "boarderframeos_postgres",
             "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", register_query
         ], capture_output=True, text=True)
-        
+
         if result.returncode == 0:
             status_icon = "🟢" if div["is_active"] else "🟡"
             print(f"   {status_icon} {div['name']} - {div['dept_count']} depts, {div['agent_count']} agents")
         else:
             print(f"   ❌ Failed to register {div['name']}: {result.stderr[:50]}")
-    
+
     # Show summary
     print("\n📊 Division Registry Summary...")
-    
+
     summary_query = """
-    SELECT 
+    SELECT
         'Total Divisions' as metric, COUNT(*) as value
     FROM division_registry
     UNION ALL
-    SELECT 
+    SELECT
         'Active Divisions', COUNT(*)
     FROM division_registry
     WHERE status = 'active'
     UNION ALL
-    SELECT 
+    SELECT
         'Total Departments', SUM(jsonb_array_length(departments))
     FROM division_registry
     UNION ALL
-    SELECT 
+    SELECT
         'Total Division Capacity', SUM(total_capacity)
     FROM division_registry
     UNION ALL
-    SELECT 
+    SELECT
         'Total Agents in Divisions', SUM(total_agents)
     FROM division_registry
     UNION ALL
-    SELECT 
+    SELECT
         'Operational Agents', SUM(operational_agents)
     FROM division_registry;
     """
-    
+
     result = subprocess.run([
         "docker", "exec", "boarderframeos_postgres",
         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", summary_query
     ], capture_output=True, text=True)
-    
+
     if result.returncode == 0:
         print("\nRegistry Metrics:")
         for line in result.stdout.strip().split('\n'):
@@ -245,12 +246,12 @@ def register_divisions():
                     metric = parts[0].strip()
                     value = parts[1].strip() or "0"
                     print(f"   {metric}: {value}")
-    
+
     # Update registry counts in corporate HQ
     print("\n📊 Final Registry Counts...")
-    
+
     final_query = """
-    SELECT 
+    SELECT
         'Divisions' as type, COUNT(*) FROM division_registry
     UNION ALL
     SELECT 'Departments', COUNT(*) FROM department_registry
@@ -264,12 +265,12 @@ def register_divisions():
     SELECT 'Databases', COUNT(*) FROM database_registry
     ORDER BY type;
     """
-    
+
     result = subprocess.run([
         "docker", "exec", "boarderframeos_postgres",
         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", final_query
     ], capture_output=True, text=True)
-    
+
     if result.returncode == 0:
         print("\nComplete Registry:")
         for line in result.stdout.strip().split('\n'):
@@ -279,7 +280,7 @@ def register_divisions():
                     type_name = parts[0].strip()
                     count = parts[1].strip()
                     print(f"   {type_name}: {count}")
-    
+
     print("\n✅ Division registration complete!")
     print("\n🌐 Complete organizational structure now registered:")
     print("   - Divisions → Departments → Leaders → Agents")

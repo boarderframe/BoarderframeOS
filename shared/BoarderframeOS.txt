@@ -66,7 +66,7 @@ Research & Exploration	Long-context doc analysis, whole-repo reasoning	Scout-Ana
 Business Ops	Invoicing, emails, social posts	CFO-Bot, Marketing-Writer	10 % TOPS, 8 GB
 Monetization	Paid public LLaMA API, credit metering	Brain-Gateway	20 % TOPS, 24 GB
 RAG / Memory Curation	Vector + graph store of Carl’s knowledge base	Librarian	10 % TOPS, 8 GB
-*Initial split across the two Sparks; boarderctl reallocates in real time.			
+*Initial split across the two Sparks; boarderctl reallocates in real time.
 
 
 ⸻
@@ -89,7 +89,7 @@ Safety: Capability scopes + human-approval threshold for high-impact tools.
 
 Server	Function	Transport	Notes
 Filesystem	Read/write project files	STDIO	Desktop paths whitelisted
-Git / GitHub	Repo ops, PRs	SSE (GitHub PAT env var)	
+Git / GitHub	Repo ops, PRs	SSE (GitHub PAT env var)
 Browser (Playwright)	Headless UI automation	SSE	Enables “Computer Use” actions w/out beta feature
 Postgres	Structured R/W for Recapio & system metadata	STDIO	Supabase-compatible
 Slack	Team comms	SSE	Notifies Carl + Yahya
@@ -172,7 +172,7 @@ Quarter 3	Monetization zone profitable; additional DGX Station purchase consider
         },
         {
           "name": "David",
-          "title": "CEO", 
+          "title": "CEO",
           "description": "Operational commander who executes Solomon's divine vision"
         }
       ],
@@ -1021,7 +1021,7 @@ Quarter 3	Monetization zone profitable; additional DGX Station purchase consider
     "total_agent_species": 120,
     "categories": [
       "Executive Tier",
-      "Core Business", 
+      "Core Business",
       "Technology & Development",
       "Core Infrastructure",
       "Agent & Human Experience",
@@ -1085,10 +1085,10 @@ class MultiAgentWorkflow:
             analyze_task, task,
             start_to_close_timeout=timedelta(minutes=10)
         )
-        
+
         # Human approval step
         await workflow.wait_condition(lambda: self.approved)
-        
+
         result = await workflow.execute_activity(
             execute_with_specialist_agent, analysis,
             task_queue="gpu-agents"  # Route to DGX workers
@@ -1128,7 +1128,7 @@ class DepartmentAgent:
     def __init__(self, department: str):
         self.department = department
         self.agents = []
-    
+
     async def process_task(self, task):
         # Automatically distributed across cluster
         return await self._execute(task)
@@ -1157,7 +1157,7 @@ async def moa_layer(models, prompt, previous_responses=None):
     # Layer 1: Get responses from all models
     tasks = [call_model(model, prompt) for model in models]
     responses = await asyncio.gather(*tasks)
-    
+
     # Layer 2: Aggregate responses
     aggregation_prompt = f"Synthesize these responses: {responses}"
     final_response = await call_model("mistralai/Mixtral-8x22B", aggregation_prompt)
@@ -1177,7 +1177,7 @@ class DatabaseTool(Tool):
             name="query_database",
             description="Execute SQL queries"
         )
-    
+
     async def call(self, query: str) -> str:
         return database.execute(query)
 
@@ -1199,14 +1199,14 @@ class ContractNetProtocol:
             deadline=datetime.utcnow() + timedelta(minutes=5),
             requirements=task.requirements
         )
-        
+
         proposals = []
         for contractor in self.contractors:
             if contractor.can_handle(task):
                 proposal = await contractor.submit_proposal(cfp_message)
                 if proposal:
                     proposals.append(proposal)
-        
+
         return proposals
 ```
 

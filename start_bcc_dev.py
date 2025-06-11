@@ -3,8 +3,9 @@
 Development startup script for BoarderframeOS Control Center with hot-reload
 """
 import os
-import sys
 import subprocess
+import sys
+
 
 def main():
     print("🚀 Starting BoarderframeOS Control Center in Development Mode")
@@ -13,11 +14,11 @@ def main():
     print("🌐 Access: http://localhost:8888")
     print("🛑 Press Ctrl+C to stop")
     print("-" * 60)
-    
+
     # Change to the correct directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_dir)
-    
+
     # Run the control center with Flask hot-reload
     try:
         subprocess.run([sys.executable, "boarderframeos_bcc.py"], check=True)

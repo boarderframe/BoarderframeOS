@@ -159,7 +159,7 @@ class CorporateHQDashboard:
 def generate_dashboard_html(self):
     # Old way (hardcoded)
     # active_agents = 80
-    
+
     # New way (from metrics layer)
     agent_metrics = self.metrics_integration.get_agents_page_metrics()
     active_agents = agent_metrics['active']

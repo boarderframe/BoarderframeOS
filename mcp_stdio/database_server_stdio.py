@@ -5,18 +5,19 @@ Wraps the HTTP-based database server for use with Claude CLI
 """
 
 import asyncio
-import json
-import sys
-import logging
-import sqlite3
-import aiosqlite
-from typing import Any, Dict, List, Optional
-from pathlib import Path
-from datetime import datetime
 
 # Handle MCP import conflicts by temporarily modifying sys.path
 import importlib
 import importlib.util
+import json
+import logging
+import sqlite3
+import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import aiosqlite
 
 # Save original sys.path
 original_path = sys.path.copy()
@@ -33,10 +34,10 @@ for module_name in local_mcp_modules:
 
 try:
     # Import the real MCP package
-    from mcp import types
-    from mcp.server import Server, NotificationOptions
-    from mcp.server.models import InitializationOptions
     import mcp.server.stdio
+    from mcp import types
+    from mcp.server import NotificationOptions, Server
+    from mcp.server.models import InitializationOptions
 finally:
     # Restore original sys.path
     sys.path = original_path
@@ -200,11 +201,11 @@ async def execute_query(args: Dict[str, Any]) -> List[types.TextContent]:
         sql = args["sql"]
         params = args.get("params", [])
         fetch_all = args.get("fetch_all", True)
-        
+
         async with aiosqlite.connect(DB_PATH) as db:
             db.row_factory = aiosqlite.Row
             cursor = await db.execute(sql, params)
-            
+
             if sql.strip().upper().startswith(('INSERT', 'UPDATE', 'DELETE')):
                 rows_affected = cursor.rowcount
                 await db.commit()
@@ -220,16 +221,16 @@ async def execute_query(args: Dict[str, Any]) -> List[types.TextContent]:
                 else:
                     row = await cursor.fetchone()
                     data = dict(row) if row else None
-                
+
                 result = {
                     "success": True,
                     "data": data,
                     "count": len(data) if isinstance(data, list) else (1 if data else 0),
                     "timestamp": datetime.now().isoformat()
                 }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error executing query: {str(e)}")]
 
@@ -239,30 +240,30 @@ async def insert_data(args: Dict[str, Any]) -> List[types.TextContent]:
         table = args["table"]
         data = args["data"]
         on_conflict = args.get("on_conflict", "IGNORE")
-        
+
         columns = list(data.keys())
         placeholders = ['?' for _ in columns]
         values = [data[col] for col in columns]
-        
+
         sql = f"""
-            INSERT OR {on_conflict} INTO {table} 
-            ({', '.join(columns)}) 
+            INSERT OR {on_conflict} INTO {table}
+            ({', '.join(columns)})
             VALUES ({', '.join(placeholders)})
         """
-        
+
         async with aiosqlite.connect(DB_PATH) as db:
             cursor = await db.execute(sql, values)
             await db.commit()
-            
+
             result = {
                 "success": True,
                 "table": table,
                 "rows_affected": cursor.rowcount,
                 "timestamp": datetime.now().isoformat()
             }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error inserting data: {str(e)}")]
 
@@ -272,32 +273,32 @@ async def update_data(args: Dict[str, Any]) -> List[types.TextContent]:
         table = args["table"]
         data = args["data"]
         where = args["where"]
-        
+
         set_clauses = [f"{col} = ?" for col in data.keys()]
         where_clauses = [f"{col} = ?" for col in where.keys()]
-        
+
         set_values = list(data.values())
         where_values = list(where.values())
-        
+
         sql = f"""
-            UPDATE {table} 
+            UPDATE {table}
             SET {', '.join(set_clauses)}
             WHERE {' AND '.join(where_clauses)}
         """
-        
+
         async with aiosqlite.connect(DB_PATH) as db:
             cursor = await db.execute(sql, set_values + where_values)
             await db.commit()
-            
+
             result = {
                 "success": True,
                 "table": table,
                 "rows_affected": cursor.rowcount,
                 "timestamp": datetime.now().isoformat()
             }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error updating data: {str(e)}")]
 
@@ -306,28 +307,28 @@ async def delete_data(args: Dict[str, Any]) -> List[types.TextContent]:
     try:
         table = args["table"]
         where = args["where"]
-        
+
         where_clauses = [f"{col} = ?" for col in where.keys()]
         where_values = list(where.values())
-        
+
         sql = f"""
             DELETE FROM {table}
             WHERE {' AND '.join(where_clauses)}
         """
-        
+
         async with aiosqlite.connect(DB_PATH) as db:
             cursor = await db.execute(sql, where_values)
             await db.commit()
-            
+
             result = {
                 "success": True,
                 "table": table,
                 "rows_affected": cursor.rowcount,
                 "timestamp": datetime.now().isoformat()
             }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error deleting data: {str(e)}")]
 
@@ -338,16 +339,16 @@ async def list_tables() -> List[types.TextContent]:
             cursor = await db.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
             rows = await cursor.fetchall()
             tables = [row[0] for row in rows]
-            
+
             result = {
                 "success": True,
                 "tables": tables,
                 "count": len(tables),
                 "timestamp": datetime.now().isoformat()
             }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error listing tables: {str(e)}")]
 
@@ -357,7 +358,7 @@ async def get_table_schema(table: str) -> List[types.TextContent]:
         async with aiosqlite.connect(DB_PATH) as db:
             cursor = await db.execute(f"PRAGMA table_info({table})")
             rows = await cursor.fetchall()
-            
+
             schema = []
             for row in rows:
                 schema.append({
@@ -367,16 +368,16 @@ async def get_table_schema(table: str) -> List[types.TextContent]:
                     "default_value": row[4],
                     "primary_key": bool(row[5])
                 })
-            
+
             result = {
                 "success": True,
                 "table": table,
                 "schema": schema,
                 "timestamp": datetime.now().isoformat()
             }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error getting table schema: {str(e)}")]
 

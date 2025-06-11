@@ -5,17 +5,17 @@ Wraps the HTTP-based LLM server for use with Claude CLI
 """
 
 import asyncio
-import json
-import sys
-import logging
-import os
-from typing import Any, Dict, List, Optional
-from pathlib import Path
-from datetime import datetime
 
 # Handle MCP import conflicts by temporarily modifying sys.path
 import importlib
 import importlib.util
+import json
+import logging
+import os
+import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 # Save original sys.path
 original_path = sys.path.copy()
@@ -32,10 +32,10 @@ for module_name in local_mcp_modules:
 
 try:
     # Import the real MCP package
-    from mcp import types
-    from mcp.server import Server, NotificationOptions
-    from mcp.server.models import InitializationOptions
     import mcp.server.stdio
+    from mcp import types
+    from mcp.server import NotificationOptions, Server
+    from mcp.server.models import InitializationOptions
 finally:
     # Restore original sys.path
     sys.path = original_path
@@ -214,31 +214,31 @@ async def generate_text(args: Dict[str, Any]) -> List[types.TextContent]:
         max_tokens = args.get("max_tokens", 4000)
         agent_id = args.get("agent_id")
         system_prompt = args.get("system_prompt")
-        
+
         start_time = datetime.now()
-        
+
         # Mock LLM response for development
         # In production, this would call the actual LLM APIs
         mock_content = f"Mock LLM response from {provider}/{model}. Last message was: '{messages[-1]['content'] if messages else 'No messages'}'"
-        
+
         if system_prompt:
             mock_content = f"[System: {system_prompt}] {mock_content}"
-        
+
         # Simulate processing time
         await asyncio.sleep(0.1)
-        
+
         end_time = datetime.now()
         response_time_ms = int((end_time - start_time).total_seconds() * 1000)
-        
+
         # Mock token usage and cost calculation
         estimated_tokens = len(mock_content.split()) * 2  # Rough estimate
         mock_cost = estimated_tokens * 0.000003 if provider == "claude" else 0.0  # Mock cost
-        
+
         # Update usage stats
         usage_stats["total_requests"] += 1
         usage_stats["total_tokens"] += estimated_tokens
         usage_stats["total_cost"] += mock_cost
-        
+
         result = {
             "success": True,
             "content": mock_content,
@@ -250,13 +250,13 @@ async def generate_text(args: Dict[str, Any]) -> List[types.TextContent]:
             "agent_id": agent_id,
             "timestamp": datetime.now().isoformat()
         }
-        
+
         # Log the request
         logger.info(f"LLM request: {agent_id or 'unknown'} -> {provider}/{model} "
                    f"({estimated_tokens} tokens, {response_time_ms}ms)")
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error generating text: {str(e)}")]
 
@@ -264,7 +264,7 @@ async def list_models(args: Dict[str, Any]) -> List[types.TextContent]:
     """List available models across all providers."""
     try:
         provider_filter = args.get("provider")
-        
+
         # Mock model configurations
         models = [
             {
@@ -303,20 +303,20 @@ async def list_models(args: Dict[str, Any]) -> List[types.TextContent]:
                 "available": False  # Assume local server not running
             }
         ]
-        
+
         # Apply provider filter if specified
         if provider_filter:
             models = [m for m in models if m["provider"] == provider_filter]
-        
+
         result = {
             "success": True,
             "models": models,
             "count": len(models),
             "timestamp": datetime.now().isoformat()
         }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error listing models: {str(e)}")]
 
@@ -329,14 +329,14 @@ async def agent_chat(args: Dict[str, Any]) -> List[types.TextContent]:
         messages = args["messages"]
         temperature = args.get("temperature", 0.7)
         max_tokens = args.get("max_tokens", 4000)
-        
+
         # Add agent-specific system prompt if not already present
         system_messages = [m for m in messages if m["role"] == "system"]
         if not system_messages:
             system_prompt = f"You are {agent_id}, an AI agent in the BoarderframeOS system."
         else:
             system_prompt = None
-        
+
         # Create request for generate_text
         request = {
             "provider": provider,
@@ -347,9 +347,9 @@ async def agent_chat(args: Dict[str, Any]) -> List[types.TextContent]:
             "agent_id": agent_id,
             "system_prompt": system_prompt
         }
-        
+
         return await generate_text(request)
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error in agent chat: {str(e)}")]
 
@@ -377,9 +377,9 @@ async def get_llm_stats() -> List[types.TextContent]:
             },
             "timestamp": datetime.now().isoformat()
         }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error getting LLM stats: {str(e)}")]
 

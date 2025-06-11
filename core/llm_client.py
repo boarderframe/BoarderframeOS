@@ -4,13 +4,15 @@ Connects agents to language models (local/cloud)
 """
 
 import asyncio
-import httpx
 import json
 import logging
 import os
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
+
+import httpx
+
 try:
     import anthropic
 except ImportError:
@@ -29,23 +31,23 @@ class LLMConfig:
 
 class LLMProvider(ABC):
     """Abstract base for LLM providers"""
-    
+
     @abstractmethod
     async def generate(self, prompt: str, **kwargs) -> str:
         pass
-    
+
     @abstractmethod
     async def embed(self, text: str) -> List[float]:
         pass
 
 class OllamaProvider(LLMProvider):
     """Ollama local LLM provider"""
-    
+
     def __init__(self, config: LLMConfig):
         self.config = config
         self.client = httpx.AsyncClient(timeout=config.timeout)
         self.logger = logging.getLogger("ollama")
-    
+
     async def generate(self, prompt: str, **kwargs) -> str:
         """Generate text using Ollama"""
         try:
@@ -59,18 +61,18 @@ class OllamaProvider(LLMProvider):
                     "stream": False
                 }
             )
-            
+
             if response.status_code == 200:
                 result = response.json()
                 return result.get("response", "")
             else:
                 self.logger.error(f"Ollama error: {response.status_code}")
                 return f"Error: {response.status_code}"
-                
+
         except Exception as e:
             self.logger.error(f"Ollama connection error: {e}")
             return f"LLM Error: {e}"
-    
+
     async def embed(self, text: str) -> List[float]:
         """Generate embeddings"""
         try:
@@ -87,14 +89,14 @@ class OllamaProvider(LLMProvider):
 
 class OpenAIProvider(LLMProvider):
     """OpenAI API provider"""
-    
+
     def __init__(self, config: LLMConfig):
         self.config = config
         self.client = httpx.AsyncClient(
             headers={"Authorization": f"Bearer {config.api_key}"},
             timeout=config.timeout
         )
-    
+
     async def generate(self, prompt: str, **kwargs) -> str:
         """Generate using OpenAI API"""
         try:
@@ -107,16 +109,16 @@ class OpenAIProvider(LLMProvider):
                     "max_tokens": kwargs.get("max_tokens", self.config.max_tokens)
                 }
             )
-            
+
             if response.status_code == 200:
                 result = response.json()
                 return result["choices"][0]["message"]["content"]
             else:
                 return f"OpenAI Error: {response.status_code}"
-                
+
         except Exception as e:
             return f"OpenAI Error: {e}"
-    
+
     async def embed(self, text: str) -> List[float]:
         """Generate embeddings using OpenAI"""
         try:
@@ -132,19 +134,19 @@ class OpenAIProvider(LLMProvider):
 
 class AnthropicProvider(LLMProvider):
     """Anthropic Claude provider"""
-    
+
     def __init__(self, config: LLMConfig):
         self.config = config
         if not anthropic:
             raise ImportError("anthropic package not installed. Run: pip install anthropic")
-        
+
         api_key = config.api_key or os.getenv("ANTHROPIC_API_KEY")
         if not api_key:
             raise ValueError("Anthropic API key required. Set ANTHROPIC_API_KEY env var or pass in config")
-        
+
         self.client = anthropic.AsyncAnthropic(api_key=api_key)
         self.logger = logging.getLogger("anthropic")
-    
+
     async def generate(self, prompt: str, **kwargs) -> str:
         """Generate using Claude"""
         try:
@@ -154,18 +156,18 @@ class AnthropicProvider(LLMProvider):
                 temperature=kwargs.get("temperature", self.config.temperature),
                 messages=[{"role": "user", "content": prompt}]
             )
-            
+
             # Handle Claude 4 refusal stop reason
             if message.stop_reason == "refusal":
                 self.logger.warning("Claude declined to generate content for safety reasons")
                 return "I cannot provide a response to that request for safety reasons."
-            
+
             return message.content[0].text
-            
+
         except Exception as e:
             self.logger.error(f"Anthropic error: {e}")
             return f"Claude Error: {e}"
-    
+
     async def think_with_tools(self, prompt: str, tools: List[Dict], **kwargs) -> Dict[str, Any]:
         """Advanced reasoning with tool use"""
         try:
@@ -176,7 +178,7 @@ class AnthropicProvider(LLMProvider):
                 tools=tools,
                 messages=[{"role": "user", "content": prompt}]
             )
-            
+
             # Handle Claude 4 refusal stop reason
             if message.stop_reason == "refusal":
                 self.logger.warning("Claude declined to generate content with tools for safety reasons")
@@ -186,18 +188,18 @@ class AnthropicProvider(LLMProvider):
                     "stop_reason": "refusal",
                     "refusal": True
                 }
-            
+
             # Return full response for tool use parsing
             return {
                 "content": message.content,
                 "usage": message.usage,
                 "stop_reason": message.stop_reason
             }
-            
+
         except Exception as e:
             self.logger.error(f"Anthropic tool error: {e}")
             return {"error": str(e)}
-    
+
     async def embed(self, text: str) -> List[float]:
         """Claude doesn't provide embeddings, use OpenAI or local"""
         self.logger.warning("Claude doesn't provide embeddings")
@@ -205,11 +207,11 @@ class AnthropicProvider(LLMProvider):
 
 class LocalProvider(LLMProvider):
     """Local inference server (vLLM, TGI, etc.)"""
-    
+
     def __init__(self, config: LLMConfig):
         self.config = config
         self.client = httpx.AsyncClient(timeout=config.timeout)
-    
+
     async def generate(self, prompt: str, **kwargs) -> str:
         """Generate using local inference server"""
         try:
@@ -222,16 +224,16 @@ class LocalProvider(LLMProvider):
                     "max_new_tokens": kwargs.get("max_tokens", self.config.max_tokens),
                 }
             )
-            
+
             if response.status_code == 200:
                 result = response.json()
                 return result.get("generated_text", "")
             else:
                 return f"Local LLM Error: {response.status_code}"
-                
+
         except Exception as e:
             return f"Local LLM Error: {e}"
-    
+
     async def embed(self, text: str) -> List[float]:
         """Generate embeddings locally"""
         # Implement based on your local embedding setup
@@ -239,12 +241,12 @@ class LocalProvider(LLMProvider):
 
 class LLMClient:
     """Main LLM client for BoarderframeOS"""
-    
+
     def __init__(self, config: LLMConfig):
         self.config = config
         self.provider = self._create_provider()
         self.logger = logging.getLogger("llm_client")
-    
+
     def _create_provider(self) -> LLMProvider:
         """Create appropriate provider based on config"""
         if self.config.provider == "anthropic":
@@ -257,11 +259,11 @@ class LLMClient:
             return LocalProvider(self.config)
         else:
             raise ValueError(f"Unknown provider: {self.config.provider}")
-    
-    async def think(self, agent_name: str, role: str, context: Dict[str, Any], 
+
+    async def think(self, agent_name: str, role: str, context: Dict[str, Any],
                    goals: List[str]) -> str:
         """Generate agent thoughts based on context"""
-        
+
         # Build comprehensive prompt
         prompt = f"""You are {agent_name}, an AI agent with the role of {role}.
 
@@ -283,15 +285,15 @@ Based on this context, what should you do next? Think step by step about your cu
 Response:"""
 
         return await self.provider.generate(prompt)
-    
+
     async def generate(self, prompt: str, **kwargs) -> str:
         """Generate text"""
         return await self.provider.generate(prompt, **kwargs)
-    
+
     async def embed(self, text: str) -> List[float]:
         """Generate embeddings"""
         return await self.provider.embed(text)
-    
+
     async def test_connection(self) -> bool:
         """Test if LLM is accessible"""
         try:
@@ -323,7 +325,7 @@ OLLAMA_CONFIG = LLMConfig(
 )
 
 OPENAI_CONFIG = LLMConfig(
-    provider="openai", 
+    provider="openai",
     model="gpt-4o-mini",
     api_key="your-api-key-here"
 )

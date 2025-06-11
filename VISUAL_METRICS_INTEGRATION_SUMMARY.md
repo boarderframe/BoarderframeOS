@@ -42,7 +42,7 @@ Each department has visual configuration stored in the `configuration` JSONB col
 
 ### Sample Department Colors
 - Executive Leadership: `fa-crown` (#6366f1)
-- Engineering Department: `fa-code` (#06b6d4) 
+- Engineering Department: `fa-code` (#06b6d4)
 - Security Department: `fa-shield-alt` (#ef4444)
 - Analytics Department: `fa-brain` (#ec4899)
 - Operations Department: `fa-cogs` (#10b981)

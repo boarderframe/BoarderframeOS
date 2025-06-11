@@ -5,8 +5,8 @@ Simple test STDIO server for debugging
 
 import asyncio
 import json
-import sys
 import logging
+import sys
 from pathlib import Path
 
 # Handle MCP import conflicts
@@ -19,10 +19,10 @@ local_mcp_modules = [name for name in sys.modules.keys() if name.startswith('mcp
 for module_name in local_mcp_modules:
     del sys.modules[module_name]
 
-from mcp import types
-from mcp.server import Server, NotificationOptions
-from mcp.server.models import InitializationOptions
 import mcp.server.stdio
+from mcp import types
+from mcp.server import NotificationOptions, Server
+from mcp.server.models import InitializationOptions
 
 # Configure logging to file
 log_file = Path(__file__).parent / "test_stdio.log"
@@ -67,10 +67,10 @@ async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent
 async def main():
     """Main entry point."""
     logger.info("Starting simple test STDIO server")
-    
+
     # Get transport options
     options = InitializationOptions()
-    
+
     async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
         logger.info("STDIO server initialized")
         await server.run(

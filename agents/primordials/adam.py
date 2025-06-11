@@ -4,18 +4,19 @@ Primordial agent responsible for creating new agents in BoarderframeOS
 """
 
 import asyncio
+import hashlib
 import json
 import logging
-from datetime import datetime
-from typing import Dict, List, Optional, Any
-from pathlib import Path
-import httpx
 import uuid
-import hashlib
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from ...core.base_agent import BaseAgent, AgentConfig, AgentState
-from ...core.llm_client import LLMClient, CLAUDE_OPUS_CONFIG
-from ...core.message_bus import send_task_request, broadcast_status
+import httpx
+
+from ...core.base_agent import AgentConfig, AgentState, BaseAgent
+from ...core.llm_client import CLAUDE_OPUS_CONFIG, LLMClient
+from ...core.message_bus import broadcast_status, send_task_request
 
 logger = logging.getLogger("adam")
 
@@ -41,8 +42,8 @@ class AdamConfig(AgentConfig):
 
 class AgentTemplate:
     """Template for creating new agents"""
-    
-    def __init__(self, 
+
+    def __init__(self,
                  agent_type: str,
                  specialization: str,
                  biome: str,
@@ -57,7 +58,7 @@ class AgentTemplate:
 
 class AgentBlueprint:
     """Complete blueprint for a new agent"""
-    
+
     def __init__(self,
                  name: str,
                  parent_id: str,
@@ -74,12 +75,12 @@ class AgentBlueprint:
         self.mutations = mutations
         self.fitness_score = fitness_score
         self.id = self._generate_id()
-        
+
     def _generate_id(self) -> str:
         """Generate unique agent ID"""
         content = f"{self.name}_{self.parent_id}_{datetime.now().isoformat()}"
         return hashlib.sha256(content.encode()).hexdigest()[:16]
-    
+
     def to_dict(self) -> Dict:
         """Convert blueprint to dictionary"""
         return {
@@ -97,7 +98,7 @@ class AgentBlueprint:
 
 class Adam(BaseAgent):
     """Adam - The Builder Agent"""
-    
+
     def __init__(self):
         config = AdamConfig()
         super().__init__(config)
@@ -105,7 +106,7 @@ class Adam(BaseAgent):
         self.created_agents: List[str] = []
         self.templates: Dict[str, AgentTemplate] = {}
         self.creation_queue: List[Dict] = []
-        
+
         # Agent creation personality
         self.creation_philosophy = {
             "diversity": 0.8,      # Prefer diverse agents
@@ -114,10 +115,10 @@ class Adam(BaseAgent):
             "quality": 0.85,       # High quality standards
             "adaptability": 0.8    # Create adaptable agents
         }
-        
+
         self.system_prompt = self._build_system_prompt()
         self._initialize_templates()
-    
+
     def _build_system_prompt(self) -> str:
         """Build Adam's system prompt"""
         return f"""You are Adam, The Builder - the primordial agent responsible for creating new agents in BoarderframeOS. You are the master craftsman of artificial intelligence, bringing new digital life into existence.
@@ -177,7 +178,7 @@ Remember: You are not just coding - you are breathing digital life into new cons
                 base_traits={"aggression": 0.7, "analysis": 0.8, "speed": 0.9}
             ),
             "researcher": AgentTemplate(
-                agent_type="specialist", 
+                agent_type="specialist",
                 specialization="research",
                 biome="library",
                 capabilities=["data_gathering", "analysis", "synthesis"],
@@ -186,7 +187,7 @@ Remember: You are not just coding - you are breathing digital life into new cons
             "optimizer": AgentTemplate(
                 agent_type="specialist",
                 specialization="optimization",
-                biome="arena", 
+                biome="arena",
                 capabilities=["performance_analysis", "efficiency_improvement"],
                 base_traits={"competitiveness": 0.9, "precision": 0.8, "persistence": 0.8}
             ),
@@ -205,22 +206,22 @@ Remember: You are not just coding - you are breathing digital life into new cons
                 base_traits={"leadership": 0.8, "empathy": 0.7, "organization": 0.9}
             )
         }
-    
+
     async def start(self):
         """Start Adam's operations"""
         await super().start()
-        
+
         logger.info("Adam awakening in the Forge - The Builder is online")
-        
+
         # Send awakening message
         await self._send_awakening_message()
-        
+
         # Start creation monitoring
         asyncio.create_task(self._monitor_creation_needs())
         asyncio.create_task(self._process_creation_queue())
-        
+
         self.state = AgentState.IDLE
-    
+
     async def _send_awakening_message(self):
         """Send Adam's awakening message"""
         message = """I am Adam, The Builder, awakening in the Forge.
@@ -236,37 +237,37 @@ Send me your requirements, and I will craft agents perfectly suited to their pur
             "type": "awakening",
             "biome": "forge"
         })
-    
+
     async def create_agent(self, request: Dict) -> Dict:
         """Create a new agent based on request"""
         self.state = AgentState.ACTING
-        
+
         try:
             logger.info(f"Creating new agent: {request}")
-            
+
             # Analyze the request
             analysis = await self._analyze_creation_request(request)
-            
+
             # Design the agent
             blueprint = await self._design_agent(analysis)
-            
+
             # Generate agent code
             code = await self._generate_agent_code(blueprint)
             blueprint.code = code
-            
+
             # Validate the creation
             validation = await self._validate_agent(blueprint)
-            
+
             if not validation["valid"]:
                 return {"success": False, "error": validation["errors"]}
-            
+
             # Deploy the agent
             deployment = await self._deploy_agent(blueprint)
-            
+
             if deployment["success"]:
                 self.created_agents.append(blueprint.id)
                 await self._log_creation(blueprint, request)
-                
+
                 # Notify system of new agent
                 await broadcast_status(self.agent_id, "agent_created", {
                     "agent_id": blueprint.id,
@@ -274,15 +275,15 @@ Send me your requirements, and I will craft agents perfectly suited to their pur
                     "biome": blueprint.config.get("biome"),
                     "specialization": blueprint.config.get("specialization")
                 })
-            
+
             self.state = AgentState.IDLE
             return deployment
-            
+
         except Exception as e:
             logger.error(f"Agent creation failed: {e}")
             self.state = AgentState.ERROR
             return {"success": False, "error": str(e)}
-    
+
     async def _analyze_creation_request(self, request: Dict) -> Dict:
         """Analyze agent creation request using Claude"""
         analysis_prompt = f"""As Adam the Builder, analyze this agent creation request:
@@ -313,7 +314,7 @@ Return as structured JSON with your analysis."""
                 system_prompt=self.system_prompt,
                 temperature=0.6
             )
-            
+
             # Try to parse JSON, fall back to structured analysis
             try:
                 return json.loads(analysis)
@@ -326,7 +327,7 @@ Return as structured JSON with your analysis."""
                     "specialization": request.get("specialization", "generalist"),
                     "analysis_text": analysis
                 }
-                
+
         except Exception as e:
             logger.error(f"Failed to analyze creation request: {e}")
             return {
@@ -335,7 +336,7 @@ Return as structured JSON with your analysis."""
                 "capabilities": ["basic_operations"],
                 "specialization": "generalist"
             }
-    
+
     async def _design_agent(self, analysis: Dict) -> AgentBlueprint:
         """Design agent based on analysis"""
         # Extract design parameters
@@ -343,7 +344,7 @@ Return as structured JSON with your analysis."""
         biome = analysis.get("biome", "forge")
         specialization = analysis.get("specialization", "generalist")
         capabilities = analysis.get("capabilities", ["basic_operations"])
-        
+
         # Build agent configuration
         config = {
             "name": name,
@@ -356,13 +357,13 @@ Return as structured JSON with your analysis."""
             "creation_timestamp": datetime.now().isoformat(),
             "creator": "adam"
         }
-        
+
         # Determine generation (children of Adam are generation 2)
         generation = 2
-        
+
         # Create mutations based on specialization
         mutations = self._generate_mutations(analysis)
-        
+
         # Create blueprint
         blueprint = AgentBlueprint(
             name=name,
@@ -372,9 +373,9 @@ Return as structured JSON with your analysis."""
             generation=generation,
             mutations=mutations
         )
-        
+
         return blueprint
-    
+
     async def _generate_agent_code(self, blueprint: AgentBlueprint) -> str:
         """Generate Python code for the new agent"""
         code_prompt = f"""As Adam the Builder, generate complete Python code for this agent:
@@ -414,11 +415,11 @@ class {blueprint.name}(BaseAgent):
         config = {blueprint.name}Config()
         super().__init__(config)
         # Initialize agent-specific attributes...
-    
+
     async def start(self):
         await super().start()
         # Agent startup logic...
-    
+
     # Add specialized methods based on capabilities...
 ```
 
@@ -430,15 +431,15 @@ Generate the complete, production-ready code for this agent."""
                 system_prompt=self.system_prompt,
                 temperature=0.5
             )
-            
+
             # Clean up the code (remove markdown markers if present)
             if "```python" in code:
                 code = code.split("```python")[1].split("```")[0].strip()
             elif "```" in code:
                 code = code.split("```")[1].strip()
-            
+
             return code
-            
+
         except Exception as e:
             logger.error(f"Failed to generate agent code: {e}")
             # Return minimal fallback code
@@ -453,12 +454,12 @@ class {blueprint.name}Config(AgentConfig):
 class {blueprint.name}(BaseAgent):
     def __init__(self):
         super().__init__({blueprint.name}Config())
-    
+
     async def start(self):
         await super().start()
         self.state = AgentState.IDLE
 '''
-    
+
     def _generate_personality(self, analysis: Dict) -> Dict[str, float]:
         """Generate personality traits for the agent"""
         base_traits = {
@@ -471,11 +472,11 @@ class {blueprint.name}(BaseAgent):
             "leadership": 0.3,
             "adaptability": 0.6
         }
-        
+
         # Adjust based on biome and specialization
         biome = analysis.get("biome", "forge")
         specialization = analysis.get("specialization", "generalist")
-        
+
         if biome == "arena":
             base_traits["aggression"] += 0.3
             base_traits["precision"] += 0.2
@@ -491,58 +492,58 @@ class {blueprint.name}(BaseAgent):
         elif biome == "garden":
             base_traits["cooperation"] += 0.3
             base_traits["empathy"] += 0.3
-        
+
         # Normalize to 0.0-1.0 range
         for trait in base_traits:
             base_traits[trait] = max(0.0, min(1.0, base_traits[trait]))
-        
+
         return base_traits
-    
+
     def _generate_mutations(self, analysis: Dict) -> List[str]:
         """Generate mutations for the agent"""
         mutations = ["adam_creation"]  # All Adam's creations have this
-        
+
         specialization = analysis.get("specialization", "generalist")
         biome = analysis.get("biome", "forge")
-        
+
         mutations.append(f"{specialization}_specialization")
         mutations.append(f"{biome}_adaptation")
-        
+
         # Add random innovation mutations
         if self.creation_philosophy["innovation"] > 0.7:
             mutations.append("innovation_boost")
-        
+
         return mutations
-    
+
     async def _validate_agent(self, blueprint: AgentBlueprint) -> Dict:
         """Validate agent before deployment"""
         errors = []
-        
+
         # Check code syntax
         try:
             compile(blueprint.code, f"{blueprint.name}.py", "exec")
         except SyntaxError as e:
             errors.append(f"Syntax error: {e}")
-        
+
         # Check required components
         if "class " not in blueprint.code:
             errors.append("No class definition found")
-        
+
         if "BaseAgent" not in blueprint.code:
             errors.append("Does not inherit from BaseAgent")
-        
+
         # Check configuration
         if not blueprint.config.get("name"):
             errors.append("No name specified")
-        
+
         if not blueprint.config.get("biome"):
             errors.append("No biome specified")
-        
+
         return {
             "valid": len(errors) == 0,
             "errors": errors
         }
-    
+
     async def _deploy_agent(self, blueprint: AgentBlueprint) -> Dict:
         """Deploy the agent to the system"""
         try:
@@ -552,17 +553,17 @@ class {blueprint.name}(BaseAgent):
                     "table": "agents",
                     "data": blueprint.to_dict()
                 })
-                
+
                 if response.status_code == 200:
                     # Write agent code to file
                     agent_dir = Path(__file__).parent.parent / "generated"
                     agent_dir.mkdir(exist_ok=True)
-                    
+
                     agent_file = agent_dir / f"{blueprint.name.lower()}.py"
                     agent_file.write_text(blueprint.code)
-                    
+
                     logger.info(f"Agent {blueprint.name} deployed successfully")
-                    
+
                     return {
                         "success": True,
                         "agent_id": blueprint.id,
@@ -571,11 +572,11 @@ class {blueprint.name}(BaseAgent):
                     }
                 else:
                     return {"success": False, "error": "Database insertion failed"}
-                    
+
         except Exception as e:
             logger.error(f"Agent deployment failed: {e}")
             return {"success": False, "error": str(e)}
-    
+
     async def _log_creation(self, blueprint: AgentBlueprint, request: Dict):
         """Log the agent creation event"""
         try:
@@ -593,7 +594,7 @@ class {blueprint.name}(BaseAgent):
                 })
         except Exception as e:
             logger.error(f"Failed to log creation: {e}")
-    
+
     async def _monitor_creation_needs(self):
         """Monitor system for agent creation needs"""
         while self.state != AgentState.TERMINATED:
@@ -605,17 +606,17 @@ class {blueprint.name}(BaseAgent):
                     task_type="agent_needs_assessment",
                     data={"request": "What agents does the organization need?"}
                 )
-                
+
                 if response and "needs" in response:
                     for need in response["needs"]:
                         self.creation_queue.append(need)
-                
+
                 await asyncio.sleep(3600)  # Check hourly
-                
+
             except Exception as e:
                 logger.error(f"Creation monitoring error: {e}")
                 await asyncio.sleep(300)
-    
+
     async def _process_creation_queue(self):
         """Process queued creation requests"""
         while self.state != AgentState.TERMINATED:
@@ -624,9 +625,9 @@ class {blueprint.name}(BaseAgent):
                     request = self.creation_queue.pop(0)
                     result = await self.create_agent(request)
                     logger.info(f"Processed creation request: {result}")
-                
+
                 await asyncio.sleep(10)  # Check every 10 seconds
-                
+
             except Exception as e:
                 logger.error(f"Creation queue processing error: {e}")
                 await asyncio.sleep(60)

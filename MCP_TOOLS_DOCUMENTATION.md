@@ -135,7 +135,7 @@ Generate embeddings for semantic operations
 
 #### **Rate Limiting Protection**
 - **General operations**: 100 requests/minute
-- **File operations**: 20 requests/minute  
+- **File operations**: 20 requests/minute
 - **Batch operations**: 10 requests/minute
 - **AI operations**: 5 requests/minute
 
@@ -329,7 +329,7 @@ curl -X POST http://localhost:8007/track \
 # 1. Process payment
 curl -X POST http://localhost:8006/payments/process
 
-# 2. Track revenue event  
+# 2. Track revenue event
 curl -X POST http://localhost:8007/track \
   -d '{"event_type": "revenue", "amount": 150.00}'
 

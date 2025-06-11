@@ -5,37 +5,38 @@ A simpler approach that adds SDK endpoints to the existing panel
 """
 
 import asyncio
-import sys
 import os
+import sys
 from pathlib import Path
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from ui.agent_cortex_panel import AgentCortexPanel
 from flask import jsonify
+
+from ui.agent_cortex_panel import AgentCortexPanel
 
 
 async def add_sdk_features(panel):
     """Add SDK features to standard panel"""
-    
+
     # Import SDK components
-    from core.llm_provider_sdk import get_llm_sdk, ModelCapability
-    from core.agent_development_kit import get_adk, AgentTemplate
-    
+    from core.agent_development_kit import AgentTemplate, get_adk
+    from core.llm_provider_sdk import ModelCapability, get_llm_sdk
+
     sdk = get_llm_sdk()
     adk = get_adk()
-    
+
     # Add SDK routes
     @panel.app.route('/api/cortex/sdk/providers')
     def get_sdk_providers():
         """Get all SDK providers with detailed info"""
         providers = {}
-        
+
         for provider_name in sdk.list_providers():
             provider_info = sdk.get_provider_status(provider_name)
             models = sdk.list_models(provider_name)
-            
+
             providers[provider_name] = {
                 **provider_info,
                 "models": [
@@ -51,16 +52,16 @@ async def add_sdk_features(panel):
                     for model in models
                 ]
             }
-        
+
         return jsonify(providers)
-    
+
     @panel.app.route('/api/cortex/sdk/models/<capability>')
     def get_models_by_capability(capability):
         """Get models with specific capability"""
         try:
             cap_enum = ModelCapability(capability)
             models = sdk.registry.get_models_by_capability(cap_enum)
-            
+
             return jsonify([
                 {
                     "provider": model.provider,
@@ -74,7 +75,7 @@ async def add_sdk_features(panel):
             ])
         except ValueError:
             return jsonify({"error": f"Unknown capability: {capability}"}), 400
-    
+
     @panel.app.route('/api/cortex/capabilities')
     def get_all_capabilities():
         """Get all available model capabilities"""
@@ -85,29 +86,29 @@ async def add_sdk_features(panel):
             }
             for cap in ModelCapability
         ]
-        
+
         return jsonify(capabilities)
-    
+
     @panel.app.route('/api/cortex/adk/templates')
     def get_agent_templates():
         """Get available agent templates"""
         templates = []
-        
+
         for template in AgentTemplate:
             template_config = adk.factory.templates.get(template, {})
             templates.append({
                 "name": template.value,
                 "description": f"Pre-built {template.value} agent template"
             })
-        
+
         return jsonify(templates)
-    
+
     print("✅ SDK features added to Agent Cortex Panel")
 
 
 def _get_capability_description(capability):
     """Get human-readable capability description"""
-    
+
     descriptions = {
         ModelCapability.CHAT: "General conversation and Q&A",
         ModelCapability.CODE_GENERATION: "Writing and debugging code",
@@ -119,7 +120,7 @@ def _get_capability_description(capability):
         ModelCapability.REASONING: "Complex logical reasoning",
         ModelCapability.CREATIVE_WRITING: "Creative content generation"
     }
-    
+
     return descriptions.get(capability, capability.value)
 
 
@@ -129,17 +130,17 @@ async def main():
     print("=" * 60)
     print("📌 This version adds SDK endpoints to the standard panel")
     print("=" * 60)
-    
+
     # Create standard panel instance
     panel = AgentCortexPanel(port=8890)
-    
+
     # Initialize connections
     print("📊 Initializing database and configurations...")
     await panel.initialize()
-    
+
     # Add SDK features
     await add_sdk_features(panel)
-    
+
     print("\n✅ Agent Cortex Panel ready with SDK features!")
     print("=" * 60)
     print("🆕 New API endpoints:")
@@ -148,7 +149,7 @@ async def main():
     print("  • /api/cortex/capabilities - List all capabilities")
     print("  • /api/cortex/adk/templates - List agent templates")
     print("=" * 60)
-    
+
     # Run the web server
     panel.run()
 

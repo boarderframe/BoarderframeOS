@@ -3,17 +3,18 @@
 Final department registration script
 """
 
-import subprocess
 import json
+import subprocess
+
 
 def register_departments():
     """Register all departments in the registry"""
     print("🏢 Registering All Departments")
     print("=" * 50)
-    
+
     # Get all departments
     get_depts_query = """
-    SELECT 
+    SELECT
         d.id,
         d.name,
         d.phase,
@@ -27,12 +28,12 @@ def register_departments():
     GROUP BY d.id, d.name, d.phase, d.priority, d.category, d.description, d.department_purpose
     ORDER BY d.phase, d.priority;
     """
-    
+
     result = subprocess.run([
         "docker", "exec", "boarderframeos_postgres",
         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", get_depts_query
     ], capture_output=True, text=True)
-    
+
     if result.returncode == 0 and result.stdout:
         departments = []
         for line in result.stdout.strip().split('\n'):
@@ -48,14 +49,14 @@ def register_departments():
                         "description": parts[5] or parts[6] or "Department operations",
                         "leader_count": parts[7]
                     })
-        
+
         print(f"\n📝 Found {len(departments)} departments to register...")
-        
+
         success_count = 0
         for dept in departments:
             # Prepare description, escaping single quotes
             description = dept["description"].replace("'", "''")
-            
+
             register_query = f"""
             INSERT INTO department_registry (
                 department_id, name, phase, priority, category,
@@ -79,23 +80,23 @@ def register_departments():
                 metadata = EXCLUDED.metadata,
                 updated_at = CURRENT_TIMESTAMP;
             """
-            
+
             reg_result = subprocess.run([
                 "docker", "exec", "boarderframeos_postgres",
                 "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", register_query
             ], capture_output=True, text=True)
-            
+
             if reg_result.returncode == 0:
                 success_count += 1
                 print(f"   ✅ {dept['name']} (Phase {dept['phase']}, Priority {dept['priority']})")
             else:
                 print(f"   ❌ {dept['name']}: {reg_result.stderr[:50]}")
-        
+
         print(f"\n✅ Successfully registered {success_count}/{len(departments)} departments")
-    
+
     # Update department leaders in registry
     print("\n📝 Updating department leaders...")
-    
+
     leaders_query = """
     UPDATE department_registry dr
     SET leaders = (
@@ -109,51 +110,51 @@ def register_departments():
         WHERE dl.department_id = dr.department_id
     )
     WHERE EXISTS (
-        SELECT 1 FROM department_leaders dl2 
+        SELECT 1 FROM department_leaders dl2
         WHERE dl2.department_id = dr.department_id
     );
     """
-    
+
     result = subprocess.run([
         "docker", "exec", "boarderframeos_postgres",
         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", leaders_query
     ], capture_output=True, text=True)
-    
+
     if result.returncode == 0:
         print("   ✅ Updated department leaders information")
-    
+
     # Show summary
     print("\n📊 Department Registration Summary...")
-    
+
     summary_query = """
-    SELECT 
-        'Total Departments' as metric, COUNT(*) as value 
+    SELECT
+        'Total Departments' as metric, COUNT(*) as value
     FROM department_registry
     UNION ALL
-    SELECT 
-        'Departments with Leaders' as metric, 
-        COUNT(*) as value 
-    FROM department_registry 
+    SELECT
+        'Departments with Leaders' as metric,
+        COUNT(*) as value
+    FROM department_registry
     WHERE leaders IS NOT NULL AND jsonb_array_length(leaders) > 0
     UNION ALL
-    SELECT 
-        'Phase 1 Departments' as metric, 
-        COUNT(*) as value 
-    FROM department_registry 
+    SELECT
+        'Phase 1 Departments' as metric,
+        COUNT(*) as value
+    FROM department_registry
     WHERE phase = 1
     UNION ALL
-    SELECT 
-        'Active Departments' as metric, 
-        COUNT(*) as value 
-    FROM department_registry 
+    SELECT
+        'Active Departments' as metric,
+        COUNT(*) as value
+    FROM department_registry
     WHERE status = 'active';
     """
-    
+
     result = subprocess.run([
         "docker", "exec", "boarderframeos_postgres",
         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", summary_query
     ], capture_output=True, text=True)
-    
+
     if result.returncode == 0:
         print("\nDepartment Metrics:")
         for line in result.stdout.strip().split('\n'):
@@ -163,7 +164,7 @@ def register_departments():
                     metric = parts[0].strip()
                     value = parts[1].strip()
                     print(f"   {metric}: {value}")
-    
+
     print("\n✅ Department Registration Complete!")
 
 

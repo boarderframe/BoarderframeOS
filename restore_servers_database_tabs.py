@@ -7,18 +7,18 @@ def restore_servers_database_tabs():
     """Add back the missing Servers tab"""
     print("🔧 Restoring Servers Tab")
     print("=" * 60)
-    
+
     file_path = "/Users/cosburn/BoarderframeOS/corporate_headquarters.py"
-    
+
     with open(file_path, 'r') as f:
         content = f.read()
-    
+
     # Find where to insert (after divisions tab, before system tab)
     insertion_point = content.find('        </div></div>\n\n        <!-- System Tab -->')
-    
+
     if insertion_point > 0:
         print("✅ Found insertion point after divisions tab")
-        
+
         # The servers tab content from backup
         servers_tab = '''
         <!-- Servers Tab -->
@@ -28,10 +28,10 @@ def restore_servers_database_tabs():
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
                     <div style="display: flex; align-items: center; gap: 1rem;">
                         <div style="
-                            width: 60px; height: 60px; 
-                            background: linear-gradient(135deg, #10b981, #10b981cc); 
-                            border-radius: 12px; 
-                            display: flex; align-items: center; justify-content: center; 
+                            width: 60px; height: 60px;
+                            background: linear-gradient(135deg, #10b981, #10b981cc);
+                            border-radius: 12px;
+                            display: flex; align-items: center; justify-content: center;
                             color: white; font-size: 1.5rem; box-shadow: 0 4px 12px #10b98140;
                         ">
                             <i class="fas fa-server"></i>
@@ -53,15 +53,15 @@ def restore_servers_database_tabs():
                                 Last updated: <span id="systems-last-update">{self._get_formatted_timestamp()}</span>
                             </div>
                         </div>
-                        <button 
-                            onclick="refreshSystemsMetrics()" 
+                        <button
+                            onclick="refreshSystemsMetrics()"
                             id="systemsRefreshBtn"
                             style="
-                                background: linear-gradient(135deg, #10b981, #059669); 
-                                color: white; 
-                                border: none; 
-                                padding: 0.5rem 1rem; 
-                                border-radius: 8px; 
+                                background: linear-gradient(135deg, #10b981, #059669);
+                                color: white;
+                                border: none;
+                                padding: 0.5rem 1rem;
+                                border-radius: 8px;
                                 font-size: 0.85rem;
                                 cursor: pointer;
                                 display: flex;
@@ -92,7 +92,7 @@ def restore_servers_database_tabs():
                         </div>
                         <div class="widget-subtitle">Services</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -105,7 +105,7 @@ def restore_servers_database_tabs():
                         </div>
                         <div class="widget-subtitle">Operational</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -118,7 +118,7 @@ def restore_servers_database_tabs():
                         </div>
                         <div class="widget-subtitle">Warning</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -131,7 +131,7 @@ def restore_servers_database_tabs():
                         </div>
                         <div class="widget-subtitle">Down</div>
                     </div>
-                    
+
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -146,7 +146,7 @@ def restore_servers_database_tabs():
                     </div>
                 </div>
             </div>
-            
+
             <!-- Service Details -->
             <div class="card full-width">
                 <h3 style="margin-bottom: 1.5rem;">
@@ -155,14 +155,14 @@ def restore_servers_database_tabs():
                 {self._generate_services_html()}
             </div>
         </div>'''
-        
+
         # Insert the servers tab
         content = content[:insertion_point + 17] + servers_tab + content[insertion_point + 17:]
-        
+
         # Write back
         with open(file_path, 'w') as f:
             f.write(content)
-        
+
         print("✅ Restored Servers tab")
         print("\n🚀 Servers tab should now be visible in Corporate HQ!")
     else:

@@ -3,8 +3,10 @@
 Populate visual metadata (colors and icons) for departments and divisions
 """
 
-import psycopg2
 import json
+
+import psycopg2
+
 from core.hq_metrics_layer import BFColors, BFIcons
 
 # Department visual mappings
@@ -13,37 +15,37 @@ DEPARTMENT_VISUALS = {
     'Executive Leadership': {'color': BFColors.EXECUTIVE, 'icon': 'fa-crown', 'theme': 'executive'},
     'Strategic Planning': {'color': BFColors.EXECUTIVE, 'icon': 'fa-chess', 'theme': 'executive'},
     'Board Relations': {'color': BFColors.EXECUTIVE, 'icon': 'fa-handshake', 'theme': 'executive'},
-    
+
     # Engineering & Technology
     'Software Engineering': {'color': BFColors.ENGINEERING, 'icon': 'fa-code', 'theme': 'engineering'},
     'Infrastructure': {'color': BFColors.INFRASTRUCTURE, 'icon': 'fa-server', 'theme': 'infrastructure'},
     'DevOps': {'color': BFColors.INFRASTRUCTURE, 'icon': 'fa-infinity', 'theme': 'infrastructure'},
     'Quality Assurance': {'color': BFColors.ENGINEERING, 'icon': 'fa-check-double', 'theme': 'engineering'},
     'Architecture': {'color': BFColors.ENGINEERING, 'icon': 'fa-drafting-compass', 'theme': 'engineering'},
-    
+
     # Operations
     'Operations': {'color': BFColors.OPERATIONS, 'icon': 'fa-cogs', 'theme': 'operations'},
     'Business Operations': {'color': BFColors.OPERATIONS, 'icon': 'fa-briefcase', 'theme': 'operations'},
     'Supply Chain': {'color': BFColors.OPERATIONS, 'icon': 'fa-truck', 'theme': 'operations'},
     'Customer Service': {'color': BFColors.OPERATIONS, 'icon': 'fa-headset', 'theme': 'operations'},
-    
+
     # Intelligence & Analytics
     'Business Intelligence': {'color': BFColors.INTELLIGENCE, 'icon': 'fa-brain', 'theme': 'intelligence'},
     'Data Analytics': {'color': BFColors.INTELLIGENCE, 'icon': 'fa-chart-line', 'theme': 'intelligence'},
     'Market Research': {'color': BFColors.INTELLIGENCE, 'icon': 'fa-microscope', 'theme': 'intelligence'},
-    
+
     # Innovation & Research
     'Innovation Lab': {'color': BFColors.INNOVATION, 'icon': 'fa-lightbulb', 'theme': 'innovation'},
     'Research & Development': {'color': BFColors.RESEARCH, 'icon': 'fa-flask', 'theme': 'research'},
     'Product Development': {'color': BFColors.INNOVATION, 'icon': 'fa-cube', 'theme': 'innovation'},
-    
+
     # Support Functions
     'Human Resources': {'color': BFColors.WARNING, 'icon': 'fa-users', 'theme': 'support'},
     'Finance': {'color': BFColors.SUCCESS, 'icon': 'fa-dollar-sign', 'theme': 'support'},
     'Legal': {'color': BFColors.NEUTRAL, 'icon': 'fa-gavel', 'theme': 'support'},
     'Security': {'color': BFColors.DANGER, 'icon': 'fa-shield-alt', 'theme': 'security'},
     'Compliance': {'color': BFColors.WARNING, 'icon': 'fa-clipboard-check', 'theme': 'compliance'},
-    
+
     # Sales & Marketing
     'Sales': {'color': BFColors.SUCCESS, 'icon': 'fa-chart-line', 'theme': 'sales'},
     'Marketing': {'color': BFColors.INNOVATION, 'icon': 'fa-bullhorn', 'theme': 'marketing'},
@@ -66,17 +68,17 @@ DIVISION_VISUALS = {
 def get_default_visual(name, entity_type='department'):
     """Get default visual configuration based on name"""
     name_lower = name.lower()
-    
+
     if entity_type == 'department':
         # Check exact matches first
         if name in DEPARTMENT_VISUALS:
             return DEPARTMENT_VISUALS[name]
-        
+
         # Check partial matches
         for key, visual in DEPARTMENT_VISUALS.items():
             if key.lower() in name_lower or name_lower in key.lower():
                 return visual
-        
+
         # Default based on keywords
         if any(x in name_lower for x in ['executive', 'leadership', 'chief']):
             return {'color': BFColors.EXECUTIVE, 'icon': 'fa-crown', 'theme': 'executive'}
@@ -98,14 +100,14 @@ def get_default_visual(name, entity_type='department'):
             return {'color': BFColors.SUCCESS, 'icon': 'fa-dollar-sign', 'theme': 'finance'}
         else:
             return {'color': BFColors.INFO, 'icon': 'fa-building', 'theme': 'default'}
-    
+
     return {'color': BFColors.INFO, 'icon': 'fa-folder', 'theme': 'default'}
 
 def populate_visual_metadata():
     """Populate visual metadata in database"""
     print("🎨 Populating Visual Metadata")
     print("=" * 60)
-    
+
     try:
         conn = psycopg2.connect(
             host='localhost',
@@ -115,55 +117,55 @@ def populate_visual_metadata():
             password='boarderframe_secure_2025'
         )
         cur = conn.cursor()
-        
+
         # Run migration first
         print("\n📝 Running migration...")
         with open('migrations/007_add_visual_metadata.sql', 'r') as f:
             cur.execute(f.read())
         conn.commit()
         print("   ✅ Migration completed")
-        
+
         # Update departments
         print("\n🏢 Updating department visual metadata...")
         cur.execute("SELECT id, name, configuration FROM departments")
         departments = cur.fetchall()
-        
+
         updated = 0
         for dept_id, name, config in departments:
             visual = get_default_visual(name, 'department')
-            
+
             # Update configuration
             config = config or {}
             config['visual'] = visual
-            
+
             cur.execute("""
-                UPDATE departments 
+                UPDATE departments
                 SET configuration = %s
                 WHERE id = %s
             """, (json.dumps(config), dept_id))
-            
+
             updated += 1
             print(f"   ✅ {name}: {visual['icon']} ({visual['color']})")
-        
+
         print(f"\n   Updated {updated} departments")
-        
+
         # Update divisions
         print("\n🏛️ Updating division visual metadata...")
         # Check what columns divisions table has
         cur.execute("""
-            SELECT column_name 
-            FROM information_schema.columns 
+            SELECT column_name
+            FROM information_schema.columns
             WHERE table_name = 'divisions'
             ORDER BY ordinal_position
         """)
         div_columns = [col[0] for col in cur.fetchall()]
         print(f"   Division columns: {div_columns}")
-        
+
         # Try to get divisions with appropriate column
         name_col = 'division_name' if 'division_name' in div_columns else 'id'
         cur.execute(f"SELECT id, {name_col} FROM divisions")
         divisions = cur.fetchall()
-        
+
         div_updated = 0
         for div_id, name in divisions:
             # Extract division number from name if possible
@@ -176,26 +178,26 @@ def populate_visual_metadata():
                     div_num = int(match.group())
             except:
                 pass
-            
+
             visual = DIVISION_VISUALS.get(div_num, {
                 'color': BFColors.INFO,
                 'icon': 'fa-layer-group',
                 'theme': 'division'
             })
-            
+
             config = {'visual': visual}
-            
+
             cur.execute("""
-                UPDATE divisions 
+                UPDATE divisions
                 SET configuration = %s
                 WHERE id = %s
             """, (json.dumps(config), div_id))
-            
+
             div_updated += 1
             print(f"   ✅ {name}: {visual['icon']} ({visual['color']})")
-        
+
         print(f"\n   Updated {div_updated} divisions")
-        
+
         # Also update department_registry
         print("\n📋 Updating department registry visual metadata...")
         cur.execute("""
@@ -208,16 +210,16 @@ def populate_visual_metadata():
             )
             WHERE EXISTS (SELECT 1 FROM departments d WHERE d.name = dr.name)
         """)
-        
+
         registry_updated = cur.rowcount
         print(f"   ✅ Updated {registry_updated} registry entries")
-        
+
         conn.commit()
         cur.close()
         conn.close()
-        
+
         print("\n✅ Visual metadata population complete!")
-        
+
     except Exception as e:
         print(f"\n❌ Error: {e}")
         if 'conn' in locals():

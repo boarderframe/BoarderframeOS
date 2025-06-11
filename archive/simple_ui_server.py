@@ -3,12 +3,13 @@
 Simplified UI server that works without complex imports
 """
 
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
-from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
 import json
 from datetime import datetime
+
+import uvicorn
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 
 app = FastAPI(title="BoarderframeOS Simple UI")
 
@@ -32,7 +33,7 @@ DASHBOARD_HTML = """
     <nav class="bg-gray-800 p-4">
         <h1 class="text-2xl font-bold text-blue-400">BoarderframeOS Dashboard</h1>
     </nav>
-    
+
     <div class="container mx-auto p-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-gray-800 p-6 rounded-lg">
@@ -54,19 +55,19 @@ DASHBOARD_HTML = """
                 <button onclick="runSetup()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">Run Setup</button>
             </div>
         </div>
-        
+
         <div class="bg-gray-800 p-6 rounded-lg">
             <h3 class="text-lg font-semibold mb-4">Solomon Chat Interface</h3>
             <div id="chat-container" class="bg-gray-900 p-4 rounded mb-4 h-64 overflow-y-auto">
                 <div class="text-gray-400">Solomon is offline. Start the system to begin chatting.</div>
             </div>
             <div class="flex space-x-2">
-                <input id="message-input" type="text" placeholder="Message Solomon..." 
+                <input id="message-input" type="text" placeholder="Message Solomon..."
                        class="flex-1 bg-gray-700 border border-gray-600 rounded px-4 py-2 text-white">
                 <button onclick="sendMessage()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Send</button>
             </div>
         </div>
-        
+
         <div class="mt-6 bg-gray-800 p-6 rounded-lg">
             <h3 class="text-lg font-semibold mb-4">System Setup Instructions</h3>
             <div class="space-y-2 text-sm">
@@ -76,20 +77,20 @@ DASHBOARD_HTML = """
             </div>
         </div>
     </div>
-    
+
     <script>
         function startSystem() {
             alert('System startup will be implemented once backend is running');
         }
-        
+
         function runSetup() {
             alert('Run: python setup_boarderframeos.py');
         }
-        
+
         function sendMessage() {
             const input = document.getElementById('message-input');
             const chat = document.getElementById('chat-container');
-            
+
             if (input.value.trim()) {
                 chat.innerHTML += '<div class="mb-2"><span class="text-blue-400">You:</span> ' + input.value + '</div>';
                 chat.innerHTML += '<div class="mb-2"><span class="text-purple-400">Solomon:</span> I am not yet online. Please start the system first.</div>';
@@ -97,7 +98,7 @@ DASHBOARD_HTML = """
                 chat.scrollTop = chat.scrollHeight;
             }
         }
-        
+
         // Allow Enter key to send message
         document.getElementById('message-input').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -130,5 +131,5 @@ if __name__ == "__main__":
     print("📍 Dashboard: http://localhost:8080")
     print("🔧 This is a basic UI. Run the full setup to enable all features.")
     print()
-    
+
     uvicorn.run(app, host="0.0.0.0", port=8080)

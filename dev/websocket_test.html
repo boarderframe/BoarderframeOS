@@ -7,52 +7,52 @@
     <h1>WebSocket Connection Test</h1>
     <div id="status">Connecting...</div>
     <div id="messages"></div>
-    
+
     <script>
         const status = document.getElementById('status');
         const messages = document.getElementById('messages');
-        
+
         function log(msg) {
             console.log(msg);
             const div = document.createElement('div');
             div.textContent = new Date().toLocaleTimeString() + ': ' + msg;
             messages.appendChild(div);
         }
-        
+
         log('Starting WebSocket connection test...');
-        
+
         try {
             const ws = new WebSocket('ws://localhost:8889');
-            
+
             ws.onopen = function() {
                 status.textContent = 'Connected!';
                 status.style.color = 'green';
                 log('WebSocket connected successfully');
-                
+
                 // Send test message
                 ws.send(JSON.stringify({
                     type: 'user_message',
                     message: 'Browser test message'
                 }));
             };
-            
+
             ws.onmessage = function(event) {
                 log('Received: ' + event.data);
             };
-            
+
             ws.onclose = function() {
                 status.textContent = 'Disconnected';
                 status.style.color = 'red';
                 log('WebSocket disconnected');
             };
-            
+
             ws.onerror = function(error) {
                 status.textContent = 'Error!';
                 status.style.color = 'red';
                 log('WebSocket error: ' + error);
                 console.error(error);
             };
-            
+
         } catch (error) {
             log('Failed to create WebSocket: ' + error);
             status.textContent = 'Failed to create WebSocket';

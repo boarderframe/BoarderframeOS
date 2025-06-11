@@ -4,13 +4,14 @@ Simple BoarderframeOS System Startup
 Starts dashboard and agents coordination demo
 """
 
+import os
+import signal
 import subprocess
 import sys
-import os
 import time
-import signal
 import webbrowser
 from pathlib import Path
+
 
 def signal_handler(sig, frame):
     """Handle shutdown signals"""
@@ -24,16 +25,16 @@ def main():
     """Start the complete system"""
     print("🚀 Starting Complete BoarderframeOS System...")
     print("=" * 60)
-    
+
     # Set up signal handler
     signal.signal(signal.SIGINT, signal_handler)
-    
+
     # Kill any existing processes
     print("🧹 Cleaning up existing processes...")
     subprocess.run(["pkill", "-f", "python.*enhanced_dashboard.py"], stderr=subprocess.DEVNULL)
     subprocess.run(["pkill", "-f", "python.*demo_enhanced_agent_coordination.py"], stderr=subprocess.DEVNULL)
     time.sleep(2)
-    
+
     # Start dashboard
     print("📊 Starting Enhanced Dashboard...")
     dashboard_process = subprocess.Popen(
@@ -42,7 +43,7 @@ def main():
         stderr=subprocess.PIPE
     )
     time.sleep(3)
-    
+
     # Test dashboard
     try:
         import requests
@@ -53,8 +54,8 @@ def main():
             print("⚠️ Dashboard started but not responding correctly")
     except:
         print("✅ Dashboard started (install requests for verification)")
-    
-    # Start agent coordination demo  
+
+    # Start agent coordination demo
     print("🤖 Starting Agent Coordination Demo...")
     demo_process = subprocess.Popen(
         [sys.executable, "demo_enhanced_agent_coordination.py"],
@@ -62,21 +63,21 @@ def main():
         stderr=subprocess.PIPE
     )
     time.sleep(5)
-    
+
     print("\n" + "=" * 60)
     print("✅ BoarderframeOS System is operational!")
     print("📍 Dashboard: http://localhost:8888")
     print("🤖 Agent Demo: Running coordination system")
     print("🔄 System is running... Press Ctrl+C to stop")
     print("=" * 60)
-    
+
     # Open browser
     try:
         webbrowser.open("http://localhost:8888")
         print("🌐 Opening dashboard in browser...")
     except:
         pass
-    
+
     # Keep running
     try:
         while True:

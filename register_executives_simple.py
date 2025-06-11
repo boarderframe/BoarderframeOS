@@ -3,16 +3,17 @@
 Simple registration of executive agents and departments
 """
 
-import subprocess
 import json
+import subprocess
 import uuid
 from datetime import datetime
+
 
 def register_executives():
     """Register executive agents directly"""
     print("👑 BoarderframeOS Executive Registration")
     print("=" * 50)
-    
+
     # Executive agents
     executives = [
         {
@@ -56,7 +57,7 @@ def register_executives():
             "capabilities": ["programming", "architecture", "craftsmanship"]
         }
     ]
-    
+
     print("\n📝 Creating Executive Agents...")
     for exec in executives:
         # First ensure they exist in agents table
@@ -74,12 +75,12 @@ def register_executives():
             status = 'active',
             updated_at = CURRENT_TIMESTAMP;
         """
-        
+
         result = subprocess.run([
             "docker", "exec", "boarderframeos_postgres",
             "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", agent_query
         ], capture_output=True, text=True)
-        
+
         if result.returncode == 0:
             print(f"   ✅ Created agent: {exec['name']}")
         else:
@@ -87,7 +88,7 @@ def register_executives():
                 print(f"   ℹ️  {exec['name']} already exists in agents")
             else:
                 print(f"   ❌ Failed to create {exec['name']}: {result.stderr[:50]}")
-        
+
         # Now register in agent_registry
         registry_query = f"""
         INSERT INTO agent_registry (
@@ -113,20 +114,20 @@ def register_executives():
             metadata = EXCLUDED.metadata,
             updated_at = CURRENT_TIMESTAMP;
         """
-        
+
         result = subprocess.run([
             "docker", "exec", "boarderframeos_postgres",
             "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", registry_query
         ], capture_output=True, text=True)
-        
+
         if result.returncode == 0:
             print(f"   ✅ Registered: {exec['name']} ({exec['role']})")
         else:
             print(f"   ❌ Failed to register {exec['name']}: {result.stderr[:50]}")
-    
+
     # Register some key departments
     print("\n📝 Registering Key Departments...")
-    
+
     # Get some departments to register
     dept_query = """
     SELECT d.id, d.name, d.phase, d.priority, d.level, d.purpose
@@ -137,12 +138,12 @@ def register_executives():
     )
     LIMIT 10;
     """
-    
+
     result = subprocess.run([
         "docker", "exec", "boarderframeos_postgres",
         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", dept_query
     ], capture_output=True, text=True)
-    
+
     if result.returncode == 0 and result.stdout:
         for line in result.stdout.strip().split('\n'):
             if '|' in line:
@@ -154,7 +155,7 @@ def register_executives():
                     priority = parts[3] or "5"
                     level = parts[4]
                     purpose = parts[5] or "Department operations"
-                    
+
                     register_dept_query = f"""
                     INSERT INTO department_registry (
                         department_id, name, phase, priority, category,
@@ -174,44 +175,44 @@ def register_executives():
                         status = 'active',
                         updated_at = CURRENT_TIMESTAMP;
                     """
-                    
+
                     reg_result = subprocess.run([
                         "docker", "exec", "boarderframeos_postgres",
                         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", register_dept_query
                     ], capture_output=True, text=True)
-                    
+
                     if reg_result.returncode == 0:
                         print(f"   ✅ {name}")
                     else:
                         print(f"   ❌ {name}: {reg_result.stderr[:30]}")
-    
+
     # Show final counts
     print("\n📊 Final Registry Status...")
-    
+
     count_query = """
-    SELECT 
+    SELECT
         'Departments' as type, COUNT(*) as count FROM department_registry
     UNION ALL
-    SELECT 
-        'Executive Agents' as type, COUNT(*) as count 
-        FROM agent_registry 
+    SELECT
+        'Executive Agents' as type, COUNT(*) as count
+        FROM agent_registry
         WHERE metadata->>'executive' = 'true'
     UNION ALL
-    SELECT 
+    SELECT
         'Total Agents' as type, COUNT(*) as count FROM agent_registry
     UNION ALL
-    SELECT 
+    SELECT
         'Servers' as type, COUNT(*) as count FROM server_registry
     UNION ALL
-    SELECT 
+    SELECT
         'Databases' as type, COUNT(*) as count FROM database_registry;
     """
-    
+
     result = subprocess.run([
         "docker", "exec", "boarderframeos_postgres",
         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", count_query
     ], capture_output=True, text=True)
-    
+
     if result.returncode == 0:
         print("\nRegistry Contents:")
         for line in result.stdout.strip().split('\n'):
@@ -221,7 +222,7 @@ def register_executives():
                     type_name = parts[0].strip()
                     count = parts[1].strip()
                     print(f"   {type_name}: {count} registered")
-    
+
     print("\n✅ Executive Registration Complete!")
     print("\n🌐 View the updated registry at:")
     print("   http://localhost:8888 -> Registry tab")

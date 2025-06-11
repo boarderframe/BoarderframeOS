@@ -3,22 +3,23 @@ Database MCP Server for BoarderframeOS
 Provides database operations for agent data persistence
 """
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
-from typing import Dict, List, Optional, Any, Union
 import asyncio
+import hashlib
 import json
 import logging
-import uvicorn
 import sqlite3
-import aiosqlite
-from pathlib import Path
-from datetime import datetime
-import hashlib
 import time
+from collections import OrderedDict, defaultdict
 from contextlib import asynccontextmanager
-from collections import defaultdict, OrderedDict
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
+import aiosqlite
+import uvicorn
+from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
 
 # Configure logging
 logging.basicConfig(
@@ -81,27 +82,27 @@ class DatabaseResponse(BaseModel):
 # Connection Pool Implementation
 class SQLiteConnectionPool:
     """Connection pool for SQLite database"""
-    
+
     def __init__(self, db_path: Path, max_connections: int = 10):
         self.db_path = db_path
         self.max_connections = max_connections
         self.pool = asyncio.Queue(maxsize=max_connections)
         self.active_connections = 0
         self._initialized = False
-        
+
     async def initialize(self):
         """Initialize the connection pool"""
         if self._initialized:
             return
-            
+
         # Pre-populate the pool with connections
         for _ in range(min(3, self.max_connections)):  # Start with 3 connections
             conn = await self._create_connection()
             await self.pool.put(conn)
-            
+
         self._initialized = True
         logger.info(f"Connection pool initialized with {self.pool.qsize()} connections")
-        
+
     async def _create_connection(self):
         """Create a new database connection"""
         conn = await aiosqlite.connect(self.db_path)
@@ -113,12 +114,12 @@ class SQLiteConnectionPool:
         await conn.execute("PRAGMA temp_store = memory")
         self.active_connections += 1
         return conn
-        
+
     @asynccontextmanager
     async def get_connection(self):
         """Get a connection from the pool"""
         await self.initialize()
-        
+
         try:
             # Try to get from pool first
             conn = await asyncio.wait_for(self.pool.get(), timeout=1.0)
@@ -129,39 +130,39 @@ class SQLiteConnectionPool:
             else:
                 # Wait longer for a connection to be returned
                 conn = await self.pool.get()
-                
+
         try:
             yield conn
         finally:
             # Return connection to pool
             await self.pool.put(conn)
-            
+
     async def close_all(self):
         """Close all connections in the pool"""
         while not self.pool.empty():
             conn = await self.pool.get()
             await conn.close()
             self.active_connections -= 1
-            
+
 # Query Cache Implementation
 class QueryCache:
     """LRU cache for query results"""
-    
+
     def __init__(self, max_size: int = 1000, ttl: int = 300):
         self.max_size = max_size
         self.ttl = ttl
         self.cache = OrderedDict()
-        
+
     def _get_cache_key(self, sql: str, params: list) -> str:
         """Generate cache key for query"""
         cache_input = f"{sql}:{params}"
         return hashlib.md5(cache_input.encode()).hexdigest()
-        
+
     def get(self, sql: str, params: list):
         """Get cached result if available and not expired"""
         if not self._should_cache_query(sql):
             return None
-            
+
         cache_key = self._get_cache_key(sql, params)
         if cache_key in self.cache:
             result, timestamp = self.cache[cache_key]
@@ -173,24 +174,24 @@ class QueryCache:
                 # Expired, remove from cache
                 del self.cache[cache_key]
         return None
-        
+
     def set(self, sql: str, params: list, result):
         """Cache query result"""
         if not self._should_cache_query(sql):
             return
-            
+
         cache_key = self._get_cache_key(sql, params)
-        
+
         # Remove oldest if at capacity
         if len(self.cache) >= self.max_size:
             self.cache.popitem(last=False)
-            
+
         self.cache[cache_key] = (result, time.time())
-        
+
     def _should_cache_query(self, sql: str) -> bool:
         """Determine if query should be cached (only SELECT queries)"""
         return sql.strip().upper().startswith('SELECT')
-        
+
     def clear(self):
         """Clear all cached entries"""
         self.cache.clear()
@@ -198,13 +199,13 @@ class QueryCache:
 # Database Manager
 class DatabaseManager:
     """Manages SQLite database operations with connection pooling and caching"""
-    
+
     def __init__(self, db_path: Path):
         self.db_path = db_path
         self.is_initialized = False
         self.connection_pool = SQLiteConnectionPool(db_path)
         self.query_cache = QueryCache()
-        
+
         # Query statistics
         self.query_stats = {
             'total_queries': 0,
@@ -212,30 +213,30 @@ class DatabaseManager:
             'cache_misses': 0,
             'avg_query_time': 0
         }
-    
+
     async def initialize(self):
         """Initialize database with core tables"""
         if self.is_initialized:
             return
-        
+
         try:
             async with self.connection_pool.get_connection() as db:
             # Connection pool already enables foreign keys and optimizations
-                
+
                 # Core tables for BoarderframeOS
                 await self._create_core_tables(db)
                 await db.commit()
-                
+
                 self.is_initialized = True
                 logger.info(f"Database initialized at {self.db_path}")
-                
+
         except Exception as e:
             logger.error(f"Database initialization failed: {e}")
             raise HTTPException(status_code=500, detail=f"Database init failed: {e}")
-    
+
     async def _create_core_tables(self, db):
         """Create core system tables"""
-        
+
         # Agents table
         await db.execute("""
             CREATE TABLE IF NOT EXISTS agents (
@@ -253,7 +254,7 @@ class DatabaseManager:
                 FOREIGN KEY (parent_id) REFERENCES agents(id)
             )
         """)
-        
+
         # Agent memories table
         await db.execute("""
             CREATE TABLE IF NOT EXISTS agent_memories (
@@ -267,7 +268,7 @@ class DatabaseManager:
                 FOREIGN KEY (agent_id) REFERENCES agents(id)
             )
         """)
-        
+
         # Agent interactions table
         await db.execute("""
             CREATE TABLE IF NOT EXISTS agent_interactions (
@@ -281,7 +282,7 @@ class DatabaseManager:
                 FOREIGN KEY (target_agent) REFERENCES agents(id)
             )
         """)
-        
+
         # Metrics table
         await db.execute("""
             CREATE TABLE IF NOT EXISTS metrics (
@@ -294,7 +295,7 @@ class DatabaseManager:
                 FOREIGN KEY (agent_id) REFERENCES agents(id)
             )
         """)
-        
+
         # Evolution log table
         await db.execute("""
             CREATE TABLE IF NOT EXISTS evolution_log (
@@ -309,7 +310,7 @@ class DatabaseManager:
                 FOREIGN KEY (child_id) REFERENCES agents(id)
             )
         """)
-        
+
         # Tasks table
         await db.execute("""
             CREATE TABLE IF NOT EXISTS tasks (
@@ -326,7 +327,7 @@ class DatabaseManager:
                 FOREIGN KEY (agent_id) REFERENCES agents(id)
             )
         """)
-        
+
         # Create indexes for performance
         indexes = [
             "CREATE INDEX IF NOT EXISTS idx_agents_biome ON agents(biome)",
@@ -340,12 +341,12 @@ class DatabaseManager:
             "CREATE INDEX IF NOT EXISTS idx_tasks_agent ON tasks(agent_id)",
             "CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)"
         ]
-        
+
         for index_sql in indexes:
             await db.execute(index_sql)
-            
+
         # Create business-related tables
-        
+
         # Revenue tracking
         await db.execute("""
             CREATE TABLE IF NOT EXISTS revenue_transactions (
@@ -358,7 +359,7 @@ class DatabaseManager:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        
+
         # Customer subscriptions
         await db.execute("""
             CREATE TABLE IF NOT EXISTS customers (
@@ -370,7 +371,7 @@ class DatabaseManager:
                 created_by_agent TEXT
             )
         """)
-        
+
         # API usage for billing
         await db.execute("""
             CREATE TABLE IF NOT EXISTS api_usage (
@@ -381,7 +382,7 @@ class DatabaseManager:
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        
+
         # Create indexes for business tables
         business_indexes = [
             "CREATE INDEX IF NOT EXISTS idx_revenue_customer ON revenue_transactions(customer_id)",
@@ -392,18 +393,18 @@ class DatabaseManager:
             "CREATE INDEX IF NOT EXISTS idx_api_usage_customer ON api_usage(customer_id)",
             "CREATE INDEX IF NOT EXISTS idx_api_usage_endpoint ON api_usage(endpoint)"
         ]
-        
+
         for index_sql in business_indexes:
             await db.execute(index_sql)
-    
+
     async def execute_query(self, request: QueryRequest) -> DatabaseResponse:
         """Execute SQL query with connection pooling and caching"""
         start_time = time.time()
         self.query_stats['total_queries'] += 1
-        
+
         try:
             await self.initialize()
-            
+
             # Check cache for SELECT queries
             if request.sql.strip().upper().startswith('SELECT'):
                 cached_result = self.query_cache.get(request.sql, request.params)
@@ -416,16 +417,16 @@ class DatabaseManager:
                         timestamp=datetime.now().isoformat()
                     )
                 self.query_stats['cache_misses'] += 1
-            
+
             # Execute query using connection pool
             async with self.connection_pool.get_connection() as db:
                 cursor = await db.execute(request.sql, request.params)
-                
+
                 if request.sql.strip().upper().startswith(('INSERT', 'UPDATE', 'DELETE')):
                     rows_affected = cursor.rowcount
                     await db.commit()
                     data = None
-                    
+
                     # Clear relevant cache entries for write operations
                     self.query_cache.clear()
                 else:
@@ -436,24 +437,24 @@ class DatabaseManager:
                         row = await cursor.fetchone()
                         data = dict(row) if row else None
                     rows_affected = 0
-                    
+
                     # Cache SELECT results
                     if request.sql.strip().upper().startswith('SELECT'):
                         self.query_cache.set(request.sql, request.params, data)
-                
+
                 # Update query timing statistics
                 query_time = time.time() - start_time
                 self.query_stats['avg_query_time'] = (
                     self.query_stats['avg_query_time'] * (self.query_stats['total_queries'] - 1) + query_time
                 ) / self.query_stats['total_queries']
-                
+
                 return DatabaseResponse(
                     success=True,
                     data=data,
                     rows_affected=rows_affected,
                     timestamp=datetime.now().isoformat()
                 )
-                
+
         except Exception as e:
             logger.error(f"Query execution failed: {e}")
             return DatabaseResponse(
@@ -461,25 +462,25 @@ class DatabaseManager:
                 error=str(e),
                 timestamp=datetime.now().isoformat()
             )
-    
+
     async def insert_data(self, request: InsertRequest) -> DatabaseResponse:
         """Insert data into table"""
         try:
             await self.initialize()
-            
+
             columns = list(request.data.keys())
             placeholders = ['?' for _ in columns]
             values = [request.data[col] for col in columns]
-            
+
             sql = f"""
-                INSERT OR {request.on_conflict} INTO {request.table} 
-                ({', '.join(columns)}) 
+                INSERT OR {request.on_conflict} INTO {request.table}
+                ({', '.join(columns)})
                 VALUES ({', '.join(placeholders)})
             """
-            
+
             query_request = QueryRequest(sql=sql, params=values)
             return await self.execute_query(query_request)
-            
+
         except Exception as e:
             logger.error(f"Insert failed: {e}")
             return DatabaseResponse(
@@ -487,27 +488,27 @@ class DatabaseManager:
                 error=str(e),
                 timestamp=datetime.now().isoformat()
             )
-    
+
     async def update_data(self, request: UpdateRequest) -> DatabaseResponse:
         """Update data in table"""
         try:
             await self.initialize()
-            
+
             set_clauses = [f"{col} = ?" for col in request.data.keys()]
             where_clauses = [f"{col} = ?" for col in request.where.keys()]
-            
+
             set_values = list(request.data.values())
             where_values = list(request.where.values())
-            
+
             sql = f"""
-                UPDATE {request.table} 
+                UPDATE {request.table}
                 SET {', '.join(set_clauses)}
                 WHERE {' AND '.join(where_clauses)}
             """
-            
+
             query_request = QueryRequest(sql=sql, params=set_values + where_values)
             return await self.execute_query(query_request)
-            
+
         except Exception as e:
             logger.error(f"Update failed: {e}")
             return DatabaseResponse(
@@ -515,23 +516,23 @@ class DatabaseManager:
                 error=str(e),
                 timestamp=datetime.now().isoformat()
             )
-    
+
     async def delete_data(self, request: DeleteRequest) -> DatabaseResponse:
         """Delete data from table"""
         try:
             await self.initialize()
-            
+
             where_clauses = [f"{col} = ?" for col in request.where.keys()]
             where_values = list(request.where.values())
-            
+
             sql = f"""
                 DELETE FROM {request.table}
                 WHERE {' AND '.join(where_clauses)}
             """
-            
+
             query_request = QueryRequest(sql=sql, params=where_values)
             return await self.execute_query(query_request)
-            
+
         except Exception as e:
             logger.error(f"Delete failed: {e}")
             return DatabaseResponse(
@@ -539,39 +540,39 @@ class DatabaseManager:
                 error=str(e),
                 timestamp=datetime.now().isoformat()
             )
-    
+
     async def create_table(self, request: CreateTableRequest) -> DatabaseResponse:
         """Create new table"""
         try:
             await self.initialize()
-            
+
             column_defs = [f"{col} {datatype}" for col, datatype in request.column_schema.items()]
-            
+
             sql = f"""
                 CREATE TABLE IF NOT EXISTS {request.table} (
                     {', '.join(column_defs)}
                 )
             """
-            
+
             async with self.connection_pool.get_connection() as db:
                 await db.execute(sql)
-                
+
                 # Create indexes if specified
                 for index in request.indexes:
                     index_sql = f"CREATE INDEX IF NOT EXISTS idx_{request.table}_{index} ON {request.table}({index})"
                     await db.execute(index_sql)
-                
+
                 await db.commit()
-                
+
                 # Clear cache after schema changes
                 self.query_cache.clear()
-                
+
                 return DatabaseResponse(
                     success=True,
                     data={"table_created": request.table, "indexes": request.indexes},
                     timestamp=datetime.now().isoformat()
                 )
-                
+
         except Exception as e:
             logger.error(f"Create table failed: {e}")
             return DatabaseResponse(
@@ -621,7 +622,7 @@ async def list_tables():
         fetch_all=True
     )
     result = await db_manager.execute_query(query)
-    
+
     if result.success:
         tables = [row['name'] for row in result.data]
         return {"tables": tables}
@@ -636,7 +637,7 @@ async def get_table_schema(table: str):
         fetch_all=True
     )
     result = await db_manager.execute_query(query)
-    
+
     if result.success:
         return {"table": table, "schema": result.data}
     else:
@@ -647,28 +648,28 @@ async def get_database_stats():
     """Get database statistics"""
     try:
         await db_manager.initialize()
-        
+
         async with db_manager.connection_pool.get_connection() as db:
             # Get table counts
             cursor = await db.execute("""
                 SELECT name FROM sqlite_master WHERE type='table'
             """)
             tables = await cursor.fetchall()
-            
+
             stats = {"tables": {}}
-            
+
             for table in tables:
                 table_name = table[0]
                 cursor = await db.execute(f"SELECT COUNT(*) as count FROM {table_name}")
                 count_result = await cursor.fetchone()
                 stats["tables"][table_name] = count_result[0]
-            
+
             # Database size
             db_size = DB_PATH.stat().st_size if DB_PATH.exists() else 0
             stats["database_size_bytes"] = db_size
-            
+
             return stats
-            
+
     except Exception as e:
         return {"error": str(e)}
 
@@ -678,22 +679,22 @@ async def get_performance_stats():
     try:
         cache_hit_rate = 0
         if db_manager.query_stats['total_queries'] > 0:
-            cache_hit_rate = (db_manager.query_stats['cache_hits'] / 
+            cache_hit_rate = (db_manager.query_stats['cache_hits'] /
                             (db_manager.query_stats['cache_hits'] + db_manager.query_stats['cache_misses']))
-        
+
         pool_stats = {
             "active_connections": db_manager.connection_pool.active_connections,
             "max_connections": db_manager.connection_pool.max_connections,
             "available_connections": db_manager.connection_pool.pool.qsize(),
             "pool_initialized": db_manager.connection_pool._initialized
         }
-        
+
         cache_stats = {
             "cached_entries": len(db_manager.query_cache.cache),
             "cache_size_limit": db_manager.query_cache.max_size,
             "cache_ttl": db_manager.query_cache.ttl
         }
-        
+
         query_stats = {
             "total_queries": db_manager.query_stats['total_queries'],
             "cache_hits": db_manager.query_stats['cache_hits'],
@@ -701,30 +702,30 @@ async def get_performance_stats():
             "cache_hit_rate": f"{cache_hit_rate:.2%}",
             "avg_query_time": f"{db_manager.query_stats['avg_query_time']:.4f}s"
         }
-        
+
         return {
             "connection_pool": pool_stats,
             "query_cache": cache_stats,
             "query_performance": query_stats,
             "timestamp": datetime.now().isoformat()
         }
-        
+
     except Exception as e:
         return {"error": str(e)}
 
 if __name__ == "__main__":
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="Database MCP Server")
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind to")
     parser.add_argument("--port", type=int, default=8004, help="Port to bind to")
     parser.add_argument("--reload", action="store_true", help="Enable auto-reload")
-    
+
     args = parser.parse_args()
-    
+
     logger.info(f"Starting Database MCP Server on {args.host}:{args.port}")
     logger.info(f"Database location: {DB_PATH}")
-    
+
     uvicorn.run(
         "database_server:app",
         host=args.host,

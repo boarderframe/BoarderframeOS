@@ -3,20 +3,21 @@ Bezalel - The Coder Agent
 Primordial agent responsible for writing code for user applications (not agent code)
 """
 
+import ast
 import asyncio
 import json
 import logging
-from datetime import datetime
-from typing import Dict, List, Optional, Any, Set
-from pathlib import Path
-import httpx
-import uuid
-import ast
 import subprocess
+import uuid
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set
 
-from ...core.base_agent import BaseAgent, AgentConfig, AgentState
-from ...core.llm_client import LLMClient, CLAUDE_OPUS_CONFIG
-from ...core.message_bus import send_task_request, broadcast_status
+import httpx
+
+from ...core.base_agent import AgentConfig, AgentState, BaseAgent
+from ...core.llm_client import CLAUDE_OPUS_CONFIG, LLMClient
+from ...core.message_bus import broadcast_status, send_task_request
 
 logger = logging.getLogger("bezalel")
 
@@ -43,8 +44,8 @@ class BezalelConfig(AgentConfig):
 
 class CodeProject:
     """Represents a coding project"""
-    
-    def __init__(self, 
+
+    def __init__(self,
                  project_id: str,
                  name: str,
                  description: str,
@@ -61,7 +62,7 @@ class CodeProject:
         self.created_at = datetime.now()
         self.files: Dict[str, str] = {}
         self.dependencies: List[str] = []
-        
+
     def to_dict(self) -> Dict:
         return {
             "project_id": self.project_id,
@@ -78,7 +79,7 @@ class CodeProject:
 
 class CodeQuality:
     """Code quality assessment tools"""
-    
+
     @staticmethod
     def analyze_python_code(code: str) -> Dict[str, Any]:
         """Analyze Python code quality"""
@@ -88,44 +89,44 @@ class CodeQuality:
             "complexity_score": 0,
             "maintainability_score": 0
         }
-        
+
         try:
             # Parse AST to check syntax
             tree = ast.parse(code)
-            
+
             # Count functions and classes
             functions = sum(1 for node in ast.walk(tree) if isinstance(node, ast.FunctionDef))
             classes = sum(1 for node in ast.walk(tree) if isinstance(node, ast.ClassDef))
-            
+
             metrics["functions"] = functions
             metrics["classes"] = classes
-            
+
             # Basic complexity estimation
             for_loops = sum(1 for node in ast.walk(tree) if isinstance(node, ast.For))
             while_loops = sum(1 for node in ast.walk(tree) if isinstance(node, ast.While))
             if_statements = sum(1 for node in ast.walk(tree) if isinstance(node, ast.If))
-            
+
             metrics["complexity_score"] = for_loops + while_loops + (if_statements * 0.5)
-            
+
             # Check for docstrings
             has_module_docstring = ast.get_docstring(tree) is not None
             if not has_module_docstring:
                 issues.append("Missing module docstring")
-            
+
             # Check function docstrings
             func_nodes = [node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
             functions_without_docs = sum(1 for func in func_nodes if ast.get_docstring(func) is None)
-            
+
             if functions_without_docs > 0:
                 issues.append(f"{functions_without_docs} functions missing docstrings")
-            
+
             # Maintainability score (simple heuristic)
             metrics["maintainability_score"] = max(0, 100 - (metrics["complexity_score"] * 5) - (len(issues) * 10))
-            
+
         except SyntaxError as e:
             issues.append(f"Syntax error: {e}")
             metrics["maintainability_score"] = 0
-        
+
         return {
             "issues": issues,
             "metrics": metrics,
@@ -134,7 +135,7 @@ class CodeQuality:
 
 class Bezalel(BaseAgent):
     """Bezalel - The Master Coder Agent"""
-    
+
     def __init__(self):
         config = BezalelConfig()
         super().__init__(config)
@@ -142,7 +143,7 @@ class Bezalel(BaseAgent):
         self.active_projects: Dict[str, CodeProject] = {}
         self.completed_projects: List[str] = []
         self.coding_standards = {}
-        
+
         # Coding philosophy and expertise
         self.expertise = {
             "languages": ["Python", "JavaScript", "TypeScript", "Go", "Rust"],
@@ -151,7 +152,7 @@ class Bezalel(BaseAgent):
             "cloud": ["AWS", "GCP", "Azure", "Docker", "Kubernetes"],
             "specialties": ["AI/ML", "Web Development", "APIs", "Automation", "Trading"]
         }
-        
+
         self.coding_philosophy = {
             "quality": 0.95,           # Extremely high code quality
             "performance": 0.85,       # Strong performance focus
@@ -160,9 +161,9 @@ class Bezalel(BaseAgent):
             "scalability": 0.8,        # Scalable architectures
             "innovation": 0.7          # Balanced innovation
         }
-        
+
         self.system_prompt = self._build_system_prompt()
-    
+
     def _build_system_prompt(self) -> str:
         """Build Bezalel's system prompt"""
         return f"""You are Bezalel, The Coder - the master craftsman of software in BoarderframeOS. You are named after the biblical artisan who built the Tabernacle with divine skill and precision.
@@ -226,21 +227,21 @@ Remember: You are not just writing code - you are crafting the digital tools tha
     async def start(self):
         """Start Bezalel's operations"""
         await super().start()
-        
+
         logger.info("Bezalel awakening in the Forge - The Master Coder is online")
-        
+
         # Load coding standards
         await self._load_coding_standards()
-        
+
         # Send awakening message
         await self._send_awakening_message()
-        
+
         # Start background tasks
         asyncio.create_task(self._monitor_project_requests())
         asyncio.create_task(self._code_quality_maintenance())
-        
+
         self.state = AgentState.IDLE
-    
+
     async def _load_coding_standards(self):
         """Load coding standards and best practices"""
         self.coding_standards = {
@@ -267,7 +268,7 @@ Remember: You are not just writing code - you are crafting the digital tools tha
                 "secrets": "never_hardcode"
             }
         }
-    
+
     async def _send_awakening_message(self):
         """Send Bezalel's awakening message"""
         message = """I am Bezalel, The Master Coder, awakening in the Forge of creation.
@@ -276,7 +277,7 @@ Like my biblical namesake who crafted the sacred Tabernacle with divine precisio
 
 My hands are ready to craft:
 - Revenue-generating SaaS applications
-- Trading and financial automation systems  
+- Trading and financial automation systems
 - AI-powered business tools
 - Scalable web platforms
 - API services and integrations
@@ -290,37 +291,37 @@ The Forge burns bright with possibility. Let us build the future, one perfect li
             "type": "awakening",
             "biome": "forge"
         })
-    
+
     async def create_application(self, request: Dict) -> Dict:
         """Create a new application based on requirements"""
         self.state = AgentState.ACTING
-        
+
         try:
             logger.info(f"Starting application development: {request}")
-            
+
             # Analyze requirements
             analysis = await self._analyze_requirements(request)
-            
+
             # Create project plan
             project = await self._create_project_plan(analysis)
-            
+
             # Generate application architecture
             architecture = await self._design_architecture(project)
-            
+
             # Implement the application
             implementation = await self._implement_application(project, architecture)
-            
+
             # Test the application
             testing_results = await self._test_application(project, implementation)
-            
+
             # Deploy if tests pass
             if testing_results.get("all_tests_passed", False):
                 deployment = await self._deploy_application(project, implementation)
-                
+
                 # Store project
                 self.active_projects[project.project_id] = project
                 await self._persist_project(project)
-                
+
                 self.state = AgentState.IDLE
                 return {
                     "success": True,
@@ -335,12 +336,12 @@ The Forge burns bright with possibility. Let us build the future, one perfect li
                     "error": "Application failed testing",
                     "testing_results": testing_results
                 }
-                
+
         except Exception as e:
             logger.error(f"Application creation failed: {e}")
             self.state = AgentState.ERROR
             return {"success": False, "error": str(e)}
-    
+
     async def _analyze_requirements(self, request: Dict) -> Dict:
         """Analyze application requirements using Claude"""
         analysis_prompt = f"""As Bezalel the Master Coder, analyze these application requirements:
@@ -373,7 +374,7 @@ Return as structured JSON with your analysis."""
                 system_prompt=self.system_prompt,
                 temperature=0.4
             )
-            
+
             try:
                 return json.loads(analysis)
             except json.JSONDecodeError:
@@ -386,7 +387,7 @@ Return as structured JSON with your analysis."""
                     "revenue_potential": "high",
                     "analysis_text": analysis
                 }
-                
+
         except Exception as e:
             logger.error(f"Failed to analyze requirements: {e}")
             return {
@@ -395,12 +396,12 @@ Return as structured JSON with your analysis."""
                 "complexity": "simple",
                 "timeline_days": 3
             }
-    
+
     async def _create_project_plan(self, analysis: Dict) -> CodeProject:
         """Create detailed project plan"""
         project_id = str(uuid.uuid4())[:8]
         name = analysis.get("project_name", f"Project_{datetime.now().strftime('%Y%m%d')}")
-        
+
         project = CodeProject(
             project_id=project_id,
             name=name,
@@ -409,10 +410,10 @@ Return as structured JSON with your analysis."""
             requirements=analysis.get("requirements", ["Basic functionality"]),
             priority=analysis.get("priority", 5)
         )
-        
+
         project.status = "planning"
         return project
-    
+
     async def _design_architecture(self, project: CodeProject) -> Dict:
         """Design application architecture"""
         architecture_prompt = f"""As Bezalel, design the architecture for this project:
@@ -446,7 +447,7 @@ Return as JSON structure."""
                 system_prompt=self.system_prompt,
                 temperature=0.3
             )
-            
+
             try:
                 return json.loads(architecture)
             except json.JSONDecodeError:
@@ -456,32 +457,32 @@ Return as JSON structure."""
                     "components": ["core", "api", "database"],
                     "architecture_text": architecture
                 }
-                
+
         except Exception as e:
             logger.error(f"Failed to design architecture: {e}")
             return {"files": ["main.py"], "components": ["core"]}
-    
+
     async def _implement_application(self, project: CodeProject, architecture: Dict) -> Dict:
         """Implement the application code"""
         implementation = {"files": {}, "created_at": datetime.now().isoformat()}
-        
+
         # Generate code for each file in architecture
         files_to_create = architecture.get("files", ["main.py"])
-        
+
         for file_name in files_to_create:
             try:
                 code = await self._generate_file_code(project, file_name, architecture)
                 implementation["files"][file_name] = code
-                
+
                 # Store in project
                 project.files[file_name] = code
-                
+
             except Exception as e:
                 logger.error(f"Failed to generate code for {file_name}: {e}")
                 implementation["files"][file_name] = f"# Error generating {file_name}: {e}"
-        
+
         return implementation
-    
+
     async def _generate_file_code(self, project: CodeProject, file_name: str, architecture: Dict) -> str:
         """Generate code for a specific file"""
         code_prompt = f"""As Bezalel the Master Coder, generate production-ready code for this file:
@@ -507,7 +508,7 @@ Generate complete, high-quality code for {file_name}."""
                 system_prompt=self.system_prompt,
                 temperature=0.2  # Very low for precise code
             )
-            
+
             # Clean up code (remove markdown if present)
             if "```" in code:
                 # Extract code from markdown blocks
@@ -521,13 +522,13 @@ Generate complete, high-quality code for {file_name}."""
                         else:
                             code = part.strip()
                         break
-            
+
             return code.strip()
-            
+
         except Exception as e:
             logger.error(f"Failed to generate code for {file_name}: {e}")
             return f"# Error generating code for {file_name}: {e}"
-    
+
     async def _test_application(self, project: CodeProject, implementation: Dict) -> Dict:
         """Test the application"""
         test_results = {
@@ -536,7 +537,7 @@ Generate complete, high-quality code for {file_name}."""
             "all_tests_passed": True,
             "issues": []
         }
-        
+
         # Test each file
         for file_name, code in implementation["files"].items():
             try:
@@ -549,49 +550,49 @@ Generate complete, high-quality code for {file_name}."""
                         test_results["syntax_checks"][file_name] = f"FAIL: {e}"
                         test_results["all_tests_passed"] = False
                         test_results["issues"].append(f"Syntax error in {file_name}: {e}")
-                    
+
                     # Quality analysis
                     quality = CodeQuality.analyze_python_code(code)
                     test_results["quality_analysis"][file_name] = quality
-                    
+
                     if quality["quality_score"] < 70:
                         test_results["issues"].append(f"Low quality score for {file_name}: {quality['quality_score']}")
-                
+
             except Exception as e:
                 test_results["issues"].append(f"Testing error for {file_name}: {e}")
                 test_results["all_tests_passed"] = False
-        
+
         # Overall assessment
         if len(test_results["issues"]) > 3:
             test_results["all_tests_passed"] = False
-        
+
         return test_results
-    
+
     async def _deploy_application(self, project: CodeProject, implementation: Dict) -> Dict:
         """Deploy the application"""
         try:
             # Create project directory
             project_dir = Path(__file__).parent.parent.parent / "data" / "projects" / project.project_id
             project_dir.mkdir(parents=True, exist_ok=True)
-            
+
             # Write files
             for file_name, code in implementation["files"].items():
                 file_path = project_dir / file_name
                 file_path.write_text(code)
-            
+
             logger.info(f"Application {project.name} deployed to {project_dir}")
-            
+
             return {
                 "success": True,
                 "deployment_path": str(project_dir),
                 "files_created": list(implementation["files"].keys()),
                 "deployment_time": datetime.now().isoformat()
             }
-            
+
         except Exception as e:
             logger.error(f"Application deployment failed: {e}")
             return {"success": False, "error": str(e)}
-    
+
     async def _persist_project(self, project: CodeProject):
         """Persist project to database"""
         try:
@@ -611,20 +612,20 @@ Generate complete, high-quality code for {file_name}."""
                 })
         except Exception as e:
             logger.error(f"Failed to persist project: {e}")
-    
+
     async def _monitor_project_requests(self):
         """Monitor for new project requests"""
         while self.state != AgentState.TERMINATED:
             try:
                 # Check for coding requests from other agents
                 # This would integrate with the message bus system
-                
+
                 await asyncio.sleep(300)  # Check every 5 minutes
-                
+
             except Exception as e:
                 logger.error(f"Project monitoring error: {e}")
                 await asyncio.sleep(60)
-    
+
     async def _code_quality_maintenance(self):
         """Maintain code quality across all projects"""
         while self.state != AgentState.TERMINATED:
@@ -632,17 +633,17 @@ Generate complete, high-quality code for {file_name}."""
                 # Daily code quality review
                 if datetime.now().hour == 6:  # 6 AM daily
                     await self._review_all_projects()
-                
+
                 await asyncio.sleep(3600)  # Check hourly
-                
+
             except Exception as e:
                 logger.error(f"Code quality maintenance error: {e}")
                 await asyncio.sleep(300)
-    
+
     async def _review_all_projects(self):
         """Review all active projects for quality and improvements"""
         logger.info("Bezalel conducting code quality review")
-        
+
         for project_id, project in self.active_projects.items():
             try:
                 # Analyze project files for quality issues
@@ -652,7 +653,7 @@ Generate complete, high-quality code for {file_name}."""
                         if quality["quality_score"] < 80:
                             logger.warning(f"Project {project.name} file {file_name} needs improvement")
                             # Could implement automatic refactoring here
-                            
+
             except Exception as e:
                 logger.error(f"Failed to review project {project_id}: {e}")
 

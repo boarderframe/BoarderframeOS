@@ -1,29 +1,42 @@
 {
   "mcpServers": {
     "boarderframe-fs": {
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/cosburn/BoarderframeOS"
+      ],
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/cosburn/BoarderframeOS"],
       "env": {}
     },
     "boarderframeos-filesystem": {
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/cosburn/BoarderframeOS"
+      ],
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/cosburn/BoarderframeOS"],
       "env": {}
     },
     "boarderframeos-memory": {
-      "command": "npx", 
-      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "command": "npx",
       "env": {}
     },
     "boarderframeos-postgres": {
+      "args": [
+        "/Users/cosburn/BoarderframeOS/mcp/database_server_postgres.py"
+      ],
       "command": "python",
-      "args": ["/Users/cosburn/BoarderframeOS/mcp/database_server_postgres.py"],
       "env": {
-        "POSTGRES_HOST": "localhost",
-        "POSTGRES_PORT": "5434",
         "POSTGRES_DB": "boarderframeos",
-        "POSTGRES_USER": "boarderframe",
-        "POSTGRES_PASSWORD": "boarderframe"
+        "POSTGRES_HOST": "localhost",
+        "POSTGRES_PASSWORD": "boarderframe",
+        "POSTGRES_PORT": "5434",
+        "POSTGRES_USER": "boarderframe"
       }
     }
   }

@@ -84,7 +84,7 @@ from core.temple_router import TempleRouter
 
 class BoarderframeDepartment:
     """CrewAI-based department structure"""
-    
+
     def __init__(self, name: str, leader_config: dict):
         # Department head (CrewAI Manager)
         self.leader = Agent(
@@ -92,7 +92,7 @@ class BoarderframeDepartment:
             goal=leader_config['goal'],
             llm=TempleRouter.get_model_for_tier("department_head")
         )
-        
+
         # LangGraph orchestration
         self.workflow = StateGraph(DepartmentState)
         self.workflow.add_node("analyze", self.analyze_task)
@@ -102,7 +102,7 @@ class BoarderframeDepartment:
 # The Temple LLM Router
 class TempleRouter:
     """Centralized LLM routing by agent tier"""
-    
+
     @classmethod
     def get_model_for_tier(cls, tier: str):
         tier_models = {
@@ -129,7 +129,7 @@ async def send_agent_message(agent_id: str, message: str):
         task={"type": "user_chat", "message": message},
         priority=MessagePriority.NORMAL
     )
-    
+
     # Stream real-time updates via Redis
     await redis_client.xadd(
         f"agent_responses:{correlation_id}",
@@ -142,7 +142,7 @@ from qdrant_client import QdrantClient
 async def store_agent_memory(agent_id: str, content: str, importance: float):
     """Store semantic memory in Qdrant"""
     embedding = await get_embedding(content)
-    
+
     await qdrant_client.upsert(
         collection_name=f"agent_memory_{agent_id}",
         points=[{
@@ -176,13 +176,13 @@ async def filesystem_operation(self, action: str, **params):
 
 ### **Agent Development Tier:**
 - **Adam** (`agents/primordials/adam.py`): The Creator, builds new agents
-- **Eve** (`agents/primordials/eve.py`): The Evolver, agent adaptation  
+- **Eve** (`agents/primordials/eve.py`): The Evolver, agent adaptation
 - **Bezalel** (`agents/primordials/bezalel.py`): Master Programmer, technical implementation
 
 ### **Department Leaders (24 Departments):**
 Each department has a biblical leader + 5 specialized native agents:
 - **Finance**: Levi + Treasury agents
-- **Sales**: Benjamin + Revenue agents  
+- **Sales**: Benjamin + Revenue agents
 - **Engineering**: Bezalel + Code agents
 - **Security**: Gad + Defense agents
 - [Full list in `departments/boarderframeos-departments.json`]
@@ -191,7 +191,7 @@ Each department has a biblical leader + 5 specialized native agents:
 
 ### **User ↔ Agent Chat Flow:**
 1. User types in Control Center
-2. Message sent via `send_message_to_agent()` 
+2. Message sent via `send_message_to_agent()`
 3. Message bus routes to target agent
 4. Agent's `handle_user_chat()` processes with LLM
 5. Response sent back via message bus correlation ID
@@ -248,7 +248,7 @@ await send_task_request(
 
 ## 🚀 **Future Roadmap**
 
-### **Phase 1: Complete Agent Factory** 
+### **Phase 1: Complete Agent Factory**
 - Finish Adam's automated agent generation
 - Implement David → Adam communication for agent requests
 - Build template system for rapid agent creation
@@ -353,7 +353,7 @@ This directory also contains Claude CLI integration tools:
 
 ### **Executable Scripts:**
 - `start-claude`: Interactive terminal launcher
-- `claudectl`: CLI wrapper for programmatic execution  
+- `claudectl`: CLI wrapper for programmatic execution
 - `claude-launcher`: Project root navigation
 - `claude-terminal`: Direct terminal interface
 

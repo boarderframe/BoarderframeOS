@@ -10,10 +10,10 @@ current_dir = str(Path(__file__).parent)
 parent_dir = str(Path(__file__).parent.parent)
 sys.path = [p for p in sys.path if p not in (current_dir, parent_dir, '')]
 
-from mcp import types
-from mcp.server import Server, NotificationOptions
-from mcp.server.models import InitializationOptions
 import mcp.server.stdio
+from mcp import types
+from mcp.server import NotificationOptions, Server
+from mcp.server.models import InitializationOptions
 
 server = Server("test")
 

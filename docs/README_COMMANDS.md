@@ -53,7 +53,7 @@ Press **Ctrl+C** in the terminal running the server
 ## Dashboard Features
 
 ✅ **System Overview** - Agent status, metrics
-✅ **Solomon Interface** - Chat with chief of staff  
+✅ **Solomon Interface** - Chat with chief of staff
 ✅ **Setup Guide** - Built-in instructions
 ✅ **Status Monitoring** - Real-time updates
 ✅ **Quick Actions** - System controls

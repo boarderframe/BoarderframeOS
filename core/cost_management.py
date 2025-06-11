@@ -7,14 +7,14 @@ Controls API usage, throttling, and cost optimization settings
 API_COST_SETTINGS = {
     # Enable/disable cost optimization features
     "cost_optimization_enabled": True,
-    
+
     # Agent idle behavior
     "idle_mode": {
         "enabled": True,
         "check_interval_seconds": 5,  # How often to check for new work
         "max_idle_time_minutes": 60,  # Max time to stay completely idle
     },
-    
+
     # Message filtering for API calls
     "message_filtering": {
         "enabled": True,
@@ -24,7 +24,7 @@ API_COST_SETTINGS = {
         ],
         "routine_message_threshold": 5,  # Process routine messages in batches
     },
-    
+
     # API rate limiting
     "rate_limiting": {
         "enabled": True,
@@ -32,7 +32,7 @@ API_COST_SETTINGS = {
         "max_calls_per_hour": 300,     # Per agent
         "max_calls_per_day": 2000,     # Per agent
     },
-    
+
     # Cost monitoring
     "cost_monitoring": {
         "enabled": True,
@@ -41,14 +41,14 @@ API_COST_SETTINGS = {
         "warning_threshold_usd": 40.0,  # Warning when approaching limit
         "emergency_stop_usd": 55.0,    # Emergency stop if exceeded
     },
-    
+
     # Smart batching
     "smart_batching": {
         "enabled": True,
         "batch_size": 5,               # Batch multiple messages together
         "batch_timeout_seconds": 30,   # Max time to wait for batch
     },
-    
+
     # Emergency cost controls
     "emergency_controls": {
         "auto_shutdown_on_budget_exceeded": True,
@@ -106,19 +106,19 @@ def estimate_daily_cost(agent_name: str, calls_per_day: int, model: str = "claud
     """Estimate daily cost for an agent"""
     if model not in MODEL_COSTS:
         model = "claude-3-5-sonnet-latest"
-    
+
     model_cost = MODEL_COSTS[model]
     tokens_per_call = model_cost["estimated_tokens_per_call"]
     input_cost = model_cost["input_cost_per_1k_tokens"]
     output_cost = model_cost["output_cost_per_1k_tokens"]
-    
+
     # Assume 70% input, 30% output tokens
     input_tokens = tokens_per_call * 0.7
     output_tokens = tokens_per_call * 0.3
-    
+
     cost_per_call = (input_tokens / 1000 * input_cost) + (output_tokens / 1000 * output_cost)
     daily_cost = cost_per_call * calls_per_day
-    
+
     return daily_cost
 
 def get_cost_optimization_status() -> dict:
@@ -137,38 +137,38 @@ def get_cost_optimization_status() -> dict:
 if __name__ == "__main__":
     print("💰 BoarderframeOS Cost Management Configuration")
     print("=" * 50)
-    
+
     # Show optimization status
     status = get_cost_optimization_status()
     for key, value in status.items():
         print(f"✅ {key}: {value}")
-    
+
     print(f"\n📊 Cost Estimates:")
-    
+
     # Before optimization
     calls_before = 86400  # Every second for 24 hours
     cost_before_solomon = estimate_daily_cost("solomon", calls_before)
     cost_before_david = estimate_daily_cost("david", calls_before)
-    
+
     print(f"Before optimization (continuous polling):")
     print(f"  Solomon: ${cost_before_solomon:.2f}/day")
     print(f"  David: ${cost_before_david:.2f}/day")
     print(f"  Total: ${cost_before_solomon + cost_before_david:.2f}/day")
-    
+
     # After optimization
     calls_after = 10  # Only when needed
     cost_after_solomon = estimate_daily_cost("solomon", calls_after)
     cost_after_david = estimate_daily_cost("david", calls_after)
-    
+
     print(f"\nAfter optimization (event-driven):")
     print(f"  Solomon: ${cost_after_solomon:.2f}/day")
     print(f"  David: ${cost_after_david:.2f}/day")
     print(f"  Total: ${cost_after_solomon + cost_after_david:.2f}/day")
-    
+
     # Savings
     total_savings = (cost_before_solomon + cost_before_david) - (cost_after_solomon + cost_after_david)
     savings_percent = (total_savings / (cost_before_solomon + cost_before_david)) * 100
-    
+
     print(f"\n💡 Savings:")
     print(f"  Daily savings: ${total_savings:.2f}")
     print(f"  Monthly savings: ${total_savings * 30:.2f}")

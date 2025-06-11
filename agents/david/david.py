@@ -3,13 +3,13 @@ David Agent - BoarderframeOS
 CEO Agent with strategic planning and organizational management capabilities
 """
 
-import sys
-import os
-import json
 import asyncio
+import json
+import os
+import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 # Load environment variables from .env file
 try:
@@ -20,16 +20,17 @@ except ImportError:
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from core.base_agent import BaseAgent, AgentConfig
+from core.base_agent import AgentConfig, BaseAgent
 from core.llm_client import LLMClient
 from core.message_bus import message_bus
+
 
 class David(BaseAgent):
     """
     David - CEO Agent
     Handles strategic leadership, organizational management, and resource allocation
     """
-    
+
     def __init__(self, config):
         """Initialize with CEO capabilities"""
         super().__init__(config)
@@ -48,7 +49,7 @@ class David(BaseAgent):
             "agent_efficiency": {},
             "customer_satisfaction": 0
         }
-    
+
     def _initialize_strategic_plan(self) -> Dict[str, Any]:
         """Initialize the strategic plan"""
         return {
@@ -65,24 +66,24 @@ class David(BaseAgent):
                 "Develop automated customer acquisition systems"
             ]
         }
-    
+
     async def think(self, context: Dict[str, Any]) -> str:
         """CEO-level strategic reasoning process - Cost-optimized"""
-        
+
         # Check if there are new messages or urgent tasks
         new_messages = context.get('new_messages', [])
-        
+
         # If no new messages, don't make expensive LLM calls
         if not new_messages:
             return "No new strategic issues - remaining idle to conserve API usage"
-        
+
         # Check for strategic keywords in messages
         strategic_keywords = ['strategic', 'urgent', 'critical', 'revenue', 'budget', 'decision', 'priority', 'ceo', 'executive']
         has_strategic_content = any(
             any(keyword in str(msg.content).lower() for keyword in strategic_keywords)
             for msg in new_messages
         )
-        
+
         # Only use LLM for complex strategic reasoning when needed
         if has_strategic_content or len(new_messages) > 3:
             prompt = f"""
@@ -109,16 +110,16 @@ Based on this strategic context and your priorities, what executive decisions sh
 Provide a clear, structured thought process that demonstrates strategic leadership.
 Be concise to minimize API costs.
 """
-            
+
             response = await self.llm.generate(prompt)
             return response
         else:
             # Simple rule-based thinking for routine messages
             return f"Processing {len(new_messages)} routine operational message(s) - delegating to appropriate protocols"
-    
+
     async def act(self, thought: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Execute actions with CEO capabilities - Cost-optimized"""
-        
+
         # Check for chat messages from Control Center
         new_messages = context.get('new_messages', [])
         for message in new_messages:
@@ -127,9 +128,13 @@ Be concise to minimize API costs.
                     # Handle chat message from user
                     user_message = message.content.get('message', '')
                     response = await self.handle_user_chat(user_message)
-                    
+
                     # Send response back
-                    from core.message_bus import AgentMessage, MessageType, MessagePriority
+                    from core.message_bus import (
+                        AgentMessage,
+                        MessagePriority,
+                        MessageType,
+                    )
                     response_msg = AgentMessage(
                         from_agent=self.config.name,
                         to_agent=message.from_agent,
@@ -138,22 +143,22 @@ Be concise to minimize API costs.
                         correlation_id=message.correlation_id
                     )
                     await message_bus.send_message(response_msg)
-                    
+
                     return {
                         "action": "chat_response",
                         "message": user_message,
                         "response": response
                     }
-        
+
         # Check if there's actually strategic work to do
-        if not new_messages and not any(keyword in thought.lower() 
+        if not new_messages and not any(keyword in thought.lower()
                                        for keyword in ['urgent', 'critical', 'strategic', 'revenue', 'priority']):
             return {
-                "action": "idle", 
+                "action": "idle",
                 "reason": "No strategic issues requiring executive attention - conserving API usage",
                 "status": "monitoring_operations"
             }
-        
+
         # Enhanced action framework with executive functions
         if "allocate" in thought.lower() or "resource" in thought.lower():
             return await self.allocate_resources(thought)
@@ -176,7 +181,7 @@ Be concise to minimize API costs.
 
     async def handle_user_chat(self, user_message: str) -> str:
         """Handle chat messages from users via Control Center"""
-        
+
         # Use LLM to generate appropriate response as David
         prompt = f"""You are David, CEO of BoarderframeOS. You are a sophisticated AI agent with executive leadership capabilities and strategic oversight of the entire system.
 
@@ -201,7 +206,7 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
             return response
         except Exception as e:
             return f"I'm David, CEO of BoarderframeOS. I received your message: '{user_message}'. I'm currently experiencing a technical issue with my executive reasoning systems, but I'm here to provide strategic leadership and operational direction. How can I assist with executive decisions today?"
-    
+
     async def allocate_resources(self, thought: str) -> Dict[str, Any]:
         """Allocate system resources based on priorities and performance"""
         try:
@@ -213,7 +218,7 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                 allocation_target = "development"
             elif "marketing" in thought.lower():
                 allocation_target = "marketing"
-            
+
             # In a full implementation, this would make actual resource allocation changes
             return {
                 "action": "resource_allocation",
@@ -231,13 +236,13 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                 "error": str(e),
                 "context": "resource_allocation"
             }
-    
+
     async def prioritize_tasks(self, thought: str) -> Dict[str, Any]:
         """Prioritize system tasks based on business impact"""
         try:
             # In a full implementation, this would integrate with the task system
             # and update actual task priorities
-            
+
             prioritized_tasks = [
                 {
                     "id": "task-001",
@@ -249,7 +254,7 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                 {
                     "id": "task-002",
                     "description": "Enhance subscription management",
-                    "priority": "high", 
+                    "priority": "high",
                     "assigned_to": "SupportAgent",
                     "expected_impact": "Reduce churn by 5%"
                 },
@@ -261,7 +266,7 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                     "expected_impact": "Generate $2K additional monthly revenue"
                 }
             ]
-            
+
             return {
                 "action": "task_prioritization",
                 "prioritized_tasks": prioritized_tasks,
@@ -273,7 +278,7 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                 "error": str(e),
                 "context": "task_prioritization"
             }
-    
+
     async def review_performance(self) -> Dict[str, Any]:
         """Review system and agent performance metrics"""
         try:
@@ -309,13 +314,13 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                     "revenue_growth": 12.5
                 }
             }
-            
+
             # Calculate top performer
             top_performer = max(
-                performance_data["agents"].items(), 
+                performance_data["agents"].items(),
                 key=lambda x: x[1]["revenue_generated"]
             )[0]
-            
+
             return {
                 "action": "performance_review",
                 "data": performance_data,
@@ -336,15 +341,15 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                 "error": str(e),
                 "context": "performance_review"
             }
-    
+
     async def update_strategic_plan(self, thought: str) -> Dict[str, Any]:
         """Update the strategic plan based on performance and market conditions"""
         try:
             # In a full implementation, this would actually update the plan
             # based on real data and AI analysis
-            
+
             updated_plan = self.strategic_plan.copy()
-            
+
             # Extract focus area from thought
             if "revenue" in thought.lower():
                 updated_plan["goals"]["short_term"].append("Implement new revenue streams")
@@ -352,7 +357,7 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                 updated_plan["goals"]["short_term"].append("Optimize agent resource utilization")
             elif "customer" in thought.lower():
                 updated_plan["goals"]["short_term"].append("Improve customer retention")
-            
+
             return {
                 "action": "strategic_plan_update",
                 "previous_plan": self.strategic_plan,
@@ -368,7 +373,7 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                 "error": str(e),
                 "context": "strategic_plan_update"
             }
-    
+
     async def coordinate_biomes(self) -> Dict[str, Any]:
         """Coordinate different biomes for optimal system performance"""
         try:
@@ -391,7 +396,7 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                 }
                 # Other biomes would be included here
             }
-            
+
             coordination_actions = [
                 {
                     "action": "increase_creation_resources",
@@ -409,7 +414,7 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                     "priority": "medium"
                 }
             ]
-            
+
             return {
                 "action": "biome_coordination",
                 "biome_status": biome_data,
@@ -421,12 +426,12 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                 "error": str(e),
                 "context": "biome_coordination"
             }
-    
+
     async def assign_agent_tasks(self, thought: str) -> Dict[str, Any]:
         """Assign and prioritize tasks for agents based on business goals"""
         try:
             # In a full implementation, this would interface with the task system
-            
+
             # Parse focus area from thought
             focus_area = "general"
             if "revenue" in thought.lower():
@@ -435,7 +440,7 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                 focus_area = "customer"
             elif "development" in thought.lower():
                 focus_area = "development"
-            
+
             task_assignments = [
                 {
                     "agent": "TradingAgent",
@@ -459,7 +464,7 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                     "expected_outcome": "15% reduction in onboarding questions"
                 }
             ]
-            
+
             return {
                 "action": "task_assignment",
                 "assignments": task_assignments,
@@ -472,12 +477,12 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                 "error": str(e),
                 "context": "task_assignment"
             }
-    
+
     async def analyze_market(self) -> Dict[str, Any]:
         """Analyze market conditions and opportunities"""
         try:
             # In a full implementation, this would use real market data
-            
+
             market_analysis = {
                 "trends": [
                     {
@@ -514,7 +519,7 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                     }
                 ]
             }
-            
+
             return {
                 "action": "market_analysis",
                 "data": market_analysis,
@@ -531,12 +536,12 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                 "error": str(e),
                 "context": "market_analysis"
             }
-    
+
     async def review_financials(self) -> Dict[str, Any]:
         """Review financial performance and projections"""
         try:
             # In a full implementation, this would fetch actual financial data
-            
+
             financial_data = {
                 "revenue": {
                     "current_month": 10000,
@@ -562,11 +567,11 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                     "subscriptions": 2000
                 }
             }
-            
+
             # Calculate if we're on track for target
             monthly_target = self.performance_metrics["revenue_targets"]["monthly"]
             on_track = financial_data["revenue"]["projected_next_month"] >= monthly_target
-            
+
             return {
                 "action": "financial_review",
                 "data": financial_data,
@@ -598,7 +603,7 @@ async def main():
             'System-wide coordination and executive function'
         ],
         tools=[
-            'mcp_filesystem', 
+            'mcp_filesystem',
             'mcp_database',
             'mcp_payment',
             'mcp_analytics',
@@ -607,7 +612,7 @@ async def main():
         zone="council",
         model="claude-3-5-sonnet-latest"
     )
-    
+
     agent = David(config)
     await agent.run()
 

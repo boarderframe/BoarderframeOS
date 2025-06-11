@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS divisions (
 
 -- 2. ENHANCED DEPARTMENTS TABLE (28 departments under divisions)
 -- Add division relationship and enhance existing structure
-ALTER TABLE departments 
+ALTER TABLE departments
 ADD COLUMN IF NOT EXISTS division_id INTEGER REFERENCES divisions(id) ON DELETE SET NULL,
 ADD COLUMN IF NOT EXISTS department_type VARCHAR(50) DEFAULT 'standard',
 ADD COLUMN IF NOT EXISTS parent_department_id UUID REFERENCES departments(id),
@@ -39,7 +39,7 @@ ALTER TABLE departments ALTER COLUMN department_name TYPE VARCHAR(255);
 
 -- 3. DEPARTMENT LEADERS TABLE (Enhanced with more details)
 -- Update existing table with additional fields
-ALTER TABLE department_leaders 
+ALTER TABLE department_leaders
 ADD COLUMN IF NOT EXISTS leader_key VARCHAR(100),
 ADD COLUMN IF NOT EXISTS leader_type VARCHAR(50) DEFAULT 'executive',
 ADD COLUMN IF NOT EXISTS leadership_tier VARCHAR(50) DEFAULT 'department',
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS division_leadership (
     appointed_by VARCHAR(255),
     is_primary BOOLEAN DEFAULT false,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     UNIQUE(division_id, leader_id, leadership_role)
 );
 
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS organizational_hierarchy (
     end_date TIMESTAMP,
     metadata JSONB DEFAULT '{}',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     UNIQUE(superior_type, superior_id, subordinate_type, subordinate_id, relationship_type)
 );
 
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS leadership_succession (
     target_date TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     UNIQUE(current_leader_id, successor_leader_id)
 );
 
@@ -133,7 +133,7 @@ CREATE TABLE IF NOT EXISTS department_collaborations (
     start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     end_date TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     UNIQUE(primary_department_id, collaborating_department_id, collaboration_type)
 );
 
@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS department_collaborations (
 -- Rename and enhance existing department_status table
 ALTER TABLE department_status RENAME TO department_performance;
 
-ALTER TABLE department_performance 
+ALTER TABLE department_performance
 ADD COLUMN IF NOT EXISTS division_id INTEGER REFERENCES divisions(id),
 ADD COLUMN IF NOT EXISTS performance_period VARCHAR(50) DEFAULT 'current',
 ADD COLUMN IF NOT EXISTS efficiency_score DECIMAL(5,2) DEFAULT 0.00,
@@ -225,15 +225,15 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_divisions_updated_at') THEN
         CREATE TRIGGER update_divisions_updated_at BEFORE UPDATE ON divisions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
     END IF;
-    
+
     IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_leadership_succession_updated_at') THEN
         CREATE TRIGGER update_leadership_succession_updated_at BEFORE UPDATE ON leadership_succession FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
     END IF;
-    
+
     IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_department_capabilities_updated_at') THEN
         CREATE TRIGGER update_department_capabilities_updated_at BEFORE UPDATE ON department_capabilities FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
     END IF;
-    
+
     IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_strategic_objectives_updated_at') THEN
         CREATE TRIGGER update_strategic_objectives_updated_at BEFORE UPDATE ON strategic_objectives FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
     END IF;
@@ -243,7 +243,7 @@ END $$;
 
 -- Division Overview View
 CREATE OR REPLACE VIEW division_overview AS
-SELECT 
+SELECT
     d.id,
     d.division_key,
     d.division_name,
@@ -267,7 +267,7 @@ ORDER BY d.priority, d.division_name;
 
 -- Enhanced Department Overview View
 CREATE OR REPLACE VIEW department_overview AS
-SELECT 
+SELECT
     dept.id,
     dept.department_key,
     COALESCE(dept.department_name, dept.name) as department_name,
@@ -297,7 +297,7 @@ LEFT JOIN agent_department_assignments ada ON dept.id = ada.department_id AND ad
 LEFT JOIN department_capabilities dc ON dept.id = dc.department_id
 LEFT JOIN department_performance dp ON dept.id = dp.department_id
 WHERE dept.is_active = true
-GROUP BY dept.id, dept.department_key, dept.department_name, dept.name, dept.category, dept.description, 
+GROUP BY dept.id, dept.department_key, dept.department_name, dept.name, dept.category, dept.description,
          dept.department_purpose, dept.priority, dept.is_active, dept.operational_status, dept.agent_capacity,
          div.division_name, div.division_key, dp.health_score, dp.productivity_score, dp.efficiency_score,
          dp.performance_trend, dp.last_activity
@@ -305,7 +305,7 @@ ORDER BY dept.priority, dept.department_name;
 
 -- Leadership Hierarchy View
 CREATE OR REPLACE VIEW leadership_hierarchy AS
-SELECT 
+SELECT
     dl.id as leader_id,
     dl.leader_key,
     dl.name as leader_name,
@@ -332,7 +332,7 @@ ORDER BY dl.leadership_tier, dl.authority_level DESC, dl.name;
 
 -- Agent Current Assignments View (Enhanced)
 CREATE OR REPLACE VIEW agent_current_assignments AS
-SELECT 
+SELECT
     ada.agent_id,
     ada.department_id,
     COALESCE(dept.department_name, dept.name) as department_name,
@@ -354,7 +354,7 @@ ORDER BY div.priority, dept.priority, ada.assigned_at;
 
 -- Organizational Structure View
 CREATE OR REPLACE VIEW organizational_structure AS
-SELECT 
+SELECT
     'division' as level_type,
     div.id::text as entity_id,
     div.division_name as entity_name,
@@ -367,7 +367,7 @@ WHERE div.is_active = true
 
 UNION ALL
 
-SELECT 
+SELECT
     'department' as level_type,
     dept.id::text as entity_id,
     COALESCE(dept.department_name, dept.name) as entity_name,
@@ -381,7 +381,7 @@ WHERE dept.is_active = true
 
 UNION ALL
 
-SELECT 
+SELECT
     'leader' as level_type,
     dl.id::text as entity_id,
     dl.name as entity_name,
@@ -397,7 +397,7 @@ ORDER BY parent_id NULLS FIRST, sort_order, entity_name;
 
 -- Performance Dashboard View
 CREATE OR REPLACE VIEW performance_dashboard AS
-SELECT 
+SELECT
     div.division_name,
     div.division_key,
     COUNT(DISTINCT dept.id) as departments_count,

@@ -5,19 +5,20 @@ Update Corporate HQ to properly display all registry data including workforce ag
 
 import subprocess
 
+
 def update_registry_queries():
     """Update the registry data fetching to include all agent types"""
     print("🔧 Updating Corporate HQ Registry Display")
     print("=" * 50)
-    
+
     # First, let's create an enhanced view in the database
     print("\n📊 Creating enhanced registry views...")
-    
+
     views = [
         """
         CREATE OR REPLACE VIEW registry_comprehensive_stats AS
         WITH agent_stats AS (
-            SELECT 
+            SELECT
                 COUNT(*) as total_agents,
                 COUNT(*) FILTER (WHERE agent_type = 'executive') as executives,
                 COUNT(*) FILTER (WHERE agent_type = 'leader') as leaders,
@@ -31,7 +32,7 @@ def update_registry_queries():
             FROM agent_registry
         ),
         department_stats AS (
-            SELECT 
+            SELECT
                 COUNT(*) as total_departments,
                 COUNT(*) FILTER (WHERE status = 'active') as active_departments,
                 SUM(agent_count) as dept_total_agents,
@@ -39,13 +40,13 @@ def update_registry_queries():
             FROM department_registry
         ),
         division_stats AS (
-            SELECT 
+            SELECT
                 COUNT(*) as total_divisions,
                 COUNT(*) FILTER (WHERE is_active = true) as active_divisions
             FROM divisions
         ),
         server_stats AS (
-            SELECT 
+            SELECT
                 COUNT(*) as total_servers,
                 COUNT(*) FILTER (WHERE status = 'online') as online_servers,
                 COUNT(*) FILTER (WHERE server_type = 'mcp') as mcp_servers,
@@ -53,19 +54,19 @@ def update_registry_queries():
             FROM server_registry
         ),
         database_stats AS (
-            SELECT 
+            SELECT
                 COUNT(*) as total_databases,
                 COUNT(*) FILTER (WHERE status = 'online') as online_databases
             FROM database_registry
         )
-        SELECT 
+        SELECT
             a.*, d.*, div.*, s.*, db.*
         FROM agent_stats a, department_stats d, division_stats div, server_stats s, database_stats db;
         """,
-        
+
         """
         CREATE OR REPLACE VIEW workforce_development_pipeline AS
-        SELECT 
+        SELECT
             development_status,
             operational_status,
             COUNT(*) as agent_count,
@@ -74,7 +75,7 @@ def update_registry_queries():
             STRING_AGG(DISTINCT agent_type, ', ') as agent_types
         FROM agent_registry
         GROUP BY development_status, operational_status
-        ORDER BY 
+        ORDER BY
             CASE development_status
                 WHEN 'deployed' THEN 1
                 WHEN 'ready' THEN 2
@@ -84,10 +85,10 @@ def update_registry_queries():
                 WHEN 'planned' THEN 6
             END;
         """,
-        
+
         """
         CREATE OR REPLACE VIEW department_workforce_status AS
-        SELECT 
+        SELECT
             d.name as department_name,
             d.agent_capacity as capacity,
             COUNT(DISTINCT ar.id) as total_agents,
@@ -103,44 +104,44 @@ def update_registry_queries():
         ORDER BY total_agents DESC;
         """
     ]
-    
+
     for view_sql in views:
         result = subprocess.run([
             "docker", "exec", "boarderframeos_postgres",
             "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", view_sql
         ], capture_output=True, text=True)
-        
+
         if result.returncode == 0:
             print("   ✅ View created successfully")
         else:
             print(f"   ⚠️  View creation issue: {result.stderr[:50]}")
-    
+
     # Now update the _fetch_registry_data method in corporate_headquarters.py
     print("\n📝 Generating updated registry fetch method...")
-    
+
     updated_method = '''
     def _fetch_registry_data(self):
         """Fetch comprehensive data from registry database including workforce"""
         try:
             import subprocess
             import json
-            
+
             # Get comprehensive stats
             stats_query = """
             SELECT row_to_json(t) FROM registry_comprehensive_stats t;
             """
-            
+
             result = subprocess.run([
                 "docker", "exec", "boarderframeos_postgres",
                 "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", stats_query
             ], capture_output=True, text=True, timeout=5)
-            
+
             if result.returncode != 0:
                 return None
-                
+
             try:
                 stats = json.loads(result.stdout.strip())
-                
+
                 # Build registry data structure
                 registry_data = {
                     'totals': {
@@ -175,17 +176,17 @@ def update_registry_queries():
                         'uptime': '99.9'
                     }
                 }
-                
+
                 # Get department workforce data
                 dept_query = """
                 SELECT * FROM department_workforce_status LIMIT 15;
                 """
-                
+
                 dept_result = subprocess.run([
                     "docker", "exec", "boarderframeos_postgres",
                     "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", dept_query
                 ], capture_output=True, text=True, timeout=5)
-                
+
                 if dept_result.returncode == 0:
                     dept_data = []
                     for line in dept_result.stdout.strip().split('\\n'):
@@ -203,21 +204,21 @@ def update_registry_queries():
                                     'utilization': parts[7]
                                 })
                     registry_data['department_details'] = dept_data
-                    
+
                     # Also populate simple count for backward compatibility
                     for dept in dept_data:
                         registry_data['agents_by_department'][dept['name']] = dept['total']
-                
+
                 # Get development pipeline data
                 pipeline_query = """
                 SELECT * FROM workforce_development_pipeline;
                 """
-                
+
                 pipeline_result = subprocess.run([
                     "docker", "exec", "boarderframeos_postgres",
                     "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", pipeline_query
                 ], capture_output=True, text=True, timeout=5)
-                
+
                 if pipeline_result.returncode == 0:
                     pipeline_data = []
                     for line in pipeline_result.stdout.strip().split('\\n'):
@@ -233,20 +234,20 @@ def update_registry_queries():
                                     'types': parts[5]
                                 })
                     registry_data['development_pipeline'] = pipeline_data
-                
+
                 # Get server details
                 server_query = """
-                SELECT name, server_type, status, health_status, endpoint_url 
-                FROM server_registry 
-                ORDER BY server_type, name 
+                SELECT name, server_type, status, health_status, endpoint_url
+                FROM server_registry
+                ORDER BY server_type, name
                 LIMIT 20;
                 """
-                
+
                 server_result = subprocess.run([
                     "docker", "exec", "boarderframeos_postgres",
                     "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", server_query
                 ], capture_output=True, text=True, timeout=5)
-                
+
                 if server_result.returncode == 0:
                     for line in server_result.stdout.strip().split('\\n'):
                         if '|' in line:
@@ -259,18 +260,18 @@ def update_registry_queries():
                                     'health': parts[3].strip(),
                                     'url': parts[4].strip()
                                 })
-                
+
                 return registry_data
-                
+
             except Exception as e:
                 print(f"Error parsing registry data: {e}")
                 return None
-                
+
         except Exception as e:
             print(f"Error fetching registry data: {e}")
             return None
 '''
-    
+
     print("\n💡 Next Steps:")
     print("1. The database views have been created")
     print("2. You need to update the _fetch_registry_data method in corporate_headquarters.py")
@@ -279,17 +280,17 @@ def update_registry_queries():
     print("   - Department capacity and utilization chart")
     print("   - Agent skill level distribution")
     print("   - Training progress tracker")
-    
+
     # Let's also create a quick test to verify the data
     print("\n🔍 Testing registry data...")
-    
+
     test_query = "SELECT * FROM registry_comprehensive_stats;"
-    
+
     result = subprocess.run([
         "docker", "exec", "boarderframeos_postgres",
         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", test_query
     ], capture_output=True, text=True)
-    
+
     if result.returncode == 0:
         print("\n📊 Current Registry Statistics:")
         lines = result.stdout.strip().split('|')
@@ -303,7 +304,7 @@ def update_registry_queries():
             print(f"   Departments: {lines[10].strip()}")
             print(f"   Divisions: {lines[14].strip()}")
             print(f"   Servers: {lines[16].strip()}")
-    
+
     print("\n✅ Registry update preparation complete!")
 
 

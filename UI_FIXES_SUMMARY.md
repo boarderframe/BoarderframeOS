@@ -4,9 +4,9 @@
 
 The Corporate Headquarters UI had several blank pages due to missing content generation and improper tab structure. The following issues have been resolved:
 
-### 1. **Agents Tab** 
+### 1. **Agents Tab**
 - **Problem**: The tab was missing the actual agent list content and had improper HTML structure
-- **Solution**: 
+- **Solution**:
   - Updated tab to use `metrics_layer.get_agents_page_html()`
   - Added `get_agents_page_html()` method to HQ metrics integration
   - Fixed HTML structure with proper closing tags

@@ -66,7 +66,7 @@
                     <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 biome-glow">
                         <div class="flex justify-between items-center mb-2">
                             <h3 x-text="name.charAt(0).toUpperCase() + name.slice(1)" class="font-semibold"></h3>
-                            <div :class="biome.health > 0.7 ? 'bg-green-500' : biome.health > 0.4 ? 'bg-yellow-500' : 'bg-red-500'" 
+                            <div :class="biome.health > 0.7 ? 'bg-green-500' : biome.health > 0.4 ? 'bg-yellow-500' : 'bg-red-500'"
                                  class="w-3 h-3 rounded-full"></div>
                         </div>
                         <div class="text-sm text-gray-400">
@@ -86,7 +86,7 @@
                     <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
                         <div class="flex justify-between items-center mb-2">
                             <h3 x-text="agent.name" class="font-semibold"></h3>
-                            <div :class="agent.status === 'online' ? 'bg-green-500 agent-pulse' : 'bg-red-500'" 
+                            <div :class="agent.status === 'online' ? 'bg-green-500 agent-pulse' : 'bg-red-500'"
                                  class="w-3 h-3 rounded-full"></div>
                         </div>
                         <div class="text-sm text-gray-400">
@@ -128,17 +128,17 @@
                 },
                 connect() {
                     const ws = new WebSocket('ws://localhost:8080/ws');
-                    
+
                     ws.onopen = () => {
                         this.connected = true;
                         window.ws = ws;
                     };
-                    
+
                     ws.onclose = () => {
                         this.connected = false;
                         setTimeout(() => this.connect(), 5000);
                     };
-                    
+
                     ws.onmessage = (event) => {
                         const data = JSON.parse(event.data);
                         window.dispatchEvent(new CustomEvent('wsMessage', { detail: data }));
@@ -160,7 +160,7 @@
                     { name: 'Bezalel', role: 'The Coder', status: 'offline', state: 'idle', uptime: 0 }
                 ],
                 recentEvents: [],
-                
+
                 init() {
                     this.loadInitialData();
                     this.setupWebSocketListeners();
@@ -173,11 +173,11 @@
                             fetch('/api/status'),
                             fetch('/api/biomes')
                         ]);
-                        
+
                         if (statusRes.ok) {
                             const statusData = await statusRes.json();
                             this.systemStatus = statusData.data?.orchestrator || {};
-                            
+
                             // Update core agents
                             if (statusData.data?.agents) {
                                 Object.entries(statusData.data.agents).forEach(([id, agent]) => {
@@ -190,7 +190,7 @@
                                 });
                             }
                         }
-                        
+
                         if (biomesRes.ok) {
                             const biomesData = await biomesRes.json();
                             this.biomes = biomesData.biomes || {};
@@ -203,7 +203,7 @@
                 setupWebSocketListeners() {
                     window.addEventListener('wsMessage', (event) => {
                         const data = event.detail;
-                        
+
                         switch (data.event_type) {
                             case 'agent_status_update':
                                 this.handleAgentUpdate(data.data);
@@ -235,7 +235,7 @@
                         description: this.getEventDescription(data),
                         timestamp: data.timestamp
                     });
-                    
+
                     if (this.recentEvents.length > 50) {
                         this.recentEvents = this.recentEvents.slice(0, 50);
                     }

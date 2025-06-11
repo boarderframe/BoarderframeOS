@@ -19,7 +19,7 @@ The comprehensive metrics layer has been successfully integrated into Corporate 
 
 ### 3. **UI Components Updated**
 - ✅ **Agents Tab**: Uses `get_agent_cards_html()` for agent cards
-- ✅ **Departments Tab**: Can use `get_department_cards_html()` 
+- ✅ **Departments Tab**: Can use `get_department_cards_html()`
 - ✅ **Registry Tab**: Pulls metrics from centralized layer
 - ✅ **Overview Tab**: Ready for metric summary cards
 

@@ -54,9 +54,9 @@ CREATE TABLE IF NOT EXISTS agent_department_assignments (
     deassigned_at TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     -- Constraint to prevent duplicate active assignments
-    UNIQUE(agent_id, department_id, assignment_status) 
+    UNIQUE(agent_id, department_id, assignment_status)
     DEFERRABLE INITIALLY DEFERRED
 );
 
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS department_status (
     metrics JSONB DEFAULT '{}',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     -- One status record per department
     UNIQUE(department_id)
 );
@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS department_hierarchy (
     child_department_id INTEGER REFERENCES departments(id) ON DELETE CASCADE,
     relationship_type VARCHAR(50) DEFAULT 'reports_to',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     -- Prevent circular references
     CHECK (parent_department_id != child_department_id),
     UNIQUE(parent_department_id, child_department_id)
@@ -155,14 +155,14 @@ BEGIN
             updated_at = CURRENT_TIMESTAMP;
         RETURN NEW;
     END IF;
-    
+
     -- Update for assignment change
     IF TG_OP = 'UPDATE' THEN
         -- If status changed, update counts
         IF OLD.assignment_status != NEW.assignment_status THEN
             UPDATE department_status SET
                 active_agents_count = (
-                    SELECT COUNT(*) FROM agent_department_assignments 
+                    SELECT COUNT(*) FROM agent_department_assignments
                     WHERE department_id = NEW.department_id AND assignment_status = 'active'
                 ),
                 updated_at = CURRENT_TIMESTAMP
@@ -170,7 +170,7 @@ BEGIN
         END IF;
         RETURN NEW;
     END IF;
-    
+
     -- Update for assignment removal
     IF TG_OP = 'DELETE' THEN
         UPDATE department_status SET
@@ -180,7 +180,7 @@ BEGIN
         WHERE department_id = OLD.department_id;
         RETURN OLD;
     END IF;
-    
+
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
@@ -191,7 +191,7 @@ CREATE TRIGGER trigger_update_department_counts
 
 -- Views for easy data access
 CREATE OR REPLACE VIEW department_overview AS
-SELECT 
+SELECT
     d.id,
     d.department_key,
     d.department_name,
@@ -215,7 +215,7 @@ LEFT JOIN department_native_agents dna ON d.id = dna.department_id
 GROUP BY d.id, ds.assigned_agents_count, ds.active_agents_count, ds.productivity_score, ds.health_score, ds.status, ds.last_activity;
 
 CREATE OR REPLACE VIEW agent_current_assignments AS
-SELECT 
+SELECT
     ada.agent_id,
     ada.department_id,
     d.department_name,

@@ -14,7 +14,7 @@ Successfully implemented a comprehensive registry system for BoarderframeOS that
 ### 2. Database Schema Implementation
 - **002_registry_schema.sql**: Complete registry schema with 7 core registry tables
 - **Agent Registry**: Tracks agent capabilities, health monitoring, load balancing
-- **Server Registry**: MCP servers, APIs, health checks, performance metrics  
+- **Server Registry**: MCP servers, APIs, health checks, performance metrics
 - **Department Registry**: Organizational structure and department management
 - **Tool Registry**: Available tools, compatibility, usage tracking
 - **Workflow Registry**: Process definitions, execution tracking
@@ -59,7 +59,7 @@ Successfully implemented a comprehensive registry system for BoarderframeOS that
 # Agent Discovery
 GET /agents/discover?type=decision&status=online&capabilities=reasoning
 
-# Server Discovery  
+# Server Discovery
 GET /servers/discover?type=mcp&capabilities=file_operations
 ```
 

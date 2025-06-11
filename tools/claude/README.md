@@ -54,13 +54,13 @@ npx @anthropic-ai/claude-code [command]
 
 ## Common Commands
 
-- Generate code: 
+- Generate code:
 
   ```bash
   ./start-claude code "create a function that calculates the Fibonacci sequence"
   ```
 
-- Get help: 
+- Get help:
 
   ```bash
   ./start-claude --help

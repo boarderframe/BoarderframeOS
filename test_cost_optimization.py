@@ -5,17 +5,18 @@ This will start agents briefly and monitor their API usage patterns
 """
 
 import asyncio
-import time
 import subprocess
 import sys
+import time
 from pathlib import Path
+
 
 async def test_cost_optimization():
     """Test that agents are not making continuous API calls when idle"""
-    
+
     print("🧪 Testing Cost Optimization for BoarderframeOS Agents")
     print("=" * 50)
-    
+
     # Start Solomon agent for a short test
     print("\n1. Starting Solomon agent for 30 seconds...")
     solomon_process = subprocess.Popen(
@@ -24,35 +25,35 @@ async def test_cost_optimization():
         stderr=subprocess.PIPE,
         text=True
     )
-    
+
     # Monitor for 30 seconds
     start_time = time.time()
     api_call_count = 0
-    
+
     try:
         while time.time() - start_time < 30:
             # Check if process is still running
             if solomon_process.poll() is not None:
                 print("❌ Solomon process terminated unexpectedly")
                 break
-            
+
             # Monitor output for API calls (look for common patterns)
             try:
                 output = solomon_process.stdout.readline()
                 if output:
                     print(f"📝 {output.strip()}")
-                    
+
                     # Count potential API calls
-                    if any(keyword in output.lower() for keyword in 
+                    if any(keyword in output.lower() for keyword in
                           ['api', 'claude', 'anthropic', 'generate', 'llm']):
                         api_call_count += 1
                         print(f"⚠️  Potential API call detected: {api_call_count}")
-                        
+
             except:
                 pass
-                
+
             await asyncio.sleep(1)
-            
+
     finally:
         # Clean shutdown
         solomon_process.terminate()
@@ -60,11 +61,11 @@ async def test_cost_optimization():
             solomon_process.wait(timeout=5)
         except subprocess.TimeoutExpired:
             solomon_process.kill()
-    
+
     print(f"\n📊 Test Results:")
     print(f"   - Test duration: 30 seconds")
     print(f"   - Potential API calls detected: {api_call_count}")
-    
+
     if api_call_count == 0:
         print("✅ EXCELLENT: No API calls detected while idle - cost optimization working!")
     elif api_call_count <= 2:
@@ -73,7 +74,7 @@ async def test_cost_optimization():
         print("⚠️  WARNING: Some API calls detected - may need further optimization")
     else:
         print("❌ PROBLEM: Too many API calls detected - optimization not working properly")
-    
+
     print(f"\n💡 Expected behavior:")
     print(f"   - Agent should start and register with message bus")
     print(f"   - Agent should remain idle when no messages/tasks present")
@@ -91,18 +92,18 @@ def test_message_based_activation():
 
 if __name__ == "__main__":
     print("🚀 Starting Cost Optimization Test...")
-    
+
     # Ensure we're in the right directory
     if not Path("agents/solomon/solomon.py").exists():
         print("❌ Error: Please run this from the BoarderframeOS root directory")
         sys.exit(1)
-    
+
     # Run the test
     asyncio.run(test_cost_optimization())
-    
+
     # Additional test info
     test_message_based_activation()
-    
+
     print(f"\n🎯 Summary of Optimizations Made:")
     print(f"   ✅ Modified BaseAgent.run() to be event-driven")
     print(f"   ✅ Added idle state when no messages present")

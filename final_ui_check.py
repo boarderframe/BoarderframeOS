@@ -5,16 +5,17 @@ Final check of UI fixes
 
 import re
 
+
 def final_ui_check():
     """Perform final verification of all UI fixes"""
-    
+
     with open('corporate_headquarters.py', 'r') as f:
         content = f.read()
-    
+
     print("=== FINAL UI CHECK ===\n")
-    
+
     issues = []
-    
+
     # 1. Check showTab function
     print("1. ShowTab Function:")
     if 'function showTab(tabName)' in content:
@@ -27,7 +28,7 @@ def final_ui_check():
     else:
         issues.append("ShowTab function missing")
         print("  ✗ ShowTab function missing")
-    
+
     # 2. Check CSS
     print("\n2. CSS Rules:")
     if '.tab-content.active {' in content and 'display: block !important' in content:
@@ -35,19 +36,19 @@ def final_ui_check():
     else:
         issues.append("Active tab CSS not properly set")
         print("  ✗ Active tab CSS issues")
-    
+
     # 3. Check all tabs exist
     print("\n3. Tab Structure:")
-    required_tabs = ['dashboard', 'agents', 'leaders', 'departments', 'divisions', 
+    required_tabs = ['dashboard', 'agents', 'leaders', 'departments', 'divisions',
                      'services', 'database', 'registry', 'system']
-    
+
     for tab in required_tabs:
         if f'id="{tab}" class="tab-content' in content:
             print(f"  ✓ {tab} tab exists")
         else:
             issues.append(f"{tab} tab missing")
             print(f"  ✗ {tab} tab missing")
-    
+
     # 4. Check navigation buttons
     print("\n4. Navigation Buttons:")
     for tab in required_tabs:
@@ -58,7 +59,7 @@ def final_ui_check():
             if tab != 'registry':
                 issues.append(f"{tab} nav button missing")
             print(f"  {'✓' if tab == 'registry' else '✗'} {tab} nav button {'exists' if f'showTab(\'{tab}\')' in content else 'missing'}")
-    
+
     # 5. Check initialization
     print("\n5. Initialization:")
     if 'DOMContentLoaded' in content:
@@ -71,10 +72,10 @@ def final_ui_check():
     else:
         issues.append("No DOMContentLoaded handler")
         print("  ✗ No DOMContentLoaded handler")
-    
+
     # 6. Check for JavaScript errors
     print("\n6. JavaScript Syntax:")
-    
+
     # Count braces in script sections
     script_match = re.search(r'<script>(.*?)</script>', content, re.DOTALL)
     if script_match:
@@ -83,19 +84,19 @@ def final_ui_check():
         close_braces = script_content.count('}')
         open_parens = script_content.count('(')
         close_parens = script_content.count(')')
-        
+
         if open_braces == close_braces:
             print("  ✓ Braces balanced")
         else:
             issues.append(f"Unbalanced braces: {open_braces} open, {close_braces} close")
             print(f"  ✗ Unbalanced braces: {open_braces} open, {close_braces} close")
-        
+
         if open_parens == close_parens:
             print("  ✓ Parentheses balanced")
         else:
             issues.append(f"Unbalanced parentheses: {open_parens} open, {close_parens} close")
             print(f"  ✗ Unbalanced parentheses: {open_parens} open, {close_parens} close")
-    
+
     # Summary
     print(f"\n{'='*50}")
     if issues:

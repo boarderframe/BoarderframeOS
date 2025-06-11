@@ -4,8 +4,9 @@ Simplest possible Agent Cortex Panel
 Just to get something running
 """
 
-from http.server import HTTPServer, BaseHTTPRequestHandler
 import json
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
 
 class CortexHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -13,7 +14,7 @@ class CortexHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
-            
+
             html = """
 <!DOCTYPE html>
 <html>
@@ -49,7 +50,7 @@ class CortexHandler(BaseHTTPRequestHandler):
             <h2 class="status">✅ Panel is Running!</h2>
             <p>The Agent Cortex Panel is now accessible on port 9999</p>
         </div>
-        
+
         <div class="card">
             <h3>Configured Agents</h3>
             <ul>
@@ -60,7 +61,7 @@ class CortexHandler(BaseHTTPRequestHandler):
                 <li>Bezalel (Master Programmer) - claude-4-sonnet-20250514</li>
             </ul>
         </div>
-        
+
         <div class="card">
             <h3>LLM Providers</h3>
             <ul>
@@ -69,7 +70,7 @@ class CortexHandler(BaseHTTPRequestHandler):
                 <li>Ollama (Local models)</li>
             </ul>
         </div>
-        
+
         <div class="card">
             <h3>SDK Features</h3>
             <p>The LLM Provider SDK and Agent Development Kit are integrated and ready to use.</p>
@@ -80,7 +81,7 @@ class CortexHandler(BaseHTTPRequestHandler):
                 <li>Cost optimization and routing</li>
             </ul>
         </div>
-        
+
         <div class="card">
             <h3>API Endpoints</h3>
             <ul>
@@ -93,12 +94,12 @@ class CortexHandler(BaseHTTPRequestHandler):
 </html>
 """
             self.wfile.write(html.encode())
-            
+
         elif self.path == '/api/status':
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            
+
             status = {
                 "status": "operational",
                 "agents": 5,
@@ -106,12 +107,12 @@ class CortexHandler(BaseHTTPRequestHandler):
                 "port": 9999
             }
             self.wfile.write(json.dumps(status).encode())
-            
+
         elif self.path == '/api/agents':
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            
+
             agents = [
                 {"name": "David", "model": "claude-opus-4-20250514"},
                 {"name": "Solomon", "model": "claude-opus-4-20250514"},
@@ -120,11 +121,11 @@ class CortexHandler(BaseHTTPRequestHandler):
                 {"name": "Bezalel", "model": "claude-4-sonnet-20250514"}
             ]
             self.wfile.write(json.dumps(agents).encode())
-            
+
         else:
             self.send_response(404)
             self.end_headers()
-    
+
     def log_message(self, format, *args):
         # Suppress request logging
         pass
@@ -135,9 +136,9 @@ def main():
     print("🌐 Server running at: http://localhost:9999")
     print("🛑 Press Ctrl+C to stop")
     print("=" * 60)
-    
+
     server = HTTPServer(('localhost', 9999), CortexHandler)
-    
+
     try:
         server.serve_forever()
     except KeyboardInterrupt:

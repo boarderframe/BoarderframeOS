@@ -5,28 +5,29 @@ Enhance HQMetricsIntegration with methods for all pages
 
 import re
 
+
 def enhance_metrics_integration():
     """Add missing methods to HQMetricsIntegration"""
     print("🔧 Enhancing HQMetricsIntegration with Page-Specific Methods")
     print("=" * 60)
-    
+
     file_path = "/Users/cosburn/BoarderframeOS/core/hq_metrics_integration.py"
-    
+
     with open(file_path, 'r') as f:
         content = f.read()
-    
+
     # Find where to add the new methods (before the last closing of the class)
     class_end = content.rfind("}")
     if class_end < 0:
         class_end = len(content) - 1
-    
+
     # New methods to add
     new_methods = '''
     def get_agent_metrics_cards(self) -> str:
         """Generate metric cards for the agents page"""
         metrics = self.get_all_metrics()
         agent_metrics = self.get_agents_page_metrics()
-        
+
         cards_html = '''
         <div style="display: flex; justify-content: space-around; gap: 2rem; align-items: stretch; flex-wrap: nowrap;">
             <div class="metric-card">
@@ -39,7 +40,7 @@ def enhance_metrics_integration():
                 </div>
                 <div class="metric-subtitle">Currently Running</div>
             </div>
-            
+
             <div class="metric-card">
                 <div class="metric-header">
                     <i class="fas fa-pause-circle" style="color: #f59e0b;"></i>
@@ -50,7 +51,7 @@ def enhance_metrics_integration():
                 </div>
                 <div class="metric-subtitle">Not Running</div>
             </div>
-            
+
             <div class="metric-card">
                 <div class="metric-header">
                     <i class="fas fa-robot" style="color: #3b82f6;"></i>
@@ -67,19 +68,19 @@ def enhance_metrics_integration():
             inactive=agent_metrics['inactive'],
             total=agent_metrics['total']
         )
-        
+
         return cards_html
-    
+
     def get_department_metrics_cards(self) -> str:
         """Generate metric cards for the departments page"""
         metrics = self.get_all_metrics()
         dept_data = metrics.get('departments', {})
         dept_summary = dept_data.get('summary', {})
-        
+
         total = self.get_metric_value('departments', 'summary.total', 45)
         active = self.get_metric_value('departments', 'summary.active', 45)
         divisions = self.get_metric_value('departments', 'summary.divisions', 9)
-        
+
         cards_html = f'''
         <div style="display: flex; justify-content: space-around; gap: 2rem; align-items: stretch; flex-wrap: nowrap; margin-bottom: 2rem;">
             <div class="metric-card">
@@ -92,7 +93,7 @@ def enhance_metrics_integration():
                 </div>
                 <div class="metric-subtitle">Across Organization</div>
             </div>
-            
+
             <div class="metric-card">
                 <div class="metric-header">
                     <i class="fas fa-check-circle" style="color: #10b981;"></i>
@@ -103,7 +104,7 @@ def enhance_metrics_integration():
                 </div>
                 <div class="metric-subtitle">Operational</div>
             </div>
-            
+
             <div class="metric-card">
                 <div class="metric-header">
                     <i class="fas fa-sitemap" style="color: #8b5cf6;"></i>
@@ -116,13 +117,13 @@ def enhance_metrics_integration():
             </div>
         </div>
         '''
-        
+
         return cards_html
-    
+
     def get_leaders_page_html(self) -> str:
         """Generate complete leaders page with metrics"""
         metrics = self.get_all_metrics()
-        
+
         # For now, return a placeholder that indicates metrics integration
         # In a full implementation, this would query leader data
         return '''
@@ -130,10 +131,10 @@ def enhance_metrics_integration():
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <div style="
-                        width: 60px; height: 60px; 
-                        background: linear-gradient(135deg, #8b5cf6, #8b5cf6cc); 
-                        border-radius: 12px; 
-                        display: flex; align-items: center; justify-content: center; 
+                        width: 60px; height: 60px;
+                        background: linear-gradient(135deg, #8b5cf6, #8b5cf6cc);
+                        border-radius: 12px;
+                        display: flex; align-items: center; justify-content: center;
                         color: white; font-size: 1.5rem; box-shadow: 0 4px 12px #8b5cf640;
                     ">
                         <i class="fas fa-crown"></i>
@@ -146,7 +147,7 @@ def enhance_metrics_integration():
                     </div>
                 </div>
             </div>
-            
+
             <div class="metrics-note" style="text-align: center; padding: 2rem; color: var(--secondary-text);">
                 <i class="fas fa-chart-line" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
                 <h4>Leaders Metrics Integration</h4>
@@ -157,12 +158,12 @@ def enhance_metrics_integration():
             </div>
         </div>
         '''
-    
+
     def get_divisions_page_html(self) -> str:
         """Generate complete divisions page with metrics"""
         metrics = self.get_all_metrics()
         dept_data = metrics.get('departments', {})
-        
+
         # Group departments by division
         divisions_map = {}
         for dept in dept_data.get('individual', []):
@@ -170,16 +171,16 @@ def enhance_metrics_integration():
             if division not in divisions_map:
                 divisions_map[division] = []
             divisions_map[division].append(dept)
-        
+
         html = '''
         <div class="card full-width" style="margin-bottom: 2rem; border: 2px solid #7c3aed20; background: linear-gradient(135deg, #7c3aed08, #7c3aed03);">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <div style="
-                        width: 60px; height: 60px; 
-                        background: linear-gradient(135deg, #7c3aed, #7c3aed cc); 
-                        border-radius: 12px; 
-                        display: flex; align-items: center; justify-content: center; 
+                        width: 60px; height: 60px;
+                        background: linear-gradient(135deg, #7c3aed, #7c3aed cc);
+                        border-radius: 12px;
+                        display: flex; align-items: center; justify-content: center;
                         color: white; font-size: 1.5rem; box-shadow: 0 4px 12px #7c3aed40;
                     ">
                         <i class="fas fa-sitemap"></i>
@@ -194,14 +195,14 @@ def enhance_metrics_integration():
             </div>
         </div>
         '''
-        
+
         # Division cards
         html += '<div class="divisions-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">'
-        
+
         for division_name, departments in divisions_map.items():
             dept_count = len(departments)
             agent_count = sum(d.metrics.get('agents_total', MetricValue(0, '')).value for d in departments)
-            
+
             html += f'''
             <div class="division-card" style="
                 background: var(--card-bg);
@@ -227,7 +228,7 @@ def enhance_metrics_integration():
                         </p>
                     </div>
                 </div>
-                
+
                 <div style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
                     <div style="font-size: 0.75rem; color: var(--secondary-text); margin-bottom: 0.5rem;">
                         DEPARTMENTS
@@ -239,31 +240,31 @@ def enhance_metrics_integration():
                 </div>
             </div>
             '''
-        
+
         html += '</div>'
-        
+
         return html.format(len=len)
     '''
-    
+
     # Insert the new methods before the last closing
     content = content[:class_end] + new_methods + "\n" + content[class_end:]
-    
+
     # Also need to import MetricValue if not already imported
     if "from core.hq_metrics_layer import" not in content:
         import_pos = content.find("import json") + len("import json")
         new_import = "\nfrom core.hq_metrics_layer import MetricValue"
         content = content[:import_pos] + new_import + content[import_pos:]
-    
+
     # Write the updated content
     with open(file_path, 'w') as f:
         f.write(content)
-    
+
     print("✅ Added new methods to HQMetricsIntegration:")
     print("   - get_agent_metrics_cards()")
     print("   - get_department_metrics_cards()")
     print("   - get_leaders_page_html()")
     print("   - get_divisions_page_html()")
-    
+
     print("\n📊 These methods provide:")
     print("   - Consistent metric cards for each page")
     print("   - Standardized visual presentation")

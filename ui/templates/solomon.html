@@ -65,7 +65,7 @@
                 <template x-for="message in messages" :key="message.id">
                     <div class="mb-4">
                         <div :class="message.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
-                            <div :class="message.role === 'user' ? 'bg-blue-600' : 'bg-gray-700'" 
+                            <div :class="message.role === 'user' ? 'bg-blue-600' : 'bg-gray-700'"
                                  class="message-bubble rounded-lg p-3">
                                 <div class="flex items-start space-x-2">
                                     <div x-show="message.role === 'solomon'" class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-xs font-bold">
@@ -81,7 +81,7 @@
                         </div>
                     </div>
                 </template>
-                
+
                 <!-- Typing Indicator -->
                 <div x-show="isTyping" class="mb-4">
                     <div class="flex justify-start">
@@ -99,15 +99,15 @@
             <div class="border-t border-gray-700 p-4">
                 <form @submit.prevent="sendMessage">
                     <div class="flex space-x-3">
-                        <input 
-                            x-model="currentMessage" 
-                            type="text" 
+                        <input
+                            x-model="currentMessage"
+                            type="text"
                             placeholder="Ask Solomon anything about the system or your goals..."
                             class="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
                             :disabled="isTyping"
                         >
-                        <button 
-                            type="submit" 
+                        <button
+                            type="submit"
                             :disabled="!currentMessage.trim() || isTyping"
                             class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 px-6 py-2 rounded-lg transition-colors"
                         >
@@ -120,17 +120,17 @@
 
         <!-- Quick Actions -->
         <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button @click="sendQuickMessage('What is the current system status?')" 
+            <button @click="sendQuickMessage('What is the current system status?')"
                     class="bg-gray-800 hover:bg-gray-700 border border-gray-700 p-4 rounded-lg text-left transition-colors">
                 <div class="font-semibold">System Status</div>
                 <div class="text-sm text-gray-400">Get current system overview</div>
             </button>
-            <button @click="sendQuickMessage('How are the agents performing?')" 
+            <button @click="sendQuickMessage('How are the agents performing?')"
                     class="bg-gray-800 hover:bg-gray-700 border border-gray-700 p-4 rounded-lg text-left transition-colors">
                 <div class="font-semibold">Agent Performance</div>
                 <div class="text-sm text-gray-400">Review agent metrics</div>
             </button>
-            <button @click="sendQuickMessage('What should we focus on next?')" 
+            <button @click="sendQuickMessage('What should we focus on next?')"
                     class="bg-gray-800 hover:bg-gray-700 border border-gray-700 p-4 rounded-lg text-left transition-colors">
                 <div class="font-semibold">Strategic Guidance</div>
                 <div class="text-sm text-gray-400">Get strategic recommendations</div>
@@ -148,17 +148,17 @@
                 },
                 connect() {
                     const ws = new WebSocket('ws://localhost:8080/ws');
-                    
+
                     ws.onopen = () => {
                         this.connected = true;
                         window.ws = ws;
                     };
-                    
+
                     ws.onclose = () => {
                         this.connected = false;
                         setTimeout(() => this.connect(), 5000);
                     };
-                    
+
                     ws.onmessage = (event) => {
                         const data = JSON.parse(event.data);
                         window.dispatchEvent(new CustomEvent('wsMessage', { detail: data }));
@@ -177,7 +177,7 @@
                     online: false,
                     rapport_score: 0.5
                 },
-                
+
                 init() {
                     this.setupWebSocketListeners();
                     this.loadChatHistory();
@@ -186,7 +186,7 @@
                 setupWebSocketListeners() {
                     window.addEventListener('wsMessage', (event) => {
                         const data = event.detail;
-                        
+
                         switch (data.event_type) {
                             case 'solomon_conversation':
                                 this.handleSolomonMessage(data.data);
@@ -228,10 +228,10 @@
 
                 async sendMessage() {
                     if (!this.currentMessage.trim()) return;
-                    
+
                     const message = this.currentMessage.trim();
                     this.currentMessage = '';
-                    
+
                     // Add user message
                     this.messages.push({
                         id: Date.now(),
@@ -239,10 +239,10 @@
                         content: message,
                         timestamp: new Date().toISOString()
                     });
-                    
+
                     this.isTyping = true;
                     this.scrollToBottom();
-                    
+
                     // Send via WebSocket
                     if (window.ws && window.ws.readyState === WebSocket.OPEN) {
                         window.ws.send(JSON.stringify({
@@ -259,7 +259,7 @@
                                 },
                                 body: JSON.stringify({ message })
                             });
-                            
+
                             if (!response.ok) {
                                 this.isTyping = false;
                                 this.messages.push({

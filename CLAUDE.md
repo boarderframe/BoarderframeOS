@@ -309,7 +309,7 @@ curl http://localhost:8001/health  # Filesystem server
 4. **Database migration failures**: Added skip logic for problematic migrations requiring manual setup
 5. **Connection timing issues**: Implemented retry logic and graceful error handling throughout
 6. **AgentMessage 'data' parameter error**: Fixed by changing all instances to use 'content' parameter in agent_orchestrator.py
-7. **Database port mismatch**: Updated all references from port 8004 (SQLite) to 8010 (PostgreSQL) 
+7. **Database port mismatch**: Updated all references from port 8004 (SQLite) to 8010 (PostgreSQL)
 8. **Server status inconsistencies**: Fixed server name mismatches and ensured single source of truth flows from startup → Corporate HQ → Metrics Layer
 9. **"No server status override" warning**: Changed log level from warning to debug in hq_metrics_layer.py
 

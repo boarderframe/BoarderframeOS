@@ -2,11 +2,12 @@
 """
 Simple script to start BoarderframeOS dashboard
 """
+import signal
 import subprocess
+import sys
 import time
 import webbrowser
-import signal
-import sys
+
 
 def signal_handler(sig, frame):
     print('\n🛑 Stopping BoarderframeOS...')

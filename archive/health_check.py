@@ -4,11 +4,13 @@ BoarderframeOS System Health Check
 Quick verification that all components are running
 """
 
-import requests
 import subprocess
 import sys
-import psutil
 from pathlib import Path
+
+import psutil
+import requests
+
 
 def check_dashboard():
     """Check if dashboard is running"""
@@ -30,41 +32,41 @@ def check_dashboard():
 def check_agents():
     """Check for running agent processes"""
     running_agents = []
-    
+
     try:
         for process in psutil.process_iter(['pid', 'name', 'cmdline']):
             try:
                 cmdline = ' '.join(process.info['cmdline'] or [])
-                
+
                 if 'solomon.py' in cmdline:
                     running_agents.append(f"Solomon (PID: {process.info['pid']})")
                 elif 'david.py' in cmdline:
                     running_agents.append(f"David (PID: {process.info['pid']})")
                 elif 'analyst_agent.py' in cmdline:
                     running_agents.append(f"Analyst (PID: {process.info['pid']})")
-                    
+
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
-                
+
     except ImportError:
         print("⚠️ psutil not available for process checking")
         return []
-    
+
     if running_agents:
         print("✅ Agents: " + ", ".join(running_agents))
     else:
         print("❌ Agents: No agent processes found")
-    
+
     return running_agents
 
 def main():
     """Run health check"""
     print("🏥 BoarderframeOS Health Check")
     print("=" * 40)
-    
+
     dashboard_ok = check_dashboard()
     agents = check_agents()
-    
+
     print("\n" + "=" * 40)
     if dashboard_ok and agents:
         print("✅ System Status: All components operational!")
@@ -73,7 +75,7 @@ def main():
         print("⚠️ System Status: Dashboard running, agents may need restart")
     else:
         print("❌ System Status: Issues detected")
-        
+
     print("\n💡 To start the complete system: python start_system_simple.py")
 
 if __name__ == "__main__":

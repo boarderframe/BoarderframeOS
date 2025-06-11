@@ -4,30 +4,30 @@
     <title>Test Variables UI</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background: #0a0e27; color: white; }
-        .variable-item { 
-            margin: 10px 0; 
-            padding: 10px; 
-            background: #1a1f2e; 
-            border-radius: 5px; 
+        .variable-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: #1a1f2e;
+            border-radius: 5px;
             border-left: 3px solid #64ffda;
         }
         .variable-name { font-weight: bold; color: #64ffda; }
         .variable-value { margin: 5px 0; }
-        .layer-header { 
-            font-size: 18px; 
-            font-weight: bold; 
-            color: #64ffda; 
-            margin: 20px 0 10px 0; 
-            border-bottom: 1px solid #64ffda; 
+        .layer-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #64ffda;
+            margin: 20px 0 10px 0;
+            border-bottom: 1px solid #64ffda;
             padding-bottom: 5px;
         }
-        button { 
-            background: #64ffda; 
-            color: #0a0e27; 
-            border: none; 
-            padding: 10px 20px; 
-            border-radius: 5px; 
-            cursor: pointer; 
+        button {
+            background: #64ffda;
+            color: #0a0e27;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
             margin: 10px 0;
         }
         .error { color: #ff5555; }
@@ -48,20 +48,20 @@
 
         async function loadVariables() {
             setStatus('Loading variables...', 'info');
-            
+
             try {
                 const response = await fetch('/api/agent-cortex/variables');
-                
+
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
-                
+
                 const data = await response.json();
                 console.log('Variables data:', data);
-                
+
                 displayVariables(data);
                 setStatus('Variables loaded successfully!', 'success');
-                
+
             } catch (error) {
                 console.error('Error:', error);
                 setStatus(`Error loading variables: ${error.message}`, 'error');
@@ -71,16 +71,16 @@
         function displayVariables(data) {
             const container = document.getElementById('variables');
             let html = '';
-            
+
             for (const [layer, layerData] of Object.entries(data)) {
                 html += `<div class="layer-header">${layer} (${layerData.count} variables)</div>`;
-                
+
                 for (const [varName, varData] of Object.entries(layerData.variables)) {
                     html += `
                         <div class="variable-item">
                             <div class="variable-name">${varName}</div>
                             <div class="variable-value">
-                                <strong>Value:</strong> ${JSON.stringify(varData.current_value)} 
+                                <strong>Value:</strong> ${JSON.stringify(varData.current_value)}
                                 <em>(${varData.type})</em>
                             </div>
                             <div style="font-size: 14px; color: #8892b0;">${varData.description}</div>
@@ -89,7 +89,7 @@
                     `;
                 }
             }
-            
+
             container.innerHTML = html;
         }
 

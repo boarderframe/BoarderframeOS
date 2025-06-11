@@ -3,10 +3,10 @@
 Minimal working server for BoarderframeOS UI
 """
 import http.server
-import socketserver
 import json
-from urllib.parse import urlparse, parse_qs
 import os
+import socketserver
+from urllib.parse import parse_qs, urlparse
 
 PORT = 8080
 
@@ -16,7 +16,7 @@ class BoarderframeHandler(http.server.SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
-            
+
             html = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -86,15 +86,15 @@ class BoarderframeHandler(http.server.SimpleHTTPRequestHandler):
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="bg-gray-900 rounded-lg p-4 mb-4 h-48 overflow-y-auto">
                     <div class="text-gray-400 text-center pt-16">
                         Solomon is offline. Run the setup script to initialize the AI operating system.
                     </div>
                 </div>
-                
+
                 <div class="flex space-x-3">
-                    <input type="text" placeholder="Message Solomon..." 
+                    <input type="text" placeholder="Message Solomon..."
                            class="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
                            disabled>
                     <button class="bg-gray-600 px-6 py-2 rounded-lg cursor-not-allowed" disabled>
@@ -112,24 +112,24 @@ class BoarderframeHandler(http.server.SimpleHTTPRequestHandler):
                     <h3 class="font-semibold text-green-400 mb-2">1. Run System Setup</h3>
                     <code class="text-sm bg-black p-2 rounded block">cd /Users/cosburn/BoarderframeOS/boarderframeos && python setup_boarderframeos.py</code>
                 </div>
-                
+
                 <div class="bg-gray-900 p-4 rounded-lg">
                     <h3 class="font-semibold text-blue-400 mb-2">2. Start MCP Servers</h3>
                     <code class="text-sm bg-black p-2 rounded block">python mcp/filesystem_server.py &</code>
                     <code class="text-sm bg-black p-2 rounded block">python mcp/database_server.py &</code>
                     <code class="text-sm bg-black p-2 rounded block">python mcp/llm_server.py &</code>
                 </div>
-                
+
                 <div class="bg-gray-900 p-4 rounded-lg">
                     <h3 class="font-semibold text-purple-400 mb-2">3. Initialize Agents</h3>
                     <code class="text-sm bg-black p-2 rounded block">python startup.py</code>
                 </div>
             </div>
-            
+
             <div class="mt-6 p-4 bg-blue-900 rounded-lg">
                 <p class="text-sm">
-                    <strong>✨ This is your BoarderframeOS UI!</strong> The interface is ready and waiting. 
-                    Once you run the setup, Solomon will come online for real-time chat, agents will start evolving, 
+                    <strong>✨ This is your BoarderframeOS UI!</strong> The interface is ready and waiting.
+                    Once you run the setup, Solomon will come online for real-time chat, agents will start evolving,
                     and you'll have full control over the AI operating system.
                 </p>
             </div>
@@ -143,7 +143,7 @@ class BoarderframeHandler(http.server.SimpleHTTPRequestHandler):
                     console.log('BoarderframeOS Dashboard initialized');
                     this.checkBackend();
                 },
-                
+
                 async checkBackend() {
                     // Simulate backend check
                     setTimeout(() => {
@@ -156,7 +156,7 @@ class BoarderframeHandler(http.server.SimpleHTTPRequestHandler):
 </body>
 </html>"""
             self.wfile.write(html.encode())
-            
+
         elif self.path == '/health':
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
@@ -167,7 +167,7 @@ class BoarderframeHandler(http.server.SimpleHTTPRequestHandler):
                 "port": PORT
             })
             self.wfile.write(response.encode())
-            
+
         else:
             super().do_GET()
 

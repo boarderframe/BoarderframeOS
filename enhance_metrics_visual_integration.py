@@ -3,15 +3,18 @@
 Enhance the metrics layer to use database colors and icons for all metric cards
 """
 
-import psycopg2
 import json
-from typing import Dict, Any, Optional, Tuple
 from datetime import datetime, timedelta
+from typing import Any, Dict, Optional, Tuple
+
+import psycopg2
+
 from core.hq_metrics_layer import BFColors, BFIcons
+
 
 class VisualMetadataCache:
     """Cache for visual metadata to avoid repeated database queries"""
-    
+
     def __init__(self, db_config: Dict[str, Any]):
         self.db_config = db_config
         self._cache = {
@@ -24,7 +27,7 @@ class VisualMetadataCache:
         }
         self._last_refresh = None
         self._cache_ttl = timedelta(minutes=10)
-        
+
         # Default category colors for aggregate metrics
         self.category_colors = {
             'agents': '#3b82f6',      # Blue
@@ -35,7 +38,7 @@ class VisualMetadataCache:
             'servers': '#f59e0b',      # Amber
             'registry': '#6366f1',     # Indigo
         }
-        
+
         # Default category icons
         self.category_icons = {
             'agents': 'fa-robot',
@@ -46,7 +49,7 @@ class VisualMetadataCache:
             'servers': 'fa-server',
             'registry': 'fa-network-wired',
         }
-    
+
     def _get_db_connection(self):
         """Get database connection"""
         return psycopg2.connect(
@@ -56,54 +59,54 @@ class VisualMetadataCache:
             user=self.db_config.get('user', 'boarderframe'),
             password=self.db_config.get('password', 'boarderframe_secure_2025')
         )
-    
+
     def refresh_cache(self, force: bool = False):
         """Refresh the visual metadata cache"""
         now = datetime.now()
-        
+
         # Check if cache is still valid
-        if (not force and 
-            self._last_refresh and 
+        if (not force and
+            self._last_refresh and
             now - self._last_refresh < self._cache_ttl):
             return
-        
+
         try:
             conn = self._get_db_connection()
             cur = conn.cursor()
-            
+
             # Fetch department visual metadata
             cur.execute("""
                 SELECT id, name, configuration->'visual' as visual
                 FROM departments
                 WHERE configuration->'visual' IS NOT NULL
             """)
-            
+
             for dept_id, name, visual in cur.fetchall():
                 if visual:
                     self._cache['departments'][str(dept_id)] = visual
                     self._cache['departments'][name] = visual
-            
+
             # Fetch division visual metadata
             cur.execute("""
                 SELECT id, division_name, configuration->'visual' as visual
                 FROM divisions
                 WHERE configuration->'visual' IS NOT NULL
             """)
-            
+
             for div_id, name, visual in cur.fetchall():
                 if visual:
                     self._cache['divisions'][str(div_id)] = visual
                     self._cache['divisions'][name] = visual
-            
+
             # Fetch agent visual metadata (from their departments)
             cur.execute("""
-                SELECT 
+                SELECT
                     ar.agent_id, ar.name,
                     d.configuration->'visual' as dept_visual
                 FROM agent_registry ar
                 LEFT JOIN departments d ON ar.department_id = d.id
             """)
-            
+
             for agent_id, name, dept_visual in cur.fetchall():
                 # Agents inherit department colors but use agent icon
                 if dept_visual:
@@ -111,16 +114,16 @@ class VisualMetadataCache:
                     agent_visual['icon'] = 'fa-robot'
                     self._cache['agents'][str(agent_id)] = agent_visual
                     self._cache['agents'][name] = agent_visual
-            
+
             # Fetch leader visual metadata (custom colors)
             cur.execute("""
-                SELECT 
+                SELECT
                     dl.id, dl.name, dl.leadership_tier,
                     d.configuration->'visual' as dept_visual
                 FROM department_leaders dl
                 LEFT JOIN departments d ON dl.department_id = d.id
             """)
-            
+
             for leader_id, name, tier, dept_visual in cur.fetchall():
                 # Leaders get special colors based on tier
                 leader_visual = {
@@ -130,7 +133,7 @@ class VisualMetadataCache:
                 }
                 self._cache['leaders'][str(leader_id)] = leader_visual
                 self._cache['leaders'][name] = leader_visual
-            
+
             # Set category visuals
             self._cache['categories'] = {
                 'agents': {
@@ -158,15 +161,15 @@ class VisualMetadataCache:
                     'icon': self.category_icons['servers']
                 }
             }
-            
+
             cur.close()
             conn.close()
-            
+
             self._last_refresh = now
-            
+
         except Exception as e:
             print(f"Error refreshing visual metadata cache: {e}")
-    
+
     def _get_leader_color(self, tier: str) -> str:
         """Get color for leader based on tier"""
         tier_colors = {
@@ -176,29 +179,29 @@ class VisualMetadataCache:
             'team': '#3b82f6'         # Blue
         }
         return tier_colors.get(tier, BFColors.LEADERSHIP)
-    
-    def get_visual(self, entity_type: str, entity_id: Optional[str] = None, 
+
+    def get_visual(self, entity_type: str, entity_id: Optional[str] = None,
                    entity_name: Optional[str] = None) -> Dict[str, str]:
         """Get visual metadata for an entity"""
         self.refresh_cache()
-        
+
         # For categories
         if entity_type in self.category_icons and not entity_id and not entity_name:
             return self._cache['categories'].get(entity_type, {
                 'color': BFColors.INFO,
                 'icon': 'fa-folder'
             })
-        
+
         # Get from cache
         cache_section = self._cache.get(entity_type, {})
-        
+
         # Try ID first, then name
         visual = None
         if entity_id:
             visual = cache_section.get(str(entity_id))
         if not visual and entity_name:
             visual = cache_section.get(entity_name)
-        
+
         # Return with defaults
         if visual:
             return {
@@ -206,10 +209,10 @@ class VisualMetadataCache:
                 'icon': visual.get('icon', self.category_icons.get(entity_type, 'fa-folder')),
                 'theme': visual.get('theme', 'default')
             }
-        
+
         # Default visuals by type
         return self._get_default_visual(entity_type)
-    
+
     def _get_default_visual(self, entity_type: str) -> Dict[str, str]:
         """Get default visual for entity type"""
         defaults = {
@@ -227,11 +230,11 @@ def update_metrics_layer():
     """Update the metrics layer files to use visual metadata cache"""
     print("🎨 Updating Metrics Layer for Visual Integration")
     print("=" * 60)
-    
+
     # Read the current hq_metrics_layer.py
     with open('core/hq_metrics_layer.py', 'r') as f:
         content = f.read()
-    
+
     # Add visual metadata cache initialization
     cache_init = """
     def __init__(self, db_config: Dict[str, Any]):
@@ -242,7 +245,7 @@ def update_metrics_layer():
         from enhance_metrics_visual_integration import VisualMetadataCache
         self._visual_cache = VisualMetadataCache(db_config)
 """
-    
+
     # Replace the __init__ method in MetricsCalculator
     import re
     content = re.sub(
@@ -250,16 +253,16 @@ def update_metrics_layer():
         cache_init.strip(),
         content
     )
-    
+
     # Update department metrics to use visual cache
     dept_visual_code = """
                 # Get visual configuration from cache
                 visual = self._visual_cache.get_visual('departments', str(row[0]), row[1])
-                
+
                 dept_color = visual.get('color', self._get_department_color(row[1]))
                 dept_icon = visual.get('icon', self._get_department_icon(row[1]))
 """
-    
+
     # Replace the visual configuration code
     content = re.sub(
         r'# Get visual configuration from database.*?dept_icon = visual_config\.get\(\'icon\', self\._get_department_icon\(row\[1\]\)\)',
@@ -267,17 +270,17 @@ def update_metrics_layer():
         content,
         flags=re.DOTALL
     )
-    
+
     # Save the updated file
     with open('core/hq_metrics_layer.py', 'w') as f:
         f.write(content)
-    
+
     print("✅ Updated hq_metrics_layer.py")
-    
+
     # Now update hq_metrics_integration.py
     with open('core/hq_metrics_integration.py', 'r') as f:
         integration_content = f.read()
-    
+
     # Add import for visual cache
     if 'from enhance_metrics_visual_integration import VisualMetadataCache' not in integration_content:
         integration_content = integration_content.replace(
@@ -289,13 +292,13 @@ try:
 except ImportError:
     VisualMetadataCache = None'''
         )
-    
+
     # Update the _generate_metric_summary_cards method to use database colors
     new_summary_cards = '''
     def _generate_metric_summary_cards(self, metrics: Dict[str, Any]) -> str:
         """Generate summary cards for key metrics with database colors"""
         cards = []
-        
+
         # Initialize visual cache if available
         visual_cache = None
         if VisualMetadataCache:
@@ -304,13 +307,13 @@ except ImportError:
                 visual_cache.refresh_cache()
             except:
                 pass
-        
+
         # Helper function to extract value
         def get_value(data):
             if hasattr(data, 'value'):
                 return data.value
             return data if data is not None else 0
-        
+
         # Get visual metadata for categories
         def get_category_visual(category):
             if visual_cache:
@@ -325,7 +328,7 @@ except ImportError:
                 'servers': {'color': '#f59e0b', 'icon': 'fa-server'}
             }
             return defaults.get(category, {'color': '#6b7280', 'icon': 'fa-folder'})
-        
+
         # 1. Agents summary (first)
         agent_data = metrics.get('agents', {}).get('summary', {})
         if agent_data:
@@ -344,7 +347,7 @@ except ImportError:
                     </div>
                 </div>
             """)
-        
+
         # 2. Leaders summary (second)
         leaders_data = metrics.get('leaders', {})
         if leaders_data:
@@ -382,7 +385,7 @@ except ImportError:
                         </div>
                     </div>
                 """)
-        
+
         # 3. Departments summary (third)
         dept_data = metrics.get('departments', {}).get('summary', {})
         if dept_data:
@@ -401,20 +404,20 @@ except ImportError:
                     </div>
                 </div>
             """)
-        
+
         # 4. Divisions summary (fourth)
         div_data = metrics.get('divisions', {}).get('summary', {})
         divisions_count = 0
-        
+
         if div_data:
             divisions_count = get_value(div_data.get('total', 0))
-        
+
         # If no divisions data, check departments summary for divisions count
         if divisions_count == 0 and dept_data:
             divisions_value = dept_data.get('divisions')
             if divisions_value:
                 divisions_count = get_value(divisions_value)
-        
+
         # If still no data, count unique divisions from departments
         if divisions_count == 0:
             dept_details = metrics.get('departments', {}).get('individual', [])
@@ -424,7 +427,7 @@ except ImportError:
                     if hasattr(dept, 'metadata') and dept.metadata.get('division'):
                         unique_divisions.add(dept.metadata['division'])
                 divisions_count = len(unique_divisions)
-        
+
         if divisions_count > 0:
             visual = get_category_visual('divisions')
             cards.append(f"""
@@ -439,7 +442,7 @@ except ImportError:
                     </div>
                 </div>
             """)
-        
+
         # 5. Database summary (fifth)
         database_metrics = metrics.get('database', {})
         if database_metrics:
@@ -453,7 +456,7 @@ except ImportError:
                 connections_data = database_metrics.get('connections', {})
                 active_conn = get_value(connections_data.get('active', 0))
                 total_conn = get_value(connections_data.get('total', 0))
-                
+
                 cards.append(f"""
                     <div class="metric-card" style="background: linear-gradient(135deg, {visual['color']}, {visual['color']}dd); color: white; padding: 1.5rem; border-radius: 12px;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -483,7 +486,7 @@ except ImportError:
                         </div>
                     </div>
                 """)
-        
+
         # 6. Servers summary (last)
         server_data = metrics.get('servers', {}).get('summary', {})
         if server_data:
@@ -502,10 +505,10 @@ except ImportError:
                     </div>
                 </div>
             """)
-        
+
         return '\\n'.join(cards)
 '''
-    
+
     # Replace the _generate_metric_summary_cards method
     integration_content = re.sub(
         r'def _generate_metric_summary_cards\(self, metrics: Dict\[str, Any\]\) -> str:.*?return \'\\\n\'\.join\(cards\)',
@@ -513,18 +516,18 @@ except ImportError:
         integration_content,
         flags=re.DOTALL
     )
-    
+
     # Save the updated integration file
     with open('core/hq_metrics_integration.py', 'w') as f:
         f.write(integration_content)
-    
+
     print("✅ Updated hq_metrics_integration.py")
-    
+
     # Run the visual metadata population if needed
     print("\n🎨 Ensuring visual metadata is populated...")
     from populate_visual_metadata import populate_visual_metadata
     populate_visual_metadata()
-    
+
     print("\n✅ Visual integration complete!")
     print("\nThe metrics layer will now:")
     print("  • Fetch colors and icons from the database")

@@ -4,30 +4,31 @@ BoarderframeOS Setup Script
 Creates the complete directory structure and initializes the system
 """
 
-import os
-import sys
 import json
+import os
 import subprocess
+import sys
 from pathlib import Path
 from typing import Dict, List
+
 
 class BoarderframeOSSetup:
     def __init__(self):
         self.base_dir = Path(__file__).parent
         self.required_dirs = [
             "agents/primordials",
-            "agents/solomon", 
+            "agents/solomon",
             "agents/david",
             "agents/the_twelve",
             "agents/generated",
             "biomes/forge",
-            "biomes/arena", 
+            "biomes/arena",
             "biomes/library",
             "biomes/market",
             "biomes/council",
             "biomes/garden",
             "evolution",
-            "mesh", 
+            "mesh",
             "metrics",
             "data/backups",
             "data/exports",
@@ -38,7 +39,7 @@ class BoarderframeOSSetup:
             "zones/development",
             "zones/production"
         ]
-        
+
         self.requirements = [
             "fastapi==0.104.1",
             "uvicorn==0.24.0",
@@ -59,42 +60,42 @@ class BoarderframeOSSetup:
     def create_directories(self):
         """Create all required directories"""
         print("🏗️  Creating directory structure...")
-        
+
         for dir_path in self.required_dirs:
             full_path = self.base_dir / dir_path
             full_path.mkdir(parents=True, exist_ok=True)
-            
+
             # Create __init__.py for Python packages
             if not dir_path.startswith(('data/', 'logs/', 'experiments/', 'zones/')):
                 init_file = full_path / "__init__.py"
                 if not init_file.exists():
                     init_file.write_text("")
-                    
+
         print(f"✅ Created {len(self.required_dirs)} directories")
 
     def setup_virtual_environment(self):
         """Create and activate virtual environment"""
         venv_path = self.base_dir / "venv"
-        
+
         if not venv_path.exists():
             print("🐍 Creating virtual environment...")
             subprocess.run([sys.executable, "-m", "venv", str(venv_path)], check=True)
             print("✅ Virtual environment created")
         else:
             print("✅ Virtual environment already exists")
-            
+
         return venv_path
 
     def install_dependencies(self, venv_path: Path):
         """Install required Python packages"""
         pip_path = venv_path / "bin" / "pip" if os.name != "nt" else venv_path / "Scripts" / "pip.exe"
-        
+
         print("📦 Installing dependencies...")
         requirements_file = self.base_dir / "requirements.txt"
-        
+
         # Write requirements file
         requirements_file.write_text("\n".join(self.requirements))
-        
+
         # Install packages
         subprocess.run([str(pip_path), "install", "-r", str(requirements_file)], check=True)
         print("✅ Dependencies installed")
@@ -102,7 +103,7 @@ class BoarderframeOSSetup:
     def create_config_files(self):
         """Create configuration templates"""
         print("⚙️  Creating configuration files...")
-        
+
         # Main system config
         system_config = {
             "system": {
@@ -133,12 +134,12 @@ class BoarderframeOSSetup:
                 "llm": {"port": 8005, "enabled": True}
             }
         }
-        
+
         config_file = self.base_dir / "config" / "system.yaml"
         with open(config_file, 'w') as f:
             import yaml
             yaml.dump(system_config, f, default_flow_style=False, indent=2)
-        
+
         # Biome configurations
         biomes = {
             "forge": {"evolution_rate": 0.3, "focus": "innovation", "leader": "adam"},
@@ -148,12 +149,12 @@ class BoarderframeOSSetup:
             "council": {"evolution_rate": 0.05, "focus": "strategy", "leader": "david"},
             "garden": {"evolution_rate": 0.25, "focus": "harmony", "leader": "eve"}
         }
-        
+
         for biome_name, config in biomes.items():
             biome_file = self.base_dir / "biomes" / biome_name / "config.yaml"
             with open(biome_file, 'w') as f:
                 yaml.dump(config, f, default_flow_style=False, indent=2)
-        
+
         print("✅ Configuration files created")
 
     def create_startup_script(self):
@@ -178,44 +179,44 @@ from utils.logger import setup_logging
 async def start_boarderframeos():
     """Start the complete BoarderframeOS system"""
     print("🚀 Starting BoarderframeOS...")
-    
+
     # Setup logging
     setup_logging()
-    
+
     # Start MCP servers
     launcher = MCPServerLauncher()
     await launcher.start_all()
-    
+
     # TODO: Initialize agents in order:
     # 1. Solomon (Chief of Staff)
     # 2. David (CEO)
     # 3. Primordials (Adam, Eve, Bezalel)
-    
+
     print("✅ BoarderframeOS initialized successfully")
     print("🎯 Ready to create the first billion-dollar one-person company")
 
 if __name__ == "__main__":
     asyncio.run(start_boarderframeos())
 '''
-        
+
         startup_file = self.base_dir / "startup.py"
         startup_file.write_text(startup_script)
         startup_file.chmod(0o755)
-        
+
         print("✅ Startup script created")
 
     def run_setup(self):
         """Execute complete setup process"""
         print("🌟 BoarderframeOS Setup Starting...")
         print("=" * 50)
-        
+
         try:
             self.create_directories()
             venv_path = self.setup_virtual_environment()
             self.install_dependencies(venv_path)
             self.create_config_files()
             self.create_startup_script()
-            
+
             print("=" * 50)
             print("🎉 BoarderframeOS setup completed successfully!")
             print(f"📁 Project root: {self.base_dir}")
@@ -226,7 +227,7 @@ if __name__ == "__main__":
             print("2. Start the system:")
             print("   python startup.py")
             print("3. Begin agent deployment starting with Solomon")
-            
+
         except Exception as e:
             print(f"❌ Setup failed: {e}")
             sys.exit(1)

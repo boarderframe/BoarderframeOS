@@ -18,7 +18,7 @@ All pages in Corporate HQ (Agents, Leaders, Departments, and Divisions) have bee
 - ✅ Uses consistent visual styling (purple theme with crown icon)
 - ✅ Ready for leader data integration when available
 
-### 3. **Departments Page**  
+### 3. **Departments Page**
 - ✅ Department metrics cards use `get_department_metrics_cards()` method
 - ✅ Shows: 45 total departments, 3 active, 9 divisions
 - ✅ Department cards use `get_department_cards_html()` with visual metadata
@@ -95,7 +95,7 @@ All pages now follow the same visual standards:
 
 All methods tested successfully:
 - Agent metrics cards: ✅ 1,437 characters
-- Department metrics cards: ✅ 1,471 characters  
+- Department metrics cards: ✅ 1,471 characters
 - Leaders page HTML: ✅ 1,951 characters
 - Divisions page HTML: ✅ 22,430 characters
 

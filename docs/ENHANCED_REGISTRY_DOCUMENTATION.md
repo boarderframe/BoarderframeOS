@@ -307,7 +307,7 @@ async def register_my_agent():
             metadata={"version": "2.0.0"}
         )
         print(f"Registered agent: {agent.id}")
-        
+
         # Register a server
         server = await client.register_server(
             name="Analytics API",
@@ -333,7 +333,7 @@ async def find_analytics_agents():
             status=ServiceStatus.ONLINE,
             department_id="analytics-dept"
         )
-        
+
         # Select best agent based on load
         best_agent = min(agents, key=lambda a: a.current_load)
         return best_agent
@@ -347,14 +347,14 @@ async def monitor_registry_events():
         # Define event handler
         async def on_agent_registered(event: RegistryEvent):
             print(f"New agent registered: {event.data['name']}")
-            
+
         # Subscribe to events
         client.on_event(EventType.REGISTERED, on_agent_registered)
         await client.subscribe_to_events(
             event_types=[EventType.REGISTERED, EventType.STATUS_CHANGED],
             entity_types=[RegistryType.AGENT]
         )
-        
+
         # Keep listening
         await asyncio.sleep(3600)
 ```
@@ -370,14 +370,14 @@ class MyAgent(BaseAgent):
         super().__init__()
         self.registry_client = None
         self.registry_entry = None
-        
+
     async def initialize(self):
         await super().initialize()
-        
+
         # Create registry client
         self.registry_client = RegistryClient()
         await self.registry_client.connect()
-        
+
         # Register this agent
         self.registry_entry = await self.registry_client.register_agent(
             name=self.name,
@@ -389,13 +389,13 @@ class MyAgent(BaseAgent):
                 "version": self.version
             }
         )
-        
+
     async def shutdown(self):
         # Unregister from registry
         if self.registry_client and self.registry_entry:
             await self.registry_client.unregister(self.registry_entry.id)
             await self.registry_client.disconnect()
-            
+
         await super().shutdown()
 ```
 

@@ -11,21 +11,21 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #0a0e27;
             color: #e0e6ed;
             min-height: 100vh;
         }
-        
+
         /* Header */
         .header {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             padding: 20px 30px;
             box-shadow: 0 2px 20px rgba(0,0,0,0.3);
         }
-        
+
         .header-content {
             max-width: 1600px;
             margin: 0 auto;
@@ -33,7 +33,7 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .header h1 {
             font-size: 28px;
             font-weight: 600;
@@ -41,12 +41,12 @@
             align-items: center;
             gap: 15px;
         }
-        
+
         .cortex-icon {
             font-size: 36px;
             color: #64ffda;
         }
-        
+
         .sdk-badge {
             background: rgba(100, 255, 218, 0.2);
             color: #64ffda;
@@ -56,7 +56,7 @@
             font-weight: 600;
             margin-left: 10px;
         }
-        
+
         /* Main Layout */
         .main-container {
             display: flex;
@@ -64,7 +64,7 @@
             margin: 0 auto;
             min-height: calc(100vh - 80px);
         }
-        
+
         /* Enhanced Sidebar */
         .sidebar {
             width: 280px;
@@ -73,11 +73,11 @@
             border-right: 1px solid #1a1f2e;
             overflow-y: auto;
         }
-        
+
         .nav-section {
             margin-bottom: 30px;
         }
-        
+
         .nav-section h3 {
             font-size: 12px;
             text-transform: uppercase;
@@ -85,7 +85,7 @@
             margin-bottom: 12px;
             letter-spacing: 1px;
         }
-        
+
         .nav-item {
             display: flex;
             align-items: center;
@@ -98,32 +98,32 @@
             color: #e0e6ed;
             text-decoration: none;
         }
-        
+
         .nav-item:hover {
             background: rgba(100, 255, 218, 0.1);
             color: #64ffda;
         }
-        
+
         .nav-item.active {
             background: rgba(100, 255, 218, 0.2);
             color: #64ffda;
         }
-        
+
         /* Content Area */
         .content {
             flex: 1;
             padding: 30px;
             overflow-y: auto;
         }
-        
+
         .section {
             display: none;
         }
-        
+
         .section.active {
             display: block;
         }
-        
+
         /* SDK Provider Cards */
         .sdk-provider-card {
             background: #1a1f2e;
@@ -132,62 +132,62 @@
             margin-bottom: 20px;
             border: 1px solid #2a3142;
         }
-        
+
         .provider-header-enhanced {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
-        
+
         .provider-models-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 16px;
             margin-top: 16px;
         }
-        
+
         .model-card {
             background: #0f1419;
             border-radius: 8px;
             padding: 16px;
             border: 1px solid #2a3142;
         }
-        
+
         .model-name {
             font-weight: 600;
             color: #e6f1ff;
             margin-bottom: 8px;
         }
-        
+
         .model-stats {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 8px;
             font-size: 12px;
         }
-        
+
         .model-stat {
             display: flex;
             justify-content: space-between;
         }
-        
+
         .model-stat-label {
             color: #8892b0;
         }
-        
+
         .model-stat-value {
             color: #e6f1ff;
             font-weight: 500;
         }
-        
+
         .capability-tags {
             display: flex;
             flex-wrap: wrap;
             gap: 4px;
             margin-top: 8px;
         }
-        
+
         .capability-tag {
             background: rgba(189, 147, 249, 0.2);
             color: #bd93f9;
@@ -196,14 +196,14 @@
             font-size: 10px;
             font-weight: 600;
         }
-        
+
         /* Agent Templates */
         .template-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
         }
-        
+
         .template-card {
             background: #1a1f2e;
             border-radius: 12px;
@@ -212,19 +212,19 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .template-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
             border-color: #64ffda;
         }
-        
+
         .template-icon {
             font-size: 48px;
             margin-bottom: 16px;
             color: #64ffda;
         }
-        
+
         .template-name {
             font-size: 20px;
             font-weight: 600;
@@ -232,13 +232,13 @@
             margin-bottom: 8px;
             text-transform: capitalize;
         }
-        
+
         .template-description {
             color: #8892b0;
             font-size: 14px;
             line-height: 1.5;
         }
-        
+
         /* Model Recommendation */
         .recommendation-form {
             background: #0f1419;
@@ -246,14 +246,14 @@
             padding: 24px;
             margin-bottom: 20px;
         }
-        
+
         .form-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 16px;
             margin-bottom: 16px;
         }
-        
+
         .recommendation-result {
             background: rgba(100, 255, 218, 0.1);
             border: 1px solid rgba(100, 255, 218, 0.3);
@@ -261,14 +261,14 @@
             padding: 20px;
             margin-top: 20px;
         }
-        
+
         .recommended-model {
             font-size: 24px;
             font-weight: 600;
             color: #64ffda;
             margin-bottom: 12px;
         }
-        
+
         /* Swarm Visualization */
         .swarm-container {
             background: #0f1419;
@@ -276,7 +276,7 @@
             padding: 24px;
             margin-bottom: 20px;
         }
-        
+
         .swarm-diagram {
             display: flex;
             align-items: center;
@@ -284,7 +284,7 @@
             min-height: 200px;
             position: relative;
         }
-        
+
         .agent-node {
             background: #1a1f2e;
             border: 2px solid #64ffda;
@@ -298,13 +298,13 @@
             position: relative;
             z-index: 2;
         }
-        
+
         .agent-node-name {
             font-size: 12px;
             font-weight: 600;
             text-align: center;
         }
-        
+
         .swarm-connection {
             position: absolute;
             top: 50%;
@@ -312,14 +312,14 @@
             background: #64ffda;
             z-index: 1;
         }
-        
+
         /* Cost Calculator */
         .cost-calculator {
             background: #1a1f2e;
             border-radius: 12px;
             padding: 24px;
         }
-        
+
         .cost-display {
             font-size: 48px;
             font-weight: 700;
@@ -327,43 +327,43 @@
             text-align: center;
             margin: 20px 0;
         }
-        
+
         .cost-breakdown {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 16px;
             margin-top: 20px;
         }
-        
+
         /* Enhanced buttons */
         .btn-group {
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
         }
-        
+
         .btn-icon {
             margin-right: 6px;
         }
-        
+
         /* Loading states */
         .skeleton {
             background: linear-gradient(90deg, #1a1f2e 25%, #2a3142 50%, #1a1f2e 75%);
             background-size: 200% 100%;
             animation: loading 1.5s infinite;
         }
-        
+
         @keyframes loading {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
-        
+
         /* Tooltips */
         .tooltip {
             position: relative;
             display: inline-block;
         }
-        
+
         .tooltip .tooltiptext {
             visibility: hidden;
             width: 200px;
@@ -381,7 +381,7 @@
             transition: opacity 0.3s;
             font-size: 12px;
         }
-        
+
         .tooltip:hover .tooltiptext {
             visibility: visible;
             opacity: 1;
@@ -403,7 +403,7 @@
             </div>
         </div>
     </header>
-    
+
     <!-- Main Container -->
     <div class="main-container">
         <!-- Enhanced Sidebar -->
@@ -415,7 +415,7 @@
                     <span>Dashboard</span>
                 </a>
             </div>
-            
+
             <div class="nav-section">
                 <h3>LLM Management</h3>
                 <a href="#" class="nav-item" onclick="showSection('sdk-providers')">
@@ -435,7 +435,7 @@
                     <span>Cost Calculator</span>
                 </a>
             </div>
-            
+
             <div class="nav-section">
                 <h3>Agent Development</h3>
                 <a href="#" class="nav-item" onclick="showSection('agent-templates')">
@@ -451,7 +451,7 @@
                     <span>Swarm Builder</span>
                 </a>
             </div>
-            
+
             <div class="nav-section">
                 <h3>Configuration</h3>
                 <a href="#" class="nav-item" onclick="showSection('providers')">
@@ -468,13 +468,13 @@
                 </a>
             </div>
         </aside>
-        
+
         <!-- Enhanced Content Area -->
         <main class="content">
             <!-- Overview Section -->
             <section id="overview-section" class="section active">
                 <h2 style="margin-bottom: 24px;">Enhanced System Overview</h2>
-                
+
                 <div class="stats-grid">
                     <div class="stat-card">
                         <i class="fas fa-microchip" style="font-size: 24px; color: #64ffda;"></i>
@@ -497,7 +497,7 @@
                         <div class="stat-label">Agent Swarms</div>
                     </div>
                 </div>
-                
+
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">SDK Features</h3>
@@ -518,20 +518,20 @@
                     </div>
                 </div>
             </section>
-            
+
             <!-- SDK Providers Section -->
             <section id="sdk-providers-section" class="section">
                 <h2 style="margin-bottom: 24px;">SDK-Integrated LLM Providers</h2>
-                
+
                 <div id="sdkProvidersList">
                     <!-- SDK providers will be populated here -->
                 </div>
             </section>
-            
+
             <!-- Model Explorer Section -->
             <section id="model-explorer-section" class="section">
                 <h2 style="margin-bottom: 24px;">Model Explorer</h2>
-                
+
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Filter by Capability</h3>
@@ -540,19 +540,19 @@
                         <!-- Capability filters will be populated here -->
                     </div>
                 </div>
-                
+
                 <div id="modelExplorerResults" style="margin-top: 24px;">
                     <!-- Model results will be shown here -->
                 </div>
             </section>
-            
+
             <!-- Model Recommendations Section -->
             <section id="recommendations-section" class="section">
                 <h2 style="margin-bottom: 24px;">AI Model Recommendations</h2>
-                
+
                 <div class="recommendation-form">
                     <h3 class="card-title" style="margin-bottom: 20px;">Find the Perfect Model</h3>
-                    
+
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Task Type</label>
@@ -565,73 +565,73 @@
                                 <option value="ultra-fast">Ultra-fast Response</option>
                             </select>
                         </div>
-                        
+
                         <div class="form-group">
                             <label class="form-label">Max Cost per 1K tokens ($)</label>
-                            <input type="number" class="form-input" id="maxCost" 
+                            <input type="number" class="form-input" id="maxCost"
                                    min="0" max="1" step="0.001" value="0.01">
                         </div>
-                        
+
                         <div class="form-group">
                             <label class="form-label">Max Latency (ms)</label>
-                            <input type="number" class="form-input" id="maxLatency" 
+                            <input type="number" class="form-input" id="maxLatency"
                                    min="0" max="5000" step="100" value="2000">
                         </div>
-                        
+
                         <div class="form-group">
                             <label class="form-label">Min Quality Score</label>
-                            <input type="number" class="form-input" id="minQuality" 
+                            <input type="number" class="form-input" id="minQuality"
                                    min="0" max="1" step="0.05" value="0.8">
                         </div>
                     </div>
-                    
+
                     <button class="btn btn-primary" onclick="getModelRecommendation()">
                         <i class="fas fa-magic btn-icon"></i>Get Recommendation
                     </button>
-                    
+
                     <div id="recommendationResult"></div>
                 </div>
             </section>
-            
+
             <!-- Agent Templates Section -->
             <section id="agent-templates-section" class="section">
                 <h2 style="margin-bottom: 24px;">Agent Templates</h2>
-                
+
                 <div class="template-grid" id="templateGrid">
                     <!-- Templates will be populated here -->
                 </div>
             </section>
-            
+
             <!-- Agent Factory Section -->
             <section id="agent-factory-section" class="section">
                 <h2 style="margin-bottom: 24px;">Agent Factory</h2>
-                
+
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Create New Agent</h3>
                     </div>
-                    
+
                     <form id="agentFactoryForm">
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Agent Name</label>
-                                <input type="text" class="form-input" id="newAgentName" 
+                                <input type="text" class="form-input" id="newAgentName"
                                        placeholder="e.g., market_analyst" required>
                             </div>
-                            
+
                             <div class="form-group">
                                 <label class="form-label">Template</label>
                                 <select class="form-select" id="newAgentTemplate" required>
                                     <option value="">Select Template</option>
                                 </select>
                             </div>
-                            
+
                             <div class="form-group">
                                 <label class="form-label">Department</label>
-                                <input type="text" class="form-input" id="newAgentDepartment" 
+                                <input type="text" class="form-input" id="newAgentDepartment"
                                        placeholder="e.g., Strategy" required>
                             </div>
-                            
+
                             <div class="form-group">
                                 <label class="form-label">Tier</label>
                                 <select class="form-select" id="newAgentTier">
@@ -642,38 +642,38 @@
                                 </select>
                             </div>
                         </div>
-                        
+
                         <div class="form-group">
                             <label class="form-label">Goals (one per line)</label>
-                            <textarea class="form-input" id="newAgentGoals" rows="3" 
+                            <textarea class="form-input" id="newAgentGoals" rows="3"
                                       placeholder="Analyze market trends&#10;Generate reports&#10;Identify opportunities"></textarea>
                         </div>
-                        
+
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-plus btn-icon"></i>Create Agent
                         </button>
                     </form>
-                    
+
                     <div id="agentFactoryResult" style="margin-top: 20px;"></div>
                 </div>
             </section>
-            
+
             <!-- Swarm Builder Section -->
             <section id="swarm-builder-section" class="section">
                 <h2 style="margin-bottom: 24px;">Swarm Builder</h2>
-                
+
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Create Agent Swarm</h3>
                     </div>
-                    
+
                     <form id="swarmBuilderForm">
                         <div class="form-group">
                             <label class="form-label">Swarm Name</label>
-                            <input type="text" class="form-input" id="swarmName" 
+                            <input type="text" class="form-input" id="swarmName"
                                    placeholder="e.g., research_swarm" required>
                         </div>
-                        
+
                         <div class="form-group">
                             <label class="form-label">Pattern</label>
                             <select class="form-select" id="swarmPattern">
@@ -682,22 +682,22 @@
                                 <option value="hierarchical">Hierarchical (Tree)</option>
                             </select>
                         </div>
-                        
+
                         <div class="form-group">
                             <label class="form-label">Select Agents</label>
                             <div id="swarmAgentList" style="max-height: 200px; overflow-y: auto;">
                                 <!-- Agent checkboxes will be populated here -->
                             </div>
                         </div>
-                        
+
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-network-wired btn-icon"></i>Create Swarm
                         </button>
                     </form>
-                    
+
                     <div id="swarmVisualization" style="margin-top: 20px;"></div>
                 </div>
-                
+
                 <div class="card" style="margin-top: 20px;">
                     <div class="card-header">
                         <h3 class="card-title">Existing Swarms</h3>
@@ -707,12 +707,12 @@
                     </div>
                 </div>
             </section>
-            
+
             <!-- Cost Calculator Section -->
             <section id="cost-calculator-section" class="section">
                 <div class="cost-calculator">
                     <h2 style="margin-bottom: 24px;">LLM Cost Calculator</h2>
-                    
+
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Provider</label>
@@ -720,34 +720,34 @@
                                 <option value="">Select Provider</option>
                             </select>
                         </div>
-                        
+
                         <div class="form-group">
                             <label class="form-label">Model</label>
                             <select class="form-select" id="calcModel">
                                 <option value="">Select Model</option>
                             </select>
                         </div>
-                        
+
                         <div class="form-group">
                             <label class="form-label">Input Tokens</label>
-                            <input type="number" class="form-input" id="calcInputTokens" 
+                            <input type="number" class="form-input" id="calcInputTokens"
                                    value="1000" min="0">
                         </div>
-                        
+
                         <div class="form-group">
                             <label class="form-label">Output Tokens</label>
-                            <input type="number" class="form-input" id="calcOutputTokens" 
+                            <input type="number" class="form-input" id="calcOutputTokens"
                                    value="500" min="0">
                         </div>
                     </div>
-                    
+
                     <button class="btn btn-primary" onclick="calculateCost()">
                         <i class="fas fa-calculator btn-icon"></i>Calculate Cost
                     </button>
-                    
+
                     <div id="costResult" style="display: none;">
                         <div class="cost-display">$<span id="totalCost">0.00</span></div>
-                        
+
                         <div class="cost-breakdown">
                             <div>
                                 <div class="stat-label">Input Cost</div>
@@ -761,22 +761,22 @@
                     </div>
                 </div>
             </section>
-            
+
             <!-- Original sections (hidden by default, accessible via sidebar) -->
             <section id="providers-section" class="section">
                 <!-- Original providers content -->
             </section>
-            
+
             <section id="agents-section" class="section">
                 <!-- Original agents content -->
             </section>
-            
+
             <section id="tiers-section" class="section">
                 <!-- Original tiers content -->
             </section>
         </main>
     </div>
-    
+
     <script>
         // Global state
         let sdkProviders = {};
@@ -784,7 +784,7 @@
         let templates = [];
         let agents = [];
         let swarms = [];
-        
+
         // Navigation
         function showSection(sectionName) {
             // Update nav
@@ -792,17 +792,17 @@
                 item.classList.remove('active');
             });
             event.target.closest('.nav-item').classList.add('active');
-            
+
             // Update content
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.remove('active');
             });
             document.getElementById(`${sectionName}-section`).classList.add('active');
-            
+
             // Load section data
             loadSectionData(sectionName);
         }
-        
+
         async function loadSectionData(sectionName) {
             switch(sectionName) {
                 case 'overview':
@@ -825,51 +825,51 @@
                     break;
             }
         }
-        
+
         // Enhanced Overview
         async function loadEnhancedOverview() {
             try {
                 // Get SDK providers
                 const providersResponse = await fetch('/api/cortex/sdk/providers');
                 sdkProviders = await providersResponse.json();
-                
+
                 // Count models
                 let totalModels = 0;
                 for (const provider of Object.values(sdkProviders)) {
                     totalModels += provider.models.length;
                 }
-                
+
                 document.getElementById('totalProviders').textContent = Object.keys(sdkProviders).length;
                 document.getElementById('totalModels').textContent = totalModels;
-                
+
                 // Get agents
                 const agentsResponse = await fetch('/api/cortex/agents');
                 agents = await agentsResponse.json();
                 document.getElementById('totalAgents').textContent = agents.length;
-                
+
                 // Get swarms
                 const swarmsResponse = await fetch('/api/cortex/adk/swarms');
                 swarms = await swarmsResponse.json();
                 document.getElementById('totalSwarms').textContent = swarms.length;
-                
+
             } catch (error) {
                 console.error('Error loading overview:', error);
             }
         }
-        
+
         // SDK Providers
         async function loadSDKProviders() {
             const container = document.getElementById('sdkProvidersList');
             container.innerHTML = '';
-            
+
             for (const [name, provider] of Object.entries(sdkProviders)) {
                 const card = document.createElement('div');
                 card.className = 'sdk-provider-card';
-                
+
                 const capabilitiesHtml = [...new Set(
                     provider.models.flatMap(m => m.capabilities)
                 )].map(cap => `<span class="capability-tag">${cap}</span>`).join('');
-                
+
                 card.innerHTML = `
                     <div class="provider-header-enhanced">
                         <div>
@@ -904,7 +904,7 @@
                                     </div>
                                 </div>
                                 <div class="capability-tags" style="margin-top: 8px;">
-                                    ${model.specialties.map(s => 
+                                    ${model.specialties.map(s =>
                                         `<span class="capability-tag" style="background: rgba(100, 255, 218, 0.2); color: #64ffda;">${s}</span>`
                                     ).join('')}
                                 </div>
@@ -912,17 +912,17 @@
                         `).join('')}
                     </div>
                 `;
-                
+
                 container.appendChild(card);
             }
         }
-        
+
         // Model Explorer
         async function loadModelExplorer() {
             // Load capabilities
             const capResponse = await fetch('/api/cortex/capabilities');
             capabilities = await capResponse.json();
-            
+
             const filterContainer = document.getElementById('capabilityFilters');
             filterContainer.innerHTML = capabilities.map(cap => `
                 <button class="btn btn-secondary btn-sm" onclick="filterByCapability('${cap.name}')">
@@ -930,15 +930,15 @@
                 </button>
             `).join('');
         }
-        
+
         async function filterByCapability(capability) {
             const resultsContainer = document.getElementById('modelExplorerResults');
             resultsContainer.innerHTML = '<div class="loading">Loading models...</div>';
-            
+
             try {
                 const response = await fetch(`/api/cortex/sdk/models/${capability}`);
                 const models = await response.json();
-                
+
                 resultsContainer.innerHTML = `
                     <h3>Models with ${capability} capability</h3>
                     <div class="provider-models-grid">
@@ -971,11 +971,11 @@
                 resultsContainer.innerHTML = `<div class="error">Error loading models: ${error.message}</div>`;
             }
         }
-        
+
         // Model Recommendations
         async function getModelRecommendation() {
             const resultDiv = document.getElementById('recommendationResult');
-            
+
             const data = {
                 task_type: document.getElementById('taskType').value,
                 constraints: {
@@ -984,16 +984,16 @@
                     min_quality: parseFloat(document.getElementById('minQuality').value)
                 }
             };
-            
+
             try {
                 const response = await fetch('/api/cortex/sdk/recommend', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(data)
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (response.ok) {
                     resultDiv.innerHTML = `
                         <div class="recommendation-result">
@@ -1020,12 +1020,12 @@
                 resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
             }
         }
-        
+
         // Agent Templates
         async function loadAgentTemplates() {
             const response = await fetch('/api/cortex/adk/templates');
             templates = await response.json();
-            
+
             const grid = document.getElementById('templateGrid');
             grid.innerHTML = templates.map(template => {
                 const icon = getTemplateIcon(template.name);
@@ -1041,13 +1041,13 @@
                     </div>
                 `;
             }).join('');
-            
+
             // Populate template select in factory
             const templateSelect = document.getElementById('newAgentTemplate');
-            templateSelect.innerHTML = '<option value="">Select Template</option>' + 
+            templateSelect.innerHTML = '<option value="">Select Template</option>' +
                 templates.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
         }
-        
+
         function getTemplateIcon(templateName) {
             const icons = {
                 'executive': '<i class="fas fa-crown"></i>',
@@ -1063,21 +1063,21 @@
             };
             return icons[templateName] || '<i class="fas fa-robot"></i>';
         }
-        
+
         function selectTemplate(templateName) {
             document.getElementById('newAgentTemplate').value = templateName;
             showSection('agent-factory');
         }
-        
+
         // Agent Factory Form
         document.getElementById('agentFactoryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const goals = document.getElementById('newAgentGoals').value
                 .split('\n')
                 .filter(g => g.trim())
                 .map(g => g.trim());
-            
+
             const data = {
                 name: document.getElementById('newAgentName').value,
                 template: document.getElementById('newAgentTemplate').value,
@@ -1085,16 +1085,16 @@
                 tier: document.getElementById('newAgentTier').value,
                 goals: goals
             };
-            
+
             try {
                 const response = await fetch('/api/cortex/adk/create-agent', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(data)
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (response.ok) {
                     document.getElementById('agentFactoryResult').innerHTML = `
                         <div class="recommendation-result">
@@ -1104,22 +1104,22 @@
                             <p><strong>Department:</strong> ${result.agent.department}</p>
                         </div>
                     `;
-                    
+
                     // Reset form
                     e.target.reset();
-                    
+
                     // Refresh agents list
                     await loadAgents();
                 } else {
-                    document.getElementById('agentFactoryResult').innerHTML = 
+                    document.getElementById('agentFactoryResult').innerHTML =
                         `<div class="error">Error: ${result.error}</div>`;
                 }
             } catch (error) {
-                document.getElementById('agentFactoryResult').innerHTML = 
+                document.getElementById('agentFactoryResult').innerHTML =
                     `<div class="error">Error: ${error.message}</div>`;
             }
         });
-        
+
         // Swarm Builder
         async function loadSwarmBuilder() {
             // Load agents for selection
@@ -1130,15 +1130,15 @@
                     ${agent.name} (${agent.title})
                 </label>
             `).join('');
-            
+
             // Load existing swarms
             await loadExistingSwarms();
         }
-        
+
         async function loadExistingSwarms() {
             const response = await fetch('/api/cortex/adk/swarms');
             swarms = await response.json();
-            
+
             const container = document.getElementById('existingSwarms');
             container.innerHTML = swarms.map(swarm => `
                 <div class="swarm-container">
@@ -1150,7 +1150,7 @@
                 </div>
             `).join('');
         }
-        
+
         function visualizeSwarm(swarm) {
             if (swarm.type === 'sequential') {
                 return swarm.agents.map((agent, i) => `
@@ -1165,33 +1165,33 @@
                 return `<div style="text-align: center;">Hierarchical structure with ${swarm.agent_count} agents</div>`;
             }
         }
-        
+
         document.getElementById('swarmBuilderForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const selectedAgents = Array.from(document.querySelectorAll('input[name="swarmAgent"]:checked'))
                 .map(cb => cb.value);
-            
+
             if (selectedAgents.length < 2) {
                 alert('Please select at least 2 agents for a swarm');
                 return;
             }
-            
+
             const data = {
                 name: document.getElementById('swarmName').value,
                 agents: selectedAgents,
                 pattern: document.getElementById('swarmPattern').value
             };
-            
+
             try {
                 const response = await fetch('/api/cortex/adk/create-swarm', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(data)
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (response.ok) {
                     alert(`Swarm "${data.name}" created successfully!`);
                     e.target.reset();
@@ -1203,29 +1203,29 @@
                 alert(`Error: ${error.message}`);
             }
         });
-        
+
         // Cost Calculator
         async function loadCostCalculator() {
             const providerSelect = document.getElementById('calcProvider');
             providerSelect.innerHTML = '<option value="">Select Provider</option>' +
                 Object.keys(sdkProviders).map(p => `<option value="${p}">${p}</option>`).join('');
         }
-        
+
         function updateCalcModels() {
             const provider = document.getElementById('calcProvider').value;
             const modelSelect = document.getElementById('calcModel');
-            
+
             if (!provider || !sdkProviders[provider]) {
                 modelSelect.innerHTML = '<option value="">Select Model</option>';
                 return;
             }
-            
+
             modelSelect.innerHTML = '<option value="">Select Model</option>' +
-                sdkProviders[provider].models.map(m => 
+                sdkProviders[provider].models.map(m =>
                     `<option value="${m.name}">${m.name}</option>`
                 ).join('');
         }
-        
+
         async function calculateCost() {
             const data = {
                 provider: document.getElementById('calcProvider').value,
@@ -1233,31 +1233,31 @@
                 input_tokens: parseInt(document.getElementById('calcInputTokens').value),
                 output_tokens: parseInt(document.getElementById('calcOutputTokens').value)
             };
-            
+
             if (!data.provider || !data.model) {
                 alert('Please select provider and model');
                 return;
             }
-            
+
             try {
                 const response = await fetch('/api/cortex/sdk/cost-estimate', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(data)
                 });
-                
+
                 const result = await response.json();
-                
+
                 document.getElementById('totalCost').textContent = result.estimated_cost.toFixed(4);
                 document.getElementById('inputCost').textContent = result.breakdown.input_cost.toFixed(4);
                 document.getElementById('outputCost').textContent = result.breakdown.output_cost.toFixed(4);
                 document.getElementById('costResult').style.display = 'block';
-                
+
             } catch (error) {
                 alert(`Error: ${error.message}`);
             }
         }
-        
+
         // Utility functions
         function formatTokens(tokens) {
             if (tokens >= 1000000) {
@@ -1267,17 +1267,17 @@
             }
             return tokens.toString();
         }
-        
+
         async function refreshSDKData() {
             await loadEnhancedOverview();
             showNotification('SDK data refreshed', 'success');
         }
-        
+
         function showNotification(message, type = 'info') {
             console.log(`[${type.toUpperCase()}] ${message}`);
             // You can implement a proper notification system here
         }
-        
+
         // Initialize on load
         window.addEventListener('load', async () => {
             await loadEnhancedOverview();

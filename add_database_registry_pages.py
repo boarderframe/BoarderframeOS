@@ -5,22 +5,22 @@ Add database and registry page methods to HQ metrics integration
 
 def add_database_registry_methods():
     """Add get_database_page_html and get_registry_page_html methods"""
-    
+
     # Read the metrics integration file
     with open('core/hq_metrics_integration.py', 'r') as f:
         content = f.read()
-    
+
     # Check if methods already exist
     if 'def get_database_page_html' in content and 'def get_registry_page_html' in content:
         print("Methods already exist")
         return True
-    
+
     # Find where to insert (at the end of the class, before the last line)
     last_method_pos = content.rfind('\n    def ')
     if last_method_pos == -1:
         print("Could not find insertion point")
         return False
-    
+
     # Find the end of the last method
     next_class_or_end = content.find('\nclass ', last_method_pos)
     if next_class_or_end == -1:
@@ -28,7 +28,7 @@ def add_database_registry_methods():
         insert_pos = content.rfind('\n')
     else:
         insert_pos = next_class_or_end
-    
+
     # Add the new methods
     new_methods = '''
     def get_database_page_html(self) -> str:
@@ -37,7 +37,7 @@ def add_database_registry_methods():
             # Get database metrics from dashboard data
             db_metrics = self.dashboard_data.unified_data.get('database_health', {})
             db_tables = self._get_database_tables()
-            
+
             return f"""
             <div class="metrics-container" style="padding: 1rem;">
                 <!-- Database Overview -->
@@ -53,7 +53,7 @@ def add_database_registry_methods():
                             Database Type
                         </div>
                     </div>
-                    
+
                     <div class="metric-card" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 1.5rem; border-radius: 12px;">
                         <div class="metric-icon" style="font-size: 2rem; margin-bottom: 0.5rem;">
                             <i class="fas fa-check-circle"></i>
@@ -65,7 +65,7 @@ def add_database_registry_methods():
                             Health Status
                         </div>
                     </div>
-                    
+
                     <div class="metric-card" style="background: linear-gradient(135deg, #3b82f6, #1e40af); color: white; padding: 1.5rem; border-radius: 12px;">
                         <div class="metric-icon" style="font-size: 2rem; margin-bottom: 0.5rem;">
                             <i class="fas fa-table"></i>
@@ -77,7 +77,7 @@ def add_database_registry_methods():
                             Total Tables
                         </div>
                     </div>
-                    
+
                     <div class="metric-card" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; padding: 1.5rem; border-radius: 12px;">
                         <div class="metric-icon" style="font-size: 2rem; margin-bottom: 0.5rem;">
                             <i class="fas fa-link"></i>
@@ -90,7 +90,7 @@ def add_database_registry_methods():
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Database Performance -->
                 <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
                     <h3 style="margin-bottom: 1rem;">
@@ -123,7 +123,7 @@ def add_database_registry_methods():
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Database Tables -->
                 <div class="card" style="padding: 1.5rem;">
                     <h3 style="margin-bottom: 1rem;">
@@ -136,14 +136,14 @@ def add_database_registry_methods():
         except Exception as e:
             logger.error(f"Error generating database page HTML: {e}")
             return self._generate_error_html("database", str(e))
-    
+
     def get_registry_page_html(self) -> str:
         """Generate comprehensive registry page with service information"""
         try:
             # Get registry data
             registry_data = self.dashboard_data.unified_data.get('registry_data', {})
             services_status = self.dashboard_data.unified_data.get('services_status', {})
-            
+
             return f"""
             <div class="metrics-container" style="padding: 1rem;">
                 <!-- Registry Overview -->
@@ -159,7 +159,7 @@ def add_database_registry_methods():
                             Registered Services
                         </div>
                     </div>
-                    
+
                     <div class="metric-card" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 1.5rem; border-radius: 12px;">
                         <div class="metric-icon" style="font-size: 2rem; margin-bottom: 0.5rem;">
                             <i class="fas fa-check-circle"></i>
@@ -171,7 +171,7 @@ def add_database_registry_methods():
                             Healthy Services
                         </div>
                     </div>
-                    
+
                     <div class="metric-card" style="background: linear-gradient(135deg, #3b82f6, #1e40af); color: white; padding: 1.5rem; border-radius: 12px;">
                         <div class="metric-icon" style="font-size: 2rem; margin-bottom: 0.5rem;">
                             <i class="fas fa-robot"></i>
@@ -183,7 +183,7 @@ def add_database_registry_methods():
                             Registered Agents
                         </div>
                     </div>
-                    
+
                     <div class="metric-card" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 1.5rem; border-radius: 12px;">
                         <div class="metric-icon" style="font-size: 2rem; margin-bottom: 0.5rem;">
                             <i class="fas fa-building"></i>
@@ -196,7 +196,7 @@ def add_database_registry_methods():
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Service Status -->
                 <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
                     <h3 style="margin-bottom: 1rem;">
@@ -204,7 +204,7 @@ def add_database_registry_methods():
                     </h3>
                     {self._generate_services_status_html(services_status)}
                 </div>
-                
+
                 <!-- Registry Details -->
                 <div class="card" style="padding: 1.5rem;">
                     <h3 style="margin-bottom: 1rem;">
@@ -217,7 +217,7 @@ def add_database_registry_methods():
         except Exception as e:
             logger.error(f"Error generating registry page HTML: {e}")
             return self._generate_error_html("registry", str(e))
-    
+
     def _get_database_tables(self) -> Dict[str, Any]:
         """Get database table information"""
         try:
@@ -230,33 +230,33 @@ def add_database_registry_methods():
                 database="boarderframeos"
             )
             cursor = conn.cursor()
-            
+
             # Get all tables
             cursor.execute("""
-                SELECT tablename, 
+                SELECT tablename,
                        pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size
-                FROM pg_tables 
+                FROM pg_tables
                 WHERE schemaname = 'public'
                 ORDER BY tablename
             """)
-            
+
             tables = {}
             for row in cursor.fetchall():
                 tables[row[0]] = {'size': row[1]}
-            
+
             cursor.close()
             conn.close()
-            
+
             return tables
         except Exception as e:
             logger.error(f"Error fetching database tables: {e}")
             return {}
-    
+
     def _generate_database_tables_html(self, tables: Dict[str, Any]) -> str:
         """Generate HTML for database tables list"""
         if not tables:
             return "<p>No tables found</p>"
-        
+
         html = '<div style="display: grid; gap: 0.5rem;">'
         for table_name, info in sorted(tables.items()):
             html += f"""
@@ -272,21 +272,21 @@ def add_database_registry_methods():
             """
         html += '</div>'
         return html
-    
+
     def _generate_services_status_html(self, services: Dict[str, Any]) -> str:
         """Generate HTML for services status"""
         if not services:
             return "<p>No services registered</p>"
-        
+
         html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">'
-        
+
         for service_name, status in sorted(services.items()):
             status_color = {
                 'healthy': 'var(--success-color)',
                 'unhealthy': 'var(--warning-color)',
                 'offline': 'var(--danger-color)'
             }.get(status.get('status', 'unknown'), 'var(--neutral-color)')
-            
+
             html += f"""
             <div style="padding: 1rem; background: var(--secondary-bg); border-radius: 8px; border: 1px solid var(--border-color);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
@@ -301,14 +301,14 @@ def add_database_registry_methods():
                 {f'<div style="font-size: 0.85rem; color: var(--secondary-text); margin-top: 0.25rem;">Response: {status.get("response_time", 0):.2f}s</div>' if 'response_time' in status else ''}
             </div>
             """
-        
+
         html += '</div>'
         return html
-    
+
     def _generate_registry_details_html(self, registry_data: Dict[str, Any]) -> str:
         """Generate HTML for registry details"""
         html = '<div style="display: grid; gap: 1rem;">'
-        
+
         # Add registry statistics
         stats = [
             ('Total Agents', registry_data.get('total_agents', 0), 'fa-robot'),
@@ -317,7 +317,7 @@ def add_database_registry_methods():
             ('Total Leaders', registry_data.get('total_leaders', 0), 'fa-crown'),
             ('Total Services', registry_data.get('total_services', 0), 'fa-server'),
         ]
-        
+
         for label, value, icon in stats:
             html += f"""
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--secondary-bg); border-radius: 8px;">
@@ -328,10 +328,10 @@ def add_database_registry_methods():
                 <div style="font-weight: bold;">{value}</div>
             </div>
             """
-        
+
         html += '</div>'
         return html
-    
+
     def _generate_error_html(self, page_name: str, error: str) -> str:
         """Generate error HTML for a page"""
         return f"""
@@ -345,24 +345,24 @@ def add_database_registry_methods():
         </div>
         """
 '''
-    
+
     # Insert the methods
     content = content[:insert_pos] + new_methods + content[insert_pos:]
-    
+
     # Save the file
     with open('core/hq_metrics_integration.py', 'w') as f:
         f.write(content)
-    
+
     print("Successfully added database and registry page methods")
     return True
 
 def update_tabs_to_use_metrics():
     """Update database and registry tabs to use metrics layer"""
-    
+
     # Read corporate headquarters
     with open('corporate_headquarters.py', 'r') as f:
         content = f.read()
-    
+
     # Update database tab
     database_start = content.find('<div id="database" class="tab-content">')
     if database_start != -1:
@@ -370,17 +370,17 @@ def update_tabs_to_use_metrics():
         next_tab = content.find('<div id="', database_start + 10)
         if next_tab == -1:
             next_tab = content.find('<!-- System Tab -->', database_start)
-        
+
         if next_tab != -1:
             # Replace database tab content
             new_database_content = '''<div id="database" class="tab-content">
             {self.metrics_layer.get_database_page_html() if self.metrics_layer and hasattr(self.metrics_layer, 'get_database_page_html') else self._generate_database_content()}
         </div>
-        
+
         '''
             content = content[:database_start] + new_database_content + content[next_tab:]
             print("Updated database tab to use metrics layer")
-    
+
     # Check if registry tab exists
     if 'id="registry"' not in content:
         # Add registry tab after database tab
@@ -390,24 +390,24 @@ def update_tabs_to_use_metrics():
         <div id="registry" class="tab-content">
             {self.metrics_layer.get_registry_page_html() if self.metrics_layer and hasattr(self.metrics_layer, 'get_registry_page_html') else self._generate_registry_overview_html()}
         </div>
-        
+
         '''
             content = content[:system_tab_pos] + registry_tab + content[system_tab_pos:]
             print("Added registry tab")
-    
+
     # Save the file
     with open('corporate_headquarters.py', 'w') as f:
         f.write(content)
-    
+
     return True
 
 if __name__ == "__main__":
     print("Adding database and registry page methods...")
-    
+
     if add_database_registry_methods():
         print("✓ Added page methods to metrics integration")
-    
+
     if update_tabs_to_use_metrics():
         print("✓ Updated tabs to use metrics layer")
-    
+
     print("\nAll updates complete!")

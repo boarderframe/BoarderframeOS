@@ -1,5 +1,5 @@
 #!/bin/bash
-# BoarderframeOS Boot Script  
+# BoarderframeOS Boot Script
 
 echo "🏰 Booting BoarderframeOS..."
 cd "$(dirname "$0")/.."

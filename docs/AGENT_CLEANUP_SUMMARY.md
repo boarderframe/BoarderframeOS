@@ -20,7 +20,7 @@
 
 ### **Primordial Agents (Available):**
 - **Adam** - `/agents/primordials/adam.py`
-- **Eve** - `/agents/primordials/eve.py` 
+- **Eve** - `/agents/primordials/eve.py`
 - **Bezalel** - `/agents/primordials/bezalel.py`
 
 ### **Configuration Files:**

@@ -30,7 +30,7 @@ CREATE TABLE agents (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     last_seen TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     -- Constraints
     CONSTRAINT unique_agent_name_per_department UNIQUE (name, department)
 );
@@ -67,7 +67,7 @@ CREATE TABLE agent_interactions (
     started_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     completed_at TIMESTAMP WITH TIME ZONE,
     duration_ms INTEGER,
-    
+
     -- Performance tracking
     tokens_used INTEGER DEFAULT 0,
     cost_usd DECIMAL(10,6) DEFAULT 0.0
@@ -103,7 +103,7 @@ CREATE TABLE agent_roles (
     role_type VARCHAR(100) NOT NULL CHECK (role_type IN ('leader', 'specialist', 'worker', 'coordinator')),
     permissions JSONB DEFAULT '[]',
     assigned_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     CONSTRAINT unique_agent_department_role UNIQUE (agent_id, department_id, role_name)
 );
 
@@ -132,7 +132,7 @@ CREATE TABLE tasks (
     started_at TIMESTAMP WITH TIME ZONE,
     completed_at TIMESTAMP WITH TIME ZONE,
     due_at TIMESTAMP WITH TIME ZONE,
-    
+
     -- Resource tracking
     tokens_used INTEGER DEFAULT 0,
     cost_usd DECIMAL(10,6) DEFAULT 0.0
@@ -171,7 +171,7 @@ CREATE TABLE metrics (
     metadata JSONB DEFAULT '{}',
     tags TEXT[] DEFAULT '{}',
     recorded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     -- Partitioning hint for time-series data
     CONSTRAINT check_recorded_at CHECK (recorded_at <= NOW() + INTERVAL '1 hour')
 );
@@ -394,8 +394,8 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER update_agent_last_seen_on_interaction 
-    AFTER INSERT ON agent_interactions 
+CREATE TRIGGER update_agent_last_seen_on_interaction
+    AFTER INSERT ON agent_interactions
     FOR EACH ROW EXECUTE FUNCTION update_agent_last_seen();
 
 -- Function for vector similarity search
@@ -417,7 +417,7 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
+    SELECT
         m.id,
         m.agent_id,
         m.content,
@@ -427,7 +427,7 @@ BEGIN
         m.metadata,
         m.created_at
     FROM agent_memories m
-    WHERE 
+    WHERE
         (agent_filter IS NULL OR m.agent_id = agent_filter)
         AND 1 - (m.embedding <=> query_embedding) > similarity_threshold
     ORDER BY m.embedding <=> query_embedding
@@ -446,7 +446,7 @@ INSERT INTO departments (name, phase, priority, category, description, status) V
 ('Coordination & Orchestration', 1, 1, 'Trinity', 'Multi-Department Command Center with Michael', 'active'),
 ('Agent Development', 1, 1, 'Trinity', 'Creation & Evolution Center with Adam and Eve', 'active'),
 
--- Phase 2: Essential Infrastructure  
+-- Phase 2: Essential Infrastructure
 ('Engineering Department', 2, 2, 'Essential Infrastructure', 'Code Creation & System Building with Bezalel', 'planning'),
 ('Infrastructure Department', 2, 2, 'Essential Infrastructure', 'Communication & Protocol Mastery with Gabriel', 'planning'),
 ('Operations Department', 2, 2, 'Essential Infrastructure', 'Infrastructure & System Mastery with Naphtali', 'planning'),

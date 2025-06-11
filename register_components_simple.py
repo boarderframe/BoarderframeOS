@@ -3,16 +3,17 @@
 Simple direct database registration of all BoarderframeOS components
 """
 
-import subprocess
 import json
+import subprocess
 import uuid
 from datetime import datetime
+
 
 def register_all_components():
     """Register all components directly in the database"""
     print("🚀 BoarderframeOS Component Registration")
     print("=" * 50)
-    
+
     # MCP Servers
     mcp_servers = [
         {
@@ -24,7 +25,7 @@ def register_all_components():
         },
         {
             "name": "Filesystem Server",
-            "server_type": "mcp", 
+            "server_type": "mcp",
             "port": 8001,
             "url": "http://localhost:8001",
             "capabilities": ["file_operations", "directory_management", "search"]
@@ -58,7 +59,7 @@ def register_all_components():
             "capabilities": ["customer_management", "crm", "support_tickets"]
         }
     ]
-    
+
     # Core Systems
     core_systems = [
         {
@@ -76,10 +77,10 @@ def register_all_components():
             "capabilities": ["llm_orchestration", "model_management", "cost_optimization"]
         }
     ]
-    
+
     # All servers combined
     all_servers = mcp_servers + core_systems
-    
+
     print("\n📝 Registering Servers...")
     for server in all_servers:
         server_id = str(uuid.uuid4())
@@ -107,17 +108,17 @@ def register_all_components():
             metadata = EXCLUDED.metadata,
             updated_at = CURRENT_TIMESTAMP;
         """
-        
+
         result = subprocess.run([
             "docker", "exec", "boarderframeos_postgres",
             "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", query
         ], capture_output=True, text=True)
-        
+
         if result.returncode == 0:
             print(f"   ✅ {server['name']} (port {server['port']})")
         else:
             print(f"   ❌ {server['name']} - {result.stderr[:50]}")
-    
+
     # Register Databases
     print("\n📝 Registering Databases...")
     databases = [
@@ -136,11 +137,11 @@ def register_all_components():
             "database_name": None
         }
     ]
-    
+
     for db in databases:
         db_id = str(uuid.uuid4())
         db_name_value = f"'{db['database_name']}'" if db['database_name'] else "NULL"
-        
+
         query = f"""
         INSERT INTO database_registry (
             id, name, db_type, status, host, port,
@@ -165,36 +166,36 @@ def register_all_components():
             metadata = EXCLUDED.metadata,
             updated_at = CURRENT_TIMESTAMP;
         """
-        
+
         result = subprocess.run([
             "docker", "exec", "boarderframeos_postgres",
             "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", query
         ], capture_output=True, text=True)
-        
+
         if result.returncode == 0:
             print(f"   ✅ {db['name']} ({db['db_type']} on port {db['port']})")
         else:
             print(f"   ❌ {db['name']} - {result.stderr[:50]}")
-    
+
     # Show current counts
     print("\n📊 Checking Registration Results...")
-    
+
     count_query = """
-    SELECT 
+    SELECT
         'Servers' as type, COUNT(*) as count FROM server_registry
     UNION ALL
-    SELECT 
+    SELECT
         'Databases' as type, COUNT(*) as count FROM database_registry
     UNION ALL
-    SELECT 
+    SELECT
         'Agents' as type, COUNT(*) as count FROM agent_registry;
     """
-    
+
     result = subprocess.run([
         "docker", "exec", "boarderframeos_postgres",
         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", count_query
     ], capture_output=True, text=True)
-    
+
     if result.returncode == 0:
         print("\nRegistry Contents:")
         for line in result.stdout.strip().split('\n'):
@@ -204,7 +205,7 @@ def register_all_components():
                     type_name = parts[0].strip()
                     count = parts[1].strip()
                     print(f"   {type_name}: {count} registered")
-    
+
     print("\n✅ Registration Complete!")
     print("\n🌐 View the updated registry at:")
     print("   http://localhost:8888 -> Registry tab")

@@ -7,33 +7,33 @@ def add_page_methods():
     """Add the missing page methods to HQMetricsIntegration"""
     print("🔧 Adding Page Methods to HQMetricsIntegration")
     print("=" * 60)
-    
+
     file_path = "/Users/cosburn/BoarderframeOS/core/hq_metrics_integration.py"
-    
+
     with open(file_path, 'r') as f:
         content = f.read()
-    
+
     # Check if methods already exist
     if "get_agent_metrics_cards" in content:
         print("⚠️ Methods already exist, skipping")
         return
-    
+
     # Find the last method in the class
     last_method_end = content.rfind("        return html")
     if last_method_end < 0:
         print("❌ Could not find insertion point")
         return
-    
+
     # Find the end of that return statement
     insertion_point = content.find("\n", last_method_end) + 1
-    
+
     # New methods to add
     new_methods = '''
     def get_agent_metrics_cards(self) -> str:
         """Generate metric cards for the agents page"""
         metrics = self.get_all_metrics()
         agent_metrics = self.get_agents_page_metrics()
-        
+
         cards_html = f"""
         <div style="display: flex; justify-content: space-around; gap: 2rem; align-items: stretch; flex-wrap: nowrap;">
             <div class="metric-card">
@@ -46,7 +46,7 @@ def add_page_methods():
                 </div>
                 <div class="metric-subtitle">Currently Running</div>
             </div>
-            
+
             <div class="metric-card">
                 <div class="metric-header">
                     <i class="fas fa-pause-circle" style="color: #f59e0b;"></i>
@@ -57,7 +57,7 @@ def add_page_methods():
                 </div>
                 <div class="metric-subtitle">Not Running</div>
             </div>
-            
+
             <div class="metric-card">
                 <div class="metric-header">
                     <i class="fas fa-robot" style="color: #3b82f6;"></i>
@@ -70,19 +70,19 @@ def add_page_methods():
             </div>
         </div>
         """
-        
+
         return cards_html
-    
+
     def get_department_metrics_cards(self) -> str:
         """Generate metric cards for the departments page"""
         metrics = self.get_all_metrics()
         dept_data = metrics.get('departments', {})
         dept_summary = dept_data.get('summary', {})
-        
+
         total = self.get_metric_value('departments', 'summary.total', 45)
         active = self.get_metric_value('departments', 'summary.active', 45)
         divisions = self.get_metric_value('departments', 'summary.divisions', 9)
-        
+
         cards_html = f"""
         <div style="display: flex; justify-content: space-around; gap: 2rem; align-items: stretch; flex-wrap: nowrap; margin-bottom: 2rem;">
             <div class="metric-card">
@@ -95,7 +95,7 @@ def add_page_methods():
                 </div>
                 <div class="metric-subtitle">Across Organization</div>
             </div>
-            
+
             <div class="metric-card">
                 <div class="metric-header">
                     <i class="fas fa-check-circle" style="color: #10b981;"></i>
@@ -106,7 +106,7 @@ def add_page_methods():
                 </div>
                 <div class="metric-subtitle">Operational</div>
             </div>
-            
+
             <div class="metric-card">
                 <div class="metric-header">
                     <i class="fas fa-sitemap" style="color: #8b5cf6;"></i>
@@ -119,13 +119,13 @@ def add_page_methods():
             </div>
         </div>
         """
-        
+
         return cards_html
-    
+
     def get_leaders_page_html(self) -> str:
         """Generate complete leaders page with metrics"""
         metrics = self.get_all_metrics()
-        
+
         # For now, return a placeholder that indicates metrics integration
         # In a full implementation, this would query leader data
         html = """
@@ -133,10 +133,10 @@ def add_page_methods():
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <div style="
-                        width: 60px; height: 60px; 
-                        background: linear-gradient(135deg, #8b5cf6, #8b5cf6cc); 
-                        border-radius: 12px; 
-                        display: flex; align-items: center; justify-content: center; 
+                        width: 60px; height: 60px;
+                        background: linear-gradient(135deg, #8b5cf6, #8b5cf6cc);
+                        border-radius: 12px;
+                        display: flex; align-items: center; justify-content: center;
                         color: white; font-size: 1.5rem; box-shadow: 0 4px 12px #8b5cf640;
                     ">
                         <i class="fas fa-crown"></i>
@@ -149,7 +149,7 @@ def add_page_methods():
                     </div>
                 </div>
             </div>
-            
+
             <div class="metrics-note" style="text-align: center; padding: 2rem; color: var(--secondary-text);">
                 <i class="fas fa-chart-line" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
                 <h4>Leaders Metrics Integration</h4>
@@ -160,14 +160,14 @@ def add_page_methods():
             </div>
         </div>
         """
-        
+
         return html
-    
+
     def get_divisions_page_html(self) -> str:
         """Generate complete divisions page with metrics"""
         metrics = self.get_all_metrics()
         dept_data = metrics.get('departments', {})
-        
+
         # Group departments by division
         divisions_map = {}
         for dept in dept_data.get('individual', []):
@@ -175,16 +175,16 @@ def add_page_methods():
             if division not in divisions_map:
                 divisions_map[division] = []
             divisions_map[division].append(dept)
-        
+
         html = f"""
         <div class="card full-width" style="margin-bottom: 2rem; border: 2px solid #7c3aed20; background: linear-gradient(135deg, #7c3aed08, #7c3aed03);">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <div style="
-                        width: 60px; height: 60px; 
-                        background: linear-gradient(135deg, #7c3aed, #7c3aed cc); 
-                        border-radius: 12px; 
-                        display: flex; align-items: center; justify-content: center; 
+                        width: 60px; height: 60px;
+                        background: linear-gradient(135deg, #7c3aed, #7c3aed cc);
+                        border-radius: 12px;
+                        display: flex; align-items: center; justify-content: center;
                         color: white; font-size: 1.5rem; box-shadow: 0 4px 12px #7c3aed40;
                     ">
                         <i class="fas fa-sitemap"></i>
@@ -199,14 +199,14 @@ def add_page_methods():
             </div>
         </div>
         """
-        
+
         # Division cards
         html += '<div class="divisions-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">'
-        
+
         for division_name, departments in divisions_map.items():
             dept_count = len(departments)
             agent_count = sum(d.metrics.get('agents_total', self.calculator.MetricValue(0, '')).value for d in departments)
-            
+
             html += f"""
             <div class="division-card" style="
                 background: var(--card-bg);
@@ -232,39 +232,39 @@ def add_page_methods():
                         </p>
                     </div>
                 </div>
-                
+
                 <div style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
                     <div style="font-size: 0.75rem; color: var(--secondary-text); margin-bottom: 0.5rem;">
                         DEPARTMENTS
                     </div>
                     <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
             """
-            
+
             # Add department chips
             for i, dept in enumerate(departments[:3]):
                 html += f'<span style="background: var(--secondary-bg); padding: 0.25rem 0.75rem; border-radius: 6px; font-size: 0.8rem;">{dept.name}</span>'
-            
+
             if dept_count > 3:
                 html += f'<span style="color: var(--secondary-text); font-size: 0.8rem;">+{dept_count - 3} more</span>'
-            
+
             html += """
                     </div>
                 </div>
             </div>
             """
-        
+
         html += '</div>'
-        
+
         return html
 '''
-    
+
     # Insert the new methods
     content = content[:insertion_point] + new_methods + content[insertion_point:]
-    
+
     # Write the updated content
     with open(file_path, 'w') as f:
         f.write(content)
-    
+
     print("✅ Successfully added page methods to HQMetricsIntegration:")
     print("   - get_agent_metrics_cards()")
     print("   - get_department_metrics_cards()")

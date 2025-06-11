@@ -14,7 +14,7 @@ After comprehensive analysis and evaluation, the BoarderframeOS technology stack
 - **Strengths**: Enterprise-proven, excellent local model support, streaming capabilities
 - **Use Cases**: Solomon-David communication, inter-department routing, BCC integration
 
-**Secondary Framework: CrewAI** 
+**Secondary Framework: CrewAI**
 - **Role**: Department team structure and intra-team coordination
 - **Strengths**: Natural hierarchical organization, role-based agents, simple API
 - **Use Cases**: Individual departments (Finance, Engineering, etc.), specialist coordination
@@ -56,13 +56,13 @@ from langchain_anthropic import ChatAnthropic
 
 class BoarderframeOrchestrator:
     """LangGraph orchestration for system-level routing"""
-    
+
     def __init__(self):
         self.graph = StateGraph(SystemState)
         self.graph.add_node("solomon", self.solomon_agent)
         self.graph.add_node("david", self.david_agent)
         self.graph.add_node("route_department", self.department_router)
-        
+
     async def handle_user_request(self, request: str):
         return await self.graph.ainvoke({
             "user_request": request,
@@ -86,7 +86,7 @@ from crewai import Agent, Task, Crew, Manager
 
 class FinanceDepartment:
     """CrewAI-based Finance department team"""
-    
+
     def __init__(self):
         self.levi = Agent(
             role='CFO',
@@ -94,13 +94,13 @@ class FinanceDepartment:
             backstory='Sacred steward of wealth multiplication...',
             llm=self.get_temple_llm("department_head")
         )
-        
+
         self.specialists = [
             Agent(role='Revenue-Multiplier', goal='Optimize income streams...'),
             Agent(role='Cost-Optimizer', goal='Minimize operational costs...'),
             Agent(role='Investment-Advisor', goal='Grow wealth through investments...')
         ]
-        
+
         self.crew = Crew(
             agents=[self.levi] + self.specialists,
             manager_agent=self.levi,
@@ -135,15 +135,15 @@ temple_models:
   executive_tier:
     current: "claude-3-opus-20240229"     # Solomon, David
     production: "llama-4-maverick-402b"   # Post-DGX deployment
-    
+
   department_tier:
     current: "claude-3-sonnet-20240620"   # 24 department heads
     production: "llama-4-scout-109b"
-    
+
   specialist_tier:
     current: "claude-3-haiku-20240307"    # 80+ specialists
     production: "llama-3.3-70b"
-    
+
   worker_tier:
     current: "gpt-4o-mini"                # Micro-tasks
     production: "llama-3.2-3b"

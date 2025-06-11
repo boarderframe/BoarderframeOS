@@ -47,7 +47,7 @@ services:
 
   # BoarderframeOS Application (optional - can run outside Docker)
   boarderframeos:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     container_name: boarderframeos_app

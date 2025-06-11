@@ -109,7 +109,7 @@ The system uses `docker-compose.yml` for infrastructure:
 # Start infrastructure
 docker-compose up -d
 
-# Stop infrastructure  
+# Stop infrastructure
 docker-compose down
 
 # Check status
@@ -170,7 +170,7 @@ docker exec boarderframeos_redis redis-cli ping
    ```bash
    # Ensure Python 3.13+
    python --version
-   
+
    # Virtual environment
    python -m venv .venv
    source .venv/bin/activate  # or .venv\Scripts\activate on Windows

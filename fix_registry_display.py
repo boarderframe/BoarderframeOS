@@ -5,21 +5,21 @@ Fix the registry display query in corporate_headquarters.py
 
 def generate_updated_method():
     """Generate the corrected _fetch_registry_data method"""
-    
+
     print("📝 Updated _fetch_registry_data method for corporate_headquarters.py")
     print("=" * 70)
     print("\nReplace the _fetch_registry_data method with this version:\n")
-    
+
     updated_code = '''    def _fetch_registry_data(self):
         """Fetch comprehensive data from registry database"""
         try:
             import subprocess
             import json
-            
+
             # Updated query to include ALL agent types
             query = """
             WITH registry_stats AS (
-                SELECT 
+                SELECT
                     'total_agents' as type,
                     COUNT(*) as total,
                     COUNT(*) FILTER (WHERE status = 'online') as online,
@@ -28,7 +28,7 @@ def generate_updated_method():
                     COUNT(*) FILTER (WHERE health_status = 'critical' OR health_status IS NULL) as critical
                 FROM agent_registry
                 UNION ALL
-                SELECT 
+                SELECT
                     'workforce' as type,
                     COUNT(*) as total,
                     COUNT(*) FILTER (WHERE status = 'online') as online,
@@ -37,7 +37,7 @@ def generate_updated_method():
                     COUNT(*) FILTER (WHERE development_status = 'planned') as critical
                 FROM agent_registry WHERE agent_type = 'workforce'
                 UNION ALL
-                SELECT 
+                SELECT
                     'leaders' as type,
                     COUNT(*) as total,
                     COUNT(*) FILTER (WHERE status = 'online') as online,
@@ -46,7 +46,7 @@ def generate_updated_method():
                     0 as critical
                 FROM agent_registry WHERE metadata->>'is_leader' = 'true'
                 UNION ALL
-                SELECT 
+                SELECT
                     'executives' as type,
                     COUNT(*) as total,
                     COUNT(*) as online,
@@ -55,7 +55,7 @@ def generate_updated_method():
                     0 as critical
                 FROM agent_registry WHERE agent_type = 'executive'
                 UNION ALL
-                SELECT 
+                SELECT
                     'servers' as type,
                     COUNT(*) as total,
                     COUNT(*) FILTER (WHERE status = 'online') as online,
@@ -64,7 +64,7 @@ def generate_updated_method():
                     COUNT(*) FILTER (WHERE health_status = 'critical') as critical
                 FROM server_registry
                 UNION ALL
-                SELECT 
+                SELECT
                     'databases' as type,
                     COUNT(*) as total,
                     COUNT(*) FILTER (WHERE status = 'online') as online,
@@ -73,7 +73,7 @@ def generate_updated_method():
                     COUNT(*) FILTER (WHERE health_status = 'critical') as critical
                 FROM database_registry
                 UNION ALL
-                SELECT 
+                SELECT
                     'departments' as type,
                     COUNT(*) as total,
                     COUNT(*) FILTER (WHERE status = 'active') as online,
@@ -82,7 +82,7 @@ def generate_updated_method():
                     0 as critical
                 FROM department_registry
                 UNION ALL
-                SELECT 
+                SELECT
                     'divisions' as type,
                     COUNT(*) as total,
                     COUNT(*) FILTER (WHERE is_active = true) as online,
@@ -93,18 +93,18 @@ def generate_updated_method():
             )
             SELECT json_agg(row_to_json(registry_stats)) FROM registry_stats;
             """
-            
+
             result = subprocess.run([
                 "docker", "exec", "boarderframeos_postgres",
                 "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", query
             ], capture_output=True, text=True, timeout=5)
-            
+
             if result.returncode != 0:
                 return None
-                
+
             try:
                 stats_data = json.loads(result.stdout.strip())
-                
+
                 # Process the data
                 registry_data = {
                     'totals': {
@@ -132,7 +132,7 @@ def generate_updated_method():
                         'uptime': '99.9'
                     }
                 }
-                
+
                 # Process stats
                 for stat in stats_data:
                     stat_type = stat['type']
@@ -145,30 +145,30 @@ def generate_updated_method():
                         registry_data['workforce_stats']['planned'] = stat['critical']
                     elif stat_type in ['leaders', 'executives', 'departments', 'divisions', 'servers', 'databases']:
                         registry_data['totals'][stat_type] = stat['total']
-                    
+
                     registry_data['health_distribution']['healthy'] += stat['healthy']
                     registry_data['health_distribution']['warning'] += stat['warning']
                     registry_data['health_distribution']['critical'] += stat['critical']
-                
+
                 # Get agents by department with proper join
                 dept_query = """
-                SELECT d.name as department, 
+                SELECT d.name as department,
                        COUNT(DISTINCT ar.id) as total_agents,
                        COUNT(DISTINCT ar.id) FILTER (WHERE ar.agent_type = 'workforce') as workforce,
                        COUNT(DISTINCT ar.id) FILTER (WHERE ar.operational_status = 'operational') as operational
-                FROM departments d 
+                FROM departments d
                 LEFT JOIN agent_registry ar ON ar.department_id::uuid = d.id
-                GROUP BY d.name 
+                GROUP BY d.name
                 HAVING COUNT(ar.id) > 0
-                ORDER BY total_agents DESC 
+                ORDER BY total_agents DESC
                 LIMIT 15;
                 """
-                
+
                 dept_result = subprocess.run([
                     "docker", "exec", "boarderframeos_postgres",
                     "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", dept_query
                 ], capture_output=True, text=True, timeout=5)
-                
+
                 if dept_result.returncode == 0:
                     for line in dept_result.stdout.strip().split('\\n'):
                         if '|' in line:
@@ -183,20 +183,20 @@ def generate_updated_method():
                                     'workforce': workforce,
                                     'operational': operational
                                 }
-                
+
                 # Get server details
                 server_query = """
-                SELECT name, server_type, status, health_status, endpoint_url 
-                FROM server_registry 
-                ORDER BY server_type, name 
+                SELECT name, server_type, status, health_status, endpoint_url
+                FROM server_registry
+                ORDER BY server_type, name
                 LIMIT 20;
                 """
-                
+
                 server_result = subprocess.run([
                     "docker", "exec", "boarderframeos_postgres",
                     "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", server_query
                 ], capture_output=True, text=True, timeout=5)
-                
+
                 if server_result.returncode == 0:
                     for line in server_result.stdout.strip().split('\\n'):
                         if '|' in line:
@@ -209,17 +209,17 @@ def generate_updated_method():
                                     'health': parts[3].strip(),
                                     'url': parts[4].strip()
                                 })
-                
+
                 # Get development pipeline stats
                 pipeline_query = """
-                SELECT 
+                SELECT
                     development_status,
                     COUNT(*) as count,
                     ROUND(AVG(training_progress) * 100) as avg_progress
                 FROM agent_registry
                 WHERE agent_type = 'workforce'
                 GROUP BY development_status
-                ORDER BY 
+                ORDER BY
                     CASE development_status
                         WHEN 'deployed' THEN 1
                         WHEN 'ready' THEN 2
@@ -229,12 +229,12 @@ def generate_updated_method():
                         WHEN 'planned' THEN 6
                     END;
                 """
-                
+
                 pipeline_result = subprocess.run([
                     "docker", "exec", "boarderframeos_postgres",
                     "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", pipeline_query
                 ], capture_output=True, text=True, timeout=5)
-                
+
                 if pipeline_result.returncode == 0:
                     pipeline_data = []
                     for line in pipeline_result.stdout.strip().split('\\n'):
@@ -247,26 +247,26 @@ def generate_updated_method():
                                     'progress': parts[2].strip() or '0'
                                 })
                     registry_data['development_pipeline'] = pipeline_data
-                
+
                 return registry_data
-                
+
             except Exception as e:
                 print(f"Error parsing registry data: {e}")
                 return None
-                
+
         except Exception as e:
             print(f"Error fetching registry data: {e}")
             return None'''
-    
+
     print(updated_code)
-    
+
     print("\n\n📝 Also update the _generate_department_agent_list method:\n")
-    
+
     dept_list_code = '''    def _generate_department_agent_list(self, dept_data):
         """Generate department agent count list with details"""
         if not dept_data:
             return '<div style="text-align: center; color: var(--secondary-text);">No department data available</div>'
-            
+
         html = ''
         for dept, data in sorted(dept_data.items(), key=lambda x: x[1]['total'] if isinstance(x[1], dict) else x[1], reverse=True):
             if isinstance(data, dict):
@@ -292,9 +292,9 @@ def generate_updated_method():
                 </div>
                 \'\'\'
         return html'''
-    
+
     print(dept_list_code)
-    
+
     print("\n\n💡 To apply these changes:")
     print("1. Open corporate_headquarters.py")
     print("2. Find and replace the _fetch_registry_data method")

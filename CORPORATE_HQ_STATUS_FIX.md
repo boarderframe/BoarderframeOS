@@ -15,8 +15,8 @@ Made three key changes to `corporate_headquarters.py`:
 Changed the default status from "unknown" to "healthy" since if the code is running, Corporate HQ is online:
 ```python
 "corporate_headquarters": {
-    "name": "Corporate Headquarters", 
-    "port": 8888, 
+    "name": "Corporate Headquarters",
+    "port": 8888,
     "status": "healthy",  # We're running if this code executes
     "last_check": "Self-check",
     # ...

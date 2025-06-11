@@ -28,7 +28,7 @@ The BoarderframeOS Control Center (BCC) is fully integrated into the Boarderfram
 ### 4. Screenshot API
 - **Endpoint**: `/api/screenshot`
 - **Method**: GET
-- **Features**: 
+- **Features**:
   - Multi-monitor support
   - macOS screencapture integration
   - Base64 encoded response
@@ -121,7 +121,7 @@ System Boot Order:
 
 ### Service Definitions
 - BCC port 8888 defined in `boarderframeos_bcc.py`
-- Service list in `startup.py` 
+- Service list in `startup.py`
 - Registry capabilities in `register_bcc_with_registry()`
 
 ### Department Integration

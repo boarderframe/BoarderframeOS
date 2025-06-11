@@ -2,11 +2,11 @@
 """
 Universal agent runner for BoarderframeOS
 """
-import sys
-import asyncio
 import argparse
-from pathlib import Path
+import asyncio
 import os
+import sys
+from pathlib import Path
 
 # Add boarderframeos to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -50,16 +50,16 @@ async def run_agent(agent_name: str):
         else:
             print(f"Unknown agent: {agent_name}")
             return
-        
+
         print(f"Starting {agent_name} agent...")
-        
+
         # Run the agent
         try:
             await agent.run()
         except KeyboardInterrupt:
             print(f"\nShutting down {agent_name}...")
             await agent.terminate()
-            
+
     except Exception as e:
         print(f"Failed to run {agent_name}: {e}")
         import traceback
@@ -70,5 +70,5 @@ if __name__ == "__main__":
     parser.add_argument("agent", choices=["solomon", "david", "adam", "eve", "bezalel"],
                         help="Agent to run")
     args = parser.parse_args()
-    
+
     asyncio.run(run_agent(args.agent))

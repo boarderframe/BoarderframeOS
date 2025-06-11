@@ -3,11 +3,11 @@
 Stable UI server with error handling and restart capability
 """
 import http.server
+import signal
 import socketserver
 import sys
-import signal
-import time
 import threading
+import time
 import webbrowser
 from datetime import datetime
 
@@ -18,7 +18,7 @@ class StableHandler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
         # Suppress access logs to keep output clean
         pass
-    
+
     def do_GET(self):
         try:
             if self.path == '/' or self.path == '/index.html':
@@ -26,25 +26,25 @@ class StableHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_header('Content-type', 'text/html')
                 self.send_header('Cache-Control', 'no-cache')
                 self.end_headers()
-                
+
                 html = """<!DOCTYPE html>
 <html>
 <head>
     <title>BoarderframeOS Dashboard</title>
     <meta http-equiv="refresh" content="30">
     <style>
-        body { 
+        body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0f172a; 
-            color: white; 
-            margin: 0; 
-            padding: 20px; 
+            background: #0f172a;
+            color: white;
+            margin: 0;
+            padding: 20px;
         }
-        .header { 
+        .header {
             background: linear-gradient(135deg, #1e40af, #7c3aed);
-            padding: 30px; 
-            border-radius: 12px; 
-            margin-bottom: 30px; 
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
             text-align: center;
         }
         .status-badge {
@@ -58,19 +58,19 @@ class StableHandler(http.server.SimpleHTTPRequestHandler):
         .online { background: #059669; }
         .offline { background: #dc2626; }
         .pending { background: #d97706; }
-        .card { 
-            background: #1e293b; 
-            padding: 25px; 
-            border-radius: 12px; 
-            margin-bottom: 20px; 
-            border: 1px solid #334155; 
+        .card {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #334155;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-            gap: 20px; 
-            margin-bottom: 30px; 
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
         .metric {
             text-align: center;
@@ -204,12 +204,12 @@ class StableHandler(http.server.SimpleHTTPRequestHandler):
     <div class="card">
         <h2>🛠️ System Setup Guide</h2>
         <p>Follow these steps to bring your AI operating system online:</p>
-        
+
         <div class="setup-step">
             <h3>Step 1: Navigate to Project Directory</h3>
             <div class="code-block">cd /Users/cosburn/BoarderframeOS/boarderframeos</div>
         </div>
-        
+
         <div class="setup-step">
             <h3>Step 2: Run System Setup</h3>
             <div class="code-block">python setup_boarderframeos.py</div>
@@ -217,7 +217,7 @@ class StableHandler(http.server.SimpleHTTPRequestHandler):
                 This creates the directory structure, installs dependencies, and prepares the environment.
             </p>
         </div>
-        
+
         <div class="setup-step">
             <h3>Step 3: Start MCP Servers (Background)</h3>
             <div class="code-block">python mcp/database_server.py &<br>python mcp/llm_server.py &<br>python mcp/registry_server.py &</div>
@@ -225,7 +225,7 @@ class StableHandler(http.server.SimpleHTTPRequestHandler):
                 These provide the backend services for agent communication and data storage.
             </p>
         </div>
-        
+
         <div class="setup-step">
             <h3>Step 4: Initialize AI Agents</h3>
             <div class="code-block">python startup.py</div>
@@ -265,24 +265,24 @@ class StableHandler(http.server.SimpleHTTPRequestHandler):
         setInterval(() => {
             fetch('/health').catch(() => console.log('Server check'));
         }, 10000);
-        
+
         console.log('BoarderframeOS Dashboard loaded successfully');
     </script>
 </body>
 </html>"""
                 self.wfile.write(html.encode())
-                
+
             elif self.path == '/health':
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
                 response = '{"status":"healthy","timestamp":"' + datetime.now().isoformat() + '"}'
                 self.wfile.write(response.encode())
-                
+
             else:
                 self.send_response(404)
                 self.end_headers()
-                
+
         except Exception as e:
             print(f"Request error: {e}")
             self.send_error(500)
@@ -305,21 +305,21 @@ def start_server():
             with socketserver.TCPServer(("", PORT), StableHandler) as httpd:
                 # Setup signal handler
                 signal.signal(signal.SIGINT, signal_handler)
-                
+
                 print("🚀 BoarderframeOS Stable UI Server")
                 print(f"📍 Dashboard: http://localhost:{PORT}")
                 print(f"✨ Server running stably on port {PORT}")
                 print("🔄 Auto-refresh enabled, connection monitoring active")
                 print()
                 print("Press Ctrl+C to stop")
-                
+
                 # Open browser in background
                 browser_thread = threading.Thread(target=open_browser_delayed)
                 browser_thread.daemon = True
                 browser_thread.start()
-                
+
                 httpd.serve_forever()
-                
+
         except OSError as e:
             if "Address already in use" in str(e):
                 print(f"❌ Port {PORT} is busy. Waiting 5 seconds...")
@@ -337,7 +337,7 @@ def start_server():
             if retries < MAX_RETRIES:
                 print(f"🔄 Retrying in 3 seconds... ({retries}/{MAX_RETRIES})")
                 time.sleep(3)
-    
+
     print("❌ Server failed to start after maximum retries")
 
 if __name__ == "__main__":

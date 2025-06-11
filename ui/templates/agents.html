@@ -62,7 +62,7 @@
             <h2 class="text-2xl font-bold mb-4">Evolution Activity</h2>
             <div class="bg-gray-800 rounded-lg border border-gray-700 p-4 max-h-64 overflow-y-auto">
                 <template x-for="event in evolutionEvents" :key="event.id">
-                    <div :class="event.type === 'birth' ? 'birth-glow' : event.type === 'evolution' ? 'evolution-pulse' : ''" 
+                    <div :class="event.type === 'birth' ? 'birth-glow' : event.type === 'evolution' ? 'evolution-pulse' : ''"
                          class="border-b border-gray-700 pb-2 mb-2 last:border-b-0">
                         <div class="flex justify-between items-start">
                             <div class="flex items-center space-x-2">
@@ -97,8 +97,8 @@
 
                     <!-- Biome Badge -->
                     <div class="mb-3">
-                        <span :class="getBiomeColor(agent.biome)" 
-                              class="text-xs px-2 py-1 rounded-full" 
+                        <span :class="getBiomeColor(agent.biome)"
+                              class="text-xs px-2 py-1 rounded-full"
                               x-text="agent.biome"></span>
                     </div>
 
@@ -121,7 +121,7 @@
                     <!-- Fitness Bar -->
                     <div class="mt-3">
                         <div class="w-full bg-gray-700 rounded-full h-2">
-                            <div :class="getFitnessColor(agent.fitness_score)" 
+                            <div :class="getFitnessColor(agent.fitness_score)"
                                  class="h-2 rounded-full transition-all duration-300"
                                  :style="`width: ${(agent.fitness_score || 0) * 100}%`"></div>
                         </div>
@@ -129,11 +129,11 @@
 
                     <!-- Quick Actions -->
                     <div class="mt-3 flex space-x-2">
-                        <button @click.stop="evolveAgent(agent.id)" 
+                        <button @click.stop="evolveAgent(agent.id)"
                                 class="flex-1 bg-blue-600 hover:bg-blue-700 text-xs py-1 px-2 rounded transition-colors">
                             Evolve
                         </button>
-                        <button @click.stop="retireAgent(agent.id)" 
+                        <button @click.stop="retireAgent(agent.id)"
                                 class="flex-1 bg-red-600 hover:bg-red-700 text-xs py-1 px-2 rounded transition-colors">
                             Retire
                         </button>
@@ -155,7 +155,7 @@
                             </div>
                             <button @click="selectedAgent = null" class="text-gray-400 hover:text-white">✕</button>
                         </div>
-                        
+
                         <div class="grid grid-cols-2 gap-4 mb-4">
                             <div>
                                 <h3 class="font-semibold mb-2">Basic Info</h3>
@@ -173,13 +173,13 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="flex space-x-2">
-                            <button @click="evolveAgent(selectedAgent.id)" 
+                            <button @click="evolveAgent(selectedAgent.id)"
                                     class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition-colors">
                                 Trigger Evolution
                             </button>
-                            <button @click="retireAgent(selectedAgent.id)" 
+                            <button @click="retireAgent(selectedAgent.id)"
                                     class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition-colors">
                                 Retire Agent
                             </button>
@@ -199,7 +199,7 @@
                 selectedAgent: null,
                 filterBiome: '',
                 filterStatus: '',
-                
+
                 init() {
                     this.loadAgents();
                     this.setupWebSocketListeners();
@@ -222,7 +222,7 @@
                 setupWebSocketListeners() {
                     window.addEventListener('wsMessage', (event) => {
                         const data = event.detail;
-                        
+
                         switch (data.event_type) {
                             case 'agent_birth':
                                 this.handleAgentBirth(data);
@@ -297,7 +297,7 @@
                                 agent_id: agentId
                             })
                         });
-                        
+
                         if (response.ok) {
                             console.log('Evolution triggered for agent:', agentId);
                         }
@@ -308,7 +308,7 @@
 
                 async retireAgent(agentId) {
                     if (!confirm('Are you sure you want to retire this agent?')) return;
-                    
+
                     try {
                         const response = await fetch('/api/agents/command', {
                             method: 'POST',
@@ -320,7 +320,7 @@
                                 agent_id: agentId
                             })
                         });
-                        
+
                         if (response.ok) {
                             this.loadAgents();
                             this.selectedAgent = null;

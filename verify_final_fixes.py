@@ -5,12 +5,12 @@ Final verification of all fixes
 
 def verify_final_fixes():
     """Check that all fixes are properly applied"""
-    
+
     with open('corporate_headquarters.py', 'r') as f:
         content = f.read()
-    
+
     print("=== FINAL VERIFICATION ===\n")
-    
+
     checks = {
         "Emergency style tag": '<style id="tab-visibility-fix">',
         "Ultra CSS rules": 'body .container .tab-content.active',
@@ -21,17 +21,17 @@ def verify_final_fixes():
         "Debug button": 'Debug Tab Switch',
         "Active class on dashboard": 'id="dashboard" class="tab-content active"'
     }
-    
+
     print("Checking for required elements:\n")
     all_good = True
-    
+
     for check_name, check_string in checks.items():
         if check_string in content:
             print(f"✅ {check_name}")
         else:
             print(f"❌ {check_name}")
             all_good = False
-    
+
     if all_good:
         print("\n🎉 ALL CHECKS PASSED! 🎉")
         print("\nThe UI should now work properly!")

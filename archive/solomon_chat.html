@@ -98,36 +98,36 @@
         <h1>Solomon Chat</h1>
         <p>Chat with Solomon, the Chief of Staff agent</p>
     </div>
-    
+
     <div class="chat-container" id="chat-container"></div>
-    
+
     <form id="message-form" class="message-form">
         <input type="text" id="message-input" placeholder="Type your message here..." autocomplete="off">
         <button type="submit">Send</button>
     </form>
-    
+
     <div class="status" id="connection-status">Connecting to Solomon...</div>
-    
+
     <script>
         // Elements
         const chatContainer = document.getElementById('chat-container');
         const messageForm = document.getElementById('message-form');
         const messageInput = document.getElementById('message-input');
         const connectionStatus = document.getElementById('connection-status');
-        
+
         let socket;
-        
+
         // Connect to WebSocket server
         function connect() {
             socket = new WebSocket('ws://localhost:8889');
-            
+
             socket.onopen = () => {
                 connectionStatus.textContent = 'Connected to Solomon';
                 connectionStatus.style.color = '#4ade80';
-                
+
                 // Display welcome message
                 displaySystemMessage('Connected to Solomon. Type a message to start chatting.');
-                
+
                 // Start ping interval to keep connection alive
                 setInterval(() => {
                     if (socket && socket.readyState === WebSocket.OPEN) {
@@ -135,25 +135,25 @@
                     }
                 }, 30000);
             };
-            
+
             socket.onclose = () => {
                 connectionStatus.textContent = 'Disconnected from Solomon';
                 connectionStatus.style.color = '#ef4444';
                 displaySystemMessage('Connection lost. Trying to reconnect...');
-                
+
                 // Try to reconnect after 3 seconds
                 setTimeout(connect, 3000);
             };
-            
+
             socket.onerror = (error) => {
                 connectionStatus.textContent = 'Connection error';
                 connectionStatus.style.color = '#ef4444';
                 console.error('WebSocket error:', error);
             };
-            
+
             socket.onmessage = (event) => {
                 const message = JSON.parse(event.data);
-                
+
                 switch (message.type) {
                     case 'solomon_response':
                         displaySolomonMessage(message.content, message.timestamp);
@@ -173,82 +173,82 @@
                 }
             };
         }
-        
+
         // Display a user message
         function displayUserMessage(content, timestamp) {
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('message', 'user-message');
-            
+
             messageDiv.innerHTML = `
                 <div>${content}</div>
                 <div class="timestamp">${formatTimestamp(timestamp)}</div>
             `;
-            
+
             chatContainer.appendChild(messageDiv);
             scrollToBottom();
         }
-        
+
         // Display a Solomon message
         function displaySolomonMessage(content, timestamp) {
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('message', 'solomon-message');
-            
+
             messageDiv.innerHTML = `
                 <div>${content}</div>
                 <div class="timestamp">${formatTimestamp(timestamp)}</div>
             `;
-            
+
             chatContainer.appendChild(messageDiv);
             scrollToBottom();
         }
-        
+
         // Display a system message
         function displaySystemMessage(content, timestamp) {
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('message', 'system-message');
-            
+
             messageDiv.innerHTML = `
                 <div>${content}</div>
                 ${timestamp ? `<div class="timestamp">${formatTimestamp(timestamp)}</div>` : ''}
             `;
-            
+
             chatContainer.appendChild(messageDiv);
             scrollToBottom();
         }
-        
+
         // Format timestamp
         function formatTimestamp(timestamp) {
             if (!timestamp) return '';
-            
+
             const date = new Date(timestamp);
             return date.toLocaleTimeString();
         }
-        
+
         // Scroll to bottom of chat
         function scrollToBottom() {
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
-        
+
         // Handle form submission
         messageForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            
+
             const message = messageInput.value.trim();
             if (!message) return;
-            
+
             if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({
                     type: 'user_message',
                     message: message
                 }));
-                
+
                 messageInput.value = '';
             } else {
                 displaySystemMessage('Not connected to Solomon. Trying to reconnect...');
                 connect();
             }
         });
-        
+
         // Initial connection
         connect();
     </script>

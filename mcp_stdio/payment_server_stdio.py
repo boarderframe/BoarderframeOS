@@ -5,17 +5,17 @@ Wraps the HTTP-based payment server for use with Claude CLI
 """
 
 import asyncio
-import json
-import sys
-import logging
-import uuid
-from typing import Any, Dict, List, Optional
-from pathlib import Path
-from datetime import datetime
 
 # Handle MCP import conflicts by temporarily modifying sys.path
 import importlib
 import importlib.util
+import json
+import logging
+import sys
+import uuid
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 # Save original sys.path
 original_path = sys.path.copy()
@@ -32,10 +32,10 @@ for module_name in local_mcp_modules:
 
 try:
     # Import the real MCP package
-    from mcp import types
-    from mcp.server import Server, NotificationOptions
-    from mcp.server.models import InitializationOptions
     import mcp.server.stdio
+    from mcp import types
+    from mcp.server import NotificationOptions, Server
+    from mcp.server.models import InitializationOptions
 finally:
     # Restore original sys.path
     sys.path = original_path
@@ -190,7 +190,7 @@ async def process_payment(args: Dict[str, Any]) -> List[types.TextContent]:
     """Process a payment."""
     try:
         transaction_id = str(uuid.uuid4())
-        
+
         transaction = {
             "id": transaction_id,
             "customer_id": args["customer_id"],
@@ -202,9 +202,9 @@ async def process_payment(args: Dict[str, Any]) -> List[types.TextContent]:
             "created_at": datetime.now().isoformat(),
             "metadata": args.get("metadata", {})
         }
-        
+
         transactions.append(transaction)
-        
+
         result = {
             "success": True,
             "transaction_id": transaction_id,
@@ -214,9 +214,9 @@ async def process_payment(args: Dict[str, Any]) -> List[types.TextContent]:
             "currency": args.get("currency", "usd"),
             "timestamp": datetime.now().isoformat()
         }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error processing payment: {str(e)}")]
 
@@ -224,7 +224,7 @@ async def create_subscription(args: Dict[str, Any]) -> List[types.TextContent]:
     """Create a new subscription."""
     try:
         subscription_id = str(uuid.uuid4())
-        
+
         subscription = {
             "id": subscription_id,
             "customer_id": args["customer_id"],
@@ -236,10 +236,10 @@ async def create_subscription(args: Dict[str, Any]) -> List[types.TextContent]:
             "next_billing_date": None,  # Would calculate based on billing cycle
             "metadata": args.get("metadata", {})
         }
-        
+
         subscriptions[subscription_id] = subscription
         customers[args["customer_id"]] = subscription_id
-        
+
         result = {
             "success": True,
             "subscription_id": subscription_id,
@@ -249,9 +249,9 @@ async def create_subscription(args: Dict[str, Any]) -> List[types.TextContent]:
             "billing_cycle": args.get("billing_cycle", "monthly"),
             "timestamp": datetime.now().isoformat()
         }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error creating subscription: {str(e)}")]
 
@@ -259,7 +259,7 @@ async def get_subscription(args: Dict[str, Any]) -> List[types.TextContent]:
     """Get subscription details for a customer."""
     try:
         customer_id = args["customer_id"]
-        
+
         if customer_id not in customers:
             result = {
                 "success": False,
@@ -269,16 +269,16 @@ async def get_subscription(args: Dict[str, Any]) -> List[types.TextContent]:
         else:
             subscription_id = customers[customer_id]
             subscription = subscriptions[subscription_id]
-            
+
             result = {
                 "success": True,
                 "subscription": subscription,
                 "customer_id": customer_id,
                 "timestamp": datetime.now().isoformat()
             }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error getting subscription: {str(e)}")]
 
@@ -286,10 +286,10 @@ async def generate_invoice(args: Dict[str, Any]) -> List[types.TextContent]:
     """Generate an invoice."""
     try:
         invoice_id = str(uuid.uuid4())
-        
+
         # Calculate total
         total = sum(item.get("amount", 0) for item in args["items"])
-        
+
         invoice = {
             "id": invoice_id,
             "customer_id": args["customer_id"],
@@ -299,9 +299,9 @@ async def generate_invoice(args: Dict[str, Any]) -> List[types.TextContent]:
             "created_at": datetime.now().isoformat(),
             "due_date": args.get("due_date")
         }
-        
+
         invoices.append(invoice)
-        
+
         result = {
             "success": True,
             "invoice_id": invoice_id,
@@ -311,9 +311,9 @@ async def generate_invoice(args: Dict[str, Any]) -> List[types.TextContent]:
             "due_date": args.get("due_date"),
             "timestamp": datetime.now().isoformat()
         }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error generating invoice: {str(e)}")]
 
@@ -322,7 +322,7 @@ async def get_payment_stats() -> List[types.TextContent]:
     try:
         total_revenue = sum(t["amount"] for t in transactions if t["status"] == "completed")
         active_subscriptions = len([s for s in subscriptions.values() if s["status"] == "active"])
-        
+
         result = {
             "success": True,
             "stats": {
@@ -334,9 +334,9 @@ async def get_payment_stats() -> List[types.TextContent]:
             },
             "timestamp": datetime.now().isoformat()
         }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error getting payment stats: {str(e)}")]
 

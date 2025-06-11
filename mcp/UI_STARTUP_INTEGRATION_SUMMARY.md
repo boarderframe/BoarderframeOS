@@ -9,7 +9,7 @@ Enhanced the MCP Filesystem Server with improved startup scripts, monitoring cap
 
 #### New Features:
 - **Health Check Mode**: `--health-check` flag for testing running servers
-- **Enhanced Error Handling**: Better startup and shutdown error management  
+- **Enhanced Error Handling**: Better startup and shutdown error management
 - **Improved Status Display**: More detailed endpoint information
 - **Additional Arguments**: Extended command-line options
 

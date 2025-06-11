@@ -4,10 +4,11 @@ Simple UI startup script for BoarderframeOS
 """
 
 import asyncio
-import uvicorn
 import logging
-from pathlib import Path
 import sys
+from pathlib import Path
+
+import uvicorn
 
 # Add the parent directory to the path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -22,7 +23,7 @@ def main():
     print("💬 Solomon chat at: http://localhost:8080/solomon")
     print("👥 Agent monitor at: http://localhost:8080/agents")
     print()
-    
+
     try:
         # Start the web server
         uvicorn.run(
@@ -37,7 +38,7 @@ def main():
     except Exception as e:
         print(f"❌ Failed to start UI server: {e}")
         return 1
-    
+
     return 0
 
 if __name__ == "__main__":

@@ -14,7 +14,7 @@ The MCP (Model Context Protocol) Filesystem Server implementation is now **fully
 
 ### Advanced Features
 - **AI Content Analysis**: Semantic analysis of file contents
-- **Vector Embeddings**: File content embeddings for similarity search  
+- **Vector Embeddings**: File content embeddings for similarity search
 - **Database Integration**: SQLite-based vector storage with proper initialization
 - **File Integrity**: Multiple hash algorithms (xxHash, BLAKE3, SHA256, MD5)
 - **Real-time Monitoring**: WebSocket and SSE support for file system events
@@ -22,7 +22,7 @@ The MCP (Model Context Protocol) Filesystem Server implementation is now **fully
 
 ### Fixed Issues
 1. ✅ **Directory Listing Bug**: Fixed return structure from `items` to `entries` key
-2. ✅ **Database Initialization**: Added proper vector DB initialization for AI features  
+2. ✅ **Database Initialization**: Added proper vector DB initialization for AI features
 3. ✅ **Duplicate Exception Handlers**: Cleaned up redundant exception handling
 4. ✅ **Missing Helper Methods**: Implemented `_create_hasher()`, `validate_path()`, etc.
 5. ✅ **Embedding Storage**: Fixed JSON serialization for non-numpy environments
@@ -67,7 +67,7 @@ The MCP (Model Context Protocol) Filesystem Server implementation is now **fully
 - Secure path validation
 - Error handling and logging
 
-# Advanced Features  
+# Advanced Features
 - AI content analysis
 - Vector embeddings (sentence-transformers)
 - SQLite vector database
@@ -93,7 +93,7 @@ python test_filesystem_server.py
 
 ### API Endpoints
 - Health: `http://localhost:8001/health`
-- Statistics: `http://localhost:8001/stats` 
+- Statistics: `http://localhost:8001/stats`
 - JSON-RPC: `http://localhost:8001/rpc`
 - WebSocket: `ws://localhost:8001/ws/events`
 - File Watch: `http://localhost:8001/fs/watch`
@@ -115,7 +115,7 @@ All required dependencies are available:
 
 The filesystem server is now production-ready with:
 - Complete error handling
-- Secure path validation  
+- Secure path validation
 - Async performance optimization
 - Comprehensive logging
 - AI-enhanced capabilities

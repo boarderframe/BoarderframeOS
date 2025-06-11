@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Manually test server health and see what's happening"""
 
-import requests
 import json
+
+import requests
 
 servers = [
     ("corporate_headquarters", 8888),
     ("registry", 8000),
-    ("filesystem", 8001), 
+    ("filesystem", 8001),
     ("database", 8004),
     ("payment", 8006),
     ("analytics", 8007),

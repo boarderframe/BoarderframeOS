@@ -99,8 +99,8 @@ BoarderframeOS/
 ```sql
 -- Semantic similarity search
 SELECT id, content, 1 - (embedding <=> $1) as similarity
-FROM agent_memories 
-ORDER BY embedding <=> $1 
+FROM agent_memories
+ORDER BY embedding <=> $1
 LIMIT 10;
 
 -- Custom similarity function
@@ -225,7 +225,7 @@ curl http://localhost:8000/health
 SELECT * FROM pg_stat_database WHERE datname = 'boarderframeos';
 
 -- Table sizes
-SELECT schemaname, tablename, pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) 
+SELECT schemaname, tablename, pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename))
 FROM pg_tables WHERE schemaname = 'public';
 
 -- Vector index performance
@@ -306,7 +306,7 @@ import aioredis
 # PostgreSQL connection
 conn = await asyncpg.connect(DATABASE_URL)
 
-# Redis connection  
+# Redis connection
 redis = aioredis.from_url(REDIS_URL)
 ```
 

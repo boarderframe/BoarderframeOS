@@ -5,8 +5,8 @@ Quick launcher for the comprehensive LLM configuration interface
 """
 
 import asyncio
-import sys
 import os
+import sys
 from pathlib import Path
 
 # Add project root to path
@@ -19,17 +19,17 @@ async def main():
     """Initialize and run Agent Cortex Panel"""
     print("\n🚀 Launching Agent Cortex Management Panel...")
     print("=" * 60)
-    
+
     # Create panel instance
     panel = AgentCortexPanel(port=8890)
-    
+
     # Initialize connections
     print("📊 Initializing database and configurations...")
     await panel.initialize()
-    
+
     print("✅ Agent Cortex Panel initialized successfully!")
     print("=" * 60)
-    
+
     # Run the web server
     panel.run()
 

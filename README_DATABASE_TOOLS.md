@@ -11,7 +11,7 @@ Complete guide to managing your PostgreSQL database with multiple interfaces and
 - **Login**: admin@boarderframeos.local / admin_secure_2025
 - **Features**: Complete database administration, query editor, visual schema browser
 
-#### **Adminer** - Lightweight Database Manager  
+#### **Adminer** - Lightweight Database Manager
 - **URL**: http://localhost:8081
 - **Login**: Server: `postgresql`, Username: `boarderframe`, Database: `boarderframeos`
 - **Features**: Simple, fast interface for quick operations
@@ -79,7 +79,7 @@ docker-compose up -d postgresql redis
 
 # Access tools at:
 # - pgAdmin: http://localhost:8080
-# - Adminer: http://localhost:8081  
+# - Adminer: http://localhost:8081
 # - Redis Commander: http://localhost:8082
 ```
 
@@ -140,15 +140,15 @@ docker-compose up -d postgresql redis
 ```bash
 # Active agents by department
 ./scripts/db-query "
-    SELECT department, COUNT(*) as agent_count 
-    FROM agents 
-    WHERE status = 'active' 
+    SELECT department, COUNT(*) as agent_count
+    FROM agents
+    WHERE status = 'active'
     GROUP BY department
 "
 
 # Recent interactions
 ./scripts/db-query "
-    SELECT 
+    SELECT
         ai.interaction_type,
         a1.name as source_agent,
         a2.name as target_agent,
@@ -171,7 +171,7 @@ docker-compose up -d postgresql redis
 #### **Vector Similarity Queries**
 ```sql
 -- In pgAdmin or via db-query:
-SELECT 
+SELECT
     content,
     1 - (embedding <=> '[0.1,0.2,0.3,...]'::vector) as similarity
 FROM agent_memories
@@ -189,11 +189,11 @@ LIMIT 10;
 #### **Table Sizes**
 ```bash
 ./scripts/db-query "
-    SELECT 
+    SELECT
         tablename,
         pg_size_pretty(pg_total_relation_size(tablename)) as size,
         pg_total_relation_size(tablename) as bytes
-    FROM pg_tables 
+    FROM pg_tables
     WHERE schemaname = 'public'
     ORDER BY pg_total_relation_size(tablename) DESC
 "
@@ -202,12 +202,12 @@ LIMIT 10;
 #### **Active Connections**
 ```bash
 ./scripts/db-query "
-    SELECT 
+    SELECT
         datname,
         numbackends as connections,
         xact_commit as commits,
         xact_rollback as rollbacks
-    FROM pg_stat_database 
+    FROM pg_stat_database
     WHERE datname = 'boarderframeos'
 "
 ```
@@ -249,7 +249,7 @@ psql -h localhost -p 5432 -U boarderframe boarderframeos < backup.sql
 #### **Access & Login**
 1. Navigate to http://localhost:8080
 2. Login with:
-   - **Email**: admin@boarderframeos.local  
+   - **Email**: admin@boarderframeos.local
    - **Password**: admin_secure_2025
 
 #### **Key Features**
@@ -263,7 +263,7 @@ psql -h localhost -p 5432 -U boarderframe boarderframeos < backup.sql
 #### **Useful Queries in pgAdmin**
 ```sql
 -- Vector similarity search example
-SELECT 
+SELECT
     id,
     content,
     memory_type,
@@ -274,7 +274,7 @@ ORDER BY embedding <=> $1::vector
 LIMIT 10;
 
 -- Agent activity analysis
-SELECT 
+SELECT
     a.name,
     a.department,
     COUNT(ai.id) as interaction_count,
@@ -355,7 +355,7 @@ netstat -tulpn | grep :8082
 #### **Slow Queries**
 ```sql
 -- Check slow queries
-SELECT 
+SELECT
     query,
     calls,
     total_time,
@@ -370,7 +370,7 @@ LIMIT 10;
 ```bash
 # Check active connections
 ./scripts/db-query "
-    SELECT 
+    SELECT
         state,
         COUNT(*) as connection_count
     FROM pg_stat_activity
@@ -393,7 +393,7 @@ SELECT '[1,2,3]'::vector <-> '[1,2,4]'::vector as distance;
 #### **Vector Index Performance**
 ```sql
 -- Check vector indexes
-SELECT 
+SELECT
     schemaname,
     tablename,
     indexname,

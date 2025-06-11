@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import http.server
 import socketserver
-import webbrowser
 import threading
 import time
+import webbrowser
 
 PORT = 8888
 

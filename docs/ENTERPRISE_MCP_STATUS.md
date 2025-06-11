@@ -183,7 +183,7 @@ curl -X POST http://localhost:8007/track \
 # 1. Process payment
 curl -X POST http://localhost:8006/payments/process
 
-# 2. Track revenue event  
+# 2. Track revenue event
 curl -X POST http://localhost:8007/track \
   -d '{"event_type": "revenue", "amount": 150.00}'
 
@@ -272,6 +272,6 @@ The MCP infrastructure is now capable of supporting the full BoarderframeOS visi
 
 ---
 
-*Last Updated: 2025-05-31*  
-*Status: Production Ready*  
+*Last Updated: 2025-05-31*
+*Status: Production Ready*
 *Next Review: 2025-06-15*

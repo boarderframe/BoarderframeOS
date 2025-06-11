@@ -24,16 +24,16 @@ logger = logging.getLogger("screenshot_launcher")
 async def main():
     """Start the screenshot server"""
     port = 8011
-    
+
     # Get port from command line if specified
     if len(sys.argv) > 1:
         try:
             port = int(sys.argv[1])
         except ValueError:
             logger.warning(f"Invalid port: {sys.argv[1]}. Using default: {port}")
-    
+
     logger.info(f"Starting Screenshot MCP Server on port {port}")
-    
+
     # Create and start server
     server = MCPScreenshotServer()
     await server.start(port)

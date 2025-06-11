@@ -3,8 +3,9 @@
 View complete organizational structure and workforce status
 """
 
-import subprocess
 import json
+import subprocess
+
 
 def view_organization():
     """Display comprehensive organizational status"""
@@ -12,60 +13,60 @@ def view_organization():
     print("=" * 70)
     print(f"Generated: {subprocess.check_output(['date']).decode().strip()}")
     print("=" * 70)
-    
+
     # Executive Summary
     print("\n📊 EXECUTIVE SUMMARY")
     print("-" * 70)
-    
+
     summary_query = """
-    SELECT 
-        'Total Divisions' as metric, COUNT(DISTINCT d.id) as value 
+    SELECT
+        'Total Divisions' as metric, COUNT(DISTINCT d.id) as value
     FROM divisions d
     UNION ALL
-    SELECT 
-        'Total Departments', COUNT(DISTINCT dept.id) 
+    SELECT
+        'Total Departments', COUNT(DISTINCT dept.id)
     FROM departments dept
     UNION ALL
-    SELECT 
-        'Total Agents', COUNT(DISTINCT a.id) 
+    SELECT
+        'Total Agents', COUNT(DISTINCT a.id)
     FROM agents a
     UNION ALL
-    SELECT 
-        'Operational Agents', COUNT(DISTINCT a.id) 
-    FROM agents a 
+    SELECT
+        'Operational Agents', COUNT(DISTINCT a.id)
+    FROM agents a
     WHERE a.operational_status = 'operational'
     UNION ALL
-    SELECT 
-        'Agents in Training', COUNT(DISTINCT a.id) 
-    FROM agents a 
+    SELECT
+        'Agents in Training', COUNT(DISTINCT a.id)
+    FROM agents a
     WHERE a.development_status IN ('training', 'testing')
     UNION ALL
-    SELECT 
-        'Leaders', COUNT(DISTINCT a.id) 
-    FROM agents a 
+    SELECT
+        'Leaders', COUNT(DISTINCT a.id)
+    FROM agents a
     WHERE a.agent_type = 'leader'
     UNION ALL
-    SELECT 
-        'Executive Agents', COUNT(DISTINCT a.id) 
-    FROM agents a 
+    SELECT
+        'Executive Agents', COUNT(DISTINCT a.id)
+    FROM agents a
     WHERE a.agent_type = 'executive'
     UNION ALL
-    SELECT 
-        'Total Capacity', SUM(dept.agent_capacity) 
+    SELECT
+        'Total Capacity', SUM(dept.agent_capacity)
     FROM departments dept
     UNION ALL
-    SELECT 
-        'Capacity Utilization %', 
+    SELECT
+        'Capacity Utilization %',
         ROUND((COUNT(DISTINCT a.id)::numeric / NULLIF(SUM(DISTINCT dept.agent_capacity), 0)) * 100)
     FROM agents a
     JOIN departments dept ON a.department = dept.name;
     """
-    
+
     result = subprocess.run([
         "docker", "exec", "boarderframeos_postgres",
         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", summary_query
     ], capture_output=True, text=True)
-    
+
     if result.returncode == 0:
         for line in result.stdout.strip().split('\n'):
             if '|' in line:
@@ -74,13 +75,13 @@ def view_organization():
                     metric = parts[0].strip()
                     value = parts[1].strip() or "0"
                     print(f"   {metric:<30} {value:>10}")
-    
+
     # Division Breakdown
     print("\n\n🏛️ DIVISION BREAKDOWN")
     print("-" * 70)
-    
+
     division_query = """
-    SELECT 
+    SELECT
         d.division_name,
         COUNT(DISTINCT dept.id) as departments,
         COUNT(DISTINCT dl.id) as leaders,
@@ -94,12 +95,12 @@ def view_organization():
     GROUP BY d.id, d.division_name, d.priority
     ORDER BY d.priority;
     """
-    
+
     result = subprocess.run([
         "docker", "exec", "boarderframeos_postgres",
         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", division_query
     ], capture_output=True, text=True)
-    
+
     if result.returncode == 0:
         print(f"{'Division':<35} {'Depts':>6} {'Leaders':>8} {'Agents':>8} {'Active':>8} {'Capacity':>10}")
         print("-" * 85)
@@ -108,13 +109,13 @@ def view_organization():
                 parts = line.split('|')
                 if len(parts) >= 6:
                     print(f"{parts[0]:<35} {parts[1]:>6} {parts[2]:>8} {parts[3]:>8} {parts[4]:>8} {parts[5]:>10}")
-    
+
     # Department Status by Phase
     print("\n\n📈 DEPARTMENT STATUS BY PHASE")
     print("-" * 70)
-    
+
     phase_query = """
-    SELECT 
+    SELECT
         d.phase,
         COUNT(DISTINCT d.id) as departments,
         COUNT(DISTINCT a.id) as agents,
@@ -126,12 +127,12 @@ def view_organization():
     GROUP BY d.phase
     ORDER BY d.phase;
     """
-    
+
     result = subprocess.run([
         "docker", "exec", "boarderframeos_postgres",
         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", phase_query
     ], capture_output=True, text=True)
-    
+
     if result.returncode == 0:
         print(f"{'Phase':>7} {'Departments':>12} {'Total Agents':>13} {'Operational':>12} {'Training':>10} {'Planned':>9}")
         print("-" * 70)
@@ -140,13 +141,13 @@ def view_organization():
                 parts = line.split('|')
                 if len(parts) >= 6:
                     print(f"{parts[0]:>7} {parts[1]:>12} {parts[2]:>13} {parts[3]:>12} {parts[4]:>10} {parts[5]:>9}")
-    
+
     # Top Departments by Agent Count
     print("\n\n🏆 TOP DEPARTMENTS BY WORKFORCE")
     print("-" * 70)
-    
+
     top_dept_query = """
-    SELECT 
+    SELECT
         d.name,
         COUNT(DISTINCT a.id) as total_agents,
         COUNT(DISTINCT CASE WHEN a.agent_type = 'leader' THEN a.id END) as leaders,
@@ -161,12 +162,12 @@ def view_organization():
     ORDER BY total_agents DESC
     LIMIT 15;
     """
-    
+
     result = subprocess.run([
         "docker", "exec", "boarderframeos_postgres",
         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", top_dept_query
     ], capture_output=True, text=True)
-    
+
     if result.returncode == 0:
         print(f"{'Department':<35} {'Total':>6} {'Leaders':>8} {'Workers':>8} {'Active':>7} {'Cap':>5} {'Util%':>6}")
         print("-" * 85)
@@ -176,20 +177,20 @@ def view_organization():
                 if len(parts) >= 7:
                     dept_name = parts[0][:34]  # Truncate long names
                     print(f"{dept_name:<35} {parts[1]:>6} {parts[2]:>8} {parts[3]:>8} {parts[4]:>7} {parts[5]:>5} {parts[6]:>6}%")
-    
+
     # Agent Development Pipeline
     print("\n\n🔄 AGENT DEVELOPMENT PIPELINE")
     print("-" * 70)
-    
+
     pipeline_query = """
-    SELECT 
+    SELECT
         a.development_status,
         a.operational_status,
         COUNT(*) as count,
         STRING_AGG(DISTINCT a.agent_type, ', ') as types
     FROM agents a
     GROUP BY a.development_status, a.operational_status
-    ORDER BY 
+    ORDER BY
         CASE a.development_status
             WHEN 'deployed' THEN 1
             WHEN 'ready' THEN 2
@@ -199,12 +200,12 @@ def view_organization():
             WHEN 'planned' THEN 6
         END;
     """
-    
+
     result = subprocess.run([
         "docker", "exec", "boarderframeos_postgres",
         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", pipeline_query
     ], capture_output=True, text=True)
-    
+
     if result.returncode == 0:
         print(f"{'Development Status':<20} {'Operational Status':<20} {'Count':>8} {'Agent Types':<30}")
         print("-" * 80)
@@ -213,44 +214,44 @@ def view_organization():
                 parts = line.split('|')
                 if len(parts) >= 4:
                     print(f"{parts[0]:<20} {parts[1]:<20} {parts[2]:>8} {parts[3]:<30}")
-    
+
     # Registry Synchronization Status
     print("\n\n🔄 REGISTRY SYNCHRONIZATION STATUS")
     print("-" * 70)
-    
+
     sync_query = """
-    SELECT 
+    SELECT
         'Agents in Main Table' as location, COUNT(*) as count
     FROM agents
     UNION ALL
-    SELECT 
+    SELECT
         'Agents in Registry', COUNT(*)
     FROM agent_registry
     UNION ALL
-    SELECT 
+    SELECT
         'Departments in Main Table', COUNT(*)
     FROM departments
     UNION ALL
-    SELECT 
+    SELECT
         'Departments in Registry', COUNT(*)
     FROM department_registry
     UNION ALL
-    SELECT 
+    SELECT
         'Agents Missing from Registry', COUNT(*)
     FROM agents a
     WHERE NOT EXISTS (SELECT 1 FROM agent_registry ar WHERE ar.agent_id = a.id)
     UNION ALL
-    SELECT 
+    SELECT
         'Departments Missing from Registry', COUNT(*)
     FROM departments d
     WHERE NOT EXISTS (SELECT 1 FROM department_registry dr WHERE dr.department_id = d.id);
     """
-    
+
     result = subprocess.run([
         "docker", "exec", "boarderframeos_postgres",
         "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", sync_query
     ], capture_output=True, text=True)
-    
+
     if result.returncode == 0:
         for line in result.stdout.strip().split('\n'):
             if '|' in line:
@@ -260,7 +261,7 @@ def view_organization():
                     count = parts[1].strip()
                     status = "⚠️ " if "Missing" in location and int(count) > 0 else "✅ "
                     print(f"   {status}{location:<40} {count:>10}")
-    
+
     print("\n" + "=" * 70)
     print("📍 View live dashboard at: http://localhost:8888")
     print("💡 Use register_organizational_data_v2.py to sync any missing registries")

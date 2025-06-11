@@ -18,20 +18,20 @@ async def test_panel():
     """Test Agent Cortex Panel features"""
     print("\n🧪 Testing Agent Cortex Panel...")
     print("=" * 60)
-    
+
     # Create panel instance
     panel = AgentCortexPanel()
-    
+
     # Initialize
     print("📊 Initializing panel...")
     await panel.initialize()
-    
+
     # Test 1: Check loaded configurations
     print("\n1️⃣ Checking loaded configurations:")
     print(f"   - Agent configs loaded: {len(panel.agent_configs)}")
     print(f"   - LLM providers: {list(panel.llm_providers.keys())}")
     print(f"   - Department structure loaded: {'boarderframeos_departments' in panel.department_structure}")
-    
+
     # Test 2: Load agents from department structure
     print("\n2️⃣ Loading agents from departments:")
     agents_found = []
@@ -44,27 +44,27 @@ async def test_panel():
                     "title": leader["title"],
                     "department": dept_data["department_name"]
                 })
-    
+
     print(f"   - Total agents found: {len(agents_found)}")
     if agents_found:
         print("   - Sample agents:")
         for agent in agents_found[:5]:
             tier = panel._determine_tier(agent["title"])
             print(f"     • {agent['name']} ({agent['title']}) - {agent['department']} - Tier: {tier}")
-    
+
     # Test 3: Check tier defaults
     print("\n3️⃣ Loading tier defaults:")
     tiers = await panel._get_tier_defaults()
     for tier, config in tiers.items():
         print(f"   - {tier.upper()}: {config['default_provider']}/{config['default_model']}")
-    
+
     # Test 4: Test LLM provider configurations
     print("\n4️⃣ Testing LLM providers:")
     for name, provider in panel.llm_providers.items():
         status = "✅ Active" if provider["is_active"] else "❌ Inactive"
         models_count = len(provider["models"])
         print(f"   - {name}: {status} ({models_count} models)")
-    
+
     # Test 5: Check database tables
     print("\n5️⃣ Verifying database structure:")
     import aiosqlite
@@ -72,7 +72,7 @@ async def test_panel():
         cursor = await db.execute("SELECT name FROM sqlite_master WHERE type='table'")
         tables = await cursor.fetchall()
         print(f"   - Tables created: {[t[0] for t in tables]}")
-    
+
     print("\n✅ All tests completed successfully!")
     print("=" * 60)
     print("\n📌 You can now launch the panel with:")

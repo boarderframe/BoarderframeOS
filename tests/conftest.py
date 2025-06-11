@@ -32,17 +32,17 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
         echo=False,
         pool_pre_ping=True,
     )
-    
+
     async_session = sessionmaker(
-        engine, 
-        class_=AsyncSession, 
+        engine,
+        class_=AsyncSession,
         expire_on_commit=False
     )
-    
+
     async with async_session() as session:
         yield session
         await session.rollback()
-    
+
     await engine.dispose()
 
 

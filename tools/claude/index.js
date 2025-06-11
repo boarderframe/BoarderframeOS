@@ -1,6 +1,6 @@
 /**
  * BoarderframeOS Claude CLI integration
- * 
+ *
  * This module provides integration with Anthropic's Claude Code CLI.
  */
 

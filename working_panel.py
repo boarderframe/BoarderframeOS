@@ -3,18 +3,20 @@
 Working Agent Cortex Panel using threading
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from flask import Flask, render_template, jsonify
+import json
 import threading
 import time
-import json
 from pathlib import Path
 
+from flask import Flask, jsonify, render_template
+
 # Create Flask app
-app = Flask(__name__, 
+app = Flask(__name__,
            template_folder='ui/templates',
            static_folder='ui/static')
 
@@ -97,18 +99,18 @@ def run_server():
 if __name__ == '__main__':
     print("\n🚀 Starting Agent Cortex Panel (Working Version)...")
     print("=" * 60)
-    
+
     # Start server in a thread
     server_thread = threading.Thread(target=run_server, daemon=True)
     server_thread.start()
-    
+
     # Wait a moment for server to start
     time.sleep(1)
-    
+
     print("🌐 Server running at: http://localhost:8890")
     print("🛑 Press Ctrl+C to stop")
     print("=" * 60)
-    
+
     # Test the server
     import requests
     try:
@@ -120,12 +122,12 @@ if __name__ == '__main__':
             print("\n❌ Server returned error:", response.status_code)
     except Exception as e:
         print(f"\n❌ Could not connect to server: {e}")
-    
+
     print("\n📌 If you can't access http://localhost:8890, try:")
     print("   1. Check firewall settings")
     print("   2. Try http://127.0.0.1:8890")
     print("   3. Check System Settings > Privacy & Security")
-    
+
     # Keep running
     try:
         while True:

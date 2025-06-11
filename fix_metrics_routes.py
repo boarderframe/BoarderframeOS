@@ -5,10 +5,10 @@ Fix the placement of metrics API routes
 
 def fix_metrics_routes():
     """Move the metrics routes to the correct location"""
-    
+
     with open('corporate_headquarters.py', 'r') as f:
         content = f.read()
-    
+
     # Remove the incorrectly placed routes
     bad_routes_start = content.find('\n@app.route(\'/api/metrics\')')
     if bad_routes_start != -1:
@@ -19,7 +19,7 @@ def fix_metrics_routes():
             # Remove the bad routes
             content = content[:bad_routes_start] + content[bad_routes_end:]
             print("✓ Removed incorrectly placed routes")
-    
+
     # Find the correct place to add routes (after the Flask app creation)
     # Look for the dashboard route
     dashboard_route = content.find('@app.route(\'/\')')
@@ -32,13 +32,13 @@ def api_metrics():
     try:
         # Get all metrics
         all_metrics = dashboard_data._get_centralized_metrics()
-        
+
         # Add metrics layer status
         metrics_status = {
             'metrics_layer_available': dashboard_data.metrics_layer is not None,
             'timestamp': datetime.now().isoformat()
         }
-        
+
         return jsonify({
             'status': 'success',
             'data': all_metrics,
@@ -58,7 +58,7 @@ def api_metrics_page():
             html = dashboard_data._generate_metrics_page_content()
         else:
             html = dashboard_data._generate_metrics_fallback()
-        
+
         return jsonify({
             'status': 'success',
             'html': html
@@ -73,11 +73,11 @@ def api_metrics_page():
 '''
         content = content[:dashboard_route] + metrics_routes + content[dashboard_route:]
         print("✓ Added metrics routes in correct location")
-    
+
     # Save the fixed file
     with open('corporate_headquarters.py', 'w') as f:
         f.write(content)
-    
+
     print("✓ Fixed metrics routes placement")
     return True
 

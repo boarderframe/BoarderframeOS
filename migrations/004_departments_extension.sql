@@ -3,7 +3,7 @@
 -- Works with existing UUID-based departments table
 
 -- Check and extend existing departments table
-ALTER TABLE departments 
+ALTER TABLE departments
 ADD COLUMN IF NOT EXISTS department_key VARCHAR(100),
 ADD COLUMN IF NOT EXISTS department_name VARCHAR(255),
 ADD COLUMN IF NOT EXISTS department_purpose TEXT,
@@ -55,9 +55,9 @@ CREATE TABLE IF NOT EXISTS agent_department_assignments (
     deassigned_at TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     -- Constraint to prevent duplicate active assignments
-    UNIQUE(agent_id, department_id, assignment_status) 
+    UNIQUE(agent_id, department_id, assignment_status)
     DEFERRABLE INITIALLY DEFERRED
 );
 
@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS department_status (
     metrics JSONB DEFAULT '{}',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     -- One status record per department
     UNIQUE(department_id)
 );
@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS department_hierarchy (
     child_department_id UUID REFERENCES departments(id) ON DELETE CASCADE,
     relationship_type VARCHAR(50) DEFAULT 'reports_to',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     -- Prevent circular references
     CHECK (parent_department_id != child_department_id),
     UNIQUE(parent_department_id, child_department_id)
@@ -142,19 +142,19 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_departments_updated_at') THEN
         CREATE TRIGGER update_departments_updated_at BEFORE UPDATE ON departments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
     END IF;
-    
+
     IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_department_leaders_updated_at') THEN
         CREATE TRIGGER update_department_leaders_updated_at BEFORE UPDATE ON department_leaders FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
     END IF;
-    
+
     IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_department_native_agents_updated_at') THEN
         CREATE TRIGGER update_department_native_agents_updated_at BEFORE UPDATE ON department_native_agents FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
     END IF;
-    
+
     IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_agent_assignments_updated_at') THEN
         CREATE TRIGGER update_agent_assignments_updated_at BEFORE UPDATE ON agent_department_assignments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
     END IF;
-    
+
     IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_department_status_updated_at') THEN
         CREATE TRIGGER update_department_status_updated_at BEFORE UPDATE ON department_status FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
     END IF;
@@ -174,14 +174,14 @@ BEGIN
             updated_at = CURRENT_TIMESTAMP;
         RETURN NEW;
     END IF;
-    
+
     -- Update for assignment change
     IF TG_OP = 'UPDATE' THEN
         -- If status changed, update counts
         IF OLD.assignment_status != NEW.assignment_status THEN
             UPDATE department_status SET
                 active_agents_count = (
-                    SELECT COUNT(*) FROM agent_department_assignments 
+                    SELECT COUNT(*) FROM agent_department_assignments
                     WHERE department_id = NEW.department_id AND assignment_status = 'active'
                 ),
                 updated_at = CURRENT_TIMESTAMP
@@ -189,7 +189,7 @@ BEGIN
         END IF;
         RETURN NEW;
     END IF;
-    
+
     -- Update for assignment removal
     IF TG_OP = 'DELETE' THEN
         UPDATE department_status SET
@@ -199,7 +199,7 @@ BEGIN
         WHERE department_id = OLD.department_id;
         RETURN OLD;
     END IF;
-    
+
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
@@ -216,7 +216,7 @@ END $$;
 
 -- Views for easy data access
 CREATE OR REPLACE VIEW department_overview AS
-SELECT 
+SELECT
     d.id,
     d.department_key,
     COALESCE(d.department_name, d.name) as department_name,
@@ -242,7 +242,7 @@ GROUP BY d.id, d.department_key, d.department_name, d.name, d.category, d.descri
          ds.assigned_agents_count, ds.active_agents_count, ds.productivity_score, ds.health_score, ds.status, ds.last_activity;
 
 CREATE OR REPLACE VIEW agent_current_assignments AS
-SELECT 
+SELECT
     ada.agent_id,
     ada.department_id,
     COALESCE(d.department_name, d.name) as department_name,

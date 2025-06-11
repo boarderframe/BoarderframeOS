@@ -4,8 +4,9 @@ Standalone Agent Cortex Panel
 Runs completely independently
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Clear any werkzeug environment variables
@@ -13,12 +14,13 @@ for key in list(os.environ.keys()):
     if key.startswith('WERKZEUG'):
         del os.environ[key]
 
-from flask import Flask, render_template, jsonify
 import asyncio
 import json
 from pathlib import Path
 
-app = Flask(__name__, 
+from flask import Flask, jsonify, render_template
+
+app = Flask(__name__,
            template_folder='ui/templates',
            static_folder='ui/static')
 
@@ -49,17 +51,17 @@ def get_providers():
 @app.route('/api/cortex/agents')
 def get_agents():
     agents = []
-    
+
     # Add some test agents
     test_agents = [
-        {"name": "David", "title": "CEO", "department": "Executive", "tier": "executive", 
+        {"name": "David", "title": "CEO", "department": "Executive", "tier": "executive",
          "provider": "anthropic", "model": "claude-opus-4-20250514", "temperature": 0.7, "max_tokens": 4000},
         {"name": "Solomon", "title": "Chief of Staff", "department": "Executive", "tier": "executive",
          "provider": "anthropic", "model": "claude-opus-4-20250514", "temperature": 0.3, "max_tokens": 4000},
         {"name": "Adam", "title": "Agent Creator", "department": "Development", "tier": "specialist",
          "provider": "anthropic", "model": "claude-4-sonnet-20250514", "temperature": 0.8, "max_tokens": 2000}
     ]
-    
+
     return jsonify(test_agents)
 
 @app.route('/api/cortex/tiers')
@@ -90,7 +92,7 @@ def get_tiers():
 async def load_data():
     """Load configuration data"""
     global agent_configs, llm_providers, department_structure, model_assignments
-    
+
     # Load configs
     config_path = Path("configs/agents")
     if config_path.exists():
@@ -101,7 +103,7 @@ async def load_data():
                     agent_configs[config["name"]] = config
             except:
                 pass
-    
+
     # Load department structure
     dept_path = Path("departments/boarderframeos-departments.json")
     if dept_path.exists():
@@ -110,7 +112,7 @@ async def load_data():
                 department_structure = json.load(f)
         except:
             pass
-    
+
     # Default providers
     llm_providers = {
         "anthropic": {
@@ -119,7 +121,7 @@ async def load_data():
             "is_active": True
         },
         "openai": {
-            "provider_type": "openai", 
+            "provider_type": "openai",
             "models": ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo"],
             "is_active": True
         },
@@ -130,20 +132,20 @@ async def load_data():
             "is_active": True
         }
     }
-    
+
     print("✅ Data loaded")
 
 def main():
     print("\n🚀 Starting Standalone Agent Cortex Panel...")
     print("=" * 60)
-    
+
     # Load data
     asyncio.run(load_data())
-    
+
     print("\n🌐 Starting server on http://localhost:8890")
     print("🛑 Press Ctrl+C to stop")
     print("=" * 60)
-    
+
     # Run server
     app.run(host='127.0.0.1', port=8890, debug=False)
 

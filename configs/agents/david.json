@@ -1,15 +1,15 @@
 {
-  "name": "david",
-  "role": "David Agent",
   "goals": [
     "Assist with david related tasks"
   ],
+  "max_concurrent_tasks": 5,
+  "model": "claude-opus-4-20250514",
+  "name": "david",
+  "provider": "anthropic",
+  "role": "David Agent",
+  "temperature": 0.7,
   "tools": [
     "mcp_filesystem"
   ],
-  "zone": "demo_zone",
-  "model": "claude-opus-4-20250514",
-  "temperature": 0.7,
-  "max_concurrent_tasks": 5,
-  "provider": "anthropic"
+  "zone": "demo_zone"
 }

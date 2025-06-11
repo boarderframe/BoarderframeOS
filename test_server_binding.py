@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Test server binding issues"""
 
-from flask import Flask
 import socket
+
+from flask import Flask
+
 
 # Test if port is available
 def test_port(port):

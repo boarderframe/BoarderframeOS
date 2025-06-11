@@ -19,11 +19,11 @@ async def integrate_configs():
     """Update existing agent configurations"""
     print("\n🔄 Integrating Agent Cortex with existing configurations...")
     print("=" * 60)
-    
+
     # Create panel instance
     panel = AgentCortexPanel()
     await panel.initialize()
-    
+
     # Update David and Solomon configs to use latest models
     updates = [
         {
@@ -37,7 +37,7 @@ async def integrate_configs():
             "max_tokens": 4000
         },
         {
-            "name": "solomon", 
+            "name": "solomon",
             "title": "Digital Twin",
             "tier": "executive",
             "department": "Executive Leadership",
@@ -47,35 +47,35 @@ async def integrate_configs():
             "max_tokens": 4000
         }
     ]
-    
+
     print("\n📝 Updating agent LLM assignments:")
     for agent_data in updates:
         agent_name = agent_data.pop("name")
         title = agent_data.pop("title")
-        
+
         print(f"\n   • {agent_name.title()} ({title}):")
         print(f"     - Provider: {agent_data['provider']}")
         print(f"     - Model: {agent_data['model']}")
         print(f"     - Temperature: {agent_data['temperature']}")
-        
+
         # Update in database
         await panel._update_agent_llm(agent_name, agent_data)
-        
+
         # Update config file
         config_path = Path(f"configs/agents/{agent_name}.json")
         if config_path.exists():
             with open(config_path, 'r') as f:
                 config = json.load(f)
-            
+
             config["model"] = agent_data["model"]
             config["temperature"] = agent_data["temperature"]
             config["provider"] = agent_data["provider"]
-            
+
             with open(config_path, 'w') as f:
                 json.dump(config, f, indent=2)
-            
+
             print(f"     ✅ Config file updated")
-    
+
     # Add other primordial agents
     primordials = [
         {
@@ -90,7 +90,7 @@ async def integrate_configs():
         },
         {
             "name": "eve",
-            "title": "The Evolver", 
+            "title": "The Evolver",
             "department": "Agent Development",
             "tier": "specialist",
             "provider": "anthropic",
@@ -109,37 +109,37 @@ async def integrate_configs():
             "max_tokens": 3000
         }
     ]
-    
+
     print("\n\n📝 Adding primordial agent configurations:")
     for agent_data in primordials:
         agent_name = agent_data.pop("name")
         title = agent_data.pop("title")
-        
+
         print(f"\n   • {agent_name.title()} ({title}):")
         print(f"     - Model: {agent_data['model']}")
-        
+
         await panel._update_agent_llm(agent_name, agent_data)
         print(f"     ✅ Added to Agent Cortex")
-    
+
     print("\n\n✅ Integration complete!")
     print("=" * 60)
     print("\n📊 Summary:")
-    
+
     # Get updated stats
     import aiosqlite
     async with aiosqlite.connect(panel.db_path) as db:
         cursor = await db.execute("SELECT COUNT(*) FROM agent_llm_assignments")
         count = await cursor.fetchone()
         print(f"   - Total agents configured: {count[0]}")
-        
+
         cursor = await db.execute("SELECT COUNT(*) FROM llm_providers WHERE is_active = 1")
         provider_count = await cursor.fetchone()
         print(f"   - Active LLM providers: {provider_count[0]}")
-        
+
         cursor = await db.execute("SELECT COUNT(*) FROM tier_defaults")
         tier_count = await cursor.fetchone()
         print(f"   - Tier configurations: {tier_count[0]}")
-    
+
     print("\n🚀 Agent Cortex Management Panel is ready!")
     print("   Run: python launch_agent_cortex_panel.py")
     print("   Then visit: http://localhost:8890")

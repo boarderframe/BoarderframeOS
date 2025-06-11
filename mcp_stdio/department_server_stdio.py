@@ -5,16 +5,16 @@ Wraps the HTTP-based department server for use with Claude CLI
 """
 
 import asyncio
-import json
-import sys
-import logging
-from typing import Any, Dict, List, Optional
-from pathlib import Path
-from datetime import datetime
 
 # Handle MCP import conflicts by temporarily modifying sys.path
 import importlib
 import importlib.util
+import json
+import logging
+import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 # Save original sys.path
 original_path = sys.path.copy()
@@ -31,10 +31,10 @@ for module_name in local_mcp_modules:
 
 try:
     # Import the real MCP package
-    from mcp import types
-    from mcp.server import Server, NotificationOptions
-    from mcp.server.models import InitializationOptions
     import mcp.server.stdio
+    from mcp import types
+    from mcp.server import NotificationOptions, Server
+    from mcp.server.models import InitializationOptions
 finally:
     # Restore original sys.path
     sys.path = original_path
@@ -297,25 +297,25 @@ async def get_departments(args: Dict[str, Any]) -> List[types.TextContent]:
     try:
         include_inactive = args.get("include_inactive", False)
         division_key = args.get("division_key")
-        
+
         filtered_departments = []
-        
+
         for dept in departments.values():
             if not include_inactive and not dept["is_active"]:
                 continue
-            
+
             # For simplicity, we're not filtering by division in mock data
             filtered_departments.append(dept)
-        
+
         result = {
             "success": True,
             "departments": filtered_departments,
             "total_count": len(filtered_departments),
             "timestamp": datetime.now().isoformat()
         }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error getting departments: {str(e)}")]
 
@@ -323,7 +323,7 @@ async def get_department_details(args: Dict[str, Any]) -> List[types.TextContent
     """Get detailed information about a specific department."""
     try:
         department_key = args["department_key"]
-        
+
         if department_key not in departments:
             result = {
                 "success": False,
@@ -332,13 +332,13 @@ async def get_department_details(args: Dict[str, Any]) -> List[types.TextContent
             }
         else:
             dept = departments[department_key]
-            
+
             # Add assignment details
             current_assignments = [
                 assignment for assignment in agent_assignments.values()
                 if assignment.get("department_key") == department_key and assignment.get("status") == "active"
             ]
-            
+
             result = {
                 "success": True,
                 "department": {
@@ -355,9 +355,9 @@ async def get_department_details(args: Dict[str, Any]) -> List[types.TextContent
                 },
                 "timestamp": datetime.now().isoformat()
             }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error getting department details: {str(e)}")]
 
@@ -369,7 +369,7 @@ async def assign_agent(args: Dict[str, Any]) -> List[types.TextContent]:
         assigned_by = args.get("assigned_by", "manual")
         assignment_type = args.get("assignment_type", "manual")
         reason = args.get("reason")
-        
+
         if department_key not in departments:
             result = {
                 "success": False,
@@ -387,9 +387,9 @@ async def assign_agent(args: Dict[str, Any]) -> List[types.TextContent]:
                 "status": "active",
                 "reason": reason
             }
-            
+
             agent_assignments[agent_id] = assignment
-            
+
             # Add to history
             assignment_history.append({
                 "action": "assigned",
@@ -399,19 +399,19 @@ async def assign_agent(args: Dict[str, Any]) -> List[types.TextContent]:
                 "reason": reason,
                 "created_at": datetime.now().isoformat()
             })
-            
+
             # Update department assigned agents count
             departments[department_key]["assigned_agents"] += 1
-            
+
             result = {
                 "success": True,
                 "message": f"Agent {agent_id} successfully assigned to {department_key}",
                 "assignment": assignment,
                 "timestamp": datetime.now().isoformat()
             }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error assigning agent: {str(e)}")]
 
@@ -422,7 +422,7 @@ async def deassign_agent(args: Dict[str, Any]) -> List[types.TextContent]:
         department_key = args.get("department_key")
         assigned_by = args.get("assigned_by", "manual")
         reason = args.get("reason")
-        
+
         if agent_id not in agent_assignments:
             result = {
                 "success": False,
@@ -432,7 +432,7 @@ async def deassign_agent(args: Dict[str, Any]) -> List[types.TextContent]:
         else:
             assignment = agent_assignments[agent_id]
             old_department = assignment["department_key"]
-            
+
             # Check if specific department matches (if provided)
             if department_key and old_department != department_key:
                 result = {
@@ -445,7 +445,7 @@ async def deassign_agent(args: Dict[str, Any]) -> List[types.TextContent]:
                 # Remove assignment
                 assignment["status"] = "inactive"
                 assignment["deassigned_at"] = datetime.now().isoformat()
-                
+
                 # Add to history
                 assignment_history.append({
                     "action": "deassigned",
@@ -455,10 +455,10 @@ async def deassign_agent(args: Dict[str, Any]) -> List[types.TextContent]:
                     "reason": reason,
                     "created_at": datetime.now().isoformat()
                 })
-                
+
                 # Update department assigned agents count
                 departments[old_department]["assigned_agents"] -= 1
-                
+
                 result = {
                     "success": True,
                     "message": f"Agent {agent_id} successfully deassigned from {old_department}",
@@ -471,9 +471,9 @@ async def deassign_agent(args: Dict[str, Any]) -> List[types.TextContent]:
                     },
                     "timestamp": datetime.now().isoformat()
                 }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error deassigning agent: {str(e)}")]
 
@@ -485,7 +485,7 @@ async def transfer_agent(args: Dict[str, Any]) -> List[types.TextContent]:
         to_department = args["to_department"]
         assigned_by = args.get("assigned_by", "manual")
         reason = args.get("reason")
-        
+
         if from_department not in departments:
             result = {
                 "success": False,
@@ -510,7 +510,7 @@ async def transfer_agent(args: Dict[str, Any]) -> List[types.TextContent]:
             assignment["department_key"] = to_department
             assignment["assigned_by"] = assigned_by
             assignment["transferred_at"] = datetime.now().isoformat()
-            
+
             # Add to history
             assignment_history.append({
                 "action": "transferred",
@@ -521,11 +521,11 @@ async def transfer_agent(args: Dict[str, Any]) -> List[types.TextContent]:
                 "reason": reason,
                 "created_at": datetime.now().isoformat()
             })
-            
+
             # Update department counts
             departments[from_department]["assigned_agents"] -= 1
             departments[to_department]["assigned_agents"] += 1
-            
+
             result = {
                 "success": True,
                 "message": f"Agent {agent_id} successfully transferred from {from_department} to {to_department}",
@@ -539,9 +539,9 @@ async def transfer_agent(args: Dict[str, Any]) -> List[types.TextContent]:
                 },
                 "timestamp": datetime.now().isoformat()
             }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error transferring agent: {str(e)}")]
 
@@ -549,11 +549,11 @@ async def get_agent_assignments(args: Dict[str, Any]) -> List[types.TextContent]
     """Get all assignments for a specific agent."""
     try:
         agent_id = args["agent_id"]
-        
+
         assignments = []
         if agent_id in agent_assignments:
             assignments.append(agent_assignments[agent_id])
-        
+
         result = {
             "success": True,
             "agent_id": agent_id,
@@ -561,9 +561,9 @@ async def get_agent_assignments(args: Dict[str, Any]) -> List[types.TextContent]
             "total_count": len(assignments),
             "timestamp": datetime.now().isoformat()
         }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error getting agent assignments: {str(e)}")]
 
@@ -572,7 +572,7 @@ async def get_department_assignments(args: Dict[str, Any]) -> List[types.TextCon
     try:
         department_key = args["department_key"]
         active_only = args.get("active_only", True)
-        
+
         if department_key not in departments:
             result = {
                 "success": False,
@@ -582,13 +582,13 @@ async def get_department_assignments(args: Dict[str, Any]) -> List[types.TextCon
         else:
             assignments = []
             agent_ids = []
-            
+
             for assignment in agent_assignments.values():
                 if assignment["department_key"] == department_key:
                     if not active_only or assignment["status"] == "active":
                         assignments.append(assignment)
                         agent_ids.append(assignment["agent_id"])
-            
+
             result = {
                 "success": True,
                 "department_key": department_key,
@@ -597,9 +597,9 @@ async def get_department_assignments(args: Dict[str, Any]) -> List[types.TextCon
                 "total_count": len(assignments),
                 "timestamp": datetime.now().isoformat()
             }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error getting department assignments: {str(e)}")]
 
@@ -609,10 +609,10 @@ async def get_analytics_overview() -> List[types.TextContent]:
         total_depts = len([d for d in departments.values() if d["is_active"]])
         total_assignments = len([a for a in agent_assignments.values() if a["status"] == "active"])
         unique_agents = len(set(a["agent_id"] for a in agent_assignments.values() if a["status"] == "active"))
-        
+
         # Active departments (those with assignments)
         active_depts = len(set(a["department_key"] for a in agent_assignments.values() if a["status"] == "active"))
-        
+
         # Assignments by category
         category_counts = {}
         for assignment in agent_assignments.values():
@@ -621,19 +621,19 @@ async def get_analytics_overview() -> List[types.TextContent]:
                 if dept_key in departments:
                     category = departments[dept_key]["category"]
                     category_counts[category] = category_counts.get(category, 0) + 1
-        
+
         assignments_by_category = [
             {"category": cat, "assignment_count": count}
             for cat, count in category_counts.items()
         ]
-        
+
         # Top departments by agent count
         dept_counts = {}
         for assignment in agent_assignments.values():
             if assignment["status"] == "active":
                 dept_key = assignment["department_key"]
                 dept_counts[dept_key] = dept_counts.get(dept_key, 0) + 1
-        
+
         top_departments = [
             {
                 "department_key": dept_key,
@@ -642,7 +642,7 @@ async def get_analytics_overview() -> List[types.TextContent]:
             }
             for dept_key, count in sorted(dept_counts.items(), key=lambda x: x[1], reverse=True)[:10]
         ]
-        
+
         result = {
             "success": True,
             "overview": {
@@ -657,9 +657,9 @@ async def get_analytics_overview() -> List[types.TextContent]:
             "top_departments": top_departments,
             "timestamp": datetime.now().isoformat()
         }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error getting analytics overview: {str(e)}")]
 

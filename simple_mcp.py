@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 import asyncio
-from mcp import types
-from mcp.server import Server, NotificationOptions
-from mcp.server.models import InitializationOptions
+
 import mcp.server.stdio
+from mcp import types
+from mcp.server import NotificationOptions, Server
+from mcp.server.models import InitializationOptions
 
 server = Server("simple")
 

@@ -5,10 +5,10 @@ Add metrics functionality simply and safely
 
 def add_metrics_simple():
     """Add metrics layer and navigation only"""
-    
+
     with open('corporate_headquarters.py', 'r') as f:
         content = f.read()
-    
+
     # 1. Add imports
     import_pos = content.find('import socket\n')
     if import_pos != -1:
@@ -25,7 +25,7 @@ except ImportError:
 '''
         content = content[:import_pos] + new_imports + content[import_pos + 13:]
         print("✓ Added metrics imports")
-    
+
     # 2. Initialize metrics layer in __init__
     init_line = content.find('self.status_file = "data/system_status.json"')
     if init_line != -1:
@@ -38,14 +38,14 @@ except ImportError:
                 print("✓ Metrics layer initialized successfully")
             except Exception as e:
                 print(f"⚠️ Failed to initialize metrics layer: {e}")
-        
+
         self.status_file = "data/system_status.json"'''
-        
+
         # Find start of line
         line_start = content.rfind('\n', 0, init_line)
         content = content[:line_start + 1] + metrics_init + content[init_line + len('self.status_file = "data/system_status.json"'):]
         print("✓ Added metrics initialization")
-    
+
     # 3. Add Metrics nav button
     database_button = content.find('<i class="fas fa-database"></i>\n                        <span>Database</span>')
     if database_button != -1:
@@ -54,7 +54,7 @@ except ImportError:
         if nav_end != -1:
             metrics_nav = '''
                 </li>
-                
+
                 <li class="nav-item">
                     <button class="nav-link" onclick="showTab('metrics')" data-tab="metrics">
                         <i class="fas fa-chart-line"></i>
@@ -62,7 +62,7 @@ except ImportError:
                     </button>'''
             content = content[:nav_end] + metrics_nav + content[nav_end:]
             print("✓ Added metrics navigation")
-    
+
     # 4. Add metrics tab (simple version)
     settings_tab = content.find('<!-- Settings Tab -->')
     if settings_tab != -1:
@@ -77,7 +77,7 @@ except ImportError:
                     System metrics and analytics
                 </p>
             </div>
-            
+
             <div class="card full-width">
                 <div id="metrics-content">
                     <p style="text-align: center; padding: 2rem;">
@@ -99,11 +99,11 @@ except ImportError:
                 </div>
             </div>
         </div>
-        
+
         '''
         content = content[:settings_tab] + metrics_tab + content[settings_tab:]
         print("✓ Added metrics tab")
-    
+
     # 5. Add simple JavaScript function to load metrics
     # Find where to add it (after showTab function)
     show_tab_end = content.find('function showTab(tabName)')
@@ -120,12 +120,12 @@ except ImportError:
                 if brace_count == 0:
                     # Found the end
                     load_metrics_func = '''
-        
+
         // Load metrics data
         function loadMetricsData() {
             const metricsDiv = document.getElementById('metrics-content');
             metricsDiv.innerHTML = '<div style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> Loading metrics...</div>';
-            
+
             // For now, just show a message
             setTimeout(() => {
                 metricsDiv.innerHTML = `
@@ -147,11 +147,11 @@ fetch('/api/metrics')
                     print("✓ Added loadMetricsData function")
                     break
             pos += 1
-    
+
     # Save
     with open('corporate_headquarters.py', 'w') as f:
         f.write(content)
-    
+
     print("\n✅ Successfully added basic metrics functionality!")
     print("\nWhat was added:")
     print("1. Metrics layer imports with error handling")
@@ -159,7 +159,7 @@ fetch('/api/metrics')
     print("3. Metrics navigation button")
     print("4. Metrics tab with manual load button")
     print("5. Simple JavaScript to show metrics status")
-    
+
     return True
 
 if __name__ == "__main__":

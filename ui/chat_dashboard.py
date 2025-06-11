@@ -5,13 +5,13 @@ Enhanced dashboard with Solomon chat interface
 import asyncio
 import json
 import logging
+import os
+import sys
+import threading
 from datetime import datetime
 from http.server import HTTPServer, SimpleHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
-import threading
-import sys
-import os
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -20,7 +20,7 @@ logger = logging.getLogger("chat_dashboard")
 
 class ChatDashboardHandler(SimpleHTTPRequestHandler):
     """HTTP handler for the chat dashboard"""
-    
+
     def do_GET(self):
         """Handle GET requests"""
         if self.path == "/" or self.path == "/index.html":
@@ -29,18 +29,18 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
             self.send_status_api()
         else:
             super().do_GET()
-            
+
     def send_chat_dashboard(self):
         """Send the main chat dashboard HTML"""
         html_content = self.generate_dashboard_html()
         html_bytes = html_content.encode('utf-8')
-        
+
         self.send_response(200)
         self.send_header('Content-type', 'text/html; charset=utf-8')
         self.send_header('Connection', 'close')
         self.end_headers()
         self.wfile.write(html_bytes)
-        
+
     def send_status_api(self):
         """Send JSON status response"""
         try:
@@ -55,14 +55,14 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
                     "chat_server": {"status": "online", "port": 8889}
                 }
             }
-            
+
             response = json.dumps(status_data, indent=2)
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.send_header('Content-length', len(response))
             self.end_headers()
             self.wfile.write(response.encode())
-            
+
         except Exception as e:
             error_response = json.dumps({"error": str(e)})
             self.send_response(500)
@@ -70,7 +70,7 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
             self.send_header('Content-length', len(error_response))
             self.end_headers()
             self.wfile.write(error_response.encode())
-            
+
     def generate_dashboard_html(self):
         """Generate the complete dashboard HTML"""
         return f"""<!DOCTYPE html>
@@ -278,7 +278,7 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
                 <h1>BoarderframeOS</h1>
                 <p>AI-Native Operating System</p>
             </div>
-            
+
             <div class="status-grid">
                 <div class="status-card">
                     <h3>🏛️ MCP Registry</h3>
@@ -301,7 +301,7 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
                     <span>Online (8005)</span>
                 </div>
             </div>
-            
+
             <div class="logs-container">
                 <h3>System Logs</h3>
                 <div id="system-logs">
@@ -312,7 +312,7 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
                 </div>
             </div>
         </div>
-        
+
         <div class="chat-panel">
             <div class="header">
                 <div class="solomon-avatar">🤖</div>
@@ -325,7 +325,7 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
                     Manual Connect
                 </button>
             </div>
-            
+
             <div class="chat-messages" id="chat-messages">
                 <div class="message system">
                     <div class="message-content">
@@ -333,12 +333,12 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
                     </div>
                 </div>
             </div>
-            
+
             <div class="chat-input-container">
-                <input 
-                    type="text" 
-                    id="chat-input" 
-                    class="chat-input" 
+                <input
+                    type="text"
+                    id="chat-input"
+                    class="chat-input"
                     placeholder="Message Solomon..."
                     disabled
                 >
@@ -354,22 +354,22 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
                 this.connected = false;
                 this.reconnectAttempts = 0;
                 this.maxReconnectAttempts = 5;
-                
+
                 this.messagesContainer = document.getElementById('chat-messages');
                 this.chatInput = document.getElementById('chat-input');
                 this.sendButton = document.getElementById('send-button');
                 this.connectionStatus = document.getElementById('connection-status');
                 this.manualConnectBtn = document.getElementById('manual-connect');
-                
+
                 this.initEventListeners();
-                
+
                 // Try to connect after a short delay
                 setTimeout(() => {{
                     console.log('Starting connection attempt...');
                     this.connect();
                 }}, 1000);
             }}
-            
+
             initEventListeners() {{
                 this.sendButton.addEventListener('click', () => this.sendMessage());
                 this.chatInput.addEventListener('keypress', (e) => {{
@@ -378,7 +378,7 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
                         this.sendMessage();
                     }}
                 }});
-                
+
                 // Manual connect button
                 this.manualConnectBtn.addEventListener('click', () => {{
                     console.log('Manual connect button clicked');
@@ -386,15 +386,15 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
                     this.connect();
                 }});
             }}
-            
+
             connect() {{
                 this.updateConnectionStatus('connecting', 'Connecting...');
                 console.log('Attempting to connect to WebSocket at ws://localhost:8889');
-                
+
                 try {{
                     this.ws = new WebSocket('ws://localhost:8889');
                     console.log('WebSocket object created');
-                    
+
                     this.ws.onopen = () => {{
                         console.log('WebSocket connection opened');
                         this.connected = true;
@@ -402,7 +402,7 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
                         this.updateConnectionStatus('connected', 'Connected');
                         this.enableInput();
                     }};
-                    
+
                     this.ws.onmessage = (event) => {{
                         try {{
                             const data = JSON.parse(event.data);
@@ -411,7 +411,7 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
                             console.error('Error parsing message:', e);
                         }}
                     }};
-                    
+
                     this.ws.onclose = () => {{
                         this.connected = false;
                         this.updateConnectionStatus('disconnected', 'Disconnected');
@@ -419,20 +419,20 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
                         this.addSystemMessage('Connection lost. Attempting to reconnect...');
                         this.attemptReconnect();
                     }};
-                    
+
                     this.ws.onerror = (error) => {{
                         console.error('WebSocket error:', error);
                         console.log('WebSocket error details:', error);
                         this.addSystemMessage('Connection error occurred');
                     }};
-                    
+
                 }} catch (error) {{
                     console.error('Failed to connect:', error);
                     this.updateConnectionStatus('disconnected', 'Connection failed');
                     this.attemptReconnect();
                 }}
             }}
-            
+
             attemptReconnect() {{
                 if (this.reconnectAttempts < this.maxReconnectAttempts) {{
                     this.reconnectAttempts++;
@@ -445,36 +445,36 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
                     this.manualConnectBtn.style.display = 'inline-block';
                 }}
             }}
-            
+
             updateConnectionStatus(status, text) {{
                 this.connectionStatus.textContent = text;
                 this.connectionStatus.className = `connection-status status-${{status}}`;
             }}
-            
+
             enableInput() {{
                 this.chatInput.disabled = false;
                 this.sendButton.disabled = false;
                 this.chatInput.placeholder = 'Message Solomon...';
             }}
-            
+
             disableInput() {{
                 this.chatInput.disabled = true;
                 this.sendButton.disabled = true;
                 this.chatInput.placeholder = 'Disconnected...';
             }}
-            
+
             sendMessage() {{
                 const message = this.chatInput.value.trim();
                 if (!message || !this.connected) return;
-                
+
                 this.ws.send(JSON.stringify({{
                     type: 'user_message',
                     message: message
                 }}));
-                
+
                 this.chatInput.value = '';
             }}
-            
+
             handleMessage(data) {{
                 switch (data.type) {{
                     case 'user_message':
@@ -491,45 +491,45 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
                         break;
                 }}
             }}
-            
+
             addMessage(sender, content, timestamp) {{
                 const messageDiv = document.createElement('div');
                 messageDiv.className = `message ${{sender}}`;
-                
+
                 const time = timestamp ? new Date(timestamp).toLocaleTimeString() : new Date().toLocaleTimeString();
                 const senderName = sender === 'user' ? 'You' : 'Solomon';
-                
+
                 messageDiv.innerHTML = `
                     <div class="message-header">${{senderName}} • ${{time}}</div>
                     <div class="message-content">${{content}}</div>
                 `;
-                
+
                 this.messagesContainer.appendChild(messageDiv);
                 this.scrollToBottom();
             }}
-            
+
             addSystemMessage(content) {{
                 const messageDiv = document.createElement('div');
                 messageDiv.className = 'message system';
                 messageDiv.innerHTML = `
                     <div class="message-content">${{content}}</div>
                 `;
-                
+
                 this.messagesContainer.appendChild(messageDiv);
                 this.scrollToBottom();
             }}
-            
+
             scrollToBottom() {{
                 this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
             }}
         }}
-        
+
         // Initialize chat when page loads
         document.addEventListener('DOMContentLoaded', () => {{
             console.log('DOM content loaded, initializing Solomon chat...');
             window.solomonChat = new SolomonChat();
         }});
-        
+
         // Also try on window load as backup
         window.addEventListener('load', () => {{
             if (!window.solomonChat) {{
@@ -537,7 +537,7 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
                 window.solomonChat = new SolomonChat();
             }}
         }});
-        
+
         // Add some demo log entries periodically
         setInterval(() => {{
             const logs = document.getElementById('system-logs');
@@ -546,7 +546,7 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
             logEntry.className = 'log-entry';
             logEntry.textContent = `[${{timestamp}}] System monitoring active`;
             logs.appendChild(logEntry);
-            
+
             // Keep only last 10 log entries
             while (logs.children.length > 10) {{
                 logs.removeChild(logs.firstChild);
@@ -567,7 +567,7 @@ if __name__ == "__main__":
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
-    
+
     try:
         start_dashboard_server()
     except KeyboardInterrupt:

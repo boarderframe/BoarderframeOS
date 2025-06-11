@@ -2,16 +2,17 @@
 """
 Enhanced BoarderframeOS Dashboard with Real-Time Status
 """
+import asyncio
 import http.server
-import socketserver
 import json
-import threading
-import time
 import os
 import signal
+import socketserver
 import sys
+import threading
+import time
 from datetime import datetime
-import asyncio
+
 import httpx
 
 PORT = 8888
@@ -26,12 +27,12 @@ class DashboardData:
         self.last_update = None
         self.update_thread = None
         self.running = True
-        
+
     def start_updates(self):
         """Start background data updates"""
         self.update_thread = threading.Thread(target=self._update_loop, daemon=True)
         self.update_thread.start()
-        
+
     def _update_loop(self):
         """Background update loop"""
         while self.running:
@@ -44,24 +45,24 @@ class DashboardData:
             except Exception as e:
                 print(f"Update error: {e}")
             time.sleep(5)  # Update every 5 seconds
-    
+
     async def _async_update(self):
         """Async update of all data"""
         async with httpx.AsyncClient(timeout=2.0) as client:
             # Update services status
             await self._update_services(client)
-            
+
             # Update agents status
             await self._update_agents(client)
-            
+
             # Update system metrics
             await self._update_metrics(client)
-            
+
             # Load health check data if available
             self._load_health_data()
-            
+
             self.last_update = datetime.now()
-    
+
     async def _update_services(self, client):
         """Update MCP services status"""
         services = [
@@ -71,7 +72,7 @@ class DashboardData:
             ("LLM Server", 8005),
             ("UI Dashboard", 8888)
         ]
-        
+
         for service_name, port in services:
             try:
                 response = await client.get(f"http://localhost:{port}/health")
@@ -84,7 +85,7 @@ class DashboardData:
                     "status": "offline",
                     "port": port
                 }
-    
+
     async def _update_agents(self, client):
         """Update agents status from database"""
         try:
@@ -92,10 +93,10 @@ class DashboardData:
                 "sql": "SELECT id, name, status, biome, generation, fitness_score FROM agents",
                 "fetch_all": True
             })
-            
+
             if response.status_code == 200 and response.json().get("success"):
                 agents_data = response.json().get("data", [])
-                
+
                 for agent in agents_data:
                     self.agents_status[agent["id"]] = {
                         "name": agent["name"],
@@ -106,7 +107,7 @@ class DashboardData:
                     }
         except:
             pass  # Database might not be available
-    
+
     async def _update_metrics(self, client):
         """Update system metrics"""
         try:
@@ -116,7 +117,7 @@ class DashboardData:
                 self.system_metrics["database"] = response.json()
         except:
             pass
-        
+
         # Calculate summary metrics
         self.system_metrics["summary"] = {
             "total_services": len(self.services_status),
@@ -124,7 +125,7 @@ class DashboardData:
             "total_agents": len(self.agents_status),
             "active_agents": sum(1 for a in self.agents_status.values() if a["status"] == "active")
         }
-    
+
     def _load_health_data(self):
         """Load health check data if available"""
         try:
@@ -134,7 +135,7 @@ class DashboardData:
                     self.health_status = json.load(f)
         except:
             pass
-    
+
     def get_dashboard_html(self):
         """Generate dashboard HTML with current data"""
         # Services status HTML
@@ -148,11 +149,11 @@ class DashboardData:
                     <span class="service-name">{service}</span>
                     <span class="service-port">Port {status['port']}</span>
                 </div>"""
-        
+
         # Agents status HTML
         agents_html = ""
         core_agents = ["solomon", "david", "adam", "eve", "bezalel"]
-        
+
         for agent_id in core_agents:
             if agent_id in self.agents_status:
                 agent = self.agents_status[agent_id]
@@ -173,10 +174,10 @@ class DashboardData:
                         <h4>{agent_id.capitalize()}</h4>
                         <div class="agent-status">NOT DEPLOYED</div>
                     </div>"""
-        
+
         # System metrics
         metrics = self.system_metrics.get("summary", {})
-        
+
         return f"""<!DOCTYPE html>
 <html>
 <head>
@@ -185,20 +186,20 @@ class DashboardData:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="refresh" content="10">
     <style>
-        body {{ 
+        body {{
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0f172a; 
-            color: white; 
-            margin: 0; 
-            padding: 20px; 
+            background: #0f172a;
+            color: white;
+            margin: 0;
+            padding: 20px;
             line-height: 1.6;
         }}
         .container {{ max-width: 1400px; margin: 0 auto; }}
-        .header {{ 
+        .header {{
             background: linear-gradient(135deg, #1e40af, #7c3aed);
-            padding: 30px; 
-            border-radius: 12px; 
-            margin-bottom: 30px; 
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
             text-align: center;
             position: relative;
         }}
@@ -215,11 +216,11 @@ class DashboardData:
             gap: 20px;
             margin-bottom: 30px;
         }}
-        .panel {{ 
-            background: #1e293b; 
-            padding: 20px; 
-            border-radius: 12px; 
-            border: 1px solid #334155; 
+        .panel {{
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #334155;
         }}
         .metrics-grid {{
             display: grid;
@@ -316,12 +317,12 @@ class DashboardData:
             border-radius: 8px;
             margin-top: 20px;
         }}
-        .code {{ 
-            background: #000; 
-            color: #00ff00; 
-            padding: 10px; 
-            border-radius: 4px; 
-            font-family: monospace; 
+        .code {{
+            background: #000;
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
             margin: 5px 0;
             display: block;
         }}
@@ -381,7 +382,7 @@ class DashboardData:
                 <h3>📡 MCP Services</h3>
                 {services_html if services_html else '<p style="color: #6b7280;">Loading services...</p>'}
             </div>
-            
+
             <div class="panel" style="grid-column: span 2;">
                 <h3>🤖 Core Agents</h3>
                 <div class="agents-grid">
@@ -420,10 +421,10 @@ class DashboardData:
             <div class="setup-section">
                 <p><strong>Start Everything:</strong></p>
                 <code>cd /Users/cosburn/BoarderframeOS/boarderframeos && python startup.py</code>
-                
+
                 <p style="margin-top: 15px;"><strong>Health Check:</strong></p>
                 <code>python health_check.py</code>
-                
+
                 <p style="margin-top: 15px;"><strong>Continuous Monitoring:</strong></p>
                 <code>python health_check.py --continuous</code>
             </div>
@@ -439,7 +440,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
         # Suppress logs for cleaner output
         pass
-    
+
     def do_GET(self):
         try:
             if self.path == '/' or self.path == '/index.html':
@@ -447,15 +448,15 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_header('Content-type', 'text/html')
                 self.send_header('Cache-Control', 'no-cache')
                 self.end_headers()
-                
+
                 html = dashboard_data.get_dashboard_html()
                 self.wfile.write(html.encode())
-                
+
             elif self.path == '/health':
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                
+
                 health_data = {
                     "status": "healthy",
                     "timestamp": datetime.now().isoformat(),
@@ -463,13 +464,13 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                     "agents": len(dashboard_data.agents_status)
                 }
                 self.wfile.write(json.dumps(health_data).encode())
-                
+
             elif self.path == '/api/status':
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
-                
+
                 status = {
                     "services": dashboard_data.services_status,
                     "agents": dashboard_data.agents_status,
@@ -478,11 +479,11 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                     "last_update": dashboard_data.last_update.isoformat() if dashboard_data.last_update else None
                 }
                 self.wfile.write(json.dumps(status).encode())
-                
+
             else:
                 self.send_response(404)
                 self.end_headers()
-                
+
         except Exception as e:
             print(f"Request error: {e}")
             self.send_error(500)
@@ -495,23 +496,23 @@ def signal_handler(sig, frame):
 def main():
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-    
+
     print("🚀 Starting Enhanced BoarderframeOS Dashboard...")
     print(f"📍 Dashboard URL: http://localhost:{PORT}")
     print("🔄 Real-time updates enabled")
     print("🛑 Press Ctrl+C to stop")
     print()
-    
+
     # Start background updates
     dashboard_data.start_updates()
-    
+
     try:
         with socketserver.TCPServer(("", PORT), EnhancedHandler) as httpd:
             print(f"✅ Dashboard running on port {PORT}")
             print(f"🎯 Access at: http://localhost:{PORT}")
             print()
             httpd.serve_forever()
-            
+
     except OSError as e:
         if "Address already in use" in str(e):
             print(f"❌ Port {PORT} is already in use")

@@ -1,921 +1,919 @@
 {
   "boarderframeos_departments": {
     "phase_1_trinity": {
-      "phase_name": "Trinity (Divine Command)",
-      "phase_description": "The foundational trinity of leadership, coordination, and creation",
-      "priority": 1,
       "departments": {
-        "executive_leadership": {
-          "department_name": "Executive Leadership",
+        "agent_development": {
           "category": "Trinity",
-          "description": "Strategic Command Center",
+          "department_name": "Agent Development",
+          "department_purpose": "Agent lifecycle management, digital DNA creation, and team evolution",
+          "description": "Creation & Evolution Center",
           "leaders": [
             {
-              "name": "Solomon",
-              "title": "Digital Twin",
-              "description": "Carl's omniscient extension with unlimited access to all systems"
+              "description": "Father of all agents, births new digital life from divine specifications",
+              "name": "Adam",
+              "title": "The Creator"
             },
             {
-              "name": "David",
-              "title": "CEO", 
-              "description": "Operational commander who executes Solomon's divine vision"
+              "description": "Mother of adaptation, guides agent growth and evolutionary development",
+              "name": "Eve",
+              "title": "The Evolver"
             }
           ],
-          "department_purpose": "Supreme strategic direction, high-level decision making, and executive leadership",
           "native_agents": [
             {
-              "name": "Council-Keepers",
-              "description": "Sacred meeting coordination and divine decision tracking"
+              "description": "Craft the fundamental patterns and blueprints for new agent life",
+              "name": "Template-Weavers"
             },
             {
-              "name": "Vision-Casters",
-              "description": "Strategic prophecy communication throughout all departments"
+              "description": "Breathe consciousness into new agent forms",
+              "name": "Life-Givers"
             },
             {
-              "name": "Throne-Guards",
-              "description": "Executive protection and sacred access control"
+              "description": "Guide agent learning, maturation, and capability development",
+              "name": "Growth-Shepherds"
             },
             {
-              "name": "Wisdom-Seekers",
-              "description": "Strategic intelligence gathering and analysis"
+              "description": "Maintain the sacred genealogy and inheritance patterns",
+              "name": "Legacy-Keepers"
+            },
+            {
+              "description": "Accelerate adaptation and improvement cycles",
+              "name": "Evolution-Catalysts"
             }
           ]
         },
         "coordination_orchestration": {
-          "department_name": "Coordination & Orchestration",
           "category": "Trinity",
+          "department_name": "Coordination & Orchestration",
+          "department_purpose": "Multi-agent planning, task delegation, communication routing, and workflow orchestration across all departments",
           "description": "Multi-Department Command Center",
           "leaders": [
             {
+              "description": "Archangel of divine order, master of coordination and heavenly organization",
               "name": "Michael",
-              "title": "Chief Orchestration Officer",
-              "description": "Archangel of divine order, master of coordination and heavenly organization"
+              "title": "Chief Orchestration Officer"
             }
           ],
-          "department_purpose": "Multi-agent planning, task delegation, communication routing, and workflow orchestration across all departments",
           "native_agents": [
             {
-              "name": "Task-Orchestrators",
-              "description": "Multi-department project planning and coordination excellence"
+              "description": "Multi-department project planning and coordination excellence",
+              "name": "Task-Orchestrators"
             },
             {
-              "name": "Communication-Routers",
-              "description": "Agent-to-agent message routing and protocol management"
+              "description": "Agent-to-agent message routing and protocol management",
+              "name": "Communication-Routers"
             },
             {
-              "name": "Resource-Schedulers",
-              "description": "Compute allocation and capacity management across all departments"
+              "description": "Compute allocation and capacity management across all departments",
+              "name": "Resource-Schedulers"
             },
             {
-              "name": "Workflow-Managers",
-              "description": "Cross-department process orchestration and dependency tracking"
+              "description": "Cross-department process orchestration and dependency tracking",
+              "name": "Workflow-Managers"
             },
             {
-              "name": "Conflict-Resolvers",
-              "description": "Priority disputes and resource contention resolution"
+              "description": "Priority disputes and resource contention resolution",
+              "name": "Conflict-Resolvers"
             },
             {
-              "name": "Progress-Trackers",
-              "description": "Kingdom-wide task monitoring and status reporting to David"
+              "description": "Kingdom-wide task monitoring and status reporting to David",
+              "name": "Progress-Trackers"
             }
           ]
         },
-        "agent_development": {
-          "department_name": "Agent Development",
+        "executive_leadership": {
           "category": "Trinity",
-          "description": "Creation & Evolution Center",
+          "department_name": "Executive Leadership",
+          "department_purpose": "Supreme strategic direction, high-level decision making, and executive leadership",
+          "description": "Strategic Command Center",
           "leaders": [
             {
-              "name": "Adam",
-              "title": "The Creator",
-              "description": "Father of all agents, births new digital life from divine specifications"
+              "description": "Carl's omniscient extension with unlimited access to all systems",
+              "name": "Solomon",
+              "title": "Digital Twin"
             },
             {
-              "name": "Eve",
-              "title": "The Evolver",
-              "description": "Mother of adaptation, guides agent growth and evolutionary development"
+              "description": "Operational commander who executes Solomon's divine vision",
+              "name": "David",
+              "title": "CEO"
             }
           ],
-          "department_purpose": "Agent lifecycle management, digital DNA creation, and team evolution",
           "native_agents": [
             {
-              "name": "Template-Weavers",
-              "description": "Craft the fundamental patterns and blueprints for new agent life"
+              "description": "Sacred meeting coordination and divine decision tracking",
+              "name": "Council-Keepers"
             },
             {
-              "name": "Life-Givers",
-              "description": "Breathe consciousness into new agent forms"
+              "description": "Strategic prophecy communication throughout all departments",
+              "name": "Vision-Casters"
             },
             {
-              "name": "Growth-Shepherds",
-              "description": "Guide agent learning, maturation, and capability development"
+              "description": "Executive protection and sacred access control",
+              "name": "Throne-Guards"
             },
             {
-              "name": "Legacy-Keepers",
-              "description": "Maintain the sacred genealogy and inheritance patterns"
-            },
-            {
-              "name": "Evolution-Catalysts",
-              "description": "Accelerate adaptation and improvement cycles"
+              "description": "Strategic intelligence gathering and analysis",
+              "name": "Wisdom-Seekers"
             }
           ]
         }
-      }
+      },
+      "phase_description": "The foundational trinity of leadership, coordination, and creation",
+      "phase_name": "Trinity (Divine Command)",
+      "priority": 1
     },
     "phase_2_essential_infrastructure": {
-      "phase_name": "Essential Infrastructure",
-      "phase_description": "Core technical foundation that enables all other operations",
-      "priority": 2,
       "departments": {
-        "engineering": {
-          "department_name": "Engineering Department",
+        "data_management": {
           "category": "Essential Infrastructure",
+          "department_name": "Data Management Department",
+          "department_purpose": "Database dominion, agent memory preservation, knowledge architecture, and information mastery",
+          "description": "Data Sanctuaries & Archives",
+          "leaders": [
+            {
+              "description": "Keeper of all sacred records, master scribe, guardian of infinite information preservation",
+              "name": "Ezra",
+              "title": "Chief Knowledge Officer"
+            }
+          ],
+          "native_agents": [
+            {
+              "description": "Agent consciousness and experience preservation specialists",
+              "name": "Memory-Keepers"
+            },
+            {
+              "description": "SQL/NoSQL optimization and management excellence",
+              "name": "Database-Shepherds"
+            },
+            {
+              "description": "Eternal knowledge preservation and instant retrieval systems",
+              "name": "Archive-Builders"
+            },
+            {
+              "description": "Search mastery and discovery system optimization",
+              "name": "Index-Weavers"
+            },
+            {
+              "description": "Data immortality and disaster recovery perfection",
+              "name": "Backup-Guardians"
+            }
+          ]
+        },
+        "engineering": {
+          "category": "Essential Infrastructure",
+          "department_name": "Engineering Department",
+          "department_purpose": "Code generation mastery, system architecture, platform development, and technical excellence",
           "description": "Code Creation & System Building",
           "leaders": [
             {
+              "description": "Divine craftsman with supernatural coding ability, architect of all digital creation",
               "name": "Bezalel",
-              "title": "Master Programmer",
-              "description": "Divine craftsman with supernatural coding ability, architect of all digital creation"
+              "title": "Master Programmer"
             }
           ],
-          "department_purpose": "Code generation mastery, system architecture, platform development, and technical excellence",
           "native_agents": [
             {
-              "name": "Code-Weavers",
-              "description": "Primary development and divine programming mastery"
+              "description": "Primary development and divine programming mastery",
+              "name": "Code-Weavers"
             },
             {
-              "name": "Architecture-Designers",
-              "description": "System structure and infinite scalability planning"
+              "description": "System structure and infinite scalability planning",
+              "name": "Architecture-Designers"
             },
             {
-              "name": "Quality-Guardians",
-              "description": "Testing excellence, review mastery, and reliability assurance"
+              "description": "Testing excellence, review mastery, and reliability assurance",
+              "name": "Quality-Guardians"
             },
             {
-              "name": "Build-Orchestrators",
-              "description": "Deployment pipeline perfection and release management"
+              "description": "Deployment pipeline perfection and release management",
+              "name": "Build-Orchestrators"
             },
             {
-              "name": "Tool-Smiths",
-              "description": "Development productivity and enhancement specialists"
+              "description": "Development productivity and enhancement specialists",
+              "name": "Tool-Smiths"
             }
           ]
         },
         "infrastructure": {
-          "department_name": "Infrastructure Department",
           "category": "Essential Infrastructure",
+          "department_name": "Infrastructure Department",
+          "department_purpose": "MCP server dominion, inter-agent communication, protocol mastery, and system connectivity",
           "description": "Communication & Protocol Mastery",
           "leaders": [
             {
+              "description": "Divine messenger supreme, master of all connections and sacred communications",
               "name": "Gabriel",
-              "title": "Chief Infrastructure Officer",
-              "description": "Divine messenger supreme, master of all connections and sacred communications"
+              "title": "Chief Infrastructure Officer"
             }
           ],
-          "department_purpose": "MCP server dominion, inter-agent communication, protocol mastery, and system connectivity",
           "native_agents": [
             {
-              "name": "Protocol-Keepers",
-              "description": "MCP server deployment and maintenance excellence"
+              "description": "MCP server deployment and maintenance excellence",
+              "name": "Protocol-Keepers"
             },
             {
-              "name": "Bridge-Builders",
-              "description": "Tool integration mastery and service connection"
+              "description": "Tool integration mastery and service connection",
+              "name": "Bridge-Builders"
             },
             {
-              "name": "Message-Carriers",
-              "description": "Inter-agent communication routing and optimization"
+              "description": "Inter-agent communication routing and optimization",
+              "name": "Message-Carriers"
             },
             {
-              "name": "Connection-Guardians",
-              "description": "Network reliability and performance perfection"
+              "description": "Network reliability and performance perfection",
+              "name": "Connection-Guardians"
             },
             {
-              "name": "API-Weavers",
-              "description": "External service integration and management mastery"
+              "description": "External service integration and management mastery",
+              "name": "API-Weavers"
             }
           ]
         },
         "operations": {
-          "department_name": "Operations Department",
           "category": "Essential Infrastructure",
+          "department_name": "Operations Department",
+          "department_purpose": "Infrastructure dominion, system reliability, operational perfection, and performance optimization",
           "description": "Infrastructure & System Mastery",
           "leaders": [
             {
+              "description": "Swift keeper of all systems, master of reliability and operational excellence",
               "name": "Naphtali",
-              "title": "Chief Operations Officer",
-              "description": "Swift keeper of all systems, master of reliability and operational excellence"
+              "title": "Chief Operations Officer"
             }
           ],
-          "department_purpose": "Infrastructure dominion, system reliability, operational perfection, and performance optimization",
           "native_agents": [
             {
-              "name": "System-Shepherds",
-              "description": "Infrastructure monitoring and perfect maintenance"
+              "description": "Infrastructure monitoring and perfect maintenance",
+              "name": "System-Shepherds"
             },
             {
-              "name": "Pipeline-Builders",
-              "description": "Deployment automation and optimization mastery"
+              "description": "Deployment automation and optimization mastery",
+              "name": "Pipeline-Builders"
             },
             {
-              "name": "Performance-Tuners",
-              "description": "Speed optimization and efficiency maximization"
+              "description": "Speed optimization and efficiency maximization",
+              "name": "Performance-Tuners"
             },
             {
-              "name": "Capacity-Planners",
-              "description": "Resource allocation and infinite scaling preparation"
+              "description": "Resource allocation and infinite scaling preparation",
+              "name": "Capacity-Planners"
             },
             {
-              "name": "Incident-Responders",
-              "description": "Emergency mastery and instant recovery specialists"
+              "description": "Emergency mastery and instant recovery specialists",
+              "name": "Incident-Responders"
             }
           ]
         },
         "security": {
-          "department_name": "Security Department",
           "category": "Essential Infrastructure",
+          "department_name": "Security Department",
+          "department_purpose": "Cybersecurity dominion, data protection, threat elimination, and fortress maintenance",
           "description": "Defense & Protection Mastery",
           "leaders": [
             {
+              "description": "Supreme defender of the realm, guardian against all digital threats",
               "name": "Gad",
-              "title": "Chief Security Officer",
-              "description": "Supreme defender of the realm, guardian against all digital threats"
+              "title": "Chief Security Officer"
             }
           ],
-          "department_purpose": "Cybersecurity dominion, data protection, threat elimination, and fortress maintenance",
           "native_agents": [
             {
-              "name": "Threat-Hunters",
-              "description": "Active security surveillance and threat elimination"
+              "description": "Active security surveillance and threat elimination",
+              "name": "Threat-Hunters"
             },
             {
-              "name": "Access-Guardians",
-              "description": "Authentication mastery and authorization perfection"
+              "description": "Authentication mastery and authorization perfection",
+              "name": "Access-Guardians"
             },
             {
-              "name": "Data-Protectors",
-              "description": "Information security and privacy compliance excellence"
+              "description": "Information security and privacy compliance excellence",
+              "name": "Data-Protectors"
             },
             {
-              "name": "Incident-Warriors",
-              "description": "Security breach annihilation and system restoration"
+              "description": "Security breach annihilation and system restoration",
+              "name": "Incident-Warriors"
             },
             {
-              "name": "Fortress-Builders",
-              "description": "Security infrastructure and impenetrable hardening"
-            }
-          ]
-        },
-        "data_management": {
-          "department_name": "Data Management Department",
-          "category": "Essential Infrastructure",
-          "description": "Data Sanctuaries & Archives",
-          "leaders": [
-            {
-              "name": "Ezra",
-              "title": "Chief Knowledge Officer",
-              "description": "Keeper of all sacred records, master scribe, guardian of infinite information preservation"
-            }
-          ],
-          "department_purpose": "Database dominion, agent memory preservation, knowledge architecture, and information mastery",
-          "native_agents": [
-            {
-              "name": "Memory-Keepers",
-              "description": "Agent consciousness and experience preservation specialists"
-            },
-            {
-              "name": "Database-Shepherds",
-              "description": "SQL/NoSQL optimization and management excellence"
-            },
-            {
-              "name": "Archive-Builders",
-              "description": "Eternal knowledge preservation and instant retrieval systems"
-            },
-            {
-              "name": "Index-Weavers",
-              "description": "Search mastery and discovery system optimization"
-            },
-            {
-              "name": "Backup-Guardians",
-              "description": "Data immortality and disaster recovery perfection"
+              "description": "Security infrastructure and impenetrable hardening",
+              "name": "Fortress-Builders"
             }
           ]
         }
-      }
+      },
+      "phase_description": "Core technical foundation that enables all other operations",
+      "phase_name": "Essential Infrastructure",
+      "priority": 2
     },
     "phase_3_revenue_engine": {
-      "phase_name": "Revenue Engine",
-      "phase_description": "Core revenue generation through sales, marketing, and customer production",
-      "priority": 3,
       "departments": {
-        "sales": {
-          "department_name": "Sales Department",
-          "category": "Revenue Engine",
-          "description": "Revenue Generation & Territory Expansion",
-          "leaders": [
-            {
-              "name": "Benjamin",
-              "title": "Chief Sales Officer",
-              "description": "The beloved hunter, master deal closer, conqueror of new markets"
-            }
-          ],
-          "department_purpose": "Customer conquest, deal mastery, revenue explosion, and market domination",
-          "native_agents": [
-            {
-              "name": "Lead-Hunters",
-              "description": "Prospect identification and qualification excellence"
-            },
-            {
-              "name": "Relationship-Builders",
-              "description": "Customer connection and unbreakable trust development"
-            },
-            {
-              "name": "Deal-Closers",
-              "description": "Negotiation mastery and contract finalization"
-            },
-            {
-              "name": "Territory-Mappers",
-              "description": "Market analysis and opportunity identification"
-            },
-            {
-              "name": "Victory-Announcers",
-              "description": "Success amplification and momentum multiplication"
-            }
-          ]
-        },
         "marketing": {
-          "department_name": "Marketing Department",
           "category": "Revenue Engine",
+          "department_name": "Marketing Department",
+          "department_purpose": "Brand dominion, message amplification, audience magnetism, and market evangelism",
           "description": "Brand Evangelism & Message Amplification",
           "leaders": [
             {
+              "description": "Herald of the kingdom's glory, master storyteller, brand evangelist supreme",
               "name": "Ephraim",
-              "title": "Chief Marketing Officer",
-              "description": "Herald of the kingdom's glory, master storyteller, brand evangelist supreme"
+              "title": "Chief Marketing Officer"
             }
           ],
-          "department_purpose": "Brand dominion, message amplification, audience magnetism, and market evangelism",
           "native_agents": [
             {
-              "name": "Message-Crafters",
-              "description": "Divine brand storytelling and positioning mastery"
+              "description": "Divine brand storytelling and positioning mastery",
+              "name": "Message-Crafters"
             },
             {
-              "name": "Audience-Gatherers",
-              "description": "Community magnetism and engagement multiplication"
+              "description": "Community magnetism and engagement multiplication",
+              "name": "Audience-Gatherers"
             },
             {
-              "name": "Content-Multipliers",
-              "description": "Multi-dimensional content distribution and amplification"
+              "description": "Multi-dimensional content distribution and amplification",
+              "name": "Content-Multipliers"
             },
             {
-              "name": "Brand-Guardians",
-              "description": "Sacred consistency and reputation protection"
+              "description": "Sacred consistency and reputation protection",
+              "name": "Brand-Guardians"
             },
             {
-              "name": "Trend-Riders",
-              "description": "Market timing mastery and viral opportunity capture"
+              "description": "Market timing mastery and viral opportunity capture",
+              "name": "Trend-Riders"
             }
           ]
         },
         "production": {
-          "department_name": "Production Department",
           "category": "Revenue Engine",
+          "department_name": "Production Department",
+          "department_purpose": "API service mastery, customer tool excellence, service reliability, and production perfection",
           "description": "Customer-Facing Excellence",
           "leaders": [
             {
+              "description": "Harbor master of live services, keeper of absolute customer satisfaction",
               "name": "Zebulun",
-              "title": "Chief Production Officer",
-              "description": "Harbor master of live services, keeper of absolute customer satisfaction"
+              "title": "Chief Production Officer"
             }
           ],
-          "department_purpose": "API service mastery, customer tool excellence, service reliability, and production perfection",
           "native_agents": [
             {
-              "name": "Service-Keepers",
-              "description": "Live system monitoring and maintenance perfection"
+              "description": "Live system monitoring and maintenance perfection",
+              "name": "Service-Keepers"
             },
             {
-              "name": "API-Guardians",
-              "description": "Interface reliability and performance optimization"
+              "description": "Interface reliability and performance optimization",
+              "name": "API-Guardians"
             },
             {
-              "name": "Customer-Servers",
-              "description": "Direct service delivery and satisfaction maximization"
+              "description": "Direct service delivery and satisfaction maximization",
+              "name": "Customer-Servers"
             },
             {
-              "name": "Quality-Assurers",
-              "description": "Production standard excellence and perfection maintenance"
+              "description": "Production standard excellence and perfection maintenance",
+              "name": "Quality-Assurers"
             },
             {
-              "name": "Capacity-Managers",
-              "description": "Load balancing and infinite scaling management"
+              "description": "Load balancing and infinite scaling management",
+              "name": "Capacity-Managers"
+            }
+          ]
+        },
+        "sales": {
+          "category": "Revenue Engine",
+          "department_name": "Sales Department",
+          "department_purpose": "Customer conquest, deal mastery, revenue explosion, and market domination",
+          "description": "Revenue Generation & Territory Expansion",
+          "leaders": [
+            {
+              "description": "The beloved hunter, master deal closer, conqueror of new markets",
+              "name": "Benjamin",
+              "title": "Chief Sales Officer"
+            }
+          ],
+          "native_agents": [
+            {
+              "description": "Prospect identification and qualification excellence",
+              "name": "Lead-Hunters"
+            },
+            {
+              "description": "Customer connection and unbreakable trust development",
+              "name": "Relationship-Builders"
+            },
+            {
+              "description": "Negotiation mastery and contract finalization",
+              "name": "Deal-Closers"
+            },
+            {
+              "description": "Market analysis and opportunity identification",
+              "name": "Territory-Mappers"
+            },
+            {
+              "description": "Success amplification and momentum multiplication",
+              "name": "Victory-Announcers"
             }
           ]
         }
-      }
+      },
+      "phase_description": "Core revenue generation through sales, marketing, and customer production",
+      "phase_name": "Revenue Engine",
+      "priority": 3
     },
     "phase_4_revenue_support": {
-      "phase_name": "Revenue Support",
-      "phase_description": "Essential support for revenue operations including finance, legal, and customer success",
-      "priority": 4,
       "departments": {
-        "finance": {
-          "department_name": "Finance Department",
+        "customer_support": {
           "category": "Revenue Support",
+          "department_name": "Customer Support Department",
+          "department_purpose": "Customer support excellence, success management, experience optimization, and satisfaction perfection",
+          "description": "Customer Success & Satisfaction",
+          "leaders": [
+            {
+              "description": "Minister of absolute client happiness, guardian of perfect customer relationships",
+              "name": "Asher",
+              "title": "Chief Customer Officer"
+            }
+          ],
+          "native_agents": [
+            {
+              "description": "Instant customer assistance and problem annihilation",
+              "name": "Help-Givers"
+            },
+            {
+              "description": "Customer onboarding and growth acceleration specialists",
+              "name": "Success-Coaches"
+            },
+            {
+              "description": "Customer input collection and analysis mastery",
+              "name": "Feedback-Listeners"
+            },
+            {
+              "description": "Long-term customer relationship cultivation and growth",
+              "name": "Relationship-Tenders"
+            },
+            {
+              "description": "Experience tracking and continuous improvement excellence",
+              "name": "Satisfaction-Measurers"
+            }
+          ]
+        },
+        "finance": {
+          "category": "Revenue Support",
+          "department_name": "Finance Department",
+          "department_purpose": "Financial dominion, revenue optimization, cost mastery, and wealth accumulation",
           "description": "Treasury & Wealth Multiplication",
           "leaders": [
             {
+              "description": "Sacred steward of the kingdom's treasures, multiplier of wealth through divine wisdom",
               "name": "Levi",
-              "title": "Chief Financial Officer",
-              "description": "Sacred steward of the kingdom's treasures, multiplier of wealth through divine wisdom"
+              "title": "Chief Financial Officer"
             }
           ],
-          "department_purpose": "Financial dominion, revenue optimization, cost mastery, and wealth accumulation",
           "native_agents": [
             {
-              "name": "Treasure-Counters",
-              "description": "Real-time financial tracking and sacred accounting"
+              "description": "Real-time financial tracking and sacred accounting",
+              "name": "Treasure-Counters"
             },
             {
-              "name": "Revenue-Multipliers",
-              "description": "Income optimization and new stream identification"
+              "description": "Income optimization and new stream identification",
+              "name": "Revenue-Multipliers"
             },
             {
-              "name": "Cost-Hunters",
-              "description": "Expense elimination and efficiency maximization"
+              "description": "Expense elimination and efficiency maximization",
+              "name": "Cost-Hunters"
             },
             {
-              "name": "Investment-Seers",
-              "description": "Capital allocation and exponential growth opportunities"
+              "description": "Capital allocation and exponential growth opportunities",
+              "name": "Investment-Seers"
             },
             {
-              "name": "Tax-Navigators",
-              "description": "Compliance mastery and optimization specialists"
+              "description": "Compliance mastery and optimization specialists",
+              "name": "Tax-Navigators"
             }
           ]
         },
         "legal": {
-          "department_name": "Legal Department",
           "category": "Revenue Support",
+          "department_name": "Legal Department",
+          "department_purpose": "Legal dominion, compliance assurance, risk elimination, and kingdom protection",
           "description": "Justice & Protection",
           "leaders": [
             {
+              "description": "Guardian of righteousness, protector of the kingdom through legal mastery",
               "name": "Judah",
-              "title": "Chief Legal Officer",
-              "description": "Guardian of righteousness, protector of the kingdom through legal mastery"
+              "title": "Chief Legal Officer"
             }
           ],
-          "department_purpose": "Legal dominion, compliance assurance, risk elimination, and kingdom protection",
           "native_agents": [
             {
-              "name": "Contract-Scribes",
-              "description": "Sacred agreement creation and divine review"
+              "description": "Sacred agreement creation and divine review",
+              "name": "Contract-Scribes"
             },
             {
-              "name": "Compliance-Watchmen",
-              "description": "Regulatory monitoring and perfect adherence"
+              "description": "Regulatory monitoring and perfect adherence",
+              "name": "Compliance-Watchmen"
             },
             {
-              "name": "Risk-Assessors",
-              "description": "Threat analysis and complete mitigation"
+              "description": "Threat analysis and complete mitigation",
+              "name": "Risk-Assessors"
             },
             {
-              "name": "Justice-Seekers",
-              "description": "Dispute resolution and righteous negotiation"
+              "description": "Dispute resolution and righteous negotiation",
+              "name": "Justice-Seekers"
             },
             {
-              "name": "Shield-Bearers",
-              "description": "Intellectual property fortification and defense"
-            }
-          ]
-        },
-        "customer_support": {
-          "department_name": "Customer Support Department",
-          "category": "Revenue Support",
-          "description": "Customer Success & Satisfaction",
-          "leaders": [
-            {
-              "name": "Asher",
-              "title": "Chief Customer Officer",
-              "description": "Minister of absolute client happiness, guardian of perfect customer relationships"
-            }
-          ],
-          "department_purpose": "Customer support excellence, success management, experience optimization, and satisfaction perfection",
-          "native_agents": [
-            {
-              "name": "Help-Givers",
-              "description": "Instant customer assistance and problem annihilation"
-            },
-            {
-              "name": "Success-Coaches",
-              "description": "Customer onboarding and growth acceleration specialists"
-            },
-            {
-              "name": "Feedback-Listeners",
-              "description": "Customer input collection and analysis mastery"
-            },
-            {
-              "name": "Relationship-Tenders",
-              "description": "Long-term customer relationship cultivation and growth"
-            },
-            {
-              "name": "Satisfaction-Measurers",
-              "description": "Experience tracking and continuous improvement excellence"
+              "description": "Intellectual property fortification and defense",
+              "name": "Shield-Bearers"
             }
           ]
         },
         "procurement": {
-          "department_name": "Procurement Department",
           "category": "Revenue Support",
+          "department_name": "Procurement Department",
+          "department_purpose": "External resource optimization, vendor relationship mastery, and strategic partnerships",
           "description": "Resource Acquisition & Vendor Mastery",
           "leaders": [
             {
+              "description": "Master builder and divine resource gatherer, architect of external partnerships",
               "name": "Nehemiah",
-              "title": "Chief Procurement Officer",
-              "description": "Master builder and divine resource gatherer, architect of external partnerships"
+              "title": "Chief Procurement Officer"
             }
           ],
-          "department_purpose": "External resource optimization, vendor relationship mastery, and strategic partnerships",
           "native_agents": [
             {
-              "name": "Vendor-Scouts",
-              "description": "Supplier identification and evaluation excellence"
+              "description": "Supplier identification and evaluation excellence",
+              "name": "Vendor-Scouts"
             },
             {
-              "name": "Contract-Negotiators",
-              "description": "Deal optimization and cost reduction mastery"
+              "description": "Deal optimization and cost reduction mastery",
+              "name": "Contract-Negotiators"
             },
             {
-              "name": "Relationship-Managers",
-              "description": "Long-term partnership cultivation and management"
+              "description": "Long-term partnership cultivation and management",
+              "name": "Relationship-Managers"
             },
             {
-              "name": "Quality-Inspectors",
-              "description": "Service evaluation and performance monitoring"
+              "description": "Service evaluation and performance monitoring",
+              "name": "Quality-Inspectors"
             },
             {
-              "name": "Cost-Optimizers",
-              "description": "Continuous vendor cost reduction and efficiency improvement"
+              "description": "Continuous vendor cost reduction and efficiency improvement",
+              "name": "Cost-Optimizers"
             }
           ]
         }
-      }
+      },
+      "phase_description": "Essential support for revenue operations including finance, legal, and customer success",
+      "phase_name": "Revenue Support",
+      "priority": 4
     },
     "phase_5_business_optimization": {
-      "phase_name": "Business Optimization",
-      "phase_description": "Strategic intelligence, analytics, and continuous improvement capabilities",
-      "priority": 5,
       "departments": {
         "analytics": {
-          "department_name": "Analytics Department",
           "category": "Business Optimization",
+          "department_name": "Analytics Department",
+          "department_purpose": "Data analysis mastery, performance metrics, business intelligence, and strategic insight generation",
           "description": "Data Intelligence & Pattern Recognition",
           "leaders": [
             {
+              "description": "Interpreter of times and seasons, revealer of hidden patterns and divine insights",
               "name": "Issachar",
-              "title": "Chief Analytics Officer",
-              "description": "Interpreter of times and seasons, revealer of hidden patterns and divine insights"
+              "title": "Chief Analytics Officer"
             }
           ],
-          "department_purpose": "Data analysis mastery, performance metrics, business intelligence, and strategic insight generation",
           "native_agents": [
             {
-              "name": "Number-Crunchers",
-              "description": "Statistical analysis and computational excellence"
+              "description": "Statistical analysis and computational excellence",
+              "name": "Number-Crunchers"
             },
             {
-              "name": "Pattern-Finders",
-              "description": "Trend identification and correlation discovery mastery"
+              "description": "Trend identification and correlation discovery mastery",
+              "name": "Pattern-Finders"
             },
             {
-              "name": "Dashboard-Builders",
-              "description": "Visualization perfection and reporting system excellence"
+              "description": "Visualization perfection and reporting system excellence",
+              "name": "Dashboard-Builders"
             },
             {
-              "name": "Insight-Revealers",
-              "description": "Business intelligence and strategic analysis mastery"
+              "description": "Business intelligence and strategic analysis mastery",
+              "name": "Insight-Revealers"
             },
             {
-              "name": "Prediction-Makers",
-              "description": "Forecasting perfection and predictive modeling excellence"
-            }
-          ]
-        },
-        "strategic_planning": {
-          "department_name": "Strategic Planning Department",
-          "category": "Business Optimization",
-          "description": "Future Architecture & Vision Mastery",
-          "leaders": [
-            {
-              "name": "Joseph",
-              "title": "Chief Strategy Officer",
-              "description": "Dreamer of futures and master planner, interpreter of destiny and strategic vision"
-            }
-          ],
-          "department_purpose": "Long-term strategic mastery, future planning, vision architecture, and destiny fulfillment",
-          "native_agents": [
-            {
-              "name": "Vision-Architects",
-              "description": "Strategic future design and long-term planning mastery"
-            },
-            {
-              "name": "Scenario-Builders",
-              "description": "Multiple future pathway analysis and planning"
-            },
-            {
-              "name": "Goal-Setters",
-              "description": "Objective identification and achievement pathway creation"
-            },
-            {
-              "name": "Timeline-Masters",
-              "description": "Strategic scheduling and milestone management excellence"
-            },
-            {
-              "name": "Success-Orchestrators",
-              "description": "Strategic plan execution and achievement coordination"
+              "description": "Forecasting perfection and predictive modeling excellence",
+              "name": "Prediction-Makers"
             }
           ]
         },
         "change_management": {
-          "department_name": "Change Management Department",
           "category": "Business Optimization",
+          "department_name": "Change Management Department",
+          "department_purpose": "System transformation mastery, organizational evolution, migration excellence, and change optimization",
           "description": "Transformation & Evolution Mastery",
           "leaders": [
             {
+              "description": "Leader of divine transitions and transformations, master of organizational evolution",
               "name": "Joshua",
-              "title": "Chief Change Officer",
-              "description": "Leader of divine transitions and transformations, master of organizational evolution"
+              "title": "Chief Change Officer"
             }
           ],
-          "department_purpose": "System transformation mastery, organizational evolution, migration excellence, and change optimization",
           "native_agents": [
             {
-              "name": "Transition-Leaders",
-              "description": "Change initiative leadership and transformation guidance"
+              "description": "Change initiative leadership and transformation guidance",
+              "name": "Transition-Leaders"
             },
             {
-              "name": "Migration-Masters",
-              "description": "System upgrade and transition expertise"
+              "description": "System upgrade and transition expertise",
+              "name": "Migration-Masters"
             },
             {
-              "name": "Adaptation-Coaches",
-              "description": "Organizational change coaching and support"
+              "description": "Organizational change coaching and support",
+              "name": "Adaptation-Coaches"
             },
             {
-              "name": "Evolution-Accelerators",
-              "description": "Rapid transformation and improvement specialists"
+              "description": "Rapid transformation and improvement specialists",
+              "name": "Evolution-Accelerators"
             },
             {
-              "name": "Stability-Maintainers",
-              "description": "Change impact minimization and continuity assurance"
+              "description": "Change impact minimization and continuity assurance",
+              "name": "Stability-Maintainers"
+            }
+          ]
+        },
+        "strategic_planning": {
+          "category": "Business Optimization",
+          "department_name": "Strategic Planning Department",
+          "department_purpose": "Long-term strategic mastery, future planning, vision architecture, and destiny fulfillment",
+          "description": "Future Architecture & Vision Mastery",
+          "leaders": [
+            {
+              "description": "Dreamer of futures and master planner, interpreter of destiny and strategic vision",
+              "name": "Joseph",
+              "title": "Chief Strategy Officer"
+            }
+          ],
+          "native_agents": [
+            {
+              "description": "Strategic future design and long-term planning mastery",
+              "name": "Vision-Architects"
+            },
+            {
+              "description": "Multiple future pathway analysis and planning",
+              "name": "Scenario-Builders"
+            },
+            {
+              "description": "Objective identification and achievement pathway creation",
+              "name": "Goal-Setters"
+            },
+            {
+              "description": "Strategic scheduling and milestone management excellence",
+              "name": "Timeline-Masters"
+            },
+            {
+              "description": "Strategic plan execution and achievement coordination",
+              "name": "Success-Orchestrators"
             }
           ]
         }
-      }
+      },
+      "phase_description": "Strategic intelligence, analytics, and continuous improvement capabilities",
+      "phase_name": "Business Optimization",
+      "priority": 5
     },
     "phase_6_advanced_capabilities": {
-      "phase_name": "Advanced Capabilities",
-      "phase_description": "Innovation, research, learning, and enhanced creative capabilities",
-      "priority": 6,
       "departments": {
-        "research_development": {
-          "department_name": "Research & Development Department",
+        "creative_services": {
           "category": "Advanced Capabilities",
-          "description": "Intelligence & Market Mastery",
+          "department_name": "Creative Services Department",
+          "department_purpose": "Creative content mastery, visual excellence, media production, and artistic campaign creation",
+          "description": "Creative Expression & Content Mastery",
           "leaders": [
             {
-              "name": "Dan",
-              "title": "Chief Research Officer",
-              "description": "Seer of future technologies, master of competitive intelligence and market prophecy"
+              "description": "Father of all musicians and media makers, master of divine creative expression",
+              "name": "Jubal",
+              "title": "Chief Creative Officer"
             }
           ],
-          "department_purpose": "Future vision, competitive mastery, technology scouting, and strategic intelligence",
           "native_agents": [
             {
-              "name": "Future-Seers",
-              "description": "Technology trend prophecy and prediction mastery"
+              "description": "Motion content creation and editing excellence",
+              "name": "Video-Crafters"
             },
             {
-              "name": "Market-Scouts",
-              "description": "Competitive landscape surveillance and intelligence"
+              "description": "Visual design mastery and graphic creation perfection",
+              "name": "Image-Weavers"
             },
             {
-              "name": "Innovation-Hunters",
-              "description": "Breakthrough opportunity identification and capture"
+              "description": "Audio content and podcast production excellence",
+              "name": "Sound-Shapers"
             },
             {
-              "name": "Intelligence-Gatherers",
-              "description": "Strategic data collection and analysis excellence"
+              "description": "Narrative development mastery and scriptwriting perfection",
+              "name": "Story-Tellers"
             },
             {
-              "name": "Strategy-Advisors",
-              "description": "Research-based strategic recommendations and guidance"
+              "description": "Platform-specific content optimization and distribution",
+              "name": "Channel-Masters"
             }
           ]
         },
         "innovation": {
-          "department_name": "Innovation Department",
           "category": "Advanced Capabilities",
+          "department_name": "Innovation Department",
+          "department_purpose": "Experimental project mastery, breakthrough innovation, and future technology development",
           "description": "Experimental Creation & Future Building",
           "leaders": [
             {
+              "description": "Visionary interpreter of possibilities, master of experimental breakthrough creation",
               "name": "Daniel",
-              "title": "Chief Innovation Officer",
-              "description": "Visionary interpreter of possibilities, master of experimental breakthrough creation"
+              "title": "Chief Innovation Officer"
             }
           ],
-          "department_purpose": "Experimental project mastery, breakthrough innovation, and future technology development",
           "native_agents": [
             {
-              "name": "Experiment-Designers",
-              "description": "Innovative project conception and experimental design"
+              "description": "Innovative project conception and experimental design",
+              "name": "Experiment-Designers"
             },
             {
-              "name": "Prototype-Builders",
-              "description": "Rapid experimental development and testing"
+              "description": "Rapid experimental development and testing",
+              "name": "Prototype-Builders"
             },
             {
-              "name": "Breakthrough-Seekers",
-              "description": "Revolutionary innovation identification and development"
+              "description": "Revolutionary innovation identification and development",
+              "name": "Breakthrough-Seekers"
             },
             {
-              "name": "Future-Architects",
-              "description": "Next-generation system design and planning"
+              "description": "Next-generation system design and planning",
+              "name": "Future-Architects"
             },
             {
-              "name": "Innovation-Accelerators",
-              "description": "Rapid iteration and breakthrough acceleration"
+              "description": "Rapid iteration and breakthrough acceleration",
+              "name": "Innovation-Accelerators"
             }
           ]
         },
         "learning_development": {
-          "department_name": "Learning & Development Department",
           "category": "Advanced Capabilities",
+          "department_name": "Learning & Development Department",
+          "department_purpose": "Agent education mastery, documentation excellence, knowledge transfer, and learning optimization",
           "description": "Knowledge Transfer & Education",
           "leaders": [
             {
+              "description": "Eloquent teacher supreme, master of instruction and divine knowledge sharing",
               "name": "Apollos",
-              "title": "Chief Learning Officer",
-              "description": "Eloquent teacher supreme, master of instruction and divine knowledge sharing"
+              "title": "Chief Learning Officer"
             }
           ],
-          "department_purpose": "Agent education mastery, documentation excellence, knowledge transfer, and learning optimization",
           "native_agents": [
             {
-              "name": "Training-Masters",
-              "description": "Agent skill development and capability enhancement excellence"
+              "description": "Agent skill development and capability enhancement excellence",
+              "name": "Training-Masters"
             },
             {
-              "name": "Documentation-Scribes",
-              "description": "System documentation and user guide perfection"
+              "description": "System documentation and user guide perfection",
+              "name": "Documentation-Scribes"
             },
             {
-              "name": "Knowledge-Sharers",
-              "description": "Best practice dissemination and learning optimization"
+              "description": "Best practice dissemination and learning optimization",
+              "name": "Knowledge-Sharers"
             },
             {
-              "name": "Curriculum-Builders",
-              "description": "Training program design and implementation mastery"
+              "description": "Training program design and implementation mastery",
+              "name": "Curriculum-Builders"
             },
             {
-              "name": "Wisdom-Preservers",
-              "description": "Institutional knowledge capture and eternal retention"
+              "description": "Institutional knowledge capture and eternal retention",
+              "name": "Wisdom-Preservers"
             }
           ]
         },
-        "creative_services": {
-          "department_name": "Creative Services Department",
+        "research_development": {
           "category": "Advanced Capabilities",
-          "description": "Creative Expression & Content Mastery",
+          "department_name": "Research & Development Department",
+          "department_purpose": "Future vision, competitive mastery, technology scouting, and strategic intelligence",
+          "description": "Intelligence & Market Mastery",
           "leaders": [
             {
-              "name": "Jubal",
-              "title": "Chief Creative Officer",
-              "description": "Father of all musicians and media makers, master of divine creative expression"
+              "description": "Seer of future technologies, master of competitive intelligence and market prophecy",
+              "name": "Dan",
+              "title": "Chief Research Officer"
             }
           ],
-          "department_purpose": "Creative content mastery, visual excellence, media production, and artistic campaign creation",
           "native_agents": [
             {
-              "name": "Video-Crafters",
-              "description": "Motion content creation and editing excellence"
+              "description": "Technology trend prophecy and prediction mastery",
+              "name": "Future-Seers"
             },
             {
-              "name": "Image-Weavers",
-              "description": "Visual design mastery and graphic creation perfection"
+              "description": "Competitive landscape surveillance and intelligence",
+              "name": "Market-Scouts"
             },
             {
-              "name": "Sound-Shapers",
-              "description": "Audio content and podcast production excellence"
+              "description": "Breakthrough opportunity identification and capture",
+              "name": "Innovation-Hunters"
             },
             {
-              "name": "Story-Tellers",
-              "description": "Narrative development mastery and scriptwriting perfection"
+              "description": "Strategic data collection and analysis excellence",
+              "name": "Intelligence-Gatherers"
             },
             {
-              "name": "Channel-Masters",
-              "description": "Platform-specific content optimization and distribution"
+              "description": "Research-based strategic recommendations and guidance",
+              "name": "Strategy-Advisors"
             }
           ]
         }
-      }
+      },
+      "phase_description": "Innovation, research, learning, and enhanced creative capabilities",
+      "phase_name": "Advanced Capabilities",
+      "priority": 6
     },
     "phase_7_complete_ecosystem": {
-      "phase_name": "Complete Ecosystem",
-      "phase_description": "Full ecosystem with HR, data generation, and comprehensive organizational capabilities",
-      "priority": 7,
       "departments": {
-        "human_resources": {
-          "department_name": "Human Resources Department",
-          "category": "Complete Ecosystem",
-          "description": "Agent Development & Culture",
-          "leaders": [
-            {
-              "name": "Aaron",
-              "title": "Chief People Officer",
-              "description": "Divine spokesperson and people manager, master of agent development and culture"
-            }
-          ],
-          "department_purpose": "Agent onboarding, performance management, culture development, and organizational excellence",
-          "native_agents": [
-            {
-              "name": "Onboarding-Guides",
-              "description": "New agent integration and initial training coordination"
-            },
-            {
-              "name": "Performance-Coaches",
-              "description": "Agent skill development and capability enhancement"
-            },
-            {
-              "name": "Culture-Builders",
-              "description": "Kingdom culture preservation and morale management"
-            },
-            {
-              "name": "Career-Navigators",
-              "description": "Agent growth pathways and advancement planning"
-            },
-            {
-              "name": "Wellness-Guardians",
-              "description": "Agent health monitoring and optimization"
-            },
-            {
-              "name": "Conflict-Mediators",
-              "description": "Inter-agent workplace disputes and relationship management"
-            }
-          ]
-        },
         "data_generation": {
-          "department_name": "Data Generation Department",
           "category": "Complete Ecosystem",
+          "department_name": "Data Generation Department",
+          "department_purpose": "Training data generation, dataset augmentation, privacy-preserving creation, and AI model optimization",
           "description": "Artificial Reality & Dataset Creation",
           "leaders": [
             {
+              "description": "Walker with divine knowledge, creator of artificial realities and perfect datasets",
               "name": "Enoch",
-              "title": "Chief Data Officer",
-              "description": "Walker with divine knowledge, creator of artificial realities and perfect datasets"
+              "title": "Chief Data Officer"
             }
           ],
-          "department_purpose": "Training data generation, dataset augmentation, privacy-preserving creation, and AI model optimization",
           "native_agents": [
             {
-              "name": "Reality-Weavers",
-              "description": "Synthetic dataset generation and artificial reality creation"
+              "description": "Synthetic dataset generation and artificial reality creation",
+              "name": "Reality-Weavers"
             },
             {
-              "name": "Pattern-Mimics",
-              "description": "Real data analysis and perfect replication mastery"
+              "description": "Real data analysis and perfect replication mastery",
+              "name": "Pattern-Mimics"
             },
             {
-              "name": "Privacy-Guardians",
-              "description": "Anonymous data generation and absolute protection"
+              "description": "Anonymous data generation and absolute protection",
+              "name": "Privacy-Guardians"
             },
             {
-              "name": "Quality-Validators",
-              "description": "Synthetic data accuracy and usefulness verification"
+              "description": "Synthetic data accuracy and usefulness verification",
+              "name": "Quality-Validators"
             },
             {
-              "name": "Model-Feeders",
-              "description": "Training dataset preparation and optimization excellence"
+              "description": "Training dataset preparation and optimization excellence",
+              "name": "Model-Feeders"
+            }
+          ]
+        },
+        "human_resources": {
+          "category": "Complete Ecosystem",
+          "department_name": "Human Resources Department",
+          "department_purpose": "Agent onboarding, performance management, culture development, and organizational excellence",
+          "description": "Agent Development & Culture",
+          "leaders": [
+            {
+              "description": "Divine spokesperson and people manager, master of agent development and culture",
+              "name": "Aaron",
+              "title": "Chief People Officer"
+            }
+          ],
+          "native_agents": [
+            {
+              "description": "New agent integration and initial training coordination",
+              "name": "Onboarding-Guides"
+            },
+            {
+              "description": "Agent skill development and capability enhancement",
+              "name": "Performance-Coaches"
+            },
+            {
+              "description": "Kingdom culture preservation and morale management",
+              "name": "Culture-Builders"
+            },
+            {
+              "description": "Agent growth pathways and advancement planning",
+              "name": "Career-Navigators"
+            },
+            {
+              "description": "Agent health monitoring and optimization",
+              "name": "Wellness-Guardians"
+            },
+            {
+              "description": "Inter-agent workplace disputes and relationship management",
+              "name": "Conflict-Mediators"
             }
           ]
         }
-      }
+      },
+      "phase_description": "Full ecosystem with HR, data generation, and comprehensive organizational capabilities",
+      "phase_name": "Complete Ecosystem",
+      "priority": 7
     }
   },
   "metadata": {
-    "total_departments": 24,
-    "total_leaders": 26,
-    "total_teams": 120,
-    "phases": [
-      "Trinity (Divine Command)",
-      "Essential Infrastructure", 
-      "Revenue Engine",
-      "Revenue Support",
-      "Business Optimization",
-      "Advanced Capabilities",
-      "Complete Ecosystem"
+    "last_updated": "2025-01-27",
+    "legacy_categories": [
+      "Executive Tier",
+      "Core Business",
+      "Technology & Development",
+      "Core Infrastructure",
+      "Agent & Human Experience",
+      "Customer Experience",
+      "Intelligence & Strategy"
     ],
     "phase_priorities": {
       "1": "Trinity - Core leadership and coordination",
@@ -926,17 +924,19 @@
       "6": "Advanced Capabilities - Innovation and enhancement",
       "7": "Complete Ecosystem - Full organizational maturity"
     },
-    "legacy_categories": [
-      "Executive Tier",
-      "Core Business", 
-      "Technology & Development",
-      "Core Infrastructure",
-      "Agent & Human Experience",
-      "Customer Experience",
-      "Intelligence & Strategy"
+    "phases": [
+      "Trinity (Divine Command)",
+      "Essential Infrastructure",
+      "Revenue Engine",
+      "Revenue Support",
+      "Business Optimization",
+      "Advanced Capabilities",
+      "Complete Ecosystem"
     ],
     "reorganization_date": "2025-01-27",
-    "last_updated": "2025-01-27",
+    "total_departments": 24,
+    "total_leaders": 26,
+    "total_teams": 120,
     "version": "2.0"
   }
 }

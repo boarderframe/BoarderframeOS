@@ -12,7 +12,7 @@ ENHANCED_MESSAGE_BUS_CONFIG = {
         "cleanup_interval_hours": 24,
         "max_message_age_days": 30
     },
-    
+
     # Routing configuration
     "routing": {
         "default_strategy": "capability_based",
@@ -22,7 +22,7 @@ ENHANCED_MESSAGE_BUS_CONFIG = {
         "max_retries": 3,
         "retry_delay_seconds": 1
     },
-    
+
     # Performance monitoring
     "monitoring": {
         "enable_metrics": True,
@@ -30,7 +30,7 @@ ENHANCED_MESSAGE_BUS_CONFIG = {
         "performance_tracking": True,
         "delivery_tracking": True
     },
-    
+
     # Agent discovery
     "discovery": {
         "capability_cache_timeout": 300,  # 5 minutes
@@ -48,7 +48,7 @@ COORDINATION_MANAGER_CONFIG = {
         "step_timeout_minutes": 10,
         "enable_workflow_persistence": True
     },
-    
+
     # Consensus configuration
     "consensus": {
         "default_voting_method": "majority",
@@ -57,7 +57,7 @@ COORDINATION_MANAGER_CONFIG = {
         "max_participants": 20,
         "enable_anonymous_voting": False
     },
-    
+
     # Auction configuration
     "auctions": {
         "default_duration_seconds": 120,  # 2 minutes
@@ -66,7 +66,7 @@ COORDINATION_MANAGER_CONFIG = {
         "enable_sealed_bids": True,
         "auto_award": True
     },
-    
+
     # Coordination patterns
     "patterns": {
         "sequential": {
@@ -99,7 +99,7 @@ AGENT_CONTROLLER_CONFIG = {
         "task_retry_attempts": 3,
         "enable_task_prioritization": True
     },
-    
+
     # Agent management
     "agents": {
         "restart_cooldown_seconds": 60,
@@ -107,7 +107,7 @@ AGENT_CONTROLLER_CONFIG = {
         "max_restart_attempts": 3,
         "graceful_shutdown_timeout": 30
     },
-    
+
     # Coordination features
     "coordination": {
         "enable_enhanced_routing": True,
@@ -116,7 +116,7 @@ AGENT_CONTROLLER_CONFIG = {
         "enable_task_auctions": True,
         "capability_discovery_enabled": True
     },
-    
+
     # Resource limits
     "resources": {
         "max_memory_mb": 1024,
@@ -136,7 +136,7 @@ STANDARD_AGENT_CAPABILITIES = {
         "complexity": "medium"
     },
     "analysis": {
-        "name": "analysis", 
+        "name": "analysis",
         "description": "Data analysis and interpretation",
         "category": "analytical",
         "complexity": "high"
@@ -153,7 +153,7 @@ STANDARD_AGENT_CAPABILITIES = {
         "category": "social",
         "complexity": "low"
     },
-    
+
     # Specialized capabilities
     "strategic_planning": {
         "name": "strategic_planning",
@@ -179,7 +179,7 @@ STANDARD_AGENT_CAPABILITIES = {
         "category": "cognitive",
         "complexity": "high"
     },
-    
+
     # Domain-specific capabilities
     "financial_analysis": {
         "name": "financial_analysis",
@@ -190,7 +190,7 @@ STANDARD_AGENT_CAPABILITIES = {
     "market_research": {
         "name": "market_research",
         "description": "Market analysis and competitive intelligence",
-        "category": "domain", 
+        "category": "domain",
         "complexity": "medium"
     },
     "project_management": {
@@ -216,7 +216,7 @@ COORDINATION_TEMPLATES = {
         "max_participants": 5,
         "typical_use_cases": ["data_pipeline", "approval_workflow", "step_by_step_analysis"]
     },
-    
+
     "parallel_analysis": {
         "name": "Parallel Analysis",
         "description": "Multiple agents analyzing different aspects simultaneously",
@@ -224,7 +224,7 @@ COORDINATION_TEMPLATES = {
         "max_participants": 10,
         "typical_use_cases": ["comprehensive_research", "multi_perspective_analysis"]
     },
-    
+
     "data_pipeline": {
         "name": "Data Processing Pipeline",
         "description": "Sequential data processing with validation stages",
@@ -232,7 +232,7 @@ COORDINATION_TEMPLATES = {
         "max_participants": 8,
         "typical_use_cases": ["data_transformation", "content_processing", "quality_assurance"]
     },
-    
+
     "expert_consensus": {
         "name": "Expert Consensus",
         "description": "Gather expert opinions and reach consensus",
@@ -240,7 +240,7 @@ COORDINATION_TEMPLATES = {
         "max_participants": 15,
         "typical_use_cases": ["decision_making", "expert_consultation", "recommendation_systems"]
     },
-    
+
     "competitive_bidding": {
         "name": "Competitive Task Bidding",
         "description": "Agents compete for task assignments through bidding",
@@ -280,7 +280,7 @@ MESSAGE_ROUTING_CONFIG = {
             "priority": "low"
         }
     },
-    
+
     # Routing rules
     "routing_rules": {
         "high_priority_direct": {
@@ -315,7 +315,7 @@ MONITORING_CONFIG = {
         "aggregate_interval_minutes": 5,
         "enable_real_time_monitoring": True
     },
-    
+
     # Performance thresholds
     "thresholds": {
         "message_delivery_time_ms": 1000,
@@ -324,7 +324,7 @@ MONITORING_CONFIG = {
         "consensus_time_minutes": 5,
         "auction_completion_time_seconds": 120
     },
-    
+
     # Alerting
     "alerts": {
         "enable_performance_alerts": True,
@@ -332,7 +332,7 @@ MONITORING_CONFIG = {
         "enable_capacity_alerts": True,
         "alert_cooldown_minutes": 15
     },
-    
+
     # Dashboard
     "dashboard": {
         "enable_web_dashboard": True,
@@ -350,14 +350,14 @@ SECURITY_CONFIG = {
         "auth_token_expiry_hours": 24,
         "enable_mutual_auth": False
     },
-    
+
     # Message security
     "message_security": {
         "encrypt_sensitive_messages": True,
         "sign_critical_messages": True,
         "validate_message_integrity": True
     },
-    
+
     # Access control
     "access_control": {
         "enable_capability_based_access": True,

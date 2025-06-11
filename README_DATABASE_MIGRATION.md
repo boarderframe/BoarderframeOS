@@ -190,7 +190,7 @@ python mcp/test_database_servers.py
 
 # Expected output:
 # ✅ Health Check: Both passed
-# ✅ Basic Queries: Both passed  
+# ✅ Basic Queries: Both passed
 # 🆕 Vector Operations: PostgreSQL passed, SQLite failed
 # 🆕 Memory Operations: PostgreSQL passed, SQLite failed
 ```

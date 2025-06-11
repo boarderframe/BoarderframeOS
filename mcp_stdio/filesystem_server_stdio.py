@@ -5,16 +5,16 @@ Wraps the HTTP-based filesystem server for use with Claude CLI
 """
 
 import asyncio
-import json
-import sys
-import logging
-from typing import Any, Dict, List, Optional
-from pathlib import Path
-import os
 
 # Handle MCP import conflicts by temporarily modifying sys.path
 import importlib
 import importlib.util
+import json
+import logging
+import os
+import sys
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 # Save original sys.path
 original_path = sys.path.copy()
@@ -31,10 +31,10 @@ for module_name in local_mcp_modules:
 
 try:
     # Import the real MCP package
-    from mcp import types
-    from mcp.server import Server, NotificationOptions
-    from mcp.server.models import InitializationOptions
     import mcp.server.stdio
+    from mcp import types
+    from mcp.server import NotificationOptions, Server
+    from mcp.server.models import InitializationOptions
 finally:
     # Restore original sys.path
     sys.path = original_path
@@ -72,7 +72,7 @@ async def handle_list_tools() -> List[types.Tool]:
             }
         ),
         types.Tool(
-            name="write_file", 
+            name="write_file",
             description="Write file contents",
             inputSchema={
                 "type": "object",
@@ -93,7 +93,7 @@ async def handle_list_tools() -> List[types.Tool]:
             name="list_directory",
             description="List directory contents",
             inputSchema={
-                "type": "object", 
+                "type": "object",
                 "properties": {
                     "path": {
                         "type": "string",
@@ -124,7 +124,7 @@ async def handle_list_tools() -> List[types.Tool]:
                 "type": "object",
                 "properties": {
                     "path": {
-                        "type": "string", 
+                        "type": "string",
                         "description": "Path to delete"
                     }
                 },
@@ -159,7 +159,7 @@ async def read_file(path: str) -> List[types.TextContent]:
         file_path = BASE_PATH / path
         if not file_path.exists():
             return [types.TextContent(type="text", text=f"File not found: {path}")]
-        
+
         content = file_path.read_text(encoding='utf-8')
         return [types.TextContent(type="text", text=content)]
     except Exception as e:
@@ -181,15 +181,15 @@ async def list_directory(path: str) -> List[types.TextContent]:
         dir_path = BASE_PATH / path
         if not dir_path.exists():
             return [types.TextContent(type="text", text=f"Directory not found: {path}")]
-        
+
         if not dir_path.is_dir():
             return [types.TextContent(type="text", text=f"Not a directory: {path}")]
-        
+
         items = []
         for item in sorted(dir_path.iterdir()):
             item_type = "directory" if item.is_dir() else "file"
             items.append(f"{item.name} ({item_type})")
-        
+
         result = f"Contents of {path}:\n" + "\n".join(items)
         return [types.TextContent(type="text", text=result)]
     except Exception as e:
@@ -210,7 +210,7 @@ async def delete_file(path: str) -> List[types.TextContent]:
         file_path = BASE_PATH / path
         if not file_path.exists():
             return [types.TextContent(type="text", text=f"Path not found: {path}")]
-        
+
         if file_path.is_dir():
             import shutil
             shutil.rmtree(file_path)

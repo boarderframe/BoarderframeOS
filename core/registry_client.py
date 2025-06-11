@@ -17,19 +17,30 @@ Features:
 import asyncio
 import json
 import logging
-from typing import Dict, List, Optional, Any, Callable, Union
+from dataclasses import dataclass
 from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional, Union
+
 import aiohttp
 import websockets
 from websockets.exceptions import WebSocketException
-from dataclasses import dataclass
-from enum import Enum
 
 from .enhanced_registry_system import (
-    RegistryType, ServiceStatus, HealthStatus, EventType,
-    BaseRegistryEntry, AgentRegistryEntry, LeaderRegistryEntry,
-    DepartmentRegistryEntry, DivisionRegistryEntry, DatabaseRegistryEntry,
-    ServerRegistryEntry, RegistryEvent, ServerType, LeadershipTier
+    AgentRegistryEntry,
+    BaseRegistryEntry,
+    DatabaseRegistryEntry,
+    DepartmentRegistryEntry,
+    DivisionRegistryEntry,
+    EventType,
+    HealthStatus,
+    LeaderRegistryEntry,
+    LeadershipTier,
+    RegistryEvent,
+    RegistryType,
+    ServerRegistryEntry,
+    ServerType,
+    ServiceStatus,
 )
 
 logger = logging.getLogger(__name__)
@@ -52,7 +63,7 @@ class RegistryClient:
     """
     Async client for the Enhanced Registry System
     """
-    
+
     def __init__(self, config: Optional[RegistryConfig] = None):
         self.config = config or RegistryConfig()
         self.session: Optional[aiohttp.ClientSession] = None
@@ -63,20 +74,20 @@ class RegistryClient:
         self._event_handlers: Dict[EventType, List[Callable]] = {}
         self._cache: Dict[str, Any] = {}
         self._cache_timestamps: Dict[str, float] = {}
-        
+
     async def __aenter__(self):
         await self.connect()
         return self
-        
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.disconnect()
-        
+
     async def connect(self):
         """Establish connection to registry"""
         if not self.session:
             timeout = aiohttp.ClientTimeout(total=self.config.timeout)
             self.session = aiohttp.ClientSession(timeout=timeout)
-            
+
         # Test connection
         try:
             async with self.session.get(f"{self.config.registry_url}/health") as response:
@@ -86,7 +97,7 @@ class RegistryClient:
         except Exception as e:
             logger.error(f"Failed to connect to registry: {e}")
             raise
-            
+
     async def disconnect(self):
         """Close all connections"""
         # Stop heartbeat
@@ -96,7 +107,7 @@ class RegistryClient:
                 await self._heartbeat_task
             except asyncio.CancelledError:
                 pass
-                
+
         # Close WebSocket
         if self._websocket_task:
             self._websocket_task.cancel()
@@ -104,16 +115,16 @@ class RegistryClient:
                 await self._websocket_task
             except asyncio.CancelledError:
                 pass
-                
+
         if self.websocket:
             await self.websocket.close()
-            
+
         # Close HTTP session
         if self.session:
             await self.session.close()
-            
+
     # ==================== Registration ====================
-    
+
     async def register_agent(
         self,
         name: str,
@@ -134,13 +145,13 @@ class RegistryClient:
             metadata=metadata or {},
             **kwargs
         )
-        
+
         result = await self._register_entity(agent)
         if isinstance(result, AgentRegistryEntry):
             await self._start_heartbeat()
             return result
         raise TypeError("Unexpected response type")
-        
+
     async def register_leader(
         self,
         name: str,
@@ -159,13 +170,13 @@ class RegistryClient:
             biblical_archetype=biblical_archetype,
             **kwargs
         )
-        
+
         result = await self._register_entity(leader)
         if isinstance(result, LeaderRegistryEntry):
             await self._start_heartbeat()
             return result
         raise TypeError("Unexpected response type")
-        
+
     async def register_department(
         self,
         name: str,
@@ -184,12 +195,12 @@ class RegistryClient:
             capabilities=capabilities or [],
             **kwargs
         )
-        
+
         result = await self._register_entity(department)
         if isinstance(result, DepartmentRegistryEntry):
             return result
         raise TypeError("Unexpected response type")
-        
+
     async def register_server(
         self,
         name: str,
@@ -213,13 +224,13 @@ class RegistryClient:
             endpoints=endpoints or [],
             **kwargs
         )
-        
+
         result = await self._register_entity(server)
         if isinstance(result, ServerRegistryEntry):
             await self._start_heartbeat()
             return result
         raise TypeError("Unexpected response type")
-        
+
     async def register_database(
         self,
         name: str,
@@ -240,13 +251,13 @@ class RegistryClient:
             database_name=database_name,
             **kwargs
         )
-        
+
         result = await self._register_entity(database)
         if isinstance(result, DatabaseRegistryEntry):
             await self._start_heartbeat()
             return result
         raise TypeError("Unexpected response type")
-        
+
     async def _register_entity(self, entity: BaseRegistryEntry) -> BaseRegistryEntry:
         """Internal method to register any entity"""
         for attempt in range(self.config.retry_attempts):
@@ -263,16 +274,16 @@ class RegistryClient:
                     else:
                         error = await response.text()
                         raise Exception(f"Registration failed: {error}")
-                        
+
             except Exception as e:
                 logger.error(f"Registration attempt {attempt + 1} failed: {e}")
                 if attempt < self.config.retry_attempts - 1:
                     await asyncio.sleep(self.config.retry_delay)
                 else:
                     raise
-                    
+
     # ==================== Discovery ====================
-    
+
     async def discover_agents(
         self,
         status: Optional[ServiceStatus] = None,
@@ -291,7 +302,7 @@ class RegistryClient:
             limit=limit
         )
         return [e for e in entities if isinstance(e, AgentRegistryEntry)]
-        
+
     async def discover_leaders(
         self,
         leadership_tier: Optional[LeadershipTier] = None,
@@ -304,15 +315,15 @@ class RegistryClient:
             department_id=department_id,
             division_id=division_id
         )
-        
+
         leaders = [e for e in entities if isinstance(e, LeaderRegistryEntry)]
-        
+
         # Filter by tier if specified
         if leadership_tier:
             leaders = [l for l in leaders if l.leadership_tier == leadership_tier]
-            
+
         return leaders
-        
+
     async def discover_departments(
         self,
         division_id: Optional[str] = None,
@@ -323,15 +334,15 @@ class RegistryClient:
             RegistryType.DEPARTMENT,
             division_id=division_id
         )
-        
+
         departments = [e for e in entities if isinstance(e, DepartmentRegistryEntry)]
-        
+
         # Filter by operational status if specified
         if status:
             departments = [d for d in departments if d.operational_status == status]
-            
+
         return departments
-        
+
     async def discover_servers(
         self,
         server_type: Optional[ServerType] = None,
@@ -346,15 +357,15 @@ class RegistryClient:
             registry_type = RegistryType.SERVER_BUSINESS
         else:
             registry_type = RegistryType.SERVER_CORE
-            
+
         entities = await self._discover(
             registry_type,
             status=status,
             capability=capability
         )
-        
+
         return [e for e in entities if isinstance(e, ServerRegistryEntry)]
-        
+
     async def discover_databases(
         self,
         db_type: Optional[str] = None,
@@ -365,15 +376,15 @@ class RegistryClient:
             RegistryType.DATABASE,
             status=status
         )
-        
+
         databases = [e for e in entities if isinstance(e, DatabaseRegistryEntry)]
-        
+
         # Filter by database type if specified
         if db_type:
             databases = [d for d in databases if d.db_type == db_type]
-            
+
         return databases
-        
+
     async def _discover(
         self,
         entity_type: RegistryType,
@@ -386,10 +397,10 @@ class RegistryClient:
             cached = self._get_cached(cache_key)
             if cached:
                 return cached
-                
+
         # Make request
         params = {k: v for k, v in filters.items() if v is not None}
-        
+
         try:
             async with self.session.get(
                 f"{self.config.registry_url}/discover/{entity_type}",
@@ -398,22 +409,22 @@ class RegistryClient:
                 if response.status == 200:
                     data = await response.json()
                     entities = [self._parse_entity(e) for e in data["entities"]]
-                    
+
                     # Cache result
                     if self.config.enable_caching:
                         self._set_cached(cache_key, entities)
-                        
+
                     return entities
                 else:
                     error = await response.text()
                     raise Exception(f"Discovery failed: {error}")
-                    
+
         except Exception as e:
             logger.error(f"Discovery error: {e}")
             return []
-            
+
     # ==================== Entity Operations ====================
-    
+
     async def get_entity(self, entity_id: str) -> Optional[BaseRegistryEntry]:
         """Get specific entity by ID"""
         # Check cache
@@ -422,7 +433,7 @@ class RegistryClient:
             cached = self._get_cached(cache_key)
             if cached:
                 return cached
-                
+
         try:
             async with self.session.get(
                 f"{self.config.registry_url}/entity/{entity_id}"
@@ -430,26 +441,26 @@ class RegistryClient:
                 if response.status == 200:
                     data = await response.json()
                     entity = self._parse_entity(data)
-                    
+
                     # Cache result
                     if self.config.enable_caching:
                         self._set_cached(cache_key, entity)
-                        
+
                     return entity
                 elif response.status == 404:
                     return None
                 else:
                     error = await response.text()
                     raise Exception(f"Get entity failed: {error}")
-                    
+
         except Exception as e:
             logger.error(f"Get entity error: {e}")
             return None
-            
+
     async def update_status(self, entity_id: str, status: ServiceStatus):
         """Update entity status"""
         await self.update_entity(entity_id, {"status": status})
-        
+
     async def update_entity(self, entity_id: str, updates: Dict[str, Any]):
         """Update entity properties"""
         try:
@@ -464,21 +475,21 @@ class RegistryClient:
                 else:
                     error = await response.text()
                     raise Exception(f"Update failed: {error}")
-                    
+
         except Exception as e:
             logger.error(f"Update entity error: {e}")
             raise
-            
+
     async def unregister(self, entity_id: Optional[str] = None):
         """Unregister entity from registry"""
         entity_id = entity_id or (self._registered_entity.id if self._registered_entity else None)
         if not entity_id:
             raise ValueError("No entity ID provided")
-            
+
         # Stop heartbeat
         if self._heartbeat_task:
             self._heartbeat_task.cancel()
-            
+
         try:
             async with self.session.delete(
                 f"{self.config.registry_url}/entity/{entity_id}"
@@ -489,21 +500,21 @@ class RegistryClient:
                 else:
                     error = await response.text()
                     raise Exception(f"Unregister failed: {error}")
-                    
+
         except Exception as e:
             logger.error(f"Unregister error: {e}")
             raise
-            
+
     # ==================== Heartbeat Management ====================
-    
+
     async def _start_heartbeat(self):
         """Start automatic heartbeat for registered entity"""
         if self._heartbeat_task:
             self._heartbeat_task.cancel()
-            
+
         if self._registered_entity:
             self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
-            
+
     async def _heartbeat_loop(self):
         """Send periodic heartbeats"""
         while self._registered_entity:
@@ -514,13 +525,13 @@ class RegistryClient:
                 break
             except Exception as e:
                 logger.error(f"Heartbeat error: {e}")
-                
+
     async def send_heartbeat(self, entity_id: Optional[str] = None):
         """Send heartbeat for entity"""
         entity_id = entity_id or (self._registered_entity.id if self._registered_entity else None)
         if not entity_id:
             raise ValueError("No entity ID provided")
-            
+
         try:
             async with self.session.post(
                 f"{self.config.registry_url}/entity/{entity_id}/heartbeat"
@@ -528,13 +539,13 @@ class RegistryClient:
                 if response.status != 200:
                     error = await response.text()
                     raise Exception(f"Heartbeat failed: {error}")
-                    
+
         except Exception as e:
             logger.error(f"Heartbeat error: {e}")
             raise
-            
+
     # ==================== Event Subscriptions ====================
-    
+
     async def subscribe_to_events(
         self,
         event_types: Optional[List[EventType]] = None,
@@ -543,11 +554,11 @@ class RegistryClient:
         """Subscribe to registry events via WebSocket"""
         if self._websocket_task:
             return  # Already subscribed
-            
+
         self._websocket_task = asyncio.create_task(
             self._websocket_handler(event_types, entity_types)
         )
-        
+
     async def _websocket_handler(
         self,
         event_types: Optional[List[EventType]],
@@ -558,44 +569,44 @@ class RegistryClient:
             try:
                 async with websockets.connect(self.config.websocket_url) as websocket:
                     self.websocket = websocket
-                    
+
                     # Subscribe to entity types
                     if entity_types:
                         await websocket.send(json.dumps({
                             "command": "subscribe",
                             "entity_types": entity_types
                         }))
-                        
+
                     # Listen for events
                     async for message in websocket:
                         try:
                             event_data = json.loads(message)
                             event = RegistryEvent(**event_data)
-                            
+
                             # Filter by event type if specified
                             if event_types and event.event_type not in event_types:
                                 continue
-                                
+
                             # Call handlers
                             await self._handle_event(event)
-                            
+
                         except Exception as e:
                             logger.error(f"Error processing event: {e}")
-                            
+
             except asyncio.CancelledError:
                 break
             except Exception as e:
                 logger.error(f"WebSocket error: {e}")
                 await asyncio.sleep(self.config.retry_delay)
-                
+
     async def _handle_event(self, event: RegistryEvent):
         """Handle incoming registry event"""
         # Invalidate relevant caches
-        if event.event_type in [EventType.REGISTERED, EventType.UNREGISTERED, 
+        if event.event_type in [EventType.REGISTERED, EventType.UNREGISTERED,
                                EventType.STATUS_CHANGED]:
             self._invalidate_cache(f"entity:{event.entity_id}")
             self._invalidate_cache(f"discover:{event.entity_type}:*")
-            
+
         # Call registered handlers
         if event.event_type in self._event_handlers:
             for handler in self._event_handlers[event.event_type]:
@@ -603,15 +614,15 @@ class RegistryClient:
                     await handler(event)
                 except Exception as e:
                     logger.error(f"Event handler error: {e}")
-                    
+
     def on_event(self, event_type: EventType, handler: Callable):
         """Register event handler"""
         if event_type not in self._event_handlers:
             self._event_handlers[event_type] = []
         self._event_handlers[event_type].append(handler)
-        
+
     # ==================== Special Operations ====================
-    
+
     async def assign_agent_to_department(self, agent_id: str, department_id: str):
         """Assign an agent to a department"""
         try:
@@ -623,11 +634,11 @@ class RegistryClient:
                 else:
                     error = await response.text()
                     raise Exception(f"Assignment failed: {error}")
-                    
+
         except Exception as e:
             logger.error(f"Assignment error: {e}")
             raise
-            
+
     async def get_organizational_hierarchy(self) -> Dict[str, Any]:
         """Get complete organizational hierarchy"""
         try:
@@ -639,11 +650,11 @@ class RegistryClient:
                 else:
                     error = await response.text()
                     raise Exception(f"Get hierarchy failed: {error}")
-                    
+
         except Exception as e:
             logger.error(f"Get hierarchy error: {e}")
             raise
-            
+
     async def get_statistics(self) -> Dict[str, Any]:
         """Get registry statistics"""
         try:
@@ -655,13 +666,13 @@ class RegistryClient:
                 else:
                     error = await response.text()
                     raise Exception(f"Get statistics failed: {error}")
-                    
+
         except Exception as e:
             logger.error(f"Get statistics error: {e}")
             raise
-            
+
     # ==================== Cache Management ====================
-    
+
     def _get_cached(self, key: str) -> Optional[Any]:
         """Get value from local cache"""
         if key in self._cache:
@@ -669,31 +680,31 @@ class RegistryClient:
             if asyncio.get_event_loop().time() - timestamp < self.config.cache_ttl:
                 return self._cache[key]
         return None
-        
+
     def _set_cached(self, key: str, value: Any):
         """Set value in local cache"""
         self._cache[key] = value
         self._cache_timestamps[key] = asyncio.get_event_loop().time()
-        
+
     def _invalidate_cache(self, pattern: str):
         """Invalidate cache entries matching pattern"""
         import fnmatch
         keys_to_remove = []
-        
+
         for key in self._cache:
             if fnmatch.fnmatch(key, pattern):
                 keys_to_remove.append(key)
-                
+
         for key in keys_to_remove:
             self._cache.pop(key, None)
             self._cache_timestamps.pop(key, None)
-            
+
     # ==================== Entity Parsing ====================
-    
+
     def _parse_entity(self, data: Dict[str, Any]) -> BaseRegistryEntry:
         """Parse entity data into appropriate model"""
         entity_type = data.get("type")
-        
+
         if entity_type == RegistryType.AGENT:
             return AgentRegistryEntry(**data)
         elif entity_type == RegistryType.LEADER:
@@ -704,7 +715,7 @@ class RegistryClient:
             return DivisionRegistryEntry(**data)
         elif entity_type == RegistryType.DATABASE:
             return DatabaseRegistryEntry(**data)
-        elif entity_type in [RegistryType.SERVER_CORE, RegistryType.SERVER_MCP, 
+        elif entity_type in [RegistryType.SERVER_CORE, RegistryType.SERVER_MCP,
                             RegistryType.SERVER_BUSINESS]:
             return ServerRegistryEntry(**data)
         else:

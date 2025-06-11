@@ -4,12 +4,14 @@ BoarderframeOS MCP Integration Script
 Integrates the filesystem server with the broader BoarderframeOS ecosystem
 """
 
-import os
-import sys
-import yaml
 import asyncio
+import os
 import subprocess
+import sys
 from pathlib import Path
+
+import yaml
+
 
 def load_boarderframe_config():
     """Load BoarderframeOS configuration"""
@@ -22,11 +24,11 @@ def load_boarderframe_config():
 def update_mcp_server_config(config: dict):
     """Update MCP server configuration in boarderframe.yaml"""
     config_path = Path(__file__).parent.parent / "boarderframe.yaml"
-    
+
     # Ensure mcp_servers section exists
     if "mcp_servers" not in config:
         config["mcp_servers"] = {}
-    
+
     # Update filesystem server configuration
     config["mcp_servers"]["filesystem"] = {
         "enabled": True,
@@ -51,25 +53,25 @@ def update_mcp_server_config(config: dict):
             "pygments"
         ]
     }
-    
+
     # Write back to config
     with open(config_path, 'w') as f:
         yaml.dump(config, f, default_flow_style=False, indent=2)
-    
+
     print("✅ Updated BoarderframeOS configuration with MCP filesystem server")
 
 async def test_integration():
     """Test integration with BoarderframeOS"""
     print("🧪 Testing BoarderframeOS MCP integration...")
-    
+
     # Test if server can start
     try:
         proc = subprocess.Popen([
             sys.executable, "start_filesystem_server.py", "--health-check"
         ], cwd=Path(__file__).parent, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        
+
         stdout, stderr = proc.communicate(timeout=10)
-        
+
         if proc.returncode == 0:
             print("✅ Filesystem server health check passed")
         else:
@@ -85,17 +87,17 @@ async def test_integration():
 def main():
     print("🔧 BoarderframeOS MCP Filesystem Server Integration")
     print("=" * 50)
-    
+
     # Load current config
     config = load_boarderframe_config()
     print(f"📄 Loaded config from: {Path(__file__).parent.parent / 'boarderframe.yaml'}")
-    
+
     # Update MCP server configuration
     update_mcp_server_config(config)
-    
+
     # Test integration
     asyncio.run(test_integration())
-    
+
     print("\n🚀 Integration complete!")
     print("\nNext steps:")
     print("1. Start the filesystem server: python mcp/start_filesystem_server.py")

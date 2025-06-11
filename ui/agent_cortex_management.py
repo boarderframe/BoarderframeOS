@@ -3,42 +3,43 @@ Agent Cortex Management UI - BoarderframeOS
 Comprehensive interface for managing The Agent Cortex's intelligent model selection
 """
 
-from flask import Flask, render_template, jsonify, request, send_from_directory
-import json
 import asyncio
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
+import json
 import os
-import yaml
-from pathlib import Path
 import sqlite3
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
 import aiosqlite
+import yaml
+from flask import Flask, jsonify, render_template, request, send_from_directory
 
 # Import Agent Cortex components
 from core.agent_cortex import (
-    get_agent_cortex_instance, 
-    ModelTier, 
-    SelectionStrategy,
     ModelSelection,
-    PerformanceMetrics
+    ModelTier,
+    PerformanceMetrics,
+    SelectionStrategy,
+    get_agent_cortex_instance,
 )
-from core.registry_integration import get_registry_client
 from core.agent_variable_inspector import agent_variable_inspector
 from core.base_agent import BaseAgent
-from core.cost_management import API_COST_SETTINGS, AGENT_COST_POLICIES
+from core.cost_management import AGENT_COST_POLICIES, API_COST_SETTINGS
+from core.registry_integration import get_registry_client
 
 
 class AgentCortexManagementUI:
     """Agent Cortex Management User Interface"""
-    
+
     def __init__(self, port: int = 8889):
-        self.app = Flask(__name__, 
+        self.app = Flask(__name__,
                         template_folder='templates',
                         static_folder='static')
         self.port = port
         self.cortex = None
         self.registry = None
-        
+
         # Agent Cortex management data
         self.cortex_config = {
             "model_registry": {},
@@ -51,24 +52,24 @@ class AgentCortexManagementUI:
                 "budget_alerts": []
             }
         }
-        
+
         self._setup_routes()
-    
+
     async def initialize(self):
         """Initialize Agent Cortex and registry connections"""
         self.cortex = await get_agent_cortex_instance()
         self.registry = await get_registry_client()
         await self._setup_database()
         await self._load_cortex_configuration()
-        
+
         # Initialize variable inspector with current global settings
         self._sync_global_settings_to_inspector()
-        
+
     async def _setup_database(self):
         """Setup Agent Cortex configuration database"""
         self.db_path = Path(__file__).parent.parent / "data" / "agent_cortex_config.db"
         self.db_path.parent.mkdir(exist_ok=True)
-        
+
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute("""
                 CREATE TABLE IF NOT EXISTS model_registry (
@@ -85,7 +86,7 @@ class AgentCortexManagementUI:
                     UNIQUE(tier, model_type)
                 )
             """)
-            
+
             await db.execute("""
                 CREATE TABLE IF NOT EXISTS agent_configurations (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -99,7 +100,7 @@ class AgentCortexManagementUI:
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
-            
+
             await db.execute("""
                 CREATE TABLE IF NOT EXISTS cortex_settings (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -110,7 +111,7 @@ class AgentCortexManagementUI:
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
-            
+
             await db.execute("""
                 CREATE TABLE IF NOT EXISTS performance_history (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -128,9 +129,9 @@ class AgentCortexManagementUI:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
-            
+
             await db.commit()
-    
+
     async def _load_cortex_configuration(self):
         """Load current Agent Cortex configuration"""
         # First try to load from database
@@ -140,25 +141,25 @@ class AgentCortexManagementUI:
                 self.cortex_config["model_registry"].update(db_config["model_registry"])
                 # Apply to Agent Cortex
                 self.cortex.model_selector.model_registry.update(db_config["model_registry"])
-            
+
             if db_config["agent_configurations"]:
                 self.cortex_config["agent_configurations"].update(db_config["agent_configurations"])
-                
+
             if db_config["cortex_settings"].get("current_strategy"):
                 strategy_value = db_config["cortex_settings"]["current_strategy"]["value"]
                 self.cortex.current_strategy = SelectionStrategy(strategy_value)
         except Exception as e:
             print(f"Warning: Could not load from database: {e}")
-        
+
         # Load from Agent Cortex's current state (fallback)
         if not self.cortex_config["model_registry"]:
             self.cortex_config["model_registry"] = self.cortex.model_selector.model_registry
-            
+
         self.cortex_config["strategy_settings"] = {
             "current_strategy": self.cortex.current_strategy.value,
             "available_strategies": [s.value for s in SelectionStrategy]
         }
-        
+
         # Load agent configurations from registry
         try:
             agents = await self.registry.discover_agents()
@@ -183,7 +184,7 @@ class AgentCortexManagementUI:
                         "max_cost_per_request": 0.1,
                         "strategy_override": None
                     }
-    
+
     def _get_agent_tier(self, agent_name: str) -> str:
         """Determine agent tier"""
         if agent_name.lower() in ["solomon", "david"]:
@@ -194,37 +195,37 @@ class AgentCortexManagementUI:
             return ModelTier.SPECIALIST.value
         else:
             return ModelTier.WORKER.value
-    
+
     def _setup_routes(self):
         """Setup Flask routes"""
-        
+
         @self.app.route('/')
         def index():
             """Main Agent Cortex Management dashboard"""
             return render_template('agent_cortex_management.html')
-            
+
         @self.app.route('/test')
         def test_variables():
             """Test variables page"""
             return send_from_directory('.', 'test_variables_ui.html')
-        
+
         @self.app.route('/api/agent-cortex/status')
         def cortex_status():
             """Get current Agent Cortex status"""
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            
+
             try:
                 status = loop.run_until_complete(self.cortex.get_status())
                 return jsonify(status)
             finally:
                 loop.close()
-        
+
         @self.app.route('/api/agent-cortex/config')
         def get_config():
             """Get Agent Cortex configuration"""
             return jsonify(self.cortex_config)
-        
+
         @self.app.route('/api/agent-cortex/models', methods=['GET', 'POST'])
         def manage_models():
             """Get or update model registry"""
@@ -236,7 +237,7 @@ class AgentCortexManagementUI:
                 tier = updates.get('tier')
                 model_type = updates.get('model_type')  # primary, fallback, budget, local
                 model_config = updates.get('config')
-                
+
                 if tier and model_type and model_config:
                     # Update in-memory config
                     self.cortex_config["model_registry"][tier][model_type] = model_config
@@ -250,9 +251,9 @@ class AgentCortexManagementUI:
                         return jsonify({"status": "success", "message": "Model configuration updated and saved"})
                     finally:
                         loop.close()
-                
+
                 return jsonify({"status": "error", "message": "Invalid configuration"}), 400
-        
+
         @self.app.route('/api/agent-cortex/strategy', methods=['GET', 'POST'])
         def manage_strategy():
             """Get or update selection strategy"""
@@ -276,7 +277,7 @@ class AgentCortexManagementUI:
                         loop.close()
                 except:
                     return jsonify({"status": "error", "message": "Invalid strategy"}), 400
-        
+
         @self.app.route('/api/agent-cortex/agents/<agent_name>/config', methods=['GET', 'POST'])
         def manage_agent_config(agent_name):
             """Get or update agent-specific configuration"""
@@ -292,7 +293,7 @@ class AgentCortexManagementUI:
                         "max_cost_per_request": 0.1,
                         "strategy_override": None
                     }
-                
+
                 self.cortex_config["agent_configurations"][agent_name].update(updates)
                 # Persist to database (run in event loop)
                 loop = asyncio.new_event_loop()
@@ -302,13 +303,13 @@ class AgentCortexManagementUI:
                     return jsonify({"status": "success", "agent": agent_name, "message": "Configuration saved to database"})
                 finally:
                     loop.close()
-        
+
         @self.app.route('/api/agent-cortex/performance')
         def get_performance():
             """Get performance metrics"""
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            
+
             try:
                 # Get recent performance data
                 performance_data = []
@@ -324,10 +325,10 @@ class AgentCortexManagementUI:
                             "quality": metrics.actual_quality,
                             "timestamp": metrics.timestamp.isoformat()
                         })
-                
+
                 # Sort by timestamp, most recent first
                 performance_data.sort(key=lambda x: x["timestamp"], reverse=True)
-                
+
                 return jsonify({
                     "performance_history": performance_data[:100],  # Last 100 entries
                     "summary": {
@@ -339,22 +340,22 @@ class AgentCortexManagementUI:
                 })
             finally:
                 loop.close()
-        
+
         @self.app.route('/api/agent-cortex/cost-tracking')
         def get_cost_tracking():
             """Get cost tracking information"""
             # Calculate costs from performance data
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            
+
             try:
                 now = datetime.now()
                 today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
                 month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-                
+
                 daily_cost = 0.0
                 monthly_cost = 0.0
-                
+
                 for data in self.cortex.performance_analyzer.performance_data.values():
                     if data.get("status") == "completed" and "metrics" in data:
                         metrics = data["metrics"]
@@ -362,7 +363,7 @@ class AgentCortexManagementUI:
                             daily_cost += metrics.actual_cost
                         if metrics.timestamp >= month_start:
                             monthly_cost += metrics.actual_cost
-                
+
                 return jsonify({
                     "daily_spend": daily_cost,
                     "monthly_spend": monthly_cost,
@@ -372,18 +373,18 @@ class AgentCortexManagementUI:
                 })
             finally:
                 loop.close()
-        
+
         @self.app.route('/api/agent-cortex/test-selection', methods=['POST'])
         def test_selection():
             """Test model selection for a given request"""
             data = request.json
-            
+
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            
+
             try:
                 from core.agent_cortex import AgentRequest
-                
+
                 # Create test request
                 test_request = AgentRequest(
                     agent_name=data.get('agent_name', 'test'),
@@ -392,7 +393,7 @@ class AgentCortexManagementUI:
                     complexity=data.get('complexity', 5),
                     quality_requirements=data.get('quality_requirements', 0.85)
                 )
-                
+
                 # Get model selection
                 selection = loop.run_until_complete(
                     self.cortex.model_selector.select_optimal_model(
@@ -400,7 +401,7 @@ class AgentCortexManagementUI:
                         SelectionStrategy(data.get('strategy', self.cortex.current_strategy.value))
                     )
                 )
-                
+
                 return jsonify({
                     "selected_model": selection.selected_model,
                     "provider": selection.provider,
@@ -412,7 +413,7 @@ class AgentCortexManagementUI:
                 })
             finally:
                 loop.close()
-        
+
         @self.app.route('/api/agent-cortex/export-config')
         def export_config():
             """Export Agent Cortex configuration"""
@@ -424,39 +425,39 @@ class AgentCortexManagementUI:
                 "agent_configurations": self.cortex_config["agent_configurations"]
             }
             return jsonify(config_export)
-        
+
         @self.app.route('/api/agent-cortex/import-config', methods=['POST'])
         def import_config():
             """Import Agent Cortex configuration"""
             try:
                 config_data = request.json
-                
+
                 # Validate configuration
                 if "version" not in config_data or "model_registry" not in config_data:
                     return jsonify({"status": "error", "message": "Invalid configuration format"}), 400
-                
+
                 # Apply configuration
                 self.cortex_config["model_registry"] = config_data["model_registry"]
                 self.cortex.model_selector.model_registry = config_data["model_registry"]
-                
+
                 if "strategy_settings" in config_data:
                     strategy_name = config_data["strategy_settings"].get("current_strategy")
                     if strategy_name:
                         self.cortex.current_strategy = SelectionStrategy(strategy_name)
-                
+
                 if "agent_configurations" in config_data:
                     self.cortex_config["agent_configurations"] = config_data["agent_configurations"]
-                
+
                 return jsonify({"status": "success", "message": "Configuration imported successfully"})
-                
+
             except Exception as e:
                 return jsonify({"status": "error", "message": str(e)}), 400
-                
+
         @self.app.route('/api/agent-cortex/variables')
         def get_all_variables():
             """Get all agent variables across all layers"""
             return jsonify(agent_variable_inspector.get_variable_summary())
-            
+
         @self.app.route('/api/agent-cortex/variables/<layer>')
         def get_variables_by_layer(layer):
             """Get variables for a specific layer"""
@@ -475,7 +476,7 @@ class AgentCortexManagementUI:
                     } for name, var in variables.items()}
                 }
             })
-            
+
         @self.app.route('/api/agent-cortex/variables/agent/<agent_name>')
         def get_agent_variables(agent_name):
             """Get all variables that affect a specific agent"""
@@ -495,7 +496,7 @@ class AgentCortexManagementUI:
                     "validation_rules": var.validation_rules
                 } for name, var in variables.items()}
             })
-            
+
         @self.app.route('/api/agent-cortex/variables/update', methods=['POST'])
         def update_variable():
             """Update a variable value"""
@@ -503,15 +504,15 @@ class AgentCortexManagementUI:
             variable_name = data.get('variable_name')
             new_value = data.get('new_value')
             agent_name = data.get('agent_name')
-            
+
             if not variable_name or new_value is None:
                 return jsonify({"status": "error", "message": "Missing variable_name or new_value"}), 400
-                
+
             success = agent_variable_inspector.update_variable(variable_name, new_value, agent_name)
-            
+
             if success:
                 return jsonify({
-                    "status": "success", 
+                    "status": "success",
                     "message": f"Variable {variable_name} updated to {new_value}",
                     "variable_name": variable_name,
                     "new_value": new_value,
@@ -519,10 +520,10 @@ class AgentCortexManagementUI:
                 })
             else:
                 return jsonify({
-                    "status": "error", 
+                    "status": "error",
                     "message": f"Failed to update variable {variable_name}"
                 }), 400
-                
+
         @self.app.route('/api/agent-cortex/variables/live-agents')
         def get_live_agents():
             """Get list of live agent instances registered with variable inspector"""
@@ -539,34 +540,34 @@ class AgentCortexManagementUI:
                     } for name, agent in agent_variable_inspector.agent_instances.items()
                 }
             })
-            
+
         @self.app.route('/api/agent-cortex/variables/export')
         def export_variables():
             """Export current variable configuration"""
             config = agent_variable_inspector.export_configuration()
             return jsonify(config)
-            
+
         @self.app.route('/api/agent-cortex/variables/import', methods=['POST'])
         def import_variables():
             """Import variable configuration"""
             data = request.json
-            
+
             success = agent_variable_inspector.import_configuration(data)
-            
+
             if success:
                 return jsonify({"status": "success", "message": "Configuration imported successfully"})
             else:
                 return jsonify({"status": "error", "message": "Failed to import configuration"}), 400
-                
+
         @self.app.route('/api/agent-cortex/detailed-status')
         def get_detailed_status():
             """Get comprehensive Agent Cortex status with detailed breakdown"""
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            
+
             try:
                 status = loop.run_until_complete(self.cortex.get_status())
-                
+
                 # Add detailed model registry info
                 model_stats = {}
                 for tier, models in self.cortex.model_selector.model_registry.items():
@@ -579,27 +580,27 @@ class AgentCortexManagementUI:
                             "max": max([m.get("cost_per_1k", 0) for m in models.values() if isinstance(m, dict)], default=0)
                         }
                     }
-                
+
                 status["model_statistics"] = model_stats
                 status["configuration_source"] = str(self.db_path) if hasattr(self, 'db_path') else "In-memory only"
                 status["agents_configured"] = len(self.cortex_config["agent_configurations"])
-                
+
                 return jsonify(status)
             finally:
                 loop.close()
-                
+
         @self.app.route('/api/agent-cortex/test-suite', methods=['POST'])
         def run_test_suite():
             """Run comprehensive Agent Cortex test suite"""
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            
+
             try:
                 test_results = loop.run_until_complete(self._run_comprehensive_tests())
                 return jsonify(test_results)
             finally:
                 loop.close()
-                
+
         @self.app.route('/api/agent-cortex/configuration-backup')
         def backup_configuration():
             """Backup current Agent Cortex configuration"""
@@ -613,13 +614,13 @@ class AgentCortexManagementUI:
                 "backup_source": "Agent Cortex Management UI"
             }
             return jsonify(backup_data)
-            
+
         @self.app.route('/api/agent-cortex/load-from-database')
         def load_from_database():
             """Load configuration from database"""
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            
+
             try:
                 config = loop.run_until_complete(self._load_config_from_db())
                 return jsonify({"status": "success", "config": config, "message": "Configuration loaded from database"})
@@ -627,12 +628,12 @@ class AgentCortexManagementUI:
                 return jsonify({"status": "error", "message": str(e)}), 500
             finally:
                 loop.close()
-    
+
     async def _save_model_config_to_db(self, tier: str, model_type: str, config: Dict):
         """Save model configuration to database"""
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute("""
-                INSERT OR REPLACE INTO model_registry 
+                INSERT OR REPLACE INTO model_registry
                 (tier, model_type, model, provider, cost_per_1k, avg_latency, quality_score, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """, (
@@ -641,12 +642,12 @@ class AgentCortexManagementUI:
                 config.get("quality_score", 0.0), datetime.now().isoformat()
             ))
             await db.commit()
-            
+
     async def _save_agent_config_to_db(self, agent_name: str, config: Dict):
         """Save agent configuration to database"""
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute("""
-                INSERT OR REPLACE INTO agent_configurations 
+                INSERT OR REPLACE INTO agent_configurations
                 (agent_name, tier, quality_threshold, max_cost_per_request, strategy_override, custom_settings, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             """, (
@@ -655,21 +656,21 @@ class AgentCortexManagementUI:
                 json.dumps(config.get("custom_settings", {})), datetime.now().isoformat()
             ))
             await db.commit()
-            
+
     async def _save_cortex_setting(self, key: str, value: str, setting_type: str, description: str = ""):
         """Save cortex setting to database"""
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute("""
-                INSERT OR REPLACE INTO cortex_settings 
+                INSERT OR REPLACE INTO cortex_settings
                 (setting_key, setting_value, setting_type, description, updated_at)
                 VALUES (?, ?, ?, ?, ?)
             """, (key, value, setting_type, description, datetime.now().isoformat()))
             await db.commit()
-            
+
     async def _load_config_from_db(self) -> Dict:
         """Load configuration from database"""
         config = {"model_registry": {}, "agent_configurations": {}, "cortex_settings": {}}
-        
+
         async with aiosqlite.connect(self.db_path) as db:
             # Load model registry
             async with db.execute("SELECT * FROM model_registry") as cursor:
@@ -681,8 +682,8 @@ class AgentCortexManagementUI:
                         "model": row[3], "provider": row[4], "cost_per_1k": row[5],
                         "avg_latency": row[6], "quality_score": row[7]
                     }
-            
-            # Load agent configurations  
+
+            # Load agent configurations
             async with db.execute("SELECT * FROM agent_configurations") as cursor:
                 async for row in cursor:
                     agent_name = row[1]
@@ -691,20 +692,20 @@ class AgentCortexManagementUI:
                         "max_cost_per_request": row[4], "strategy_override": row[5],
                         "custom_settings": json.loads(row[6] or "{}")
                     }
-            
+
             # Load cortex settings
             async with db.execute("SELECT * FROM cortex_settings") as cursor:
                 async for row in cursor:
                     config["cortex_settings"][row[1]] = {
                         "value": row[2], "type": row[3], "description": row[4]
                     }
-                    
+
         return config
-        
+
     async def _run_comprehensive_tests(self) -> Dict:
         """Run comprehensive Agent Cortex test suite"""
         from core.agent_cortex import AgentRequest
-        
+
         test_results = {
             "timestamp": datetime.now().isoformat(),
             "tests_run": 0,
@@ -713,7 +714,7 @@ class AgentCortexManagementUI:
             "performance_summary": {},
             "recommendations": []
         }
-        
+
         # Test scenarios
         test_scenarios = [
             {"name": "Executive High Complexity", "agent": "solomon", "complexity": 9, "quality": 0.95},
@@ -724,10 +725,10 @@ class AgentCortexManagementUI:
             {"name": "Cost Constrained", "agent": "budget_agent", "complexity": 5, "quality": 0.70, "max_cost": 0.001},
             {"name": "Performance Critical", "agent": "perf_agent", "complexity": 8, "quality": 0.95, "max_latency": 1.5}
         ]
-        
+
         total_cost = 0.0
         total_latency = 0.0
-        
+
         for scenario in test_scenarios:
             try:
                 test_request = AgentRequest(
@@ -739,11 +740,11 @@ class AgentCortexManagementUI:
                     max_cost=scenario.get("max_cost"),
                     max_latency=scenario.get("max_latency")
                 )
-                
+
                 # Test all strategies
                 for strategy in SelectionStrategy:
                     selection = await self.cortex.model_selector.select_optimal_model(test_request, strategy)
-                    
+
                     test_detail = {
                         "scenario": scenario["name"],
                         "strategy": strategy.value,
@@ -755,25 +756,25 @@ class AgentCortexManagementUI:
                         "reasoning": selection.reasoning,
                         "passes_constraints": True
                     }
-                    
+
                     # Check constraints
                     if scenario.get("max_cost") and selection.expected_cost > scenario["max_cost"]:
                         test_detail["passes_constraints"] = False
                         test_detail["constraint_violation"] = f"Cost {selection.expected_cost} > {scenario['max_cost']}"
-                    
+
                     if scenario.get("max_latency") and selection.expected_latency > scenario["max_latency"]:
                         test_detail["passes_constraints"] = False
                         test_detail["constraint_violation"] = f"Latency {selection.expected_latency} > {scenario['max_latency']}"
-                    
+
                     test_results["test_details"].append(test_detail)
                     test_results["tests_run"] += 1
-                    
+
                     if test_detail["passes_constraints"]:
                         test_results["tests_passed"] += 1
-                    
+
                     total_cost += selection.expected_cost
                     total_latency += selection.expected_latency
-                    
+
             except Exception as e:
                 test_results["test_details"].append({
                     "scenario": scenario["name"],
@@ -781,7 +782,7 @@ class AgentCortexManagementUI:
                     "passes_constraints": False
                 })
                 test_results["tests_run"] += 1
-        
+
         # Performance summary
         if test_results["tests_run"] > 0:
             test_results["performance_summary"] = {
@@ -790,16 +791,16 @@ class AgentCortexManagementUI:
                 "success_rate": (test_results["tests_passed"] / test_results["tests_run"]) * 100,
                 "total_estimated_cost": total_cost
             }
-        
+
         # Generate recommendations
         if test_results["performance_summary"].get("success_rate", 0) < 90:
             test_results["recommendations"].append("Consider adjusting model tier configurations for better constraint satisfaction")
-        
+
         if test_results["performance_summary"].get("avg_cost_per_request", 0) > 0.01:
             test_results["recommendations"].append("High average cost detected - consider cost optimization strategies")
-            
+
         return test_results
-        
+
     def _sync_global_settings_to_inspector(self):
         """Sync global settings from API_COST_SETTINGS to variable inspector"""
         try:
@@ -814,38 +815,38 @@ class AgentCortexManagementUI:
                     var_name = f"cost.{key}"
                     if var_name in agent_variable_inspector.variable_definitions:
                         agent_variable_inspector.variable_definitions[var_name].current_value = value
-                        
+
             # Update agent-specific cost policies
             for agent_name, policy in AGENT_COST_POLICIES.items():
                 if agent_name != "default":
                     for policy_key, policy_value in policy.items():
                         var_name = f"{agent_name}.cost_policy.{policy_key}"
                         # These would be added to variable definitions if needed
-                        
+
         except Exception as e:
             print(f"Warning: Could not sync global settings: {e}")
-    
+
     def _check_budget_alerts(self, daily_cost: float, monthly_cost: float) -> List[Dict]:
         """Check for budget alerts"""
         alerts = []
-        
+
         daily_budget = 10.0  # TODO: Make configurable
         monthly_budget = 300.0  # TODO: Make configurable
-        
+
         if daily_cost > daily_budget * 0.8:
             alerts.append({
                 "level": "warning" if daily_cost < daily_budget else "critical",
                 "message": f"Daily spend at {(daily_cost/daily_budget)*100:.1f}% of budget"
             })
-        
+
         if monthly_cost > monthly_budget * 0.8:
             alerts.append({
                 "level": "warning" if monthly_cost < monthly_budget else "critical",
                 "message": f"Monthly spend at {(monthly_cost/monthly_budget)*100:.1f}% of budget"
             })
-        
+
         return alerts
-    
+
     def run(self):
         """Run the Agent Cortex Management UI"""
         print(f"🧠 Starting Agent Cortex Management UI on http://localhost:{self.port}")
@@ -871,15 +872,15 @@ if __name__ == "__main__":
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             loop.run_until_complete(ui.initialize())
-        
+
         thread = threading.Thread(target=init_async)
         thread.daemon = True
         thread.start()
-        
+
         # Give initialization a moment
         import time
         time.sleep(1)
-        
+
         # Run the Flask app
         ui.run()
     else:

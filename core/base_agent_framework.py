@@ -9,10 +9,12 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Any, Optional, Callable
 from enum import Enum
-import httpx
 from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
+
+import httpx
+
 
 # Agent States
 class AgentState(Enum):
@@ -42,11 +44,11 @@ class AgentMemory:
     short_term: List[Dict[str, Any]] = field(default_factory=list)
     long_term: List[Dict[str, Any]] = field(default_factory=list)
     max_short_term: int = 100
-    
+
     def add(self, memory: Dict[str, Any], permanent: bool = False):
         """Add a memory"""
         memory['timestamp'] = datetime.now().isoformat()
-        
+
         if permanent:
             self.long_term.append(memory)
         else:
@@ -54,20 +56,20 @@ class AgentMemory:
             if len(self.short_term) > self.max_short_term:
                 # Move oldest to long-term
                 self.long_term.append(self.short_term.pop(0))
-    
+
     def recall(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
         """Recall memories matching query"""
         # Simple keyword search for now
         # TODO: Implement vector similarity search
         results = []
         all_memories = self.short_term + self.long_term
-        
+
         for memory in all_memories:
             if query.lower() in str(memory).lower():
                 results.append(memory)
                 if len(results) >= limit:
                     break
-        
+
         return results
 
 @dataclass
@@ -86,7 +88,7 @@ class AgentConfig:
 
 class BaseAgent(ABC):
     """Base class for all BoarderframeOS agents"""
-    
+
     def __init__(self, config: AgentConfig):
         self.config = config
         self.state = AgentState.INITIALIZING
@@ -95,7 +97,7 @@ class BaseAgent(ABC):
         self.message_queue: asyncio.Queue = asyncio.Queue()
         self.tools: Dict[str, Callable] = {}
         self.logger = self._setup_logger()
-        
+
         # Performance metrics
         self.metrics = {
             'thoughts_processed': 0,
@@ -103,10 +105,10 @@ class BaseAgent(ABC):
             'errors': 0,
             'start_time': datetime.now()
         }
-        
+
         # Initialize tools
         self._load_tools()
-    
+
     def _setup_logger(self) -> logging.Logger:
         """Set up agent-specific logger"""
         logger = logging.getLogger(f"agent.{self.config.name}")
@@ -118,7 +120,7 @@ class BaseAgent(ABC):
         logger.addHandler(handler)
         logger.setLevel(logging.INFO)
         return logger
-    
+
     def _load_tools(self):
         """Load MCP tools based on configuration"""
         for tool_name in self.config.tools:
@@ -129,7 +131,7 @@ class BaseAgent(ABC):
             elif tool_name == "browser":
                 self.tools["browser"] = self._browser_tool
             # Add more tools as needed
-    
+
     async def _filesystem_tool(self, action: str, **params) -> Dict[str, Any]:
         """Filesystem operations via MCP"""
         async with httpx.AsyncClient() as client:
@@ -141,7 +143,7 @@ class BaseAgent(ABC):
                 }
             )
             return response.json()
-    
+
     async def _git_tool(self, action: str, **params) -> Dict[str, Any]:
         """Git operations via MCP"""
         async with httpx.AsyncClient() as client:
@@ -153,7 +155,7 @@ class BaseAgent(ABC):
                 }
             )
             return response.json()
-    
+
     async def _browser_tool(self, action: str, **params) -> Dict[str, Any]:
         """Browser automation via MCP"""
         async with httpx.AsyncClient() as client:
@@ -165,7 +167,7 @@ class BaseAgent(ABC):
                 }
             )
             return response.json()
-    
+
     @abstractmethod
     async def think(self, context: Dict[str, Any]) -> str:
         """
@@ -173,7 +175,7 @@ class BaseAgent(ABC):
         This is where the LLM reasoning happens
         """
         pass
-    
+
     @abstractmethod
     async def act(self, thought: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -181,7 +183,7 @@ class BaseAgent(ABC):
         This is where tool usage happens
         """
         pass
-    
+
     async def perceive(self) -> Dict[str, Any]:
         """Gather context from environment and memory"""
         context = {
@@ -194,7 +196,7 @@ class BaseAgent(ABC):
             'message_queue_size': self.message_queue.qsize(),
             'active_tasks': len(self.active_tasks)
         }
-        
+
         # Check for new messages
         messages = []
         while not self.message_queue.empty():
@@ -203,54 +205,54 @@ class BaseAgent(ABC):
                 messages.append(msg)
             except asyncio.TimeoutError:
                 break
-        
+
         if messages:
             context['new_messages'] = messages
-        
+
         return context
-    
+
     async def run(self):
         """Main agent loop"""
         self.log(f"Starting {self.config.name} agent...")
         self.state = AgentState.IDLE
-        
+
         try:
             while self.state not in [AgentState.TERMINATED, AgentState.ERROR]:
                 # Perceive
                 context = await self.perceive()
-                
+
                 # Think
                 self.state = AgentState.THINKING
                 thought = await self.think(context)
                 self.metrics['thoughts_processed'] += 1
-                
+
                 # Act
                 self.state = AgentState.ACTING
                 result = await self.act(thought, context)
                 self.metrics['actions_taken'] += 1
-                
+
                 # Remember
                 self.memory.add({
                     'thought': thought,
                     'action': result,
                     'context': context
                 })
-                
+
                 # Log
                 self.log(f"Thought: {thought[:100]}...")
                 self.log(f"Action result: {result}")
-                
+
                 # Wait before next cycle
                 self.state = AgentState.WAITING
                 await asyncio.sleep(1)  # Adjust based on needs
-                
+
         except Exception as e:
             self.state = AgentState.ERROR
             self.metrics['errors'] += 1
             self.log(f"Error in main loop: {e}", level="error")
             raise
-    
-    async def send_message(self, to_agent: str, message_type: str, 
+
+    async def send_message(self, to_agent: str, message_type: str,
                           content: Dict[str, Any], requires_response: bool = False):
         """Send a message to another agent"""
         message = AgentMessage(
@@ -260,22 +262,22 @@ class BaseAgent(ABC):
             content=content,
             requires_response=requires_response
         )
-        
+
         # TODO: Implement actual message routing
         self.log(f"Sending message to {to_agent}: {message_type}")
-    
+
     async def receive_message(self, message: AgentMessage):
         """Receive a message from another agent"""
         await self.message_queue.put(message)
-    
+
     def log(self, message: str, level: str = "info"):
         """Log a message"""
         log_func = getattr(self.logger, level)
         log_func(message)
-        
+
         # Also send to UI console
         # TODO: Implement WebSocket broadcast
-    
+
     def get_metrics(self) -> Dict[str, Any]:
         """Get agent performance metrics"""
         uptime = (datetime.now() - self.metrics['start_time']).total_seconds()
@@ -286,112 +288,112 @@ class BaseAgent(ABC):
             'actions_per_minute': (self.metrics['actions_taken'] / uptime) * 60,
             'error_rate': self.metrics['errors'] / max(self.metrics['thoughts_processed'], 1)
         }
-    
+
     async def spawn_sub_agent(self, name: str, role: str, goal: str) -> 'BaseAgent':
         """Spawn a temporary sub-agent for specific tasks"""
         # TODO: Implement sub-agent spawning
         self.log(f"Spawning sub-agent: {name} for {goal}")
-    
+
     async def terminate(self):
         """Gracefully shut down the agent"""
         self.log(f"Terminating {self.config.name}...")
-        
+
         # Cancel active tasks
         for task in self.active_tasks:
             task.cancel()
-        
+
         # Save memory to disk
         memory_file = Path(f"data/agents/{self.config.name}_memory.json")
         memory_file.parent.mkdir(parents=True, exist_ok=True)
-        
+
         with open(memory_file, 'w') as f:
             json.dump({
                 'short_term': self.memory.short_term,
                 'long_term': self.memory.long_term,
                 'metrics': self.get_metrics()
             }, f, default=str)
-        
+
         self.state = AgentState.TERMINATED
         self.log(f"{self.config.name} terminated successfully")
 
 
 class AgentOrchestrator:
     """Manages all agents in the system"""
-    
+
     def __init__(self):
         self.agents: Dict[str, BaseAgent] = {}
         self.zones: Dict[str, List[str]] = {}  # zone_name -> [agent_names]
-        
+
     async def register_agent(self, agent: BaseAgent):
         """Register a new agent"""
         self.agents[agent.config.name] = agent
-        
+
         # Add to zone
         zone = agent.config.zone
         if zone not in self.zones:
             self.zones[zone] = []
         self.zones[zone].append(agent.config.name)
-    
+
     async def start_all(self):
         """Start all registered agents"""
         tasks = []
         for agent in self.agents.values():
             task = asyncio.create_task(agent.run())
             tasks.append(task)
-        
+
         await asyncio.gather(*tasks)
-    
+
     async def route_message(self, message: AgentMessage):
         """Route messages between agents"""
         if message.to_agent in self.agents:
             await self.agents[message.to_agent].receive_message(message)
         else:
             logging.error(f"Agent {message.to_agent} not found")
-    
+
     def get_zone_metrics(self, zone_name: str) -> Dict[str, Any]:
         """Get metrics for all agents in a zone"""
         if zone_name not in self.zones:
             return {}
-        
+
         metrics = {
             'zone': zone_name,
             'agent_count': len(self.zones[zone_name]),
             'agents': {}
         }
-        
+
         for agent_name in self.zones[zone_name]:
             if agent_name in self.agents:
                 metrics['agents'][agent_name] = self.agents[agent_name].get_metrics()
-        
+
         return metrics
 
 
 # Example: Jarvis implementation
 class JarvisAgent(BaseAgent):
     """Jarvis - Your AI Chief of Staff"""
-    
+
     async def think(self, context: Dict[str, Any]) -> str:
         """Jarvis's reasoning process"""
         # In production, this would call your local LLM
         # For now, we'll simulate reasoning
-        
+
         prompt = f"""
         You are Jarvis, the AI Chief of Staff.
-        
+
         Current context:
         - Time: {context['current_time']}
         - Active tasks: {context['active_tasks']}
         - Messages pending: {context['message_queue_size']}
-        
+
         Recent memories:
         {json.dumps(context.get('recent_memories', []), indent=2)}
-        
+
         What should we do next?
         """
-        
+
         # TODO: Call local LLaMA model
         # response = await self.llm_call(prompt)
-        
+
         # Simulated response
         if context['message_queue_size'] > 0:
             return "Process pending messages from other agents"
@@ -399,15 +401,15 @@ class JarvisAgent(BaseAgent):
             return "Check for new tasks in the task queue"
         else:
             return "Monitor active tasks and prepare status report"
-    
+
     async def act(self, thought: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Execute Jarvis's decisions"""
-        
+
         if "Process pending messages" in thought:
             # Process messages
             messages = context.get('new_messages', [])
             results = []
-            
+
             for msg in messages:
                 self.log(f"Processing message from {msg.from_agent}")
                 # Handle different message types
@@ -415,14 +417,14 @@ class JarvisAgent(BaseAgent):
                     results.append(await self._handle_task_request(msg))
                 elif msg.message_type == "status_query":
                     results.append(await self._handle_status_query(msg))
-            
+
             return {"action": "processed_messages", "count": len(messages), "results": results}
-        
+
         elif "Check for new tasks" in thought:
             # Check filesystem for new tasks
             tasks = await self.tools['filesystem']('list_directory', path='tasks/pending')
             return {"action": "checked_tasks", "found": len(tasks.get('files', []))}
-        
+
         else:
             # Default: generate status report
             report = {
@@ -431,27 +433,27 @@ class JarvisAgent(BaseAgent):
                 "active_agents": len(self.active_tasks),
                 "metrics": self.get_metrics()
             }
-            
-            await self.tools['filesystem']('write_file', 
+
+            await self.tools['filesystem']('write_file',
                                          path=f"reports/status_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
                                          content=json.dumps(report, indent=2))
-            
+
             return {"action": "generated_report", "report": report}
-    
+
     async def _handle_task_request(self, message: AgentMessage) -> Dict[str, Any]:
         """Handle task requests from other agents"""
         task = message.content
-        
+
         # Validate task
         if 'goal' not in task:
             return {"status": "error", "message": "Task missing goal"}
-        
+
         # Assign task or spawn sub-agent
         self.log(f"Received task: {task['goal']}")
-        
+
         # TODO: Implement task assignment logic
         return {"status": "accepted", "task_id": f"task_{datetime.now().timestamp()}"}
-    
+
     async def _handle_status_query(self, message: AgentMessage) -> Dict[str, Any]:
         """Handle status queries from other agents"""
         return {

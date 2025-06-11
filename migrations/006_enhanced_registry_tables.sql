@@ -6,7 +6,7 @@
 -- ==============================================================================
 
 -- Add leader-specific columns to agent_registry
-ALTER TABLE agent_registry 
+ALTER TABLE agent_registry
 ADD COLUMN IF NOT EXISTS leadership_tier VARCHAR(50),
 ADD COLUMN IF NOT EXISTS biblical_archetype VARCHAR(100),
 ADD COLUMN IF NOT EXISTS authority_level INTEGER DEFAULT 5 CHECK (authority_level BETWEEN 1 AND 10),
@@ -26,53 +26,53 @@ CREATE TABLE IF NOT EXISTS database_registry (
     name VARCHAR(255) NOT NULL,
     db_type VARCHAR(50) NOT NULL CHECK (db_type IN ('postgresql', 'sqlite', 'redis', 'mongodb', 'mysql', 'cassandra')),
     status VARCHAR(50) DEFAULT 'offline' CHECK (status IN ('online', 'offline', 'maintenance', 'error', 'degraded')),
-    
+
     -- Connection details
     host VARCHAR(255) DEFAULT 'localhost',
     port INTEGER NOT NULL,
     database_name VARCHAR(255),
     connection_string TEXT,
     ssl_enabled BOOLEAN DEFAULT FALSE,
-    
+
     -- Connection pool settings
     max_connections INTEGER DEFAULT 100,
     current_connections INTEGER DEFAULT 0,
     connection_pool_size INTEGER DEFAULT 10,
-    
+
     -- Performance metrics
     query_performance REAL DEFAULT 0.0, -- avg query time in ms
     cache_hit_rate REAL DEFAULT 0.0 CHECK (cache_hit_rate >= 0.0 AND cache_hit_rate <= 100.0),
     slow_query_count INTEGER DEFAULT 0,
-    
+
     -- Storage metrics
     storage_used_gb REAL DEFAULT 0.0,
     storage_limit_gb REAL,
     table_count INTEGER DEFAULT 0,
     index_count INTEGER DEFAULT 0,
-    
+
     -- Replication and backup
     replication_status VARCHAR(50),
     replication_lag_seconds INTEGER DEFAULT 0,
     backup_status VARCHAR(50),
     last_backup TIMESTAMP WITH TIME ZONE,
     backup_retention_days INTEGER DEFAULT 30,
-    
+
     -- Health monitoring
     health_status VARCHAR(50) DEFAULT 'unknown' CHECK (health_status IN ('healthy', 'warning', 'critical', 'unknown')),
     health_score REAL DEFAULT 100.0 CHECK (health_score >= 0.0 AND health_score <= 100.0),
     last_heartbeat TIMESTAMP WITH TIME ZONE,
     last_health_check TIMESTAMP WITH TIME ZONE,
-    
+
     -- Metadata
     version VARCHAR(50),
     capabilities JSONB DEFAULT '[]',
     tags TEXT[] DEFAULT '{}',
     metadata JSONB DEFAULT '{}',
-    
+
     -- Timestamps
     registered_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     -- Constraints
     CONSTRAINT unique_database_host_port UNIQUE (host, port, database_name)
 );
@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS database_registry (
 -- ==============================================================================
 
 -- Add additional columns to server_registry for better categorization
-ALTER TABLE server_registry 
+ALTER TABLE server_registry
 ADD COLUMN IF NOT EXISTS server_category VARCHAR(50) CHECK (server_category IN ('core_system', 'mcp_server', 'business_service', 'infrastructure', 'monitoring')),
 ADD COLUMN IF NOT EXISTS base_url VARCHAR(500),
 ADD COLUMN IF NOT EXISTS api_endpoints JSONB DEFAULT '[]',
@@ -108,23 +108,23 @@ CREATE TABLE IF NOT EXISTS registry_event_log (
     entity_id UUID NOT NULL,
     entity_type VARCHAR(50) NOT NULL,
     entity_name VARCHAR(255),
-    
+
     -- Event details
     event_timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     event_source VARCHAR(100) DEFAULT 'registry',
     event_data JSONB NOT NULL,
-    
+
     -- Tracking
     correlation_id UUID,
     user_id VARCHAR(255),
     ip_address INET,
     user_agent TEXT,
-    
+
     -- Status
     processed BOOLEAN DEFAULT FALSE,
     processing_timestamp TIMESTAMP WITH TIME ZONE,
     processing_result JSONB,
-    
+
     -- Indexing for queries
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -137,28 +137,28 @@ CREATE TABLE IF NOT EXISTS registry_subscriptions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     subscriber_id UUID NOT NULL,
     subscriber_type VARCHAR(50) NOT NULL,
-    
+
     -- Subscription details
     event_types TEXT[] DEFAULT '{}',
     entity_types TEXT[] DEFAULT '{}',
     entity_ids TEXT[] DEFAULT '{}',
-    
+
     -- Delivery settings
     delivery_method VARCHAR(50) DEFAULT 'websocket' CHECK (delivery_method IN ('websocket', 'webhook', 'redis', 'kafka')),
     delivery_endpoint TEXT,
     delivery_config JSONB DEFAULT '{}',
-    
+
     -- Status
     active BOOLEAN DEFAULT TRUE,
     last_delivery TIMESTAMP WITH TIME ZONE,
     delivery_count INTEGER DEFAULT 0,
     failed_deliveries INTEGER DEFAULT 0,
-    
+
     -- Timestamps
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     expires_at TIMESTAMP WITH TIME ZONE,
-    
+
     -- Constraints
     CONSTRAINT unique_subscription UNIQUE (subscriber_id, subscriber_type)
 );
@@ -171,13 +171,13 @@ CREATE TABLE IF NOT EXISTS registry_cache (
     cache_key VARCHAR(500) PRIMARY KEY,
     cache_value JSONB NOT NULL,
     cache_type VARCHAR(50) NOT NULL,
-    
+
     -- TTL management
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
     hit_count INTEGER DEFAULT 0,
     last_accessed TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     -- Metadata
     entity_ids TEXT[] DEFAULT '{}',
     tags TEXT[] DEFAULT '{}'
@@ -193,29 +193,29 @@ CREATE TABLE IF NOT EXISTS service_dependencies (
     service_type VARCHAR(50) NOT NULL,
     depends_on_id UUID NOT NULL,
     depends_on_type VARCHAR(50) NOT NULL,
-    
+
     -- Dependency details
     dependency_type VARCHAR(50) DEFAULT 'required' CHECK (dependency_type IN ('required', 'optional', 'preferred')),
     dependency_strength INTEGER DEFAULT 5 CHECK (dependency_strength BETWEEN 1 AND 10),
-    
+
     -- Health impact
     health_impact_factor REAL DEFAULT 1.0 CHECK (health_impact_factor >= 0.0 AND health_impact_factor <= 1.0),
     cascading_failure BOOLEAN DEFAULT TRUE,
-    
+
     -- Timeouts and retries
     timeout_seconds INTEGER DEFAULT 30,
     retry_attempts INTEGER DEFAULT 3,
     circuit_breaker_threshold INTEGER DEFAULT 5,
-    
+
     -- Status
     status VARCHAR(50) DEFAULT 'active',
     last_check TIMESTAMP WITH TIME ZONE,
     check_result JSONB,
-    
+
     -- Timestamps
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     -- Constraints
     CONSTRAINT unique_dependency UNIQUE (service_id, depends_on_id),
     CONSTRAINT no_self_dependency CHECK (service_id != depends_on_id)
@@ -228,7 +228,7 @@ CREATE TABLE IF NOT EXISTS service_dependencies (
 CREATE TABLE IF NOT EXISTS registry_metrics (
     id SERIAL PRIMARY KEY,
     metric_timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     -- Entity counts
     total_agents INTEGER DEFAULT 0,
     online_agents INTEGER DEFAULT 0,
@@ -237,25 +237,25 @@ CREATE TABLE IF NOT EXISTS registry_metrics (
     total_divisions INTEGER DEFAULT 0,
     total_servers INTEGER DEFAULT 0,
     total_databases INTEGER DEFAULT 0,
-    
+
     -- Health metrics
     healthy_entities INTEGER DEFAULT 0,
     warning_entities INTEGER DEFAULT 0,
     critical_entities INTEGER DEFAULT 0,
     average_health_score REAL DEFAULT 0.0,
-    
+
     -- Performance metrics
     total_requests INTEGER DEFAULT 0,
     failed_requests INTEGER DEFAULT 0,
     average_response_time REAL DEFAULT 0.0,
     cache_hit_rate REAL DEFAULT 0.0,
-    
+
     -- System metrics
     event_queue_size INTEGER DEFAULT 0,
     websocket_connections INTEGER DEFAULT 0,
     memory_usage_mb REAL DEFAULT 0.0,
     cpu_usage_percent REAL DEFAULT 0.0,
-    
+
     -- Metadata
     metadata JSONB DEFAULT '{}'
 );
@@ -315,9 +315,9 @@ DECLARE
     total_impact REAL := 100.0;
     dep RECORD;
 BEGIN
-    FOR dep IN 
-        SELECT d.*, 
-               CASE 
+    FOR dep IN
+        SELECT d.*,
+               CASE
                    WHEN sr.health_score IS NOT NULL THEN sr.health_score
                    WHEN ar.health_score IS NOT NULL THEN ar.health_score
                    WHEN dr.health_score IS NOT NULL THEN dr.health_score
@@ -333,7 +333,7 @@ BEGIN
             total_impact := total_impact * (dep.dep_health_score / 100.0) * dep.health_impact_factor;
         END IF;
     END LOOP;
-    
+
     RETURN total_impact;
 END;
 $$ LANGUAGE plpgsql;
@@ -348,7 +348,7 @@ BEGIN
         healthy_entities, warning_entities, critical_entities,
         average_health_score
     )
-    SELECT 
+    SELECT
         COUNT(CASE WHEN agent_type = 'agent' THEN 1 END),
         COUNT(CASE WHEN agent_type = 'agent' AND status = 'online' THEN 1 END),
         COUNT(CASE WHEN agent_type = 'leader' THEN 1 END),
@@ -361,18 +361,18 @@ BEGIN
         COUNT(CASE WHEN health_score < 50 THEN 1 END),
         AVG(health_score)
     FROM agent_registry;
-    
+
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 -- Triggers for automatic timestamp updates
-CREATE TRIGGER update_database_registry_timestamp 
-    BEFORE UPDATE ON database_registry 
+CREATE TRIGGER update_database_registry_timestamp
+    BEFORE UPDATE ON database_registry
     FOR EACH ROW EXECUTE FUNCTION update_registry_timestamp();
 
-CREATE TRIGGER update_registry_subscriptions_timestamp 
-    BEFORE UPDATE ON registry_subscriptions 
+CREATE TRIGGER update_registry_subscriptions_timestamp
+    BEFORE UPDATE ON registry_subscriptions
     FOR EACH ROW EXECUTE FUNCTION update_registry_timestamp();
 
 -- ==============================================================================
@@ -381,30 +381,30 @@ CREATE TRIGGER update_registry_subscriptions_timestamp
 
 -- Comprehensive Entity View
 CREATE OR REPLACE VIEW registry_all_entities AS
-SELECT 
+SELECT
     id, name, 'agent' as entity_type, status, health_score, last_heartbeat
 FROM agent_registry
 WHERE agent_type = 'agent'
 UNION ALL
-SELECT 
+SELECT
     id, name, 'leader' as entity_type, status, health_score, last_heartbeat
 FROM agent_registry
 WHERE agent_type = 'leader'
 UNION ALL
-SELECT 
+SELECT
     id, name, 'server' as entity_type, status, health_score, last_heartbeat
 FROM server_registry
 UNION ALL
-SELECT 
+SELECT
     id, name, 'database' as entity_type, status, health_score, last_heartbeat
 FROM database_registry
 UNION ALL
-SELECT 
-    department_id as id, name, 'department' as entity_type, 
+SELECT
+    department_id as id, name, 'department' as entity_type,
     status, 100.0 as health_score, updated_at as last_heartbeat
 FROM department_registry
 UNION ALL
-SELECT 
+SELECT
     division_key::uuid as id, division_name as name, 'division' as entity_type,
     CASE WHEN is_active THEN 'online' ELSE 'offline' END as status,
     100.0 as health_score, updated_at as last_heartbeat
@@ -412,7 +412,7 @@ FROM divisions;
 
 -- Service Health Overview
 CREATE OR REPLACE VIEW service_health_overview AS
-SELECT 
+SELECT
     e.id,
     e.name,
     e.entity_type,
@@ -420,7 +420,7 @@ SELECT
     e.health_score,
     COUNT(d.id) as dependency_count,
     MIN(calculate_dependency_health_impact(e.id)) as dependency_health_impact,
-    CASE 
+    CASE
         WHEN e.health_score >= 80 AND MIN(calculate_dependency_health_impact(e.id)) >= 80 THEN 'healthy'
         WHEN e.health_score >= 50 OR MIN(calculate_dependency_health_impact(e.id)) >= 50 THEN 'warning'
         ELSE 'critical'
@@ -431,7 +431,7 @@ GROUP BY e.id, e.name, e.entity_type, e.status, e.health_score;
 
 -- Recent Events View
 CREATE OR REPLACE VIEW recent_registry_events AS
-SELECT 
+SELECT
     event_type,
     entity_type,
     entity_name,

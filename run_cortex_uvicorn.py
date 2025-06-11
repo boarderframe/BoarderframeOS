@@ -4,16 +4,18 @@ Run Agent Cortex Panel with Uvicorn
 Alternative approach using ASGI server
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
-from pathlib import Path
 import json
+from pathlib import Path
+
 import uvicorn
+from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
@@ -42,16 +44,16 @@ async def root():
         <head>
             <title>Agent Cortex Panel</title>
             <style>
-                body { 
-                    font-family: Arial, sans-serif; 
-                    background: #0a0e27; 
+                body {
+                    font-family: Arial, sans-serif;
+                    background: #0a0e27;
                     color: #e0e6ed;
                     padding: 20px;
                 }
                 h1 { color: #64ffda; }
-                .status { 
-                    background: #1a1f2e; 
-                    padding: 20px; 
+                .status {
+                    background: #1a1f2e;
+                    padding: 20px;
                     border-radius: 10px;
                     margin: 20px 0;
                 }
@@ -90,5 +92,5 @@ if __name__ == "__main__":
     print("\n🚀 Starting Agent Cortex Panel with Uvicorn...")
     print("🌐 Server will run at: http://localhost:8890")
     print("🛑 Press Ctrl+C to stop\n")
-    
+
     uvicorn.run(app, host="127.0.0.1", port=8890)

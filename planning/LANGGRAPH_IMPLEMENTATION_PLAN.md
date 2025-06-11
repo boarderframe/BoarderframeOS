@@ -81,14 +81,14 @@ class LangGraphOrchestrator:
         self._setup_agent_nodes()
         self._setup_routing()
         self._setup_mcp_integration()
-    
+
     def _setup_agent_nodes(self):
         # Add core agents as nodes
         self.graph.add_node("solomon", self.solomon_agent)
         self.graph.add_node("david", self.david_agent)
         self.graph.add_node("adam", self.adam_agent)
         self.graph.add_node("route_department", self.department_router)
-        
+
     def _setup_routing(self):
         # Define conversation flow
         self.graph.add_edge("solomon", "david")
@@ -97,7 +97,7 @@ class LangGraphOrchestrator:
             self.should_route_to_department,
             {"yes": "route_department", "no": END}
         )
-        
+
     async def solomon_agent(self, state: BoarderframeState):
         # Convert existing Solomon to LangGraph node
         tools = await self.get_mcp_tools_for_agent("solomon")
@@ -120,7 +120,7 @@ class SolomonLangGraph:
         self.orchestrator = LangGraphOrchestrator()
         self.tools = self._load_mcp_tools()
         self.memory = self._load_agent_memory()
-    
+
     async def handle_user_chat(self, message: str):
         state = {
             "user_request": message,
@@ -131,7 +131,7 @@ class SolomonLangGraph:
             "department": None,
             "response": ""
         }
-        
+
         result = await self.orchestrator.graph.ainvoke(state)
         await self.save_to_memory(result)
         return result["response"]
@@ -147,11 +147,11 @@ class AgentHandoffSystem:
     def __init__(self, orchestrator: LangGraphOrchestrator):
         self.orchestrator = orchestrator
         self.handoff_registry = {}
-    
+
     async def register_handoff_capability(self, from_agent: str, to_agent: str, condition: callable):
         """Register handoff patterns between agents"""
         self.handoff_registry[f"{from_agent}→{to_agent}"] = condition
-    
+
     async def execute_handoff(self, state: BoarderframeState, target_agent: str):
         """Execute handoff with context preservation"""
         handoff_context = {
@@ -159,7 +159,7 @@ class AgentHandoffSystem:
             "handoff_reason": state.get("handoff_reason"),
             "preserved_context": state["task_context"]
         }
-        
+
         new_state = {**state, "current_agent": target_agent, "handoff_context": handoff_context}
         return await self.orchestrator.route_to_agent(target_agent, new_state)
 
@@ -189,23 +189,23 @@ class AgentSwarmCoordinator:
     def __init__(self):
         self.active_swarms = {}
         self.swarm_templates = self._load_swarm_templates()
-    
+
     async def create_specialist_swarm(self, task: dict, specialists_needed: List[str]):
         """Create dynamic swarm for complex tasks"""
-        
+
         def spawn_specialists(state: BoarderframeState):
             # Use LangGraph's Send API for dynamic worker creation
             return [
                 Send(f"specialist_{spec}", {"task": task, "specialization": spec})
                 for spec in specialists_needed
             ]
-        
+
         # Add swarm coordination to graph
         swarm_graph = StateGraph(BoarderframeState)
         swarm_graph.add_node("coordinator", self.swarm_coordinator)
         swarm_graph.add_node("spawn_specialists", spawn_specialists)
         swarm_graph.add_node("collect_results", self.collect_swarm_results)
-        
+
         return swarm_graph.compile()
 
     async def engineering_swarm_example(self, coding_task: str):
@@ -230,7 +230,7 @@ class MCPLangGraphIntegration:
     def __init__(self):
         self.mcp_servers = {
             "filesystem": "http://localhost:8001",
-            "database": "http://localhost:8004", 
+            "database": "http://localhost:8004",
             "llm": "http://localhost:8005",
             "payment": "http://localhost:8006",
             "analytics": "http://localhost:8007",
@@ -238,7 +238,7 @@ class MCPLangGraphIntegration:
             "registry": "http://localhost:8009"
         }
         self.tool_registry = {}
-    
+
     async def discover_mcp_tools(self):
         """Dynamically discover all available MCP tools"""
         for server_name, server_url in self.mcp_servers.items():
@@ -248,7 +248,7 @@ class MCPLangGraphIntegration:
                 self.tool_registry[server_name] = tools
             except Exception as e:
                 print(f"Failed to connect to {server_name}: {e}")
-    
+
     async def get_tools_for_agent(self, agent_name: str) -> List:
         """Get appropriate MCP tools for specific agent"""
         tool_mapping = {
@@ -258,12 +258,12 @@ class MCPLangGraphIntegration:
             "bezalel": ["filesystem", "database", "llm"],
             # Add mappings for all agents
         }
-        
+
         agent_tools = []
         for server in tool_mapping.get(agent_name, []):
             if server in self.tool_registry:
                 agent_tools.extend(self.tool_registry[server])
-        
+
         return agent_tools
 
     @tool
@@ -280,11 +280,11 @@ class BezalelLangGraph:
     def __init__(self):
         self.mcp_integration = MCPLangGraphIntegration()
         self.tools = self._get_programming_tools()
-    
+
     async def _get_programming_tools(self):
         """Get MCP tools specific to programming tasks"""
         return await self.mcp_integration.get_tools_for_agent("bezalel")
-    
+
     async def handle_programming_request(self, request: str):
         """Handle programming tasks with MCP tools"""
         bezalel = create_react_agent(
@@ -292,7 +292,7 @@ class BezalelLangGraph:
             tools=self.tools,
             state_modifier="You are Bezalel, master programmer of BoarderframeOS..."
         )
-        
+
         return await bezalel.ainvoke({
             "user_request": request,
             "available_tools": [tool.name for tool in self.tools]
@@ -310,10 +310,10 @@ class AdamAgentFactory:
         self.orchestrator = LangGraphOrchestrator()
         self.agent_templates = self._load_agent_templates()
         self.mcp_tools = ["filesystem", "registry", "database"]
-    
+
     async def create_new_agent(self, specification: dict):
         """Create new agent based on specification"""
-        
+
         # Agent creation workflow
         creation_graph = StateGraph(AgentCreationState)
         creation_graph.add_node("parse_spec", self.parse_specification)
@@ -321,15 +321,15 @@ class AdamAgentFactory:
         creation_graph.add_node("generate_code", self.generate_agent_code)
         creation_graph.add_node("register_agent", self.register_with_registry)
         creation_graph.add_node("deploy_agent", self.deploy_to_system)
-        
+
         # Create linear workflow
         creation_graph.add_edge("parse_spec", "select_template")
         creation_graph.add_edge("select_template", "generate_code")
         creation_graph.add_edge("generate_code", "register_agent")
         creation_graph.add_edge("register_agent", "deploy_agent")
-        
+
         workflow = creation_graph.compile()
-        
+
         result = await workflow.ainvoke({
             "specification": specification,
             "template": None,
@@ -337,26 +337,26 @@ class AdamAgentFactory:
             "agent_id": None,
             "deployment_status": None
         })
-        
+
         return result
 
     async def generate_agent_code(self, state: AgentCreationState):
         """Generate agent code using templates"""
         template = state["template"]
         spec = state["specification"]
-        
+
         code_gen_prompt = f"""
         Create a new LangGraph agent with these specifications:
         - Name: {spec['name']}
-        - Department: {spec['department']} 
+        - Department: {spec['department']}
         - Role: {spec['role']}
         - Capabilities: {spec['capabilities']}
-        
+
         Use this template: {template}
-        
+
         Generate complete Python code for the agent.
         """
-        
+
         generated_code = await self.llm.ainvoke(code_gen_prompt)
         return {"generated_code": generated_code}
 
@@ -368,18 +368,18 @@ AGENT_TEMPLATES = {
             self.department = "{department}"
             self.role = "{role}"
             self.tools = self._get_department_tools()
-        
+
         async def handle_department_task(self, task: str):
             # Department-specific logic
             pass
     """,
-    
+
     "specialist": """
     class {agent_name}Specialist:
         def __init__(self):
             self.specialization = "{specialization}"
             self.tools = self._get_specialist_tools()
-        
+
         async def handle_specialized_task(self, task: str):
             # Specialist logic
             pass
@@ -394,17 +394,17 @@ class EveAgentEvolver:
     def __init__(self):
         self.performance_monitor = self._setup_monitoring()
         self.optimization_strategies = self._load_strategies()
-    
+
     async def evolve_agent(self, agent_id: str, performance_data: dict):
         """Evolve agent based on performance metrics"""
-        
+
         evolution_graph = StateGraph(EvolutionState)
         evolution_graph.add_node("analyze_performance", self.analyze_performance)
         evolution_graph.add_node("identify_improvements", self.identify_improvements)
         evolution_graph.add_node("generate_optimizations", self.generate_optimizations)
         evolution_graph.add_node("test_improvements", self.test_improvements)
         evolution_graph.add_node("deploy_updates", self.deploy_updates)
-        
+
         return await evolution_graph.compile().ainvoke({
             "agent_id": agent_id,
             "performance_data": performance_data,
@@ -417,16 +417,16 @@ class EveAgentEvolver:
         """Use conversation data to optimize agent prompts"""
         optimization_prompt = f"""
         Analyze this agent's conversation history and suggest prompt improvements:
-        
+
         Agent: {agent}
         Recent conversations: {conversation_history[-10:]}
-        
+
         Suggest specific prompt optimizations to improve:
         1. Response quality
         2. Task completion rate
         3. User satisfaction
         """
-        
+
         optimizations = await self.llm.ainvoke(optimization_prompt)
         return await self._apply_optimizations(agent, optimizations)
 ```
@@ -444,7 +444,7 @@ class RealtimeCommunicationLayer:
     def __init__(self):
         self.redis = aioredis.from_url("redis://localhost:6379")
         self.active_conversations = {}
-    
+
     async def stream_agent_response(self, conversation_id: str, agent_response: str):
         """Stream agent responses to BCC in real-time"""
         await self.redis.xadd(
@@ -455,18 +455,18 @@ class RealtimeCommunicationLayer:
                 "status": "streaming"
             }
         )
-    
+
     async def setup_websocket_bridge(self):
         """Bridge between LangGraph and WebSocket connections"""
         async def response_handler(state: BoarderframeState):
             conversation_id = state.get("conversation_id")
             if conversation_id:
                 await self.stream_agent_response(
-                    conversation_id, 
+                    conversation_id,
                     state["response"]
                 )
             return state
-        
+
         return response_handler
 
 # Integration with BCC WebSocket
@@ -474,11 +474,11 @@ class BCCWebSocketHandler:
     def __init__(self):
         self.orchestrator = LangGraphOrchestrator()
         self.realtime = RealtimeCommunicationLayer()
-    
+
     async def handle_user_message(self, websocket, message: str):
         """Handle real-time user messages through LangGraph"""
         conversation_id = str(uuid.uuid4())
-        
+
         # Set up streaming response
         async def stream_callback(chunk: str):
             await websocket.send_text(json.dumps({
@@ -486,14 +486,14 @@ class BCCWebSocketHandler:
                 "data": chunk,
                 "conversation_id": conversation_id
             }))
-        
+
         # Process through LangGraph with streaming
         response = await self.orchestrator.graph.astream({
             "user_request": message,
             "conversation_id": conversation_id,
             "stream_callback": stream_callback
         })
-        
+
         return response
 ```
 
@@ -508,13 +508,13 @@ class LangGraphMonitoring:
     def __init__(self):
         self.client = Client()
         self.trace_name = "boarderframeos_agents"
-    
+
     async def setup_tracing(self):
         """Setup LangSmith tracing for all agent interactions"""
         # Automatic tracing for LangGraph workflows
         # Visual debugging in LangSmith Studio
         pass
-    
+
     async def track_agent_performance(self, agent_name: str, metrics: dict):
         """Track individual agent performance"""
         await self.client.create_run(
@@ -533,7 +533,7 @@ import agentops
 class MultiFrameworkMonitoring:
     def __init__(self):
         agentops.init()
-    
+
     @agentops.record_action("agent_handoff")
     async def track_handoff(self, from_agent: str, to_agent: str, context: dict):
         return {"handoff": f"{from_agent} → {to_agent}", "context": context}
@@ -547,7 +547,7 @@ class MultiFrameworkMonitoring:
 - [ ] Migrate Solomon to LangGraph node
 - [ ] Test basic agent interaction
 
-### **Week 2: Agent Communication** 
+### **Week 2: Agent Communication**
 - [ ] Implement agent handoff system
 - [ ] Create swarm coordination patterns
 - [ ] Test multi-agent workflows
@@ -575,7 +575,7 @@ class MultiFrameworkMonitoring:
 
 ### **Technical Metrics**
 - ✅ All existing agents (Solomon, David) migrated to LangGraph
-- ✅ Agent-to-agent handoffs working smoothly  
+- ✅ Agent-to-agent handoffs working smoothly
 - ✅ MCP tools accessible to appropriate agents
 - ✅ Adam can create new agents programmatically
 - ✅ Real-time responses in BCC dashboard
@@ -592,7 +592,7 @@ class MultiFrameworkMonitoring:
 
 ### **Preserve Current Functionality**
 - Keep existing BCC dashboard UI
-- Maintain MCP server architecture  
+- Maintain MCP server architecture
 - Preserve agent chat capabilities
 - Continue PostgreSQL/Redis infrastructure
 

@@ -5,17 +5,17 @@ Wraps the HTTP-based registry server for use with Claude CLI
 """
 
 import asyncio
-import json
-import sys
-import logging
-import os
-from typing import Any, Dict, List, Optional
-from pathlib import Path
-from datetime import datetime
 
 # Handle MCP import conflicts by temporarily modifying sys.path
 import importlib
 import importlib.util
+import json
+import logging
+import os
+import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 # Save original sys.path
 original_path = sys.path.copy()
@@ -32,10 +32,10 @@ for module_name in local_mcp_modules:
 
 try:
     # Import the real MCP package
-    from mcp import types
-    from mcp.server import Server, NotificationOptions
-    from mcp.server.models import InitializationOptions
     import mcp.server.stdio
+    from mcp import types
+    from mcp.server import NotificationOptions, Server
+    from mcp.server.models import InitializationOptions
 finally:
     # Restore original sys.path
     sys.path = original_path
@@ -195,18 +195,18 @@ async def register_agent(args: Dict[str, Any]) -> List[types.TextContent]:
             "registered_at": datetime.now().isoformat(),
             "health_status": "healthy"
         }
-        
+
         agents_registry[agent_id] = agent_data
-        
+
         result = {
             "success": True,
             "agent_id": agent_id,
             "status": "registered",
             "timestamp": datetime.now().isoformat()
         }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error registering agent: {str(e)}")]
 
@@ -216,9 +216,9 @@ async def discover_agents(args: Dict[str, Any]) -> List[types.TextContent]:
         agent_type = args.get("agent_type")
         department_id = args.get("department_id")
         status = args.get("status")
-        
+
         filtered_agents = []
-        
+
         for agent_data in agents_registry.values():
             if agent_type and agent_data.get("agent_type") != agent_type:
                 continue
@@ -226,18 +226,18 @@ async def discover_agents(args: Dict[str, Any]) -> List[types.TextContent]:
                 continue
             if status and agent_data.get("status") != status:
                 continue
-            
+
             filtered_agents.append(agent_data)
-        
+
         result = {
             "success": True,
             "agents": filtered_agents,
             "count": len(filtered_agents),
             "timestamp": datetime.now().isoformat()
         }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error discovering agents: {str(e)}")]
 
@@ -254,18 +254,18 @@ async def register_server(args: Dict[str, Any]) -> List[types.TextContent]:
             "registered_at": datetime.now().isoformat(),
             "health_status": "healthy"
         }
-        
+
         servers_registry[name] = server_data
-        
+
         result = {
             "success": True,
             "server_name": name,
             "status": "registered",
             "timestamp": datetime.now().isoformat()
         }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error registering server: {str(e)}")]
 
@@ -273,24 +273,24 @@ async def discover_servers(args: Dict[str, Any]) -> List[types.TextContent]:
     """Discover available servers."""
     try:
         server_type = args.get("server_type")
-        
+
         filtered_servers = []
-        
+
         for server_data in servers_registry.values():
             if server_type and server_data.get("server_type") != server_type:
                 continue
-            
+
             filtered_servers.append(server_data)
-        
+
         result = {
             "success": True,
             "servers": filtered_servers,
             "count": len(filtered_servers),
             "timestamp": datetime.now().isoformat()
         }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error discovering servers: {str(e)}")]
 
@@ -309,9 +309,9 @@ async def get_registry_health() -> List[types.TextContent]:
             },
             "timestamp": datetime.now().isoformat()
         }
-        
+
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
+
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error getting registry health: {str(e)}")]
 

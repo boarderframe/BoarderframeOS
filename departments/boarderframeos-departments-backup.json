@@ -17,7 +17,7 @@
         },
         {
           "name": "David",
-          "title": "CEO", 
+          "title": "CEO",
           "description": "Operational commander who executes Solomon's divine vision"
         }
       ],
@@ -866,7 +866,7 @@
     "total_teams": 120,
     "categories": [
       "Executive Tier",
-      "Core Business", 
+      "Core Business",
       "Technology & Development",
       "Core Infrastructure",
       "Agent & Human Experience",
