@@ -46,3 +46,25 @@ boarderframeos/debug.log
 # Temporary files
 *.tmp
 *.temp
+*.backup
+*.old
+*.broken
+*.corrupted
+
+# Test/Debug scripts in root
+test_*.py
+fix_*.py
+debug_*.py
+check_*.py
+verify_*.py
+demo_*.py
+
+# One-off scripts
+add_*.py
+update_*.py
+patch_*.py
+force_*.py
+restore_*.py
+
+# Keep scripts organized
+# All utility scripts should go in scripts/ subdirectories
