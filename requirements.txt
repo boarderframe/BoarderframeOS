@@ -36,7 +36,7 @@ litellm==1.50.29
 qdrant-client==1.12.1
 
 # Enhanced Monitoring
-langsmith==0.1.147
+langsmith==0.4.1
 agentops==0.3.25
 
 # Additional Redis for Streams
