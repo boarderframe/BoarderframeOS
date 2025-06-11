@@ -23,7 +23,7 @@ langchain-openai==0.2.10
 langchain-anthropic==0.2.8
 langchain-community==0.3.8
 langchain-core==0.3.25
-crewai==0.1.0
+crewai==0.126.0
 
 # Extended LLM Provider Support
 langchain-google-genai==2.0.0
