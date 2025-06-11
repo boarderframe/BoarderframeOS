@@ -21,6 +21,7 @@ def run_command(cmd, capture_output=True):
     else:
         return subprocess.run(cmd, shell=True)
 
+
 def main():
     print("🚀 BoarderframeOS GitHub Force Push")
     print("=" * 50)
@@ -51,6 +52,7 @@ def main():
         print(f"🌐 https://github.com/boarderframe/BoarderframeOS")
     else:
         print("\n❌ Push failed! Check your GitHub credentials.")
+
 
 if __name__ == "__main__":
     main()

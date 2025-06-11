@@ -11,11 +11,11 @@ def update_leader_statuses():
 
     try:
         conn = psycopg2.connect(
-            host='localhost',
+            host="localhost",
             port=5434,
-            database='boarderframeos',
-            user='boarderframe',
-            password='boarderframe_secure_2025'
+            database="boarderframeos",
+            user="boarderframe",
+            password="boarderframe_secure_2025",
         )
         cur = conn.cursor()
 
@@ -23,23 +23,27 @@ def update_leader_statuses():
         print("=" * 60)
 
         # First, check if we need to add more status options
-        cur.execute("""
+        cur.execute(
+            """
             SELECT column_name, data_type, character_maximum_length
             FROM information_schema.columns
             WHERE table_name = 'department_leaders'
             AND column_name = 'active_status'
-        """)
+        """
+        )
 
         col_info = cur.fetchone()
         print(f"Column 'active_status' type: {col_info[1]} (max length: {col_info[2]})")
 
         # Update all leaders to 'hired' status
-        cur.execute("""
+        cur.execute(
+            """
             UPDATE department_leaders
             SET active_status = 'hired'
             WHERE active_status = 'active'
             RETURNING name, title
-        """)
+        """
+        )
 
         updated_leaders = cur.fetchall()
         print(f"\n✅ Updated {len(updated_leaders)} leaders to 'hired' status")
@@ -57,30 +61,37 @@ def update_leader_statuses():
 
         # Let's also add a development_status column to track build status
         print("\n🔧 Checking if we need to add development_status column...")
-        cur.execute("""
+        cur.execute(
+            """
             SELECT column_name
             FROM information_schema.columns
             WHERE table_name = 'department_leaders'
             AND column_name = 'development_status'
-        """)
+        """
+        )
 
         if not cur.fetchone():
             print("📝 Adding development_status column to department_leaders...")
-            cur.execute("""
+            cur.execute(
+                """
                 ALTER TABLE department_leaders
                 ADD COLUMN development_status VARCHAR(50) DEFAULT 'not_built'
-            """)
+            """
+            )
             print("✅ Added development_status column")
 
         # Update development status for all leaders
-        cur.execute("""
+        cur.execute(
+            """
             UPDATE department_leaders
             SET development_status = 'not_built'
             WHERE development_status IS NULL OR development_status != 'not_built'
-        """)
+        """
+        )
 
         # Show final status summary
-        cur.execute("""
+        cur.execute(
+            """
             SELECT
                 active_status,
                 development_status,
@@ -88,7 +99,8 @@ def update_leader_statuses():
             FROM department_leaders
             GROUP BY active_status, development_status
             ORDER BY count DESC
-        """)
+        """
+        )
 
         print("\n📊 Final Leader Status Summary:")
         print("-" * 40)
@@ -104,7 +116,9 @@ def update_leader_statuses():
     except Exception as e:
         print(f"❌ Error updating leader statuses: {e}")
         import traceback
+
         traceback.print_exc()
+
 
 if __name__ == "__main__":
     update_leader_statuses()

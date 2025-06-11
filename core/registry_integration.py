@@ -22,15 +22,18 @@ from .message_bus import AgentMessage, MessagePriority, MessageType, message_bus
 
 logger = logging.getLogger("registry_integration")
 
+
 @dataclass
 class RegistryConfig:
     """Configuration for registry integration"""
+
     registry_url: str = "http://localhost:8007"
     auto_register: bool = True
     heartbeat_interval: int = 30  # seconds
     health_check_interval: int = 60  # seconds
     retry_attempts: int = 3
     timeout: int = 10
+
 
 class RegistryClient:
     """Client for interacting with the database-backed registry system"""
@@ -50,7 +53,9 @@ class RegistryClient:
         asyncio.create_task(self._heartbeat_loop())
         asyncio.create_task(self._health_check_loop())
 
-        logger.info(f"Registry client started, connecting to {self.config.registry_url}")
+        logger.info(
+            f"Registry client started, connecting to {self.config.registry_url}"
+        )
 
     async def stop(self):
         """Stop the registry client"""
@@ -58,8 +63,12 @@ class RegistryClient:
         await self.client.aclose()
         logger.info("Registry client stopped")
 
-    async def register_agent(self, agent_config: "AgentConfig", agent_id: str = None,
-                           endpoints: Dict[str, str] = None) -> Dict[str, Any]:
+    async def register_agent(
+        self,
+        agent_config: "AgentConfig",
+        agent_id: str = None,
+        endpoints: Dict[str, str] = None,
+    ) -> Dict[str, Any]:
         """Register an agent with the database registry"""
         try:
             # Generate UUID if not provided
@@ -70,7 +79,7 @@ class RegistryClient:
             if not endpoints:
                 endpoints = {
                     "primary": f"http://localhost:8001/agent/{agent_config.name.lower()}",
-                    "health": f"http://localhost:8001/health/{agent_config.name.lower()}"
+                    "health": f"http://localhost:8001/health/{agent_config.name.lower()}",
                 }
 
             # Map AgentConfig to registry format
@@ -88,8 +97,8 @@ class RegistryClient:
                     "max_concurrent_tasks": agent_config.max_concurrent_tasks,
                     "compute_allocation": agent_config.compute_allocation,
                     "memory_limit_gb": agent_config.memory_limit_gb,
-                    "zone": agent_config.zone
-                }
+                    "zone": agent_config.zone,
+                },
             }
 
             # Register with database via direct database insertion (since API server has connection issues)
@@ -105,10 +114,16 @@ class RegistryClient:
             logger.error(f"Failed to register agent {agent_config.name}: {e}")
             return {"success": False, "error": str(e)}
 
-    async def register_server(self, server_name: str, server_type: str,
-                            endpoint_url: str, capabilities: List[str],
-                            health_check_url: str = None, version: str = "1.0.0",
-                            metadata: Dict[str, Any] = None) -> Dict[str, Any]:
+    async def register_server(
+        self,
+        server_name: str,
+        server_type: str,
+        endpoint_url: str,
+        capabilities: List[str],
+        health_check_url: str = None,
+        version: str = "1.0.0",
+        metadata: Dict[str, Any] = None,
+    ) -> Dict[str, Any]:
         """Register a server (MCP or other) with the database registry"""
         try:
             server_id = str(uuid.uuid4())
@@ -121,7 +136,7 @@ class RegistryClient:
                 "endpoint_url": endpoint_url,
                 "capabilities": capabilities,
                 "health_check_url": health_check_url or f"{endpoint_url}/health",
-                "metadata": metadata or {}
+                "metadata": metadata or {},
             }
 
             # Store locally for tracking
@@ -134,9 +149,12 @@ class RegistryClient:
             logger.error(f"Failed to register server {server_name}: {e}")
             return {"success": False, "error": str(e)}
 
-    async def discover_agents(self, agent_type: str = None,
-                            capabilities: List[str] = None,
-                            status: str = "online") -> List[Dict[str, Any]]:
+    async def discover_agents(
+        self,
+        agent_type: str = None,
+        capabilities: List[str] = None,
+        status: str = "online",
+    ) -> List[Dict[str, Any]]:
         """Discover agents from the registry"""
         try:
             # This would normally query the registry API
@@ -157,8 +175,9 @@ class RegistryClient:
             logger.error(f"Failed to discover agents: {e}")
             return []
 
-    async def discover_servers(self, server_type: str = None,
-                             capabilities: List[str] = None) -> List[Dict[str, Any]]:
+    async def discover_servers(
+        self, server_type: str = None, capabilities: List[str] = None
+    ) -> List[Dict[str, Any]]:
         """Discover servers from the registry"""
         try:
             servers = []
@@ -177,13 +196,16 @@ class RegistryClient:
             logger.error(f"Failed to discover servers: {e}")
             return []
 
-    async def update_agent_health(self, agent_id: str, health_status: str,
-                                load_percentage: float = None) -> bool:
+    async def update_agent_health(
+        self, agent_id: str, health_status: str, load_percentage: float = None
+    ) -> bool:
         """Update agent health status in the registry"""
         try:
             if agent_id in self.registered_agents:
                 self.registered_agents[agent_id]["health_status"] = health_status
-                self.registered_agents[agent_id]["last_heartbeat"] = datetime.utcnow().isoformat()
+                self.registered_agents[agent_id][
+                    "last_heartbeat"
+                ] = datetime.utcnow().isoformat()
                 if load_percentage is not None:
                     self.registered_agents[agent_id]["current_load"] = load_percentage
 
@@ -196,15 +218,20 @@ class RegistryClient:
             logger.error(f"Failed to update agent health: {e}")
             return False
 
-    async def update_server_health(self, server_id: str, health_status: str,
-                                 response_time_ms: int = None) -> bool:
+    async def update_server_health(
+        self, server_id: str, health_status: str, response_time_ms: int = None
+    ) -> bool:
         """Update server health status in the registry"""
         try:
             if server_id in self.registered_servers:
                 self.registered_servers[server_id]["health_status"] = health_status
-                self.registered_servers[server_id]["last_heartbeat"] = datetime.utcnow().isoformat()
+                self.registered_servers[server_id][
+                    "last_heartbeat"
+                ] = datetime.utcnow().isoformat()
                 if response_time_ms is not None:
-                    self.registered_servers[server_id]["response_time_ms"] = response_time_ms
+                    self.registered_servers[server_id][
+                        "response_time_ms"
+                    ] = response_time_ms
 
                 logger.debug(f"Updated health for server {server_id}: {health_status}")
                 return True
@@ -243,7 +270,11 @@ class RegistryClient:
                     if health_url:
                         try:
                             response = await self.client.get(health_url, timeout=5)
-                            status = "healthy" if response.status_code == 200 else "unhealthy"
+                            status = (
+                                "healthy"
+                                if response.status_code == 200
+                                else "unhealthy"
+                            )
                             await self.update_agent_health(agent_id, status)
                         except:
                             await self.update_agent_health(agent_id, "unhealthy")
@@ -255,10 +286,18 @@ class RegistryClient:
                         try:
                             start_time = datetime.utcnow()
                             response = await self.client.get(health_url, timeout=5)
-                            response_time = int((datetime.utcnow() - start_time).total_seconds() * 1000)
+                            response_time = int(
+                                (datetime.utcnow() - start_time).total_seconds() * 1000
+                            )
 
-                            status = "healthy" if response.status_code == 200 else "unhealthy"
-                            await self.update_server_health(server_id, status, response_time)
+                            status = (
+                                "healthy"
+                                if response.status_code == 200
+                                else "unhealthy"
+                            )
+                            await self.update_server_health(
+                                server_id, status, response_time
+                            )
                         except:
                             await self.update_server_health(server_id, "unhealthy")
 
@@ -268,8 +307,10 @@ class RegistryClient:
                 logger.error(f"Health check loop error: {e}")
                 await asyncio.sleep(10)
 
+
 # Global registry client instance
 registry_client: Optional[RegistryClient] = None
+
 
 async def get_registry_client() -> RegistryClient:
     """Get the global registry client instance"""
@@ -279,7 +320,10 @@ async def get_registry_client() -> RegistryClient:
         await registry_client.start()
     return registry_client
 
-async def register_agent_with_database(agent_config: "AgentConfig", agent_id: str = None) -> str:
+
+async def register_agent_with_database(
+    agent_config: "AgentConfig", agent_id: str = None
+) -> str:
     """Convenience function to register an agent with the database registry"""
     client = await get_registry_client()
     result = await client.register_agent(agent_config, agent_id)
@@ -288,11 +332,15 @@ async def register_agent_with_database(agent_config: "AgentConfig", agent_id: st
     else:
         raise Exception(f"Failed to register agent: {result['error']}")
 
-async def register_server_with_database(server_name: str, server_type: str,
-                                       endpoint_url: str, capabilities: List[str]) -> str:
+
+async def register_server_with_database(
+    server_name: str, server_type: str, endpoint_url: str, capabilities: List[str]
+) -> str:
     """Convenience function to register a server with the database registry"""
     client = await get_registry_client()
-    result = await client.register_server(server_name, server_type, endpoint_url, capabilities)
+    result = await client.register_server(
+        server_name, server_type, endpoint_url, capabilities
+    )
     if result["success"]:
         return result["server_id"]
     else:

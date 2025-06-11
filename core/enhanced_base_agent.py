@@ -44,6 +44,7 @@ from .the_agent_cortex import (
 
 class EnhancedAgentState(Enum):
     """Enhanced agent states with Agent Cortex integration"""
+
     INITIALIZING = "initializing"
     IDLE = "idle"
     THINKING_WITH_AGENT_CORTEX = "thinking_with_agent_cortex"
@@ -57,6 +58,7 @@ class EnhancedAgentState(Enum):
 @dataclass
 class AgentCortexSession:
     """Agent Cortex session tracking for agent"""
+
     agent_name: str
     session_id: str
     active_requests: List[str] = field(default_factory=list)
@@ -69,6 +71,7 @@ class AgentCortexSession:
 @dataclass
 class EnhancedAgentMetrics:
     """Enhanced metrics with Agent Cortex and LangGraph tracking"""
+
     # Original metrics
     thoughts_processed: int = 0
     actions_taken: int = 0
@@ -105,8 +108,7 @@ class EnhancedBaseAgent(ABC):
         # Agent Cortex integration
         self.agent_cortex = None  # Will be initialized async
         self.agent_cortex_session = AgentCortexSession(
-            agent_name=config.name,
-            session_id=str(uuid.uuid4())
+            agent_name=config.name, session_id=str(uuid.uuid4())
         )
 
         # LangGraph integration
@@ -178,12 +180,13 @@ class EnhancedBaseAgent(ABC):
 
         # Enhanced formatter with more context
         formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - [AgentCortex:%(agent_cortex_model)s] - %(message)s',
-            defaults={'agent_cortex_model': 'none'}
+            "%(asctime)s - %(name)s - %(levelname)s - [AgentCortex:%(agent_cortex_model)s] - %(message)s",
+            defaults={"agent_cortex_model": "none"},
         )
 
         # File handler
         from pathlib import Path
+
         log_dir = Path("logs/enhanced_agents")
         log_dir.mkdir(parents=True, exist_ok=True)
 
@@ -240,7 +243,7 @@ class EnhancedBaseAgent(ABC):
             "agent_state": self.state.value,
             "recent_performance": self.agent_cortex_session.performance_history[-5:],
             "available_tools": list(self.tools.keys()),
-            "system_context": await self._get_system_context()
+            "system_context": await self._get_system_context(),
         }
 
         # Update state with perception
@@ -263,18 +266,24 @@ class EnhancedBaseAgent(ABC):
             context=state.get("perception_context", {}),
             complexity=complexity,
             quality_requirements=self.agent_cortex_session.quality_threshold,
-            conversation_id=state.get("conversation_id")
+            conversation_id=state.get("conversation_id"),
         )
 
         # Get optimal model from Agent Cortex
-        agent_cortex_response = await self.agent_cortex.process_agent_request(agent_cortex_request)
+        agent_cortex_response = await self.agent_cortex.process_agent_request(
+            agent_cortex_request
+        )
 
         # Track Agent Cortex selection
-        self.agent_cortex_session.active_requests.append(agent_cortex_response.tracking_id)
+        self.agent_cortex_session.active_requests.append(
+            agent_cortex_response.tracking_id
+        )
         self.metrics.agent_cortex_requests += 1
 
         # Enhanced thinking prompt
-        thinking_prompt = await self._create_thinking_prompt(state, agent_cortex_response)
+        thinking_prompt = await self._create_thinking_prompt(
+            state, agent_cortex_response
+        )
 
         # Execute thinking with Agent Cortex-selected model
         try:
@@ -282,9 +291,7 @@ class EnhancedBaseAgent(ABC):
 
             # Report success to Agent Cortex
             await self._report_agent_cortex_performance(
-                agent_cortex_response.tracking_id,
-                thinking_result,
-                success=True
+                agent_cortex_response.tracking_id, thinking_result, success=True
             )
 
         except Exception as e:
@@ -293,9 +300,7 @@ class EnhancedBaseAgent(ABC):
 
             # Report error to Agent Cortex
             await self._report_agent_cortex_performance(
-                agent_cortex_response.tracking_id,
-                thinking_result,
-                success=False
+                agent_cortex_response.tracking_id, thinking_result, success=False
             )
 
         # Update state
@@ -320,24 +325,30 @@ class EnhancedBaseAgent(ABC):
             context={
                 "thoughts": state.get("thoughts", ""),
                 "perception": state.get("perception_context", {}),
-                "required_action": await self._determine_required_action(state)
+                "required_action": await self._determine_required_action(state),
             },
             complexity=action_complexity,
-            quality_requirements=self.agent_cortex_session.quality_threshold
+            quality_requirements=self.agent_cortex_session.quality_threshold,
         )
 
         # Get optimal model from Agent Cortex
-        agent_cortex_response = await self.agent_cortex.process_agent_request(agent_cortex_request)
+        agent_cortex_response = await self.agent_cortex.process_agent_request(
+            agent_cortex_request
+        )
 
         # Execute action with Agent Cortex-selected model
-        action_result = await self._execute_enhanced_action(state, agent_cortex_response)
+        action_result = await self._execute_enhanced_action(
+            state, agent_cortex_response
+        )
 
         # Update metrics
         self.metrics.actions_taken += 1
 
         # Update state
         state["action_result"] = action_result
-        state["action_agent_cortex_selection"] = agent_cortex_response.selection.__dict__
+        state["action_agent_cortex_selection"] = (
+            agent_cortex_response.selection.__dict__
+        )
         state["action_timestamp"] = datetime.now().isoformat()
 
         return state
@@ -440,7 +451,9 @@ class EnhancedBaseAgent(ABC):
         pass
 
     # Enhanced user chat interface
-    async def handle_user_chat(self, message: str, conversation_id: Optional[str] = None) -> str:
+    async def handle_user_chat(
+        self, message: str, conversation_id: Optional[str] = None
+    ) -> str:
         """Enhanced chat handling with full Agent Cortex + LangGraph integration"""
 
         self.logger.info(f"Handling user chat: {message[:100]}...")
@@ -448,7 +461,9 @@ class EnhancedBaseAgent(ABC):
         try:
             # Use the orchestrator for complex multi-agent workflows
             if await self._should_use_orchestrator(message):
-                result = await self.orchestrator.process_user_request(message, conversation_id)
+                result = await self.orchestrator.process_user_request(
+                    message, conversation_id
+                )
                 return result["response"]
 
             # Use agent-specific graph for single-agent tasks
@@ -464,14 +479,23 @@ class EnhancedBaseAgent(ABC):
 
         # Use orchestrator for complex requests that might need multiple agents
         complex_keywords = [
-            "create agent", "new agent", "department", "team", "coordinate",
-            "multiple", "complex", "strategy", "business plan", "analysis"
+            "create agent",
+            "new agent",
+            "department",
+            "team",
+            "coordinate",
+            "multiple",
+            "complex",
+            "strategy",
+            "business plan",
+            "analysis",
         ]
 
         return any(keyword in message.lower() for keyword in complex_keywords)
 
-    async def _process_with_agent_graph(self, message: str,
-                                      conversation_id: Optional[str]) -> str:
+    async def _process_with_agent_graph(
+        self, message: str, conversation_id: Optional[str]
+    ) -> str:
         """Process using agent-specific LangGraph"""
 
         from .agent_cortex_langgraph_orchestrator import BoarderframeState
@@ -497,7 +521,7 @@ class EnhancedBaseAgent(ABC):
             completion_status="pending",
             quality_score=0.0,
             timestamp=datetime.now().isoformat(),
-            processing_time=0.0
+            processing_time=0.0,
         )
 
         # Process through agent graph
@@ -521,9 +545,15 @@ class EnhancedBaseAgent(ABC):
         complexity = 5  # Base complexity
 
         # Increase complexity for certain keywords
-        if any(keyword in user_input.lower() for keyword in ["analyze", "strategy", "complex"]):
+        if any(
+            keyword in user_input.lower()
+            for keyword in ["analyze", "strategy", "complex"]
+        ):
             complexity += 2
-        if any(keyword in user_input.lower() for keyword in ["business", "revenue", "optimization"]):
+        if any(
+            keyword in user_input.lower()
+            for keyword in ["business", "revenue", "optimization"]
+        ):
             complexity += 1
         if len(user_input) > 500:  # Long requests
             complexity += 1
@@ -538,15 +568,21 @@ class EnhancedBaseAgent(ABC):
         complexity = 4  # Base complexity for actions
 
         # Increase complexity for complex actions
-        if any(keyword in thoughts.lower() for keyword in ["create", "generate", "complex"]):
+        if any(
+            keyword in thoughts.lower() for keyword in ["create", "generate", "complex"]
+        ):
             complexity += 3
-        if any(keyword in thoughts.lower() for keyword in ["coordinate", "multiple", "integrate"]):
+        if any(
+            keyword in thoughts.lower()
+            for keyword in ["coordinate", "multiple", "integrate"]
+        ):
             complexity += 2
 
         return min(complexity, 10)
 
-    async def _create_thinking_prompt(self, state: Dict[str, Any],
-                                    agent_cortex_response) -> str:
+    async def _create_thinking_prompt(
+        self, state: Dict[str, Any], agent_cortex_response
+    ) -> str:
         """Create enhanced thinking prompt"""
 
         perception = state.get("perception_context", {})
@@ -587,8 +623,9 @@ class EnhancedBaseAgent(ABC):
         else:
             return "general_response"
 
-    async def _execute_enhanced_action(self, state: Dict[str, Any],
-                                     agent_cortex_response) -> str:
+    async def _execute_enhanced_action(
+        self, state: Dict[str, Any], agent_cortex_response
+    ) -> str:
         """Execute action with Agent Cortex-selected model"""
 
         required_action = await self._determine_required_action(state)
@@ -608,9 +645,7 @@ class EnhancedBaseAgent(ABC):
 
             # Report success to Agent Cortex
             await self._report_agent_cortex_performance(
-                agent_cortex_response.tracking_id,
-                action_result,
-                success=True
+                agent_cortex_response.tracking_id, action_result, success=True
             )
 
             return action_result
@@ -620,15 +655,14 @@ class EnhancedBaseAgent(ABC):
 
             # Report error to Agent Cortex
             await self._report_agent_cortex_performance(
-                agent_cortex_response.tracking_id,
-                error_result,
-                success=False
+                agent_cortex_response.tracking_id, error_result, success=False
             )
 
             return error_result
 
-    async def _report_agent_cortex_performance(self, tracking_id: str,
-                                      result: str, success: bool):
+    async def _report_agent_cortex_performance(
+        self, tracking_id: str, result: str, success: bool
+    ):
         """Report performance metrics to Agent Cortex"""
 
         try:
@@ -640,7 +674,7 @@ class EnhancedBaseAgent(ABC):
                 actual_latency=1.5,  # Estimated
                 actual_quality=0.8 if success else 0.3,
                 user_satisfaction=0.8 if success else 0.4,
-                task_completion=success
+                task_completion=success,
             )
 
             await self.agent_cortex.report_performance(tracking_id, metrics)
@@ -675,7 +709,7 @@ class EnhancedBaseAgent(ABC):
         return {
             "agent_count": len(await self._get_active_agents()),
             "system_load": 0.3,  # TODO: Get real system load
-            "time_of_day": datetime.now().hour
+            "time_of_day": datetime.now().hour,
         }
 
     async def _get_active_agents(self) -> List[str]:
@@ -683,10 +717,14 @@ class EnhancedBaseAgent(ABC):
         # TODO: Integrate with registry
         return ["solomon", "david", "adam"]
 
-    async def _analyze_interaction_performance(self, state: Dict[str, Any]) -> Dict[str, Any]:
+    async def _analyze_interaction_performance(
+        self, state: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Analyze performance of the interaction"""
 
-        start_time = datetime.fromisoformat(state.get("timestamp", datetime.now().isoformat()))
+        start_time = datetime.fromisoformat(
+            state.get("timestamp", datetime.now().isoformat())
+        )
         processing_time = (datetime.now() - start_time).total_seconds()
 
         return {
@@ -696,12 +734,13 @@ class EnhancedBaseAgent(ABC):
             "quality_indicators": {
                 "response_length": len(state.get("action_result", "")),
                 "complexity_handled": state.get("complexity", 5),
-                "error_free": state.get("completion_status") != "error"
-            }
+                "error_free": state.get("completion_status") != "error",
+            },
         }
 
-    async def _store_reflection_in_memory(self, state: Dict[str, Any],
-                                        performance_analysis: Dict[str, Any]):
+    async def _store_reflection_in_memory(
+        self, state: Dict[str, Any], performance_analysis: Dict[str, Any]
+    ):
         """Store reflection in agent memory"""
 
         reflection_entry = {
@@ -710,7 +749,7 @@ class EnhancedBaseAgent(ABC):
             "response": state.get("action_result", ""),
             "performance": performance_analysis,
             "agent_cortex_selections": state.get("agent_cortex_selections", []),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         self.memory.add(reflection_entry, permanent=True)
@@ -724,7 +763,7 @@ class EnhancedBaseAgent(ABC):
         insights = {
             "model_effectiveness": {},
             "tool_usage_patterns": {},
-            "improvement_opportunities": []
+            "improvement_opportunities": [],
         }
 
         # Analyze Agent Cortex model selections
@@ -743,40 +782,54 @@ class EnhancedBaseAgent(ABC):
 
         # Update quality threshold based on recent performance
         if state.get("quality_score", 0) > 0.9:
-            self.agent_cortex_session.quality_threshold = min(0.95, self.agent_cortex_session.quality_threshold + 0.01)
+            self.agent_cortex_session.quality_threshold = min(
+                0.95, self.agent_cortex_session.quality_threshold + 0.01
+            )
         elif state.get("quality_score", 0) < 0.7:
-            self.agent_cortex_session.quality_threshold = max(0.75, self.agent_cortex_session.quality_threshold - 0.01)
+            self.agent_cortex_session.quality_threshold = max(
+                0.75, self.agent_cortex_session.quality_threshold - 0.01
+            )
 
     # Tool creation methods
     async def _create_analytics_tool(self):
         """Create analytics MCP tool"""
+
         # TODO: Implement actual MCP integration
         async def analytics_tool(query: str) -> str:
             return f"Analytics query executed: {query}"
+
         return analytics_tool
 
     async def _create_customer_tool(self):
         """Create customer MCP tool"""
+
         async def customer_tool(action: str, data: Dict = None) -> str:
             return f"Customer action {action} executed"
+
         return customer_tool
 
     async def _create_registry_tool(self):
         """Create registry MCP tool"""
+
         async def registry_tool(operation: str, agent_data: Dict = None) -> str:
             return f"Registry operation {operation} executed"
+
         return registry_tool
 
     async def _create_filesystem_tool(self):
         """Create filesystem MCP tool"""
+
         async def filesystem_tool(action: str, path: str, content: str = None) -> str:
             return f"Filesystem {action} on {path} executed"
+
         return filesystem_tool
 
     async def _create_database_tool(self):
         """Create database MCP tool"""
+
         async def database_tool(query: str, data: Dict = None) -> str:
             return f"Database query executed: {query}"
+
         return database_tool
 
     # Compatibility methods
@@ -805,23 +858,28 @@ class EnhancedBaseAgent(ABC):
                 "session_id": self.agent_cortex_session.session_id,
                 "active_requests": len(self.agent_cortex_session.active_requests),
                 "cost_budget": self.agent_cortex_session.cost_budget,
-                "quality_threshold": self.agent_cortex_session.quality_threshold
+                "quality_threshold": self.agent_cortex_session.quality_threshold,
             },
             "metrics": {
                 "agent_cortex_requests": self.metrics.agent_cortex_requests,
                 "workflows_completed": self.metrics.workflows_completed,
                 "avg_response_time": self.metrics.avg_response_time,
                 "quality_score": self.metrics.quality_score,
-                "errors": self.metrics.errors
+                "errors": self.metrics.errors,
             },
             "capabilities": {
                 "tools": list(self.tools.keys()),
                 "mcp_tools": list(self.mcp_tools.keys()),
-                "goals": self.config.goals
+                "goals": self.config.goals,
             },
-            "last_activity": self.metrics.last_activity.isoformat()
+            "last_activity": self.metrics.last_activity.isoformat(),
         }
 
 
 # Export main class
-__all__ = ["EnhancedBaseAgent", "EnhancedAgentState", "AgentCortexSession", "EnhancedAgentMetrics"]
+__all__ = [
+    "EnhancedBaseAgent",
+    "EnhancedAgentState",
+    "AgentCortexSession",
+    "EnhancedAgentMetrics",
+]

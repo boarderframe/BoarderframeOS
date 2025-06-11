@@ -3,6 +3,7 @@
 Direct fix for tab display by updating the CSS to be more specific
 """
 
+
 def direct_tab_fix():
     """Apply a more aggressive CSS fix"""
     print("🔧 Applying Direct Tab Display Fix")
@@ -10,16 +11,16 @@ def direct_tab_fix():
 
     file_path = "/Users/cosburn/BoarderframeOS/corporate_headquarters.py"
 
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         content = f.read()
 
     # Find the existing tab CSS
     import re
 
     # Replace the tab-content CSS with more specific rules
-    old_css = r'\.tab-content \{\s*display: none;\s*\}\s*\.tab-content\.active \{\s*display: block;\s*\}'
+    old_css = r"\.tab-content \{\s*display: none;\s*\}\s*\.tab-content\.active \{\s*display: block;\s*\}"
 
-    new_css = '''/* Tab Content - More Specific Rules */
+    new_css = """/* Tab Content - More Specific Rules */
         .tab-content {
             display: none !important;
             opacity: 0;
@@ -36,7 +37,7 @@ def direct_tab_fix():
         .tab-content.active * {
             opacity: 1 !important;
             visibility: visible !important;
-        }'''
+        }"""
 
     # Try to replace
     if re.search(old_css, content, re.DOTALL):
@@ -44,12 +45,12 @@ def direct_tab_fix():
         print("✅ Replaced existing CSS with more specific rules")
     else:
         # Find a place to insert
-        css_insert = content.find('/* Tab Content */')
+        css_insert = content.find("/* Tab Content */")
         if css_insert > -1:
             # Replace the section up to the next comment or closing style tag
-            end_point = content.find('/*', css_insert + 20)
+            end_point = content.find("/*", css_insert + 20)
             if end_point == -1:
-                end_point = content.find('</style>', css_insert)
+                end_point = content.find("</style>", css_insert)
 
             content = content[:css_insert] + new_css + content[end_point:]
             print("✅ Inserted new CSS rules")
@@ -58,9 +59,9 @@ def direct_tab_fix():
     print("\n🔍 Updating showTab function...")
 
     # Find and replace the showTab function
-    showTab_pattern = r'function showTab\(tabName\) \{[^}]+\}'
+    showTab_pattern = r"function showTab\(tabName\) \{[^}]+\}"
 
-    new_showTab = '''function showTab(tabName) {
+    new_showTab = """function showTab(tabName) {
             console.log('[ShowTab] Switching to:', tabName);
 
             // First, force hide ALL tabs
@@ -108,13 +109,13 @@ def direct_tab_fix():
 
             // Debug info
             console.log('[ShowTab] Active tabs:', document.querySelectorAll('.tab-content.active').length);
-        }'''
+        }"""
 
     content = re.sub(showTab_pattern, new_showTab, content, flags=re.DOTALL)
     print("✅ Updated showTab function with aggressive display control")
 
     # Write back
-    with open(file_path, 'w') as f:
+    with open(file_path, "w") as f:
         f.write(content)
 
     print("\n✅ Direct fix applied!")

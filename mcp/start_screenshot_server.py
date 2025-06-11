@@ -15,11 +15,11 @@ from screenshot_server import MCPScreenshotServer
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
 logger = logging.getLogger("screenshot_launcher")
+
 
 async def main():
     """Start the screenshot server"""
@@ -37,6 +37,7 @@ async def main():
     # Create and start server
     server = MCPScreenshotServer()
     await server.start(port)
+
 
 if __name__ == "__main__":
     try:

@@ -10,11 +10,12 @@ from urllib.parse import parse_qs, urlparse
 
 PORT = 8080
 
+
 class BoarderframeHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
-        if self.path == '/' or self.path == '/index.html':
+        if self.path == "/" or self.path == "/index.html":
             self.send_response(200)
-            self.send_header('Content-type', 'text/html')
+            self.send_header("Content-type", "text/html")
             self.end_headers()
 
             html = """<!DOCTYPE html>
@@ -157,19 +158,18 @@ class BoarderframeHandler(http.server.SimpleHTTPRequestHandler):
 </html>"""
             self.wfile.write(html.encode())
 
-        elif self.path == '/health':
+        elif self.path == "/health":
             self.send_response(200)
-            self.send_header('Content-type', 'application/json')
+            self.send_header("Content-type", "application/json")
             self.end_headers()
-            response = json.dumps({
-                "status": "healthy",
-                "service": "boarderframe_ui",
-                "port": PORT
-            })
+            response = json.dumps(
+                {"status": "healthy", "service": "boarderframe_ui", "port": PORT}
+            )
             self.wfile.write(response.encode())
 
         else:
             super().do_GET()
+
 
 def main():
     try:
@@ -185,6 +185,7 @@ def main():
         print("\n🛑 Server stopped")
     except Exception as e:
         print(f"❌ Server error: {e}")
+
 
 if __name__ == "__main__":
     main()

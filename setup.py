@@ -1,11 +1,14 @@
 """
 Setup configuration for BoarderframeOS package.
 """
+
 from setuptools import find_packages, setup
 
 # Read requirements
 with open("requirements.txt") as f:
-    requirements = [line.strip() for line in f if line.strip() and not line.startswith("#")]
+    requirements = [
+        line.strip() for line in f if line.strip() and not line.startswith("#")
+    ]
 
 # Read README for long description
 with open("README.md", "r", encoding="utf-8") as f:

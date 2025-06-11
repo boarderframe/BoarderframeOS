@@ -14,7 +14,7 @@ def integrate_metrics_layer():
 
     file_path = "/Users/cosburn/BoarderframeOS/corporate_headquarters.py"
 
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         content = f.read()
 
     # 1. Add imports
@@ -81,13 +81,13 @@ from core.hq_metrics_layer import BFColors, BFIcons"""
 
     welcome_pattern = r'<div class="welcome-section">[\s\S]*?</div>\s*</div>\s*</div>'
 
-    new_welcome = '''<div class="welcome-section">
+    new_welcome = """<div class="welcome-section">
                     <h2>Welcome to BoarderframeOS Control Center</h2>
                     <p>Managing {total_agents} AI agents across {total_departments} departments</p>
 
                     <!-- Metrics Overview from Metrics Layer -->
                     {self.metrics_layer.get_dashboard_summary_cards()}
-                </div>'''
+                </div>"""
 
     content = re.sub(welcome_pattern, new_welcome, content, flags=re.DOTALL)
     print("   ✅ Updated welcome section to use metric cards")
@@ -96,15 +96,17 @@ from core.hq_metrics_layer import BFColors, BFIcons"""
     print("\n📝 Updating overview tab...")
 
     # Find the overview widget section
-    overview_pattern = r'<!-- Overview Tab -->[\s\S]*?<div class="widget-grid">[\s\S]*?</div>\s*</div>'
+    overview_pattern = (
+        r'<!-- Overview Tab -->[\s\S]*?<div class="widget-grid">[\s\S]*?</div>\s*</div>'
+    )
 
-    new_overview = '''<!-- Overview Tab -->
+    new_overview = """<!-- Overview Tab -->
         <div id="overview" class="tab-content active">
             <div class="card full-width">
                 <h3>System Overview</h3>
                 {self.metrics_layer.get_dashboard_summary_cards()}
             </div>
-        </div>'''
+        </div>"""
 
     # This is tricky, let's be more specific
     # Instead, let's update the individual metric retrievals
@@ -120,9 +122,9 @@ from core.hq_metrics_layer import BFColors, BFIcons"""
     # Actually, let's update the agent grid generation
     agent_grid_pattern = r'<div id="agentGrid"[^>]*>[\s\S]*?{self\._generate_enhanced_agents_html\(\)}[\s\S]*?</div>'
 
-    new_agent_grid = '''<div id="agentGrid" style="margin-top: 1rem;">
+    new_agent_grid = """<div id="agentGrid" style="margin-top: 1rem;">
                     {self.metrics_layer.get_agent_cards_html()}
-                </div>'''
+                </div>"""
 
     content = re.sub(agent_grid_pattern, new_agent_grid, content, flags=re.DOTALL)
     print("   ✅ Updated agents page to use metrics layer cards")
@@ -131,8 +133,8 @@ from core.hq_metrics_layer import BFColors, BFIcons"""
     print("\n📝 Updating departments page...")
 
     # Replace department generation with metrics layer
-    dept_pattern = r'{self\._generate_departments_html\(\)}'
-    new_dept = '{self.metrics_layer.get_department_cards_html()}'
+    dept_pattern = r"{self\._generate_departments_html\(\)}"
+    new_dept = "{self.metrics_layer.get_department_cards_html()}"
 
     content = content.replace(dept_pattern, new_dept)
     print("   ✅ Updated departments to use metrics layer")
@@ -141,10 +143,10 @@ from core.hq_metrics_layer import BFColors, BFIcons"""
     print("\n📝 Adding metrics CSS...")
 
     # Find where to inject CSS
-    css_pattern = r'(<style>)'
-    css_replacement = f'''<style>
+    css_pattern = r"(<style>)"
+    css_replacement = f"""<style>
         {METRICS_CSS}
-        '''
+        """
 
     content = re.sub(css_pattern, css_replacement, content, count=1)
     print("   ✅ Added metrics layer CSS")
@@ -153,7 +155,9 @@ from core.hq_metrics_layer import BFColors, BFIcons"""
     print("\n📝 Updating server metrics...")
 
     # Update the server status to use metrics
-    server_summary_pattern = r"healthy_services = health_summary\['services'\]\['healthy'\]"
+    server_summary_pattern = (
+        r"healthy_services = health_summary\['services'\]\['healthy'\]"
+    )
     server_replacement = """healthy_services = health_summary['services']['healthy']
 
         # Get server metrics from layer
@@ -167,14 +171,16 @@ from core.hq_metrics_layer import BFColors, BFIcons"""
     print("\n📝 Updating department counts...")
 
     # Update total_departments to use metrics
-    dept_count_pattern = r"total_departments = len\(departments_data\).*?total_departments"
+    dept_count_pattern = (
+        r"total_departments = len\(departments_data\).*?total_departments"
+    )
     dept_replacement = """total_departments = self.metrics_layer.get_metric_value('departments', 'summary.total', 45)"""
 
     content = re.sub(dept_count_pattern, dept_replacement, content, flags=re.DOTALL)
     print("   ✅ Updated department counts")
 
     # Write the updated content
-    with open(file_path, 'w') as f:
+    with open(file_path, "w") as f:
         f.write(content)
 
     print("\n✅ Integration complete!")
@@ -192,7 +198,8 @@ from core.hq_metrics_layer import BFColors, BFIcons"""
     # Create a backup of the original
     import os
     import shutil
-    backup_path = file_path + '.backup_before_metrics'
+
+    backup_path = file_path + ".backup_before_metrics"
     if not os.path.exists(backup_path):
         shutil.copy2(file_path, backup_path)
         print(f"\n💾 Backup saved to: {backup_path}")

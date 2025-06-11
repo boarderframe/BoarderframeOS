@@ -14,12 +14,12 @@ def patch_corporate_hq():
     file_path = "/Users/cosburn/BoarderframeOS/corporate_headquarters.py"
 
     # Read the current file
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         content = f.read()
 
     # Backup original
-    backup_path = file_path + '.backup'
-    with open(backup_path, 'w') as f:
+    backup_path = file_path + ".backup"
+    with open(backup_path, "w") as f:
         f.write(content)
     print(f"✅ Created backup at {backup_path}")
 
@@ -42,7 +42,7 @@ def patch_corporate_hq():
     content = content.replace(old_dept_join, new_dept_join)
 
     # Write updated content
-    with open(file_path, 'w') as f:
+    with open(file_path, "w") as f:
         f.write(content)
 
     print("\n✅ Applied patches:")
@@ -90,9 +90,15 @@ def patch_corporate_hq():
     insert_marker = "# Get agents by department"
     if insert_marker in content:
         parts = content.split(insert_marker)
-        content = parts[0] + workforce_section + "\n                " + insert_marker + parts[1]
+        content = (
+            parts[0]
+            + workforce_section
+            + "\n                "
+            + insert_marker
+            + parts[1]
+        )
 
-        with open(file_path, 'w') as f:
+        with open(file_path, "w") as f:
             f.write(content)
 
         print("   4. Added workforce development statistics section")
@@ -122,16 +128,29 @@ def patch_corporate_hq():
     SELECT 'Operational', COUNT(*) FROM agent_registry WHERE operational_status = 'operational';
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", test_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-c",
+            test_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
         print("\nQuery Test Results:")
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 2:
                     print(f"   {parts[0].strip()}: {parts[1].strip()}")
 

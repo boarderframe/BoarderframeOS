@@ -18,9 +18,11 @@ try:
 except ImportError:
     anthropic = None
 
+
 @dataclass
 class LLMConfig:
     """Configuration for LLM connection"""
+
     provider: str = "ollama"  # ollama, openai, anthropic, local
     model: str = "llama3.2"
     base_url: str = "http://localhost:11434"
@@ -28,6 +30,7 @@ class LLMConfig:
     temperature: float = 0.7
     max_tokens: int = 1000
     timeout: int = 30
+
 
 class LLMProvider(ABC):
     """Abstract base for LLM providers"""
@@ -39,6 +42,7 @@ class LLMProvider(ABC):
     @abstractmethod
     async def embed(self, text: str) -> List[float]:
         pass
+
 
 class OllamaProvider(LLMProvider):
     """Ollama local LLM provider"""
@@ -58,8 +62,8 @@ class OllamaProvider(LLMProvider):
                     "prompt": prompt,
                     "temperature": kwargs.get("temperature", self.config.temperature),
                     "max_tokens": kwargs.get("max_tokens", self.config.max_tokens),
-                    "stream": False
-                }
+                    "stream": False,
+                },
             )
 
             if response.status_code == 200:
@@ -78,7 +82,7 @@ class OllamaProvider(LLMProvider):
         try:
             response = await self.client.post(
                 f"{self.config.base_url}/api/embeddings",
-                json={"model": self.config.model, "prompt": text}
+                json={"model": self.config.model, "prompt": text},
             )
             if response.status_code == 200:
                 return response.json().get("embedding", [])
@@ -87,6 +91,7 @@ class OllamaProvider(LLMProvider):
             self.logger.error(f"Embedding error: {e}")
             return []
 
+
 class OpenAIProvider(LLMProvider):
     """OpenAI API provider"""
 
@@ -94,7 +99,7 @@ class OpenAIProvider(LLMProvider):
         self.config = config
         self.client = httpx.AsyncClient(
             headers={"Authorization": f"Bearer {config.api_key}"},
-            timeout=config.timeout
+            timeout=config.timeout,
         )
 
     async def generate(self, prompt: str, **kwargs) -> str:
@@ -106,8 +111,8 @@ class OpenAIProvider(LLMProvider):
                     "model": self.config.model,
                     "messages": [{"role": "user", "content": prompt}],
                     "temperature": kwargs.get("temperature", self.config.temperature),
-                    "max_tokens": kwargs.get("max_tokens", self.config.max_tokens)
-                }
+                    "max_tokens": kwargs.get("max_tokens", self.config.max_tokens),
+                },
             )
 
             if response.status_code == 200:
@@ -124,7 +129,7 @@ class OpenAIProvider(LLMProvider):
         try:
             response = await self.client.post(
                 "https://api.openai.com/v1/embeddings",
-                json={"input": text, "model": "text-embedding-3-small"}
+                json={"input": text, "model": "text-embedding-3-small"},
             )
             if response.status_code == 200:
                 return response.json()["data"][0]["embedding"]
@@ -132,17 +137,22 @@ class OpenAIProvider(LLMProvider):
         except Exception as e:
             return []
 
+
 class AnthropicProvider(LLMProvider):
     """Anthropic Claude provider"""
 
     def __init__(self, config: LLMConfig):
         self.config = config
         if not anthropic:
-            raise ImportError("anthropic package not installed. Run: pip install anthropic")
+            raise ImportError(
+                "anthropic package not installed. Run: pip install anthropic"
+            )
 
         api_key = config.api_key or os.getenv("ANTHROPIC_API_KEY")
         if not api_key:
-            raise ValueError("Anthropic API key required. Set ANTHROPIC_API_KEY env var or pass in config")
+            raise ValueError(
+                "Anthropic API key required. Set ANTHROPIC_API_KEY env var or pass in config"
+            )
 
         self.client = anthropic.AsyncAnthropic(api_key=api_key)
         self.logger = logging.getLogger("anthropic")
@@ -154,12 +164,14 @@ class AnthropicProvider(LLMProvider):
                 model=self.config.model,
                 max_tokens=kwargs.get("max_tokens", self.config.max_tokens),
                 temperature=kwargs.get("temperature", self.config.temperature),
-                messages=[{"role": "user", "content": prompt}]
+                messages=[{"role": "user", "content": prompt}],
             )
 
             # Handle Claude 4 refusal stop reason
             if message.stop_reason == "refusal":
-                self.logger.warning("Claude declined to generate content for safety reasons")
+                self.logger.warning(
+                    "Claude declined to generate content for safety reasons"
+                )
                 return "I cannot provide a response to that request for safety reasons."
 
             return message.content[0].text
@@ -168,7 +180,9 @@ class AnthropicProvider(LLMProvider):
             self.logger.error(f"Anthropic error: {e}")
             return f"Claude Error: {e}"
 
-    async def think_with_tools(self, prompt: str, tools: List[Dict], **kwargs) -> Dict[str, Any]:
+    async def think_with_tools(
+        self, prompt: str, tools: List[Dict], **kwargs
+    ) -> Dict[str, Any]:
         """Advanced reasoning with tool use"""
         try:
             message = await self.client.messages.create(
@@ -176,24 +190,31 @@ class AnthropicProvider(LLMProvider):
                 max_tokens=kwargs.get("max_tokens", self.config.max_tokens),
                 temperature=kwargs.get("temperature", self.config.temperature),
                 tools=tools,
-                messages=[{"role": "user", "content": prompt}]
+                messages=[{"role": "user", "content": prompt}],
             )
 
             # Handle Claude 4 refusal stop reason
             if message.stop_reason == "refusal":
-                self.logger.warning("Claude declined to generate content with tools for safety reasons")
+                self.logger.warning(
+                    "Claude declined to generate content with tools for safety reasons"
+                )
                 return {
-                    "content": [{"type": "text", "text": "I cannot provide a response to that request for safety reasons."}],
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "I cannot provide a response to that request for safety reasons.",
+                        }
+                    ],
                     "usage": message.usage,
                     "stop_reason": "refusal",
-                    "refusal": True
+                    "refusal": True,
                 }
 
             # Return full response for tool use parsing
             return {
                 "content": message.content,
                 "usage": message.usage,
-                "stop_reason": message.stop_reason
+                "stop_reason": message.stop_reason,
             }
 
         except Exception as e:
@@ -204,6 +225,7 @@ class AnthropicProvider(LLMProvider):
         """Claude doesn't provide embeddings, use OpenAI or local"""
         self.logger.warning("Claude doesn't provide embeddings")
         return []
+
 
 class LocalProvider(LLMProvider):
     """Local inference server (vLLM, TGI, etc.)"""
@@ -222,7 +244,7 @@ class LocalProvider(LLMProvider):
                     "prompt": prompt,
                     "temperature": kwargs.get("temperature", self.config.temperature),
                     "max_new_tokens": kwargs.get("max_tokens", self.config.max_tokens),
-                }
+                },
             )
 
             if response.status_code == 200:
@@ -238,6 +260,7 @@ class LocalProvider(LLMProvider):
         """Generate embeddings locally"""
         # Implement based on your local embedding setup
         return []
+
 
 class LLMClient:
     """Main LLM client for BoarderframeOS"""
@@ -260,8 +283,9 @@ class LLMClient:
         else:
             raise ValueError(f"Unknown provider: {self.config.provider}")
 
-    async def think(self, agent_name: str, role: str, context: Dict[str, Any],
-                   goals: List[str]) -> str:
+    async def think(
+        self, agent_name: str, role: str, context: Dict[str, Any], goals: List[str]
+    ) -> str:
         """Generate agent thoughts based on context"""
 
         # Build comprehensive prompt
@@ -297,41 +321,40 @@ Response:"""
     async def test_connection(self) -> bool:
         """Test if LLM is accessible"""
         try:
-            response = await self.generate("Hello! Please respond with 'OK' if you can hear me.")
+            response = await self.generate(
+                "Hello! Please respond with 'OK' if you can hear me."
+            )
             return "ok" in response.lower()
         except Exception as e:
             self.logger.error(f"Connection test failed: {e}")
             return False
+
 
 # Default configurations for different setups
 ANTHROPIC_CONFIG = LLMConfig(
     provider="anthropic",
     model="claude-4-sonnet-20250514",  # Claude 4 Sonnet - Latest and most balanced
     max_tokens=4000,
-    temperature=0.7
+    temperature=0.7,
 )
 
 CLAUDE_OPUS_CONFIG = LLMConfig(
     provider="anthropic",
     model="claude-opus-4-20250514",  # Claude 4 Opus - Most powerful
     max_tokens=4000,
-    temperature=0.3  # Lower temp for more focused reasoning
+    temperature=0.3,  # Lower temp for more focused reasoning
 )
 
 OLLAMA_CONFIG = LLMConfig(
-    provider="ollama",
-    model="llama3.2",
-    base_url="http://localhost:11434"
+    provider="ollama", model="llama3.2", base_url="http://localhost:11434"
 )
 
 OPENAI_CONFIG = LLMConfig(
-    provider="openai",
-    model="gpt-4o-mini",
-    api_key="your-api-key-here"
+    provider="openai", model="gpt-4o-mini", api_key="your-api-key-here"
 )
 
 LOCAL_CONFIG = LLMConfig(
     provider="local",
     model="llama-maverick-30b",
-    base_url="http://localhost:8000"  # Your local inference server
+    base_url="http://localhost:8000",  # Your local inference server
 )

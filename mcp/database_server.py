@@ -27,8 +27,8 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.FileHandler(Path(__file__).parent / "mcp.log"),
-        logging.StreamHandler()
-    ]
+        logging.StreamHandler(),
+    ],
 )
 logger = logging.getLogger("database_server")
 
@@ -47,30 +47,38 @@ app.add_middleware(
 DB_PATH = Path(__file__).parent.parent / "data" / "boarderframe.db"
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
+
 # Request/Response Models
 class QueryRequest(BaseModel):
     sql: str = Field(..., description="SQL query to execute")
     params: Optional[List[Any]] = Field(default=[], description="Query parameters")
     fetch_all: bool = Field(True, description="Fetch all results or just one")
 
+
 class InsertRequest(BaseModel):
     table: str = Field(..., description="Table name")
     data: Dict[str, Any] = Field(..., description="Data to insert")
-    on_conflict: str = Field("IGNORE", description="Conflict resolution: IGNORE, REPLACE")
+    on_conflict: str = Field(
+        "IGNORE", description="Conflict resolution: IGNORE, REPLACE"
+    )
+
 
 class UpdateRequest(BaseModel):
     table: str = Field(..., description="Table name")
     data: Dict[str, Any] = Field(..., description="Data to update")
     where: Dict[str, Any] = Field(..., description="WHERE conditions")
 
+
 class DeleteRequest(BaseModel):
     table: str = Field(..., description="Table name")
     where: Dict[str, Any] = Field(..., description="WHERE conditions")
+
 
 class CreateTableRequest(BaseModel):
     table: str = Field(..., description="Table name")
     column_schema: Dict[str, str] = Field(..., description="Column definitions")
     indexes: Optional[List[str]] = Field(default=[], description="Indexes to create")
+
 
 class DatabaseResponse(BaseModel):
     success: bool
@@ -78,6 +86,7 @@ class DatabaseResponse(BaseModel):
     error: Optional[str] = None
     rows_affected: int = 0
     timestamp: str
+
 
 # Connection Pool Implementation
 class SQLiteConnectionPool:
@@ -144,6 +153,7 @@ class SQLiteConnectionPool:
             await conn.close()
             self.active_connections -= 1
 
+
 # Query Cache Implementation
 class QueryCache:
     """LRU cache for query results"""
@@ -190,11 +200,12 @@ class QueryCache:
 
     def _should_cache_query(self, sql: str) -> bool:
         """Determine if query should be cached (only SELECT queries)"""
-        return sql.strip().upper().startswith('SELECT')
+        return sql.strip().upper().startswith("SELECT")
 
     def clear(self):
         """Clear all cached entries"""
         self.cache.clear()
+
 
 # Database Manager
 class DatabaseManager:
@@ -208,10 +219,10 @@ class DatabaseManager:
 
         # Query statistics
         self.query_stats = {
-            'total_queries': 0,
-            'cache_hits': 0,
-            'cache_misses': 0,
-            'avg_query_time': 0
+            "total_queries": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "avg_query_time": 0,
         }
 
     async def initialize(self):
@@ -221,7 +232,7 @@ class DatabaseManager:
 
         try:
             async with self.connection_pool.get_connection() as db:
-            # Connection pool already enables foreign keys and optimizations
+                # Connection pool already enables foreign keys and optimizations
 
                 # Core tables for BoarderframeOS
                 await self._create_core_tables(db)
@@ -238,7 +249,8 @@ class DatabaseManager:
         """Create core system tables"""
 
         # Agents table
-        await db.execute("""
+        await db.execute(
+            """
             CREATE TABLE IF NOT EXISTS agents (
                 id TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
@@ -253,10 +265,12 @@ class DatabaseManager:
                 status TEXT DEFAULT 'active',
                 FOREIGN KEY (parent_id) REFERENCES agents(id)
             )
-        """)
+        """
+        )
 
         # Agent memories table
-        await db.execute("""
+        await db.execute(
+            """
             CREATE TABLE IF NOT EXISTS agent_memories (
                 id TEXT PRIMARY KEY,
                 agent_id TEXT NOT NULL,
@@ -267,10 +281,12 @@ class DatabaseManager:
                 accessed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (agent_id) REFERENCES agents(id)
             )
-        """)
+        """
+        )
 
         # Agent interactions table
-        await db.execute("""
+        await db.execute(
+            """
             CREATE TABLE IF NOT EXISTS agent_interactions (
                 id TEXT PRIMARY KEY,
                 source_agent TEXT NOT NULL,
@@ -281,10 +297,12 @@ class DatabaseManager:
                 FOREIGN KEY (source_agent) REFERENCES agents(id),
                 FOREIGN KEY (target_agent) REFERENCES agents(id)
             )
-        """)
+        """
+        )
 
         # Metrics table
-        await db.execute("""
+        await db.execute(
+            """
             CREATE TABLE IF NOT EXISTS metrics (
                 id TEXT PRIMARY KEY,
                 agent_id TEXT,
@@ -294,10 +312,12 @@ class DatabaseManager:
                 recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (agent_id) REFERENCES agents(id)
             )
-        """)
+        """
+        )
 
         # Evolution log table
-        await db.execute("""
+        await db.execute(
+            """
             CREATE TABLE IF NOT EXISTS evolution_log (
                 id TEXT PRIMARY KEY,
                 parent_id TEXT,
@@ -309,10 +329,12 @@ class DatabaseManager:
                 FOREIGN KEY (parent_id) REFERENCES agents(id),
                 FOREIGN KEY (child_id) REFERENCES agents(id)
             )
-        """)
+        """
+        )
 
         # Tasks table
-        await db.execute("""
+        await db.execute(
+            """
             CREATE TABLE IF NOT EXISTS tasks (
                 id TEXT PRIMARY KEY,
                 agent_id TEXT,
@@ -326,7 +348,8 @@ class DatabaseManager:
                 completed_at TIMESTAMP,
                 FOREIGN KEY (agent_id) REFERENCES agents(id)
             )
-        """)
+        """
+        )
 
         # Create indexes for performance
         indexes = [
@@ -339,7 +362,7 @@ class DatabaseManager:
             "CREATE INDEX IF NOT EXISTS idx_metrics_agent ON metrics(agent_id)",
             "CREATE INDEX IF NOT EXISTS idx_metrics_name ON metrics(metric_name)",
             "CREATE INDEX IF NOT EXISTS idx_tasks_agent ON tasks(agent_id)",
-            "CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)"
+            "CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)",
         ]
 
         for index_sql in indexes:
@@ -348,7 +371,8 @@ class DatabaseManager:
         # Create business-related tables
 
         # Revenue tracking
-        await db.execute("""
+        await db.execute(
+            """
             CREATE TABLE IF NOT EXISTS revenue_transactions (
                 id TEXT PRIMARY KEY,
                 customer_id TEXT,
@@ -358,10 +382,12 @@ class DatabaseManager:
                 agent_id TEXT,  -- Which agent generated this revenue
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        """)
+        """
+        )
 
         # Customer subscriptions
-        await db.execute("""
+        await db.execute(
+            """
             CREATE TABLE IF NOT EXISTS customers (
                 id TEXT PRIMARY KEY,
                 email TEXT UNIQUE,
@@ -370,10 +396,12 @@ class DatabaseManager:
                 monthly_value DECIMAL(10,2),
                 created_by_agent TEXT
             )
-        """)
+        """
+        )
 
         # API usage for billing
-        await db.execute("""
+        await db.execute(
+            """
             CREATE TABLE IF NOT EXISTS api_usage (
                 customer_id TEXT,
                 endpoint TEXT,
@@ -381,7 +409,8 @@ class DatabaseManager:
                 cost DECIMAL(10,4),
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        """)
+        """
+        )
 
         # Create indexes for business tables
         business_indexes = [
@@ -391,7 +420,7 @@ class DatabaseManager:
             "CREATE INDEX IF NOT EXISTS idx_customers_subscription ON customers(subscription_status)",
             "CREATE INDEX IF NOT EXISTS idx_customers_created_by ON customers(created_by_agent)",
             "CREATE INDEX IF NOT EXISTS idx_api_usage_customer ON api_usage(customer_id)",
-            "CREATE INDEX IF NOT EXISTS idx_api_usage_endpoint ON api_usage(endpoint)"
+            "CREATE INDEX IF NOT EXISTS idx_api_usage_endpoint ON api_usage(endpoint)",
         ]
 
         for index_sql in business_indexes:
@@ -400,29 +429,33 @@ class DatabaseManager:
     async def execute_query(self, request: QueryRequest) -> DatabaseResponse:
         """Execute SQL query with connection pooling and caching"""
         start_time = time.time()
-        self.query_stats['total_queries'] += 1
+        self.query_stats["total_queries"] += 1
 
         try:
             await self.initialize()
 
             # Check cache for SELECT queries
-            if request.sql.strip().upper().startswith('SELECT'):
+            if request.sql.strip().upper().startswith("SELECT"):
                 cached_result = self.query_cache.get(request.sql, request.params)
                 if cached_result is not None:
-                    self.query_stats['cache_hits'] += 1
+                    self.query_stats["cache_hits"] += 1
                     return DatabaseResponse(
                         success=True,
                         data=cached_result,
                         rows_affected=0,
-                        timestamp=datetime.now().isoformat()
+                        timestamp=datetime.now().isoformat(),
                     )
-                self.query_stats['cache_misses'] += 1
+                self.query_stats["cache_misses"] += 1
 
             # Execute query using connection pool
             async with self.connection_pool.get_connection() as db:
                 cursor = await db.execute(request.sql, request.params)
 
-                if request.sql.strip().upper().startswith(('INSERT', 'UPDATE', 'DELETE')):
+                if (
+                    request.sql.strip()
+                    .upper()
+                    .startswith(("INSERT", "UPDATE", "DELETE"))
+                ):
                     rows_affected = cursor.rowcount
                     await db.commit()
                     data = None
@@ -439,28 +472,28 @@ class DatabaseManager:
                     rows_affected = 0
 
                     # Cache SELECT results
-                    if request.sql.strip().upper().startswith('SELECT'):
+                    if request.sql.strip().upper().startswith("SELECT"):
                         self.query_cache.set(request.sql, request.params, data)
 
                 # Update query timing statistics
                 query_time = time.time() - start_time
-                self.query_stats['avg_query_time'] = (
-                    self.query_stats['avg_query_time'] * (self.query_stats['total_queries'] - 1) + query_time
-                ) / self.query_stats['total_queries']
+                self.query_stats["avg_query_time"] = (
+                    self.query_stats["avg_query_time"]
+                    * (self.query_stats["total_queries"] - 1)
+                    + query_time
+                ) / self.query_stats["total_queries"]
 
                 return DatabaseResponse(
                     success=True,
                     data=data,
                     rows_affected=rows_affected,
-                    timestamp=datetime.now().isoformat()
+                    timestamp=datetime.now().isoformat(),
                 )
 
         except Exception as e:
             logger.error(f"Query execution failed: {e}")
             return DatabaseResponse(
-                success=False,
-                error=str(e),
-                timestamp=datetime.now().isoformat()
+                success=False, error=str(e), timestamp=datetime.now().isoformat()
             )
 
     async def insert_data(self, request: InsertRequest) -> DatabaseResponse:
@@ -469,7 +502,7 @@ class DatabaseManager:
             await self.initialize()
 
             columns = list(request.data.keys())
-            placeholders = ['?' for _ in columns]
+            placeholders = ["?" for _ in columns]
             values = [request.data[col] for col in columns]
 
             sql = f"""
@@ -484,9 +517,7 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Insert failed: {e}")
             return DatabaseResponse(
-                success=False,
-                error=str(e),
-                timestamp=datetime.now().isoformat()
+                success=False, error=str(e), timestamp=datetime.now().isoformat()
             )
 
     async def update_data(self, request: UpdateRequest) -> DatabaseResponse:
@@ -512,9 +543,7 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Update failed: {e}")
             return DatabaseResponse(
-                success=False,
-                error=str(e),
-                timestamp=datetime.now().isoformat()
+                success=False, error=str(e), timestamp=datetime.now().isoformat()
             )
 
     async def delete_data(self, request: DeleteRequest) -> DatabaseResponse:
@@ -536,9 +565,7 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Delete failed: {e}")
             return DatabaseResponse(
-                success=False,
-                error=str(e),
-                timestamp=datetime.now().isoformat()
+                success=False, error=str(e), timestamp=datetime.now().isoformat()
             )
 
     async def create_table(self, request: CreateTableRequest) -> DatabaseResponse:
@@ -546,7 +573,9 @@ class DatabaseManager:
         try:
             await self.initialize()
 
-            column_defs = [f"{col} {datatype}" for col, datatype in request.column_schema.items()]
+            column_defs = [
+                f"{col} {datatype}" for col, datatype in request.column_schema.items()
+            ]
 
             sql = f"""
                 CREATE TABLE IF NOT EXISTS {request.table} (
@@ -570,78 +599,83 @@ class DatabaseManager:
                 return DatabaseResponse(
                     success=True,
                     data={"table_created": request.table, "indexes": request.indexes},
-                    timestamp=datetime.now().isoformat()
+                    timestamp=datetime.now().isoformat(),
                 )
 
         except Exception as e:
             logger.error(f"Create table failed: {e}")
             return DatabaseResponse(
-                success=False,
-                error=str(e),
-                timestamp=datetime.now().isoformat()
+                success=False, error=str(e), timestamp=datetime.now().isoformat()
             )
+
 
 # Global database manager
 db_manager = DatabaseManager(DB_PATH)
+
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "service": "database_server", "db_path": str(DB_PATH)}
 
+
 @app.post("/query", response_model=DatabaseResponse)
 async def execute_query(request: QueryRequest):
     """Execute raw SQL query"""
     return await db_manager.execute_query(request)
+
 
 @app.post("/insert", response_model=DatabaseResponse)
 async def insert_data(request: InsertRequest):
     """Insert data into table"""
     return await db_manager.insert_data(request)
 
+
 @app.post("/update", response_model=DatabaseResponse)
 async def update_data(request: UpdateRequest):
     """Update data in table"""
     return await db_manager.update_data(request)
+
 
 @app.post("/delete", response_model=DatabaseResponse)
 async def delete_data(request: DeleteRequest):
     """Delete data from table"""
     return await db_manager.delete_data(request)
 
+
 @app.post("/create-table", response_model=DatabaseResponse)
 async def create_table(request: CreateTableRequest):
     """Create new table"""
     return await db_manager.create_table(request)
+
 
 @app.get("/tables")
 async def list_tables():
     """List all tables in database"""
     query = QueryRequest(
         sql="SELECT name FROM sqlite_master WHERE type='table' ORDER BY name",
-        fetch_all=True
+        fetch_all=True,
     )
     result = await db_manager.execute_query(query)
 
     if result.success:
-        tables = [row['name'] for row in result.data]
+        tables = [row["name"] for row in result.data]
         return {"tables": tables}
     else:
         return {"error": result.error}
 
+
 @app.get("/schema/{table}")
 async def get_table_schema(table: str):
     """Get schema for specific table"""
-    query = QueryRequest(
-        sql=f"PRAGMA table_info({table})",
-        fetch_all=True
-    )
+    query = QueryRequest(sql=f"PRAGMA table_info({table})", fetch_all=True)
     result = await db_manager.execute_query(query)
 
     if result.success:
         return {"table": table, "schema": result.data}
     else:
         return {"error": result.error}
+
 
 @app.get("/stats")
 async def get_database_stats():
@@ -651,9 +685,11 @@ async def get_database_stats():
 
         async with db_manager.connection_pool.get_connection() as db:
             # Get table counts
-            cursor = await db.execute("""
+            cursor = await db.execute(
+                """
                 SELECT name FROM sqlite_master WHERE type='table'
-            """)
+            """
+            )
             tables = await cursor.fetchall()
 
             stats = {"tables": {}}
@@ -673,45 +709,49 @@ async def get_database_stats():
     except Exception as e:
         return {"error": str(e)}
 
+
 @app.get("/performance")
 async def get_performance_stats():
     """Get performance statistics for connection pool and query cache"""
     try:
         cache_hit_rate = 0
-        if db_manager.query_stats['total_queries'] > 0:
-            cache_hit_rate = (db_manager.query_stats['cache_hits'] /
-                            (db_manager.query_stats['cache_hits'] + db_manager.query_stats['cache_misses']))
+        if db_manager.query_stats["total_queries"] > 0:
+            cache_hit_rate = db_manager.query_stats["cache_hits"] / (
+                db_manager.query_stats["cache_hits"]
+                + db_manager.query_stats["cache_misses"]
+            )
 
         pool_stats = {
             "active_connections": db_manager.connection_pool.active_connections,
             "max_connections": db_manager.connection_pool.max_connections,
             "available_connections": db_manager.connection_pool.pool.qsize(),
-            "pool_initialized": db_manager.connection_pool._initialized
+            "pool_initialized": db_manager.connection_pool._initialized,
         }
 
         cache_stats = {
             "cached_entries": len(db_manager.query_cache.cache),
             "cache_size_limit": db_manager.query_cache.max_size,
-            "cache_ttl": db_manager.query_cache.ttl
+            "cache_ttl": db_manager.query_cache.ttl,
         }
 
         query_stats = {
-            "total_queries": db_manager.query_stats['total_queries'],
-            "cache_hits": db_manager.query_stats['cache_hits'],
-            "cache_misses": db_manager.query_stats['cache_misses'],
+            "total_queries": db_manager.query_stats["total_queries"],
+            "cache_hits": db_manager.query_stats["cache_hits"],
+            "cache_misses": db_manager.query_stats["cache_misses"],
             "cache_hit_rate": f"{cache_hit_rate:.2%}",
-            "avg_query_time": f"{db_manager.query_stats['avg_query_time']:.4f}s"
+            "avg_query_time": f"{db_manager.query_stats['avg_query_time']:.4f}s",
         }
 
         return {
             "connection_pool": pool_stats,
             "query_cache": cache_stats,
             "query_performance": query_stats,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     except Exception as e:
         return {"error": str(e)}
+
 
 if __name__ == "__main__":
     import argparse
@@ -727,8 +767,5 @@ if __name__ == "__main__":
     logger.info(f"Database location: {DB_PATH}")
 
     uvicorn.run(
-        "database_server:app",
-        host=args.host,
-        port=args.port,
-        reload=args.reload
+        "database_server:app", host=args.host, port=args.port, reload=args.reload
     )

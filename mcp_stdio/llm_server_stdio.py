@@ -23,10 +23,10 @@ original_path = sys.path.copy()
 # Remove current and parent directories to avoid local mcp module conflicts
 current_dir = str(Path(__file__).parent)
 parent_dir = str(Path(__file__).parent.parent)
-sys.path = [p for p in sys.path if p not in (current_dir, parent_dir, '')]
+sys.path = [p for p in sys.path if p not in (current_dir, parent_dir, "")]
 
 # Clear any cached local mcp modules
-local_mcp_modules = [name for name in sys.modules.keys() if name.startswith('mcp')]
+local_mcp_modules = [name for name in sys.modules.keys() if name.startswith("mcp")]
 for module_name in local_mcp_modules:
     del sys.modules[module_name]
 
@@ -45,18 +45,15 @@ log_file = Path(__file__).parent / "llm_stdio.log"
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler(log_file)]
+    handlers=[logging.FileHandler(log_file)],
 )
 logger = logging.getLogger("llm_stdio")
 
 server = Server("llm")
 
 # Mock data for development
-usage_stats = {
-    "total_requests": 0,
-    "total_tokens": 0,
-    "total_cost": 0.0
-}
+usage_stats = {"total_requests": 0, "total_tokens": 0, "total_cost": 0.0}
+
 
 @server.list_tools()
 async def handle_list_tools() -> List[types.Tool]:
@@ -71,12 +68,9 @@ async def handle_list_tools() -> List[types.Tool]:
                     "provider": {
                         "type": "string",
                         "description": "LLM provider: claude, local, openai",
-                        "enum": ["claude", "local", "openai"]
+                        "enum": ["claude", "local", "openai"],
                     },
-                    "model": {
-                        "type": "string",
-                        "description": "Model name"
-                    },
+                    "model": {"type": "string", "description": "Model name"},
                     "messages": {
                         "type": "array",
                         "items": {
@@ -84,41 +78,39 @@ async def handle_list_tools() -> List[types.Tool]:
                             "properties": {
                                 "role": {
                                     "type": "string",
-                                    "enum": ["user", "assistant", "system"]
+                                    "enum": ["user", "assistant", "system"],
                                 },
-                                "content": {
-                                    "type": "string"
-                                }
+                                "content": {"type": "string"},
                             },
-                            "required": ["role", "content"]
+                            "required": ["role", "content"],
                         },
-                        "description": "Conversation messages"
+                        "description": "Conversation messages",
                     },
                     "temperature": {
                         "type": "number",
                         "description": "Sampling temperature",
                         "default": 0.7,
                         "minimum": 0,
-                        "maximum": 2
+                        "maximum": 2,
                     },
                     "max_tokens": {
                         "type": "integer",
                         "description": "Maximum tokens to generate",
                         "default": 4000,
                         "minimum": 1,
-                        "maximum": 8000
+                        "maximum": 8000,
                     },
                     "agent_id": {
                         "type": "string",
-                        "description": "Requesting agent ID (optional)"
+                        "description": "Requesting agent ID (optional)",
                     },
                     "system_prompt": {
                         "type": "string",
-                        "description": "System prompt override (optional)"
-                    }
+                        "description": "System prompt override (optional)",
+                    },
                 },
-                "required": ["provider", "model", "messages"]
-            }
+                "required": ["provider", "model", "messages"],
+            },
         ),
         types.Tool(
             name="list_models",
@@ -128,10 +120,10 @@ async def handle_list_tools() -> List[types.Tool]:
                 "properties": {
                     "provider": {
                         "type": "string",
-                        "description": "Filter by provider (optional)"
+                        "description": "Filter by provider (optional)",
                     }
-                }
-            }
+                },
+            },
         ),
         types.Tool(
             name="agent_chat",
@@ -139,19 +131,16 @@ async def handle_list_tools() -> List[types.Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "agent_id": {
-                        "type": "string",
-                        "description": "Agent identifier"
-                    },
+                    "agent_id": {"type": "string", "description": "Agent identifier"},
                     "provider": {
                         "type": "string",
                         "description": "LLM provider",
-                        "default": "claude"
+                        "default": "claude",
                     },
                     "model": {
                         "type": "string",
                         "description": "Model name",
-                        "default": "claude-3-sonnet-20240229"
+                        "default": "claude-3-sonnet-20240229",
                     },
                     "messages": {
                         "type": "array",
@@ -159,35 +148,29 @@ async def handle_list_tools() -> List[types.Tool]:
                             "type": "object",
                             "properties": {
                                 "role": {"type": "string"},
-                                "content": {"type": "string"}
-                            }
+                                "content": {"type": "string"},
+                            },
                         },
-                        "description": "Conversation messages"
+                        "description": "Conversation messages",
                     },
-                    "temperature": {
-                        "type": "number",
-                        "default": 0.7
-                    },
-                    "max_tokens": {
-                        "type": "integer",
-                        "default": 4000
-                    }
+                    "temperature": {"type": "number", "default": 0.7},
+                    "max_tokens": {"type": "integer", "default": 4000},
                 },
-                "required": ["agent_id", "messages"]
-            }
+                "required": ["agent_id", "messages"],
+            },
         ),
         types.Tool(
             name="get_llm_stats",
             description="Get LLM usage statistics",
-            inputSchema={
-                "type": "object",
-                "properties": {}
-            }
-        )
+            inputSchema={"type": "object", "properties": {}},
+        ),
     ]
 
+
 @server.call_tool()
-async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_call_tool(
+    name: str, arguments: Dict[str, Any]
+) -> List[types.TextContent]:
     """Handle tool calls."""
     try:
         if name == "generate_text":
@@ -203,6 +186,7 @@ async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[types.T
     except Exception as e:
         logger.error(f"Tool {name} failed: {e}")
         return [types.TextContent(type="text", text=f"Error: {str(e)}")]
+
 
 async def generate_text(args: Dict[str, Any]) -> List[types.TextContent]:
     """Generate text using specified LLM provider."""
@@ -232,7 +216,9 @@ async def generate_text(args: Dict[str, Any]) -> List[types.TextContent]:
 
         # Mock token usage and cost calculation
         estimated_tokens = len(mock_content.split()) * 2  # Rough estimate
-        mock_cost = estimated_tokens * 0.000003 if provider == "claude" else 0.0  # Mock cost
+        mock_cost = (
+            estimated_tokens * 0.000003 if provider == "claude" else 0.0
+        )  # Mock cost
 
         # Update usage stats
         usage_stats["total_requests"] += 1
@@ -248,17 +234,20 @@ async def generate_text(args: Dict[str, Any]) -> List[types.TextContent]:
             "cost_estimate": mock_cost,
             "response_time_ms": response_time_ms,
             "agent_id": agent_id,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         # Log the request
-        logger.info(f"LLM request: {agent_id or 'unknown'} -> {provider}/{model} "
-                   f"({estimated_tokens} tokens, {response_time_ms}ms)")
+        logger.info(
+            f"LLM request: {agent_id or 'unknown'} -> {provider}/{model} "
+            f"({estimated_tokens} tokens, {response_time_ms}ms)"
+        )
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error generating text: {str(e)}")]
+
 
 async def list_models(args: Dict[str, Any]) -> List[types.TextContent]:
     """List available models across all providers."""
@@ -272,36 +261,36 @@ async def list_models(args: Dict[str, Any]) -> List[types.TextContent]:
                 "provider": "claude",
                 "context_length": 200000,
                 "cost_per_token": 0.000015,
-                "available": bool(os.getenv("ANTHROPIC_API_KEY"))
+                "available": bool(os.getenv("ANTHROPIC_API_KEY")),
             },
             {
                 "name": "claude-3-sonnet-20240229",
                 "provider": "claude",
                 "context_length": 200000,
                 "cost_per_token": 0.000003,
-                "available": bool(os.getenv("ANTHROPIC_API_KEY"))
+                "available": bool(os.getenv("ANTHROPIC_API_KEY")),
             },
             {
                 "name": "claude-3-haiku-20240307",
                 "provider": "claude",
                 "context_length": 200000,
                 "cost_per_token": 0.00000025,
-                "available": bool(os.getenv("ANTHROPIC_API_KEY"))
+                "available": bool(os.getenv("ANTHROPIC_API_KEY")),
             },
             {
                 "name": "llama-maverick-30b",
                 "provider": "local",
                 "context_length": 8192,
                 "cost_per_token": 0.0,
-                "available": False  # Assume local server not running
+                "available": False,  # Assume local server not running
             },
             {
                 "name": "mistral-7b",
                 "provider": "local",
                 "context_length": 8192,
                 "cost_per_token": 0.0,
-                "available": False  # Assume local server not running
-            }
+                "available": False,  # Assume local server not running
+            },
         ]
 
         # Apply provider filter if specified
@@ -312,13 +301,14 @@ async def list_models(args: Dict[str, Any]) -> List[types.TextContent]:
             "success": True,
             "models": models,
             "count": len(models),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error listing models: {str(e)}")]
+
 
 async def agent_chat(args: Dict[str, Any]) -> List[types.TextContent]:
     """Chat endpoint specifically for agent interactions."""
@@ -333,7 +323,9 @@ async def agent_chat(args: Dict[str, Any]) -> List[types.TextContent]:
         # Add agent-specific system prompt if not already present
         system_messages = [m for m in messages if m["role"] == "system"]
         if not system_messages:
-            system_prompt = f"You are {agent_id}, an AI agent in the BoarderframeOS system."
+            system_prompt = (
+                f"You are {agent_id}, an AI agent in the BoarderframeOS system."
+            )
         else:
             system_prompt = None
 
@@ -345,13 +337,14 @@ async def agent_chat(args: Dict[str, Any]) -> List[types.TextContent]:
             "temperature": temperature,
             "max_tokens": max_tokens,
             "agent_id": agent_id,
-            "system_prompt": system_prompt
+            "system_prompt": system_prompt,
         }
 
         return await generate_text(request)
 
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error in agent chat: {str(e)}")]
+
 
 async def get_llm_stats() -> List[types.TextContent]:
     """Get LLM usage statistics."""
@@ -362,26 +355,31 @@ async def get_llm_stats() -> List[types.TextContent]:
                 "total_requests": usage_stats["total_requests"],
                 "total_tokens": usage_stats["total_tokens"],
                 "total_cost": usage_stats["total_cost"],
-                "avg_tokens_per_request": usage_stats["total_tokens"] / max(usage_stats["total_requests"], 1),
-                "avg_cost_per_request": usage_stats["total_cost"] / max(usage_stats["total_requests"], 1)
+                "avg_tokens_per_request": usage_stats["total_tokens"]
+                / max(usage_stats["total_requests"], 1),
+                "avg_cost_per_request": usage_stats["total_cost"]
+                / max(usage_stats["total_requests"], 1),
             },
             "providers": {
                 "claude": {
                     "available": bool(os.getenv("ANTHROPIC_API_KEY")),
-                    "api_key_configured": bool(os.getenv("ANTHROPIC_API_KEY"))
+                    "api_key_configured": bool(os.getenv("ANTHROPIC_API_KEY")),
                 },
                 "local": {
                     "available": False,  # Mock - would check local server
-                    "endpoint": "http://localhost:8080"
-                }
+                    "endpoint": "http://localhost:8080",
+                },
             },
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error getting LLM stats: {str(e)}")]
+        return [
+            types.TextContent(type="text", text=f"Error getting LLM stats: {str(e)}")
+        ]
+
 
 async def main():
     """Main entry point."""
@@ -398,6 +396,7 @@ async def main():
                 ),
             ),
         )
+
 
 if __name__ == "__main__":
     asyncio.run(main())

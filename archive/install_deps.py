@@ -8,13 +8,13 @@ import sys
 print("📦 Installing BoarderframeOS dependencies...")
 
 dependencies = [
-    "aiosqlite",    # For database server
-    "fastapi",      # For API servers
-    "uvicorn",      # For running FastAPI
-    "httpx",        # For HTTP client
-    "pydantic",     # For data validation
-    "websockets",   # For WebSocket support
-    "aiofiles",     # For async file operations
+    "aiosqlite",  # For database server
+    "fastapi",  # For API servers
+    "uvicorn",  # For running FastAPI
+    "httpx",  # For HTTP client
+    "pydantic",  # For data validation
+    "websockets",  # For WebSocket support
+    "aiofiles",  # For async file operations
 ]
 
 for dep in dependencies:

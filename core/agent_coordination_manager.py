@@ -24,13 +24,14 @@ from .enhanced_message_bus import (
 
 
 class CoordinationPattern(Enum):
-    SEQUENTIAL = "sequential"          # Execute agents one after another
-    PARALLEL = "parallel"              # Execute agents simultaneously
-    PIPELINE = "pipeline"              # Data flows through agents in sequence
+    SEQUENTIAL = "sequential"  # Execute agents one after another
+    PARALLEL = "parallel"  # Execute agents simultaneously
+    PIPELINE = "pipeline"  # Data flows through agents in sequence
     SCATTER_GATHER = "scatter_gather"  # Distribute work, then collect results
-    CONSENSUS = "consensus"            # Agents reach agreement
-    AUCTION = "auction"                # Agents bid for tasks
-    ELECTION = "election"              # Elect a leader agent
+    CONSENSUS = "consensus"  # Agents reach agreement
+    AUCTION = "auction"  # Agents bid for tasks
+    ELECTION = "election"  # Elect a leader agent
+
 
 class TaskState(Enum):
     PENDING = "pending"
@@ -40,9 +41,11 @@ class TaskState(Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
+
 @dataclass
 class CoordinationTask:
     """Represents a coordination task"""
+
     task_id: str
     pattern: CoordinationPattern
     participants: List[str]
@@ -53,9 +56,11 @@ class CoordinationTask:
     timeout: Optional[int] = None
     progress: float = 0.0
 
+
 @dataclass
 class AgentBid:
     """Represents an agent's bid for a task"""
+
     agent_name: str
     task_id: str
     bid_amount: float
@@ -64,6 +69,7 @@ class AgentBid:
     confidence: float
     metadata: Dict[str, Any] = field(default_factory=dict)
 
+
 class ConsensusManager:
     """Manages consensus-based decision making among agents"""
 
@@ -71,8 +77,14 @@ class ConsensusManager:
         self.active_proposals: Dict[str, Dict[str, Any]] = {}
         self.votes: Dict[str, Dict[str, Any]] = {}  # proposal_id -> {agent: vote}
 
-    async def create_proposal(self, proposal_id: str, proposer: str, proposal_data: Dict[str, Any],
-                            participants: List[str], voting_timeout: int = 300) -> str:
+    async def create_proposal(
+        self,
+        proposal_id: str,
+        proposer: str,
+        proposal_data: Dict[str, Any],
+        participants: List[str],
+        voting_timeout: int = 300,
+    ) -> str:
         """Create a new proposal for consensus"""
         self.active_proposals[proposal_id] = {
             "id": proposal_id,
@@ -81,7 +93,7 @@ class ConsensusManager:
             "participants": participants,
             "created_at": datetime.now(),
             "timeout": voting_timeout,
-            "status": "active"
+            "status": "active",
         }
 
         self.votes[proposal_id] = {}
@@ -97,15 +109,17 @@ class ConsensusManager:
                         "action": "vote_request",
                         "proposal_id": proposal_id,
                         "proposal_data": proposal_data,
-                        "timeout": voting_timeout
+                        "timeout": voting_timeout,
                     },
-                    routing_strategy=RoutingStrategy.DIRECT
+                    routing_strategy=RoutingStrategy.DIRECT,
                 )
                 await enhanced_message_bus.send_enhanced_message(message)
 
         return proposal_id
 
-    async def cast_vote(self, proposal_id: str, agent_name: str, vote: Dict[str, Any]) -> bool:
+    async def cast_vote(
+        self, proposal_id: str, agent_name: str, vote: Dict[str, Any]
+    ) -> bool:
         """Cast a vote for a proposal"""
         if proposal_id not in self.active_proposals:
             return False
@@ -115,7 +129,7 @@ class ConsensusManager:
 
         self.votes[proposal_id][agent_name] = {
             "vote": vote,
-            "timestamp": datetime.now()
+            "timestamp": datetime.now(),
         }
 
         # Check if consensus is reached
@@ -133,8 +147,11 @@ class ConsensusManager:
         # Simple majority consensus (can be customized)
         if total_votes >= (total_participants * 0.6):  # 60% participation
             # Analyze votes for consensus
-            approval_votes = sum(1 for vote_data in votes.values()
-                               if vote_data["vote"].get("approve", False))
+            approval_votes = sum(
+                1
+                for vote_data in votes.values()
+                if vote_data["vote"].get("approve", False)
+            )
 
             if approval_votes >= (total_votes * 0.6):  # 60% approval
                 proposal["status"] = "approved"
@@ -156,17 +173,24 @@ class ConsensusManager:
                     "action": "consensus_result",
                     "proposal_id": proposal_id,
                     "result": result,
-                    "votes": self.votes[proposal_id]
+                    "votes": self.votes[proposal_id],
                 },
-                routing_strategy=RoutingStrategy.DIRECT
+                routing_strategy=RoutingStrategy.DIRECT,
             )
             await enhanced_message_bus.send_enhanced_message(message)
 
-    async def request_consensus(self, proposal_id: str, participants: List[str],
-                              proposal: Dict[str, Any], voting_method: str = "majority",
-                              timeout_seconds: int = 300) -> Dict[str, Any]:
+    async def request_consensus(
+        self,
+        proposal_id: str,
+        participants: List[str],
+        proposal: Dict[str, Any],
+        voting_method: str = "majority",
+        timeout_seconds: int = 300,
+    ) -> Dict[str, Any]:
         """Request consensus decision from multiple agents"""
-        await self.create_proposal(proposal_id, "CoordinationManager", proposal, participants, timeout_seconds)
+        await self.create_proposal(
+            proposal_id, "CoordinationManager", proposal, participants, timeout_seconds
+        )
 
         # Wait for consensus with timeout
         start_time = datetime.now()
@@ -178,7 +202,7 @@ class ConsensusManager:
                         "proposal_id": proposal_id,
                         "status": status,
                         "votes": self.votes.get(proposal_id, {}),
-                        "participants": participants
+                        "participants": participants,
                     }
 
             # Check timeout
@@ -187,10 +211,11 @@ class ConsensusManager:
                     "proposal_id": proposal_id,
                     "status": "timeout",
                     "votes": self.votes.get(proposal_id, {}),
-                    "participants": participants
+                    "participants": participants,
                 }
 
             await asyncio.sleep(1)
+
 
 class AuctionManager:
     """Manages auction-based task allocation"""
@@ -199,8 +224,13 @@ class AuctionManager:
         self.active_auctions: Dict[str, Dict[str, Any]] = {}
         self.bids: Dict[str, List[AgentBid]] = {}
 
-    async def create_auction(self, auction_id: str, task_description: Dict[str, Any],
-                           required_capabilities: List[str], bidding_timeout: int = 120) -> str:
+    async def create_auction(
+        self,
+        auction_id: str,
+        task_description: Dict[str, Any],
+        required_capabilities: List[str],
+        bidding_timeout: int = 120,
+    ) -> str:
         """Create a new auction for task allocation"""
         self.active_auctions[auction_id] = {
             "id": auction_id,
@@ -208,7 +238,7 @@ class AuctionManager:
             "required_capabilities": required_capabilities,
             "created_at": datetime.now(),
             "timeout": bidding_timeout,
-            "status": "active"
+            "status": "active",
         }
 
         self.bids[auction_id] = []
@@ -222,20 +252,27 @@ class AuctionManager:
                 "action": "auction_announcement",
                 "auction_id": auction_id,
                 "task": task_description,
-                "timeout": bidding_timeout
+                "timeout": bidding_timeout,
             },
             routing_strategy=RoutingStrategy.CAPABILITY_BASED,
-            required_capabilities=required_capabilities
+            required_capabilities=required_capabilities,
         )
         await enhanced_message_bus.send_enhanced_message(message)
 
         # Schedule auction closure
-        asyncio.create_task(self._close_auction_after_timeout(auction_id, bidding_timeout))
+        asyncio.create_task(
+            self._close_auction_after_timeout(auction_id, bidding_timeout)
+        )
 
         return auction_id
 
-    async def start_auction(self, auction_id: str, task: Dict[str, Any],
-                          participants: List[str], duration_seconds: int = 120) -> Dict[str, Any]:
+    async def start_auction(
+        self,
+        auction_id: str,
+        task: Dict[str, Any],
+        participants: List[str],
+        duration_seconds: int = 120,
+    ) -> Dict[str, Any]:
         """Start a new auction for task allocation"""
         try:
             # Create auction with required capabilities based on participants
@@ -253,7 +290,7 @@ class AuctionManager:
                 "status": "success",
                 "auction_id": result_auction_id,
                 "participants": participants,
-                "duration": duration_seconds
+                "duration": duration_seconds,
             }
         except Exception as e:
             return {"status": "failed", "error": str(e)}
@@ -273,7 +310,10 @@ class AuctionManager:
         """Close auction after timeout and select winner"""
         await asyncio.sleep(timeout)
 
-        if auction_id in self.active_auctions and self.active_auctions[auction_id]["status"] == "active":
+        if (
+            auction_id in self.active_auctions
+            and self.active_auctions[auction_id]["status"] == "active"
+        ):
             await self._select_auction_winner(auction_id)
 
     async def _select_auction_winner(self, auction_id: str):
@@ -283,8 +323,10 @@ class AuctionManager:
             return
 
         # Simple selection: lowest bid with highest confidence
-        winning_bid = min(self.bids[auction_id],
-                         key=lambda bid: bid.bid_amount - (bid.confidence * 10))
+        winning_bid = min(
+            self.bids[auction_id],
+            key=lambda bid: bid.bid_amount - (bid.confidence * 10),
+        )
 
         self.active_auctions[auction_id]["status"] = "completed"
         self.active_auctions[auction_id]["winner"] = winning_bid.agent_name
@@ -298,9 +340,9 @@ class AuctionManager:
                 "action": "auction_won",
                 "auction_id": auction_id,
                 "task": self.active_auctions[auction_id]["task"],
-                "winning_bid": winning_bid.bid_amount
+                "winning_bid": winning_bid.bid_amount,
             },
-            routing_strategy=RoutingStrategy.DIRECT
+            routing_strategy=RoutingStrategy.DIRECT,
         )
         await enhanced_message_bus.send_enhanced_message(message)
 
@@ -315,11 +357,12 @@ class AuctionManager:
                         "action": "auction_lost",
                         "auction_id": auction_id,
                         "winning_agent": winning_bid.agent_name,
-                        "winning_bid": winning_bid.bid_amount
+                        "winning_bid": winning_bid.bid_amount,
                     },
-                    routing_strategy=RoutingStrategy.DIRECT
+                    routing_strategy=RoutingStrategy.DIRECT,
                 )
                 await enhanced_message_bus.send_enhanced_message(message)
+
 
 class AgentCoordinationManager:
     """Main coordination manager for multi-agent workflows"""
@@ -336,7 +379,7 @@ class AgentCoordinationManager:
             "tasks_completed": 0,
             "tasks_failed": 0,
             "average_completion_time": 0,
-            "patterns_used": {}
+            "patterns_used": {},
         }
 
     async def start(self):
@@ -344,7 +387,7 @@ class AgentCoordinationManager:
         # Register with message bus to handle coordination messages
         await enhanced_message_bus.register_agent(
             "CoordinationManager",
-            capabilities=["coordination", "workflow", "consensus", "auction"]
+            capabilities=["coordination", "workflow", "consensus", "auction"],
         )
 
         # Start background tasks
@@ -357,14 +400,20 @@ class AgentCoordinationManager:
         """Stop the coordination manager"""
         self.logger.info("Agent Coordination Manager stopped")
 
-    async def create_workflow(self, workflow_id: str, pattern: CoordinationPattern,
-                            participants: List[str], coordinator: str, tasks: List[Dict]) -> str:
+    async def create_workflow(
+        self,
+        workflow_id: str,
+        pattern: CoordinationPattern,
+        participants: List[str],
+        coordinator: str,
+        tasks: List[Dict],
+    ) -> str:
         """Create a new workflow"""
         task = CoordinationTask(
             task_id=workflow_id,
             pattern=pattern,
             participants=participants,
-            input_data={"tasks": tasks, "coordinator": coordinator}
+            input_data={"tasks": tasks, "coordinator": coordinator},
         )
 
         self.active_tasks[workflow_id] = task
@@ -386,14 +435,17 @@ class AgentCoordinationManager:
             "created_at": task.created_at.isoformat(),
             "timeout": task.timeout,
             "input_data": task.input_data,
-            "output_data": task.output_data
+            "output_data": task.output_data,
         }
 
     async def check_timeouts(self):
         """Check for timed out tasks"""
         current_time = datetime.now()
         for task_id, task in list(self.active_tasks.items()):
-            if task.timeout and task.created_at + timedelta(seconds=task.timeout) < current_time:
+            if (
+                task.timeout
+                and task.created_at + timedelta(seconds=task.timeout) < current_time
+            ):
                 self.logger.warning(f"Task {task_id} timed out")
                 task.state = TaskState.CANCELLED
 
@@ -401,8 +453,13 @@ class AgentCoordinationManager:
         """Get coordination usage statistics"""
         return self.coordination_metrics
 
-    async def coordinate_agents(self, pattern: CoordinationPattern, participants: List[str],
-                              task_data: Dict[str, Any], timeout: Optional[int] = None) -> str:
+    async def coordinate_agents(
+        self,
+        pattern: CoordinationPattern,
+        participants: List[str],
+        task_data: Dict[str, Any],
+        timeout: Optional[int] = None,
+    ) -> str:
         """Coordinate agents using specified pattern"""
         task_id = str(uuid.uuid4())
 
@@ -411,7 +468,7 @@ class AgentCoordinationManager:
             pattern=pattern,
             participants=participants,
             input_data=task_data,
-            timeout=timeout
+            timeout=timeout,
         )
 
         self.active_tasks[task_id] = task
@@ -434,8 +491,9 @@ class AgentCoordinationManager:
             self.logger.error(f"Unknown coordination pattern: {pattern}")
 
         # Update metrics
-        self.coordination_metrics["patterns_used"][pattern.value] = \
+        self.coordination_metrics["patterns_used"][pattern.value] = (
             self.coordination_metrics["patterns_used"].get(pattern.value, 0) + 1
+        )
 
         return task_id
 
@@ -455,10 +513,10 @@ class AgentCoordinationManager:
                         "task_id": task.task_id,
                         "step": i,
                         "input_data": current_data,
-                        "coordination_pattern": "sequential"
+                        "coordination_pattern": "sequential",
                     },
                     routing_strategy=RoutingStrategy.DIRECT,
-                    conversation_id=task.task_id
+                    conversation_id=task.task_id,
                 )
 
                 await enhanced_message_bus.send_enhanced_message(message)
@@ -491,10 +549,10 @@ class AgentCoordinationManager:
                 content={
                     "task_id": task.task_id,
                     "input_data": task.input_data,
-                    "coordination_pattern": "parallel"
+                    "coordination_pattern": "parallel",
                 },
                 routing_strategy=RoutingStrategy.DIRECT,
-                conversation_id=task.task_id
+                conversation_id=task.task_id,
             )
 
             tasks.append(enhanced_message_bus.send_enhanced_message(message))
@@ -527,10 +585,10 @@ class AgentCoordinationManager:
                         "task_id": task.task_id,
                         "pipeline_stage": i,
                         "input_data": current_data,
-                        "coordination_pattern": "pipeline"
+                        "coordination_pattern": "pipeline",
                     },
                     routing_strategy=RoutingStrategy.DIRECT,
-                    conversation_id=task.task_id
+                    conversation_id=task.task_id,
                 )
 
                 await enhanced_message_bus.send_enhanced_message(message)
@@ -568,10 +626,10 @@ class AgentCoordinationManager:
                     "task_id": task.task_id,
                     "input_data": agent_data,
                     "coordination_pattern": "scatter_gather",
-                    "phase": "scatter"
+                    "phase": "scatter",
                 },
                 routing_strategy=RoutingStrategy.DIRECT,
-                conversation_id=task.task_id
+                conversation_id=task.task_id,
             )
 
             scatter_tasks.append(enhanced_message_bus.send_enhanced_message(message))
@@ -601,7 +659,7 @@ class AgentCoordinationManager:
             proposer="CoordinationManager",
             proposal_data=task.input_data,
             participants=task.participants,
-            voting_timeout=300
+            voting_timeout=300,
         )
 
         task.state = TaskState.IN_PROGRESS
@@ -616,7 +674,7 @@ class AgentCoordinationManager:
             auction_id=auction_id,
             task_description=task.input_data,
             required_capabilities=required_capabilities,
-            bidding_timeout=120
+            bidding_timeout=120,
         )
 
         task.state = TaskState.IN_PROGRESS
@@ -634,7 +692,9 @@ class AgentCoordinationManager:
                         if elapsed > task.timeout:
                             task.state = TaskState.FAILED
                             self.coordination_metrics["tasks_failed"] += 1
-                            self.logger.warning(f"Task {task_id} timed out after {elapsed}s")
+                            self.logger.warning(
+                                f"Task {task_id} timed out after {elapsed}s"
+                            )
 
                 await asyncio.sleep(10)  # Check every 10 seconds
 
@@ -666,39 +726,52 @@ class AgentCoordinationManager:
         return {
             "active_tasks": len(self.active_tasks),
             "metrics": self.coordination_metrics,
-            "agent_pools": {cap: len(agents) for cap, agents in self.agent_pools.items()},
+            "agent_pools": {
+                cap: len(agents) for cap, agents in self.agent_pools.items()
+            },
             "consensus_proposals": len(self.consensus_manager.active_proposals),
-            "active_auctions": len(self.auction_manager.active_auctions)
+            "active_auctions": len(self.auction_manager.active_auctions),
         }
+
 
 # Global coordination manager instance
 coordination_manager = AgentCoordinationManager()
 
+
 # Convenience functions
-async def coordinate_sequential(participants: List[str], task_data: Dict[str, Any],
-                              timeout: Optional[int] = None) -> str:
+async def coordinate_sequential(
+    participants: List[str], task_data: Dict[str, Any], timeout: Optional[int] = None
+) -> str:
     """Coordinate agents sequentially"""
     return await coordination_manager.coordinate_agents(
         CoordinationPattern.SEQUENTIAL, participants, task_data, timeout
     )
 
-async def coordinate_parallel(participants: List[str], task_data: Dict[str, Any],
-                            timeout: Optional[int] = None) -> str:
+
+async def coordinate_parallel(
+    participants: List[str], task_data: Dict[str, Any], timeout: Optional[int] = None
+) -> str:
     """Coordinate agents in parallel"""
     return await coordination_manager.coordinate_agents(
         CoordinationPattern.PARALLEL, participants, task_data, timeout
     )
 
-async def create_consensus_proposal(proposal_data: Dict[str, Any], participants: List[str],
-                                  voting_timeout: int = 300) -> str:
+
+async def create_consensus_proposal(
+    proposal_data: Dict[str, Any], participants: List[str], voting_timeout: int = 300
+) -> str:
     """Create a consensus proposal"""
     proposal_id = f"proposal_{uuid.uuid4()}"
     return await coordination_manager.consensus_manager.create_proposal(
         proposal_id, "CoordinationManager", proposal_data, participants, voting_timeout
     )
 
-async def create_task_auction(task_description: Dict[str, Any], required_capabilities: List[str],
-                            bidding_timeout: int = 120) -> str:
+
+async def create_task_auction(
+    task_description: Dict[str, Any],
+    required_capabilities: List[str],
+    bidding_timeout: int = 120,
+) -> str:
     """Create a task auction"""
     auction_id = f"auction_{uuid.uuid4()}"
     return await coordination_manager.auction_manager.create_auction(

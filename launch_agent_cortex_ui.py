@@ -53,7 +53,7 @@ async def main():
 
     # Open browser (optional)
     try:
-        subprocess.run(['open', 'http://localhost:8889'], check=False)
+        subprocess.run(["open", "http://localhost:8889"], check=False)
     except:
         pass  # Ignore if open command fails
 

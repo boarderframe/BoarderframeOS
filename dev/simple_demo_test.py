@@ -6,7 +6,7 @@ Simple test of the coordination demo functionality
 import os
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'boarderframeos'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "boarderframeos"))
 
 # Load environment variables from .env file
 from dotenv import load_dotenv
@@ -30,6 +30,7 @@ from core.message_bus import MessagePriority, MessageType
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("simple_demo")
 
+
 async def simple_test():
     """Simple test of the coordination functionality"""
     try:
@@ -44,7 +45,7 @@ async def simple_test():
         solomon_capabilities = [
             AgentCapability.PLANNING,
             AgentCapability.COORDINATION,
-            AgentCapability.ANALYSIS
+            AgentCapability.ANALYSIS,
         ]
         await controller.register_agent_capabilities("solomon", solomon_capabilities)
         logger.info("✅ Registered capabilities for solomon")
@@ -58,7 +59,7 @@ async def simple_test():
             task_type="test_task",
             data={"test": "data"},
             required_capabilities=[AgentCapability.PLANNING],
-            routing_strategy="capability_based"
+            routing_strategy="capability_based",
         )
 
         if task_id:
@@ -79,7 +80,9 @@ async def simple_test():
     except Exception as e:
         logger.error(f"❌ Test error: {e}")
         import traceback
+
         traceback.print_exc()
+
 
 if __name__ == "__main__":
     asyncio.run(simple_test())

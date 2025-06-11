@@ -32,8 +32,10 @@ from .resource_manager import ResourceLimit, resource_manager
 
 logger = logging.getLogger("agent_controller")
 
+
 class ControlCommand(Enum):
     """Agent control commands"""
+
     START = "start"
     STOP = "stop"
     PAUSE = "pause"
@@ -42,16 +44,20 @@ class ControlCommand(Enum):
     UPDATE = "update"
     TERMINATE = "terminate"
 
+
 class TaskPriority(Enum):
     """Task priority levels"""
+
     LOW = 1
     NORMAL = 2
     HIGH = 3
     URGENT = 4
 
+
 @dataclass
 class AgentTask:
     """Task to be assigned to an agent"""
+
     task_id: str
     agent_id: str
     task_type: str
@@ -66,9 +72,11 @@ class AgentTask:
     retry_count: int = 0
     max_retries: int = 3
 
+
 @dataclass
 class AgentProcess:
     """Information about a running agent process"""
+
     agent_id: str
     process: subprocess.Popen
     started_at: datetime
@@ -76,6 +84,7 @@ class AgentProcess:
     status: str = "running"
     restart_count: int = 0
     last_restart: Optional[datetime] = None
+
 
 class AgentController:
     """Centralized controller for all agent operations"""
@@ -124,9 +133,15 @@ class AgentController:
         await message_bus.subscribe_to_topic("agent_controller", "system_events")
 
         # Subscribe to enhanced message bus topics
-        await enhanced_message_bus.subscribe_to_topic("agent_controller", "agent_coordination")
-        await enhanced_message_bus.subscribe_to_topic("agent_controller", "workflow_management")
-        await enhanced_message_bus.subscribe_to_topic("agent_controller", "agent_lifecycle")
+        await enhanced_message_bus.subscribe_to_topic(
+            "agent_controller", "agent_coordination"
+        )
+        await enhanced_message_bus.subscribe_to_topic(
+            "agent_controller", "workflow_management"
+        )
+        await enhanced_message_bus.subscribe_to_topic(
+            "agent_controller", "agent_lifecycle"
+        )
 
     async def stop(self):
         """Stop the agent controller"""
@@ -155,10 +170,17 @@ class AgentController:
         except Exception as e:
             logger.error(f"Error loading agent configs: {e}")
 
-    async def create_agent(self, name: str, agent_type: str, role: str, goals: List[str],
-                          zone: str = "default", model: str = "claude-3-opus-20240229",
-                          capabilities: List[AgentCapability] = None,
-                          resource_limits: Optional[ResourceLimit] = None) -> bool:
+    async def create_agent(
+        self,
+        name: str,
+        agent_type: str,
+        role: str,
+        goals: List[str],
+        zone: str = "default",
+        model: str = "claude-3-opus-20240229",
+        capabilities: List[AgentCapability] = None,
+        resource_limits: Optional[ResourceLimit] = None,
+    ) -> bool:
         """Create a new agent"""
         try:
             # Create agent configuration
@@ -168,7 +190,7 @@ class AgentController:
                 goals=goals,
                 tools=self._get_default_tools(agent_type),
                 zone=zone,
-                model=model
+                model=model,
             )
 
             # Store configuration
@@ -179,7 +201,7 @@ class AgentController:
             config_dir.mkdir(parents=True, exist_ok=True)
 
             config_file = config_dir / f"{name}.json"
-            with open(config_file, 'w') as f:
+            with open(config_file, "w") as f:
                 config_dict = {
                     "name": config.name,
                     "role": config.role,
@@ -188,7 +210,7 @@ class AgentController:
                     "zone": config.zone,
                     "model": config.model,
                     "temperature": config.temperature,
-                    "max_concurrent_tasks": config.max_concurrent_tasks
+                    "max_concurrent_tasks": config.max_concurrent_tasks,
                 }
                 json.dump(config_dict, f, indent=2)
 
@@ -199,7 +221,7 @@ class AgentController:
             agent_file = self.agents_dir / f"{name.lower()}" / f"{name.lower()}.py"
             agent_file.parent.mkdir(parents=True, exist_ok=True)
 
-            with open(agent_file, 'w') as f:
+            with open(agent_file, "w") as f:
                 f.write(agent_code)
 
             # Set resource limits
@@ -214,7 +236,7 @@ class AgentController:
                 capabilities=capabilities or [],
                 state=AgentState.STOPPED,
                 zone=zone,
-                model=model
+                model=model,
             )
 
             # Register with agent registry
@@ -246,7 +268,9 @@ class AgentController:
                 return False
 
             # Start the agent process
-            agent_file = self.agents_dir / f"{agent_id.lower()}" / f"{agent_id.lower()}.py"
+            agent_file = (
+                self.agents_dir / f"{agent_id.lower()}" / f"{agent_id.lower()}.py"
+            )
             if not agent_file.exists():
                 logger.error(f"Agent file not found: {agent_file}")
                 return False
@@ -261,7 +285,7 @@ class AgentController:
                 agent_id=agent_id,
                 process=process,
                 started_at=datetime.now(),
-                config=config
+                config=config,
             )
             self.running_processes[agent_id] = agent_process
 
@@ -279,16 +303,19 @@ class AgentController:
             logger.info(f"Started agent {agent_id} (PID: {process.pid})")
 
             # Notify system
-            await message_bus.broadcast(AgentMessage(
-                from_agent="agent_controller",
-                to_agent="system",
-                message_type=MessageType.STATUS_UPDATE,
-                content={
-                    "event": "agent_started",
-                    "agent_id": agent_id,
-                    "pid": process.pid
-                }
-            ), topic="system_events")
+            await message_bus.broadcast(
+                AgentMessage(
+                    from_agent="agent_controller",
+                    to_agent="system",
+                    message_type=MessageType.STATUS_UPDATE,
+                    content={
+                        "event": "agent_started",
+                        "agent_id": agent_id,
+                        "pid": process.pid,
+                    },
+                ),
+                topic="system_events",
+            )
 
             return True
 
@@ -308,19 +335,23 @@ class AgentController:
 
             if graceful:
                 # Send termination signal
-                await message_bus.send_message(AgentMessage(
-                    from_agent="agent_controller",
-                    to_agent=agent_id,
-                    message_type=MessageType.STATUS_UPDATE,
-                    content={"command": "shutdown"},
-                    priority=MessagePriority.HIGH
-                ))
+                await message_bus.send_message(
+                    AgentMessage(
+                        from_agent="agent_controller",
+                        to_agent=agent_id,
+                        message_type=MessageType.STATUS_UPDATE,
+                        content={"command": "shutdown"},
+                        priority=MessagePriority.HIGH,
+                    )
+                )
 
                 # Wait for graceful shutdown
                 try:
                     await asyncio.wait_for(asyncio.to_thread(process.wait), timeout=30)
                 except asyncio.TimeoutError:
-                    logger.warning(f"Agent {agent_id} did not shutdown gracefully, forcing termination")
+                    logger.warning(
+                        f"Agent {agent_id} did not shutdown gracefully, forcing termination"
+                    )
                     graceful = False
 
             if not graceful or process.poll() is None:
@@ -347,15 +378,15 @@ class AgentController:
             logger.info(f"Stopped agent {agent_id}")
 
             # Notify system
-            await message_bus.broadcast(AgentMessage(
-                from_agent="agent_controller",
-                to_agent="system",
-                message_type=MessageType.STATUS_UPDATE,
-                content={
-                    "event": "agent_stopped",
-                    "agent_id": agent_id
-                }
-            ), topic="system_events")
+            await message_bus.broadcast(
+                AgentMessage(
+                    from_agent="agent_controller",
+                    to_agent="system",
+                    message_type=MessageType.STATUS_UPDATE,
+                    content={"event": "agent_stopped", "agent_id": agent_id},
+                ),
+                topic="system_events",
+            )
 
             return True
 
@@ -370,8 +401,11 @@ class AgentController:
         # Check restart cooldown
         if agent_id in self.running_processes:
             agent_process = self.running_processes[agent_id]
-            if (agent_process.last_restart and
-                (datetime.now() - agent_process.last_restart).total_seconds() < self.restart_cooldown_seconds):
+            if (
+                agent_process.last_restart
+                and (datetime.now() - agent_process.last_restart).total_seconds()
+                < self.restart_cooldown_seconds
+            ):
                 logger.warning(f"Agent {agent_id} restart blocked by cooldown")
                 return False
 
@@ -388,9 +422,14 @@ class AgentController:
 
         return success
 
-    async def assign_task(self, agent_id: str, task_type: str, data: Dict[str, Any],
-                         priority: TaskPriority = TaskPriority.NORMAL,
-                         deadline: Optional[datetime] = None) -> str:
+    async def assign_task(
+        self,
+        agent_id: str,
+        task_type: str,
+        data: Dict[str, Any],
+        priority: TaskPriority = TaskPriority.NORMAL,
+        deadline: Optional[datetime] = None,
+    ) -> str:
         """Assign a task to an agent"""
         task_id = str(uuid.uuid4())
 
@@ -401,7 +440,7 @@ class AgentController:
             data=data,
             priority=priority,
             created_at=datetime.now(),
-            deadline=deadline
+            deadline=deadline,
         )
 
         self.task_queue[task_id] = task
@@ -410,11 +449,15 @@ class AgentController:
 
         return task_id
 
-    async def auto_assign_task(self, task_type: str, data: Dict[str, Any],
-                              required_capabilities: List[AgentCapability] = None,
-                              zone: Optional[str] = None,
-                              priority: TaskPriority = TaskPriority.NORMAL,
-                              routing_strategy: str = "capability_based") -> Optional[str]:
+    async def auto_assign_task(
+        self,
+        task_type: str,
+        data: Dict[str, Any],
+        required_capabilities: List[AgentCapability] = None,
+        zone: Optional[str] = None,
+        priority: TaskPriority = TaskPriority.NORMAL,
+        routing_strategy: str = "capability_based",
+    ) -> Optional[str]:
         """Automatically assign a task to the best available agent using enhanced routing"""
 
         # Use enhanced routing for better agent selection
@@ -422,22 +465,26 @@ class AgentController:
             # Find agents by capabilities using enhanced message bus
             suitable_agents = []
             for capability in required_capabilities:
-                agents = await enhanced_message_bus.discover_agents_by_capability(capability.name)
+                agents = await enhanced_message_bus.discover_agents_by_capability(
+                    capability.name
+                )
                 suitable_agents.extend(agents)
 
             # Remove duplicates and filter by zone if specified
             suitable_agents = list(set(suitable_agents))
             if zone:
                 suitable_agents = [
-                    agent for agent in suitable_agents
-                    if agent in self.agent_configs and self.agent_configs[agent].zone == zone
+                    agent
+                    for agent in suitable_agents
+                    if agent in self.agent_configs
+                    and self.agent_configs[agent].zone == zone
                 ]
         else:
             # Fallback to traditional method
             suitable_agents = self._find_suitable_agents(
                 required_capabilities=required_capabilities or [],
                 zone=zone,
-                max_load=self.max_concurrent_tasks_per_agent
+                max_load=self.max_concurrent_tasks_per_agent,
             )
 
         if not suitable_agents:
@@ -447,14 +494,18 @@ class AgentController:
         # Select the best agent based on routing strategy
         if routing_strategy == "load_balanced":
             # Use enhanced message bus load balancing
-            best_agent = await enhanced_message_bus.select_least_loaded_agent(suitable_agents)
+            best_agent = await enhanced_message_bus.select_least_loaded_agent(
+                suitable_agents
+            )
         elif routing_strategy == "round_robin":
             # Simple round-robin selection
             best_agent = suitable_agents[len(self.task_queue) % len(suitable_agents)]
         else:
             # Default: least loaded agent
-            best_agent = min(suitable_agents,
-                            key=lambda aid: len(self.task_assignments.get(aid, set())))
+            best_agent = min(
+                suitable_agents,
+                key=lambda aid: len(self.task_assignments.get(aid, set())),
+            )
 
         # Create task with enhanced coordination
         task_id = await self.assign_task(best_agent, task_type, data, priority)
@@ -477,7 +528,7 @@ class AgentController:
             "tasks_assigned": len(self.task_assignments.get(agent_id, set())),
             "registry_info": None,
             "resource_usage": None,
-            "process_info": None
+            "process_info": None,
         }
 
         # Get registry information
@@ -497,7 +548,11 @@ class AgentController:
                 "pid": agent_process.process.pid,
                 "started_at": agent_process.started_at.isoformat(),
                 "restart_count": agent_process.restart_count,
-                "last_restart": agent_process.last_restart.isoformat() if agent_process.last_restart else None
+                "last_restart": (
+                    agent_process.last_restart.isoformat()
+                    if agent_process.last_restart
+                    else None
+                ),
             }
 
         return status
@@ -527,15 +582,20 @@ class AgentController:
             "status": task.status,
             "created_at": task.created_at.isoformat(),
             "assigned_at": task.assigned_at.isoformat() if task.assigned_at else None,
-            "completed_at": task.completed_at.isoformat() if task.completed_at else None,
+            "completed_at": (
+                task.completed_at.isoformat() if task.completed_at else None
+            ),
             "deadline": task.deadline.isoformat() if task.deadline else None,
             "retry_count": task.retry_count,
-            "has_result": task.result is not None
+            "has_result": task.result is not None,
         }
 
-    def _find_suitable_agents(self, required_capabilities: List[AgentCapability],
-                             zone: Optional[str] = None,
-                             max_load: int = 5) -> List[str]:
+    def _find_suitable_agents(
+        self,
+        required_capabilities: List[AgentCapability],
+        zone: Optional[str] = None,
+        max_load: int = 5,
+    ) -> List[str]:
         """Find agents suitable for a task"""
         suitable_agents = []
 
@@ -570,11 +630,13 @@ class AgentController:
             "developer": ["mcp_filesystem", "mcp_git", "terminal"],
             "solomon": ["mcp_filesystem", "web_search"],
             "jarvis": ["mcp_filesystem", "mcp_git", "terminal", "web_search"],
-            "default": ["mcp_filesystem"]
+            "default": ["mcp_filesystem"],
         }
         return tool_mappings.get(agent_type, tool_mappings["default"])
 
-    async def _generate_agent_code(self, name: str, agent_type: str, config: AgentConfig) -> str:
+    async def _generate_agent_code(
+        self, name: str, agent_type: str, config: AgentConfig
+    ) -> str:
         """Generate agent code from template"""
         template_file = self.templates_dir / f"{agent_type}_agent.py.template"
         if not template_file.exists():
@@ -665,7 +727,9 @@ if __name__ == "__main__":
 
         return True
 
-    async def _start_agent_process(self, agent_file: Path, config: AgentConfig, **kwargs) -> Optional[subprocess.Popen]:
+    async def _start_agent_process(
+        self, agent_file: Path, config: AgentConfig, **kwargs
+    ) -> Optional[subprocess.Popen]:
         """Start an agent process"""
         try:
             # Set up environment
@@ -678,7 +742,7 @@ if __name__ == "__main__":
                 env=env,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True
+                text=True,
             )
 
             # Wait a moment to check if process started successfully
@@ -686,7 +750,9 @@ if __name__ == "__main__":
             if process.poll() is not None:
                 # Process died immediately
                 stdout, stderr = process.communicate()
-                logger.error(f"Agent process died immediately. stdout: {stdout}, stderr: {stderr}")
+                logger.error(
+                    f"Agent process died immediately. stdout: {stdout}, stderr: {stderr}"
+                )
                 return None
 
             return process
@@ -701,7 +767,8 @@ if __name__ == "__main__":
             try:
                 # Get pending tasks sorted by priority
                 pending_tasks = [
-                    task for task in self.task_queue.values()
+                    task
+                    for task in self.task_queue.values()
                     if task.status == "pending"
                 ]
                 pending_tasks.sort(key=lambda t: t.priority.value, reverse=True)
@@ -721,22 +788,31 @@ if __name__ == "__main__":
                     self.task_assignments[task.agent_id].add(task.task_id)
 
                     # Send task to agent
-                    await message_bus.send_message(AgentMessage(
-                        from_agent="agent_controller",
-                        to_agent=task.agent_id,
-                        message_type=MessageType.TASK_REQUEST,
-                        content={
-                            "task_id": task.task_id,
-                            "task_type": task.task_type,
-                            "data": task.data,
-                            "priority": task.priority.name
-                        },
-                        priority=MessagePriority.HIGH if task.priority in [TaskPriority.HIGH, TaskPriority.URGENT] else MessagePriority.NORMAL,
-                        requires_response=True,
-                        correlation_id=task.task_id
-                    ))
+                    await message_bus.send_message(
+                        AgentMessage(
+                            from_agent="agent_controller",
+                            to_agent=task.agent_id,
+                            message_type=MessageType.TASK_REQUEST,
+                            content={
+                                "task_id": task.task_id,
+                                "task_type": task.task_type,
+                                "data": task.data,
+                                "priority": task.priority.name,
+                            },
+                            priority=(
+                                MessagePriority.HIGH
+                                if task.priority
+                                in [TaskPriority.HIGH, TaskPriority.URGENT]
+                                else MessagePriority.NORMAL
+                            ),
+                            requires_response=True,
+                            correlation_id=task.task_id,
+                        )
+                    )
 
-                    logger.info(f"Assigned task {task.task_id} to agent {task.agent_id}")
+                    logger.info(
+                        f"Assigned task {task.task_id} to agent {task.agent_id}"
+                    )
 
                 await asyncio.sleep(5)  # Check every 5 seconds
 
@@ -753,7 +829,9 @@ if __name__ == "__main__":
 
                     # Check if process is still running
                     if process.poll() is not None:
-                        logger.warning(f"Agent process {agent_id} (PID: {process.pid}) has terminated")
+                        logger.warning(
+                            f"Agent process {agent_id} (PID: {process.pid}) has terminated"
+                        )
 
                         # Clean up
                         del self.running_processes[agent_id]
@@ -769,16 +847,19 @@ if __name__ == "__main__":
                             agent_info.last_error = "Process terminated unexpectedly"
 
                         # Notify system
-                        await message_bus.broadcast(AgentMessage(
-                            from_agent="agent_controller",
-                            to_agent="system",
-                            message_type=MessageType.ALERT,
-                            content={
-                                "event": "agent_process_died",
-                                "agent_id": agent_id,
-                                "pid": process.pid
-                            }
-                        ), topic="system_alerts")
+                        await message_bus.broadcast(
+                            AgentMessage(
+                                from_agent="agent_controller",
+                                to_agent="system",
+                                message_type=MessageType.ALERT,
+                                content={
+                                    "event": "agent_process_died",
+                                    "agent_id": agent_id,
+                                    "pid": process.pid,
+                                },
+                            ),
+                            topic="system_alerts",
+                        )
 
                 await asyncio.sleep(10)  # Check every 10 seconds
 
@@ -792,14 +873,16 @@ if __name__ == "__main__":
             try:
                 for agent_id in list(self.running_processes.keys()):
                     # Send health check
-                    await message_bus.send_message(AgentMessage(
-                        from_agent="agent_controller",
-                        to_agent=agent_id,
-                        message_type=MessageType.STATUS_UPDATE,
-                        content={"command": "health_check"},
-                        priority=MessagePriority.LOW,
-                        requires_response=False
-                    ))
+                    await message_bus.send_message(
+                        AgentMessage(
+                            from_agent="agent_controller",
+                            to_agent=agent_id,
+                            message_type=MessageType.STATUS_UPDATE,
+                            content={"command": "health_check"},
+                            priority=MessagePriority.LOW,
+                            requires_response=False,
+                        )
+                    )
 
                 await asyncio.sleep(120)  # Health check every 2 minutes
 
@@ -822,19 +905,26 @@ if __name__ == "__main__":
 
                             # Remove from assignments
                             if task.agent_id in self.task_assignments:
-                                self.task_assignments[task.agent_id].discard(task.task_id)
+                                self.task_assignments[task.agent_id].discard(
+                                    task.task_id
+                                )
 
                             logger.warning(f"Task {task.task_id} missed deadline")
 
                         # Check general timeout
-                        elif (task.assigned_at and
-                              (current_time - task.assigned_at).total_seconds() > self.task_timeout_seconds):
+                        elif (
+                            task.assigned_at
+                            and (current_time - task.assigned_at).total_seconds()
+                            > self.task_timeout_seconds
+                        ):
                             task.status = "timeout"
                             task.completed_at = current_time
 
                             # Remove from assignments
                             if task.agent_id in self.task_assignments:
-                                self.task_assignments[task.agent_id].discard(task.task_id)
+                                self.task_assignments[task.agent_id].discard(
+                                    task.task_id
+                                )
 
                             logger.warning(f"Task {task.task_id} timed out")
 
@@ -854,7 +944,9 @@ if __name__ == "__main__":
                 await self.coordination_manager.check_timeouts()
 
                 # Process pending coordination requests
-                messages = await enhanced_message_bus.get_messages_for_agent("agent_controller")
+                messages = await enhanced_message_bus.get_messages_for_agent(
+                    "agent_controller"
+                )
                 for message in messages:
                     if message.content.get("type") == "coordination_request":
                         await self._handle_coordination_request(message)
@@ -872,11 +964,15 @@ if __name__ == "__main__":
                 # Process active workflows
                 completed_workflows = []
                 for workflow_id, workflow_info in self.active_workflows.items():
-                    status = await self.coordination_manager.get_workflow_status(workflow_id)
+                    status = await self.coordination_manager.get_workflow_status(
+                        workflow_id
+                    )
 
                     if status == "completed":
                         completed_workflows.append(workflow_id)
-                        await self._notify_workflow_completion(workflow_id, workflow_info)
+                        await self._notify_workflow_completion(
+                            workflow_id, workflow_info
+                        )
                     elif status == "failed":
                         completed_workflows.append(workflow_id)
                         await self._handle_workflow_failure(workflow_id, workflow_info)
@@ -891,8 +987,13 @@ if __name__ == "__main__":
                 logger.error(f"Workflow manager error: {e}")
                 await asyncio.sleep(10)
 
-    async def create_agent_workflow(self, workflow_type: str, participants: List[str],
-                                   tasks: List[Dict], coordinator: str = None) -> str:
+    async def create_agent_workflow(
+        self,
+        workflow_type: str,
+        participants: List[str],
+        tasks: List[Dict],
+        coordinator: str = None,
+    ) -> str:
         """Create a multi-agent workflow"""
         try:
             workflow_id = str(uuid.uuid4())
@@ -912,7 +1013,7 @@ if __name__ == "__main__":
                 pattern=pattern,
                 participants=participants,
                 coordinator=coordinator or "agent_controller",
-                tasks=tasks
+                tasks=tasks,
             )
 
             # Track workflow
@@ -922,17 +1023,21 @@ if __name__ == "__main__":
                 "tasks": tasks,
                 "coordinator": coordinator,
                 "created_at": datetime.now(),
-                "status": "active"
+                "status": "active",
             }
 
-            logger.info(f"Created workflow {workflow_id} with {len(participants)} participants")
+            logger.info(
+                f"Created workflow {workflow_id} with {len(participants)} participants"
+            )
             return workflow_id
 
         except Exception as e:
             logger.error(f"Error creating workflow: {e}")
             raise
 
-    async def coordinate_task_execution(self, task: AgentTask, strategy: str = "capability_based") -> bool:
+    async def coordinate_task_execution(
+        self, task: AgentTask, strategy: str = "capability_based"
+    ) -> bool:
         """Coordinate task execution using enhanced routing"""
         try:
             # Create enhanced message for task assignment
@@ -951,12 +1056,12 @@ if __name__ == "__main__":
                     "task_type": task.task_type,
                     "data": task.data,
                     "priority": task.priority.value,
-                    "deadline": task.deadline.isoformat() if task.deadline else None
+                    "deadline": task.deadline.isoformat() if task.deadline else None,
                 },
                 priority=task.priority,
                 routing_strategy=routing_strategy,
                 requires_response=True,
-                expected_capabilities=[task.task_type]
+                expected_capabilities=[task.task_type],
             )
 
             # Send via enhanced message bus
@@ -971,26 +1076,37 @@ if __name__ == "__main__":
                     self.task_assignments[task.agent_id] = set()
                 self.task_assignments[task.agent_id].add(task.task_id)
 
-                logger.info(f"Task {task.task_id} assigned to {task.agent_id} via enhanced routing")
+                logger.info(
+                    f"Task {task.task_id} assigned to {task.agent_id} via enhanced routing"
+                )
                 return True
             else:
-                logger.warning(f"Failed to assign task {task.task_id} to {task.agent_id}")
+                logger.warning(
+                    f"Failed to assign task {task.task_id} to {task.agent_id}"
+                )
                 return False
 
         except Exception as e:
             logger.error(f"Error coordinating task execution: {e}")
             return False
 
-    async def request_agent_consensus(self, decision_id: str, participants: List[str],
-                                    proposal: Dict, voting_method: str = "majority") -> Dict:
+    async def request_agent_consensus(
+        self,
+        decision_id: str,
+        participants: List[str],
+        proposal: Dict,
+        voting_method: str = "majority",
+    ) -> Dict:
         """Request consensus decision from multiple agents"""
         try:
-            result = await self.coordination_manager.consensus_manager.request_consensus(
-                proposal_id=decision_id,
-                participants=participants,
-                proposal=proposal,
-                voting_method=voting_method,
-                timeout_seconds=300  # 5 minutes
+            result = (
+                await self.coordination_manager.consensus_manager.request_consensus(
+                    proposal_id=decision_id,
+                    participants=participants,
+                    proposal=proposal,
+                    voting_method=voting_method,
+                    timeout_seconds=300,  # 5 minutes
+                )
             )
 
             logger.info(f"Consensus result for {decision_id}: {result}")
@@ -1000,15 +1116,16 @@ if __name__ == "__main__":
             logger.error(f"Error requesting consensus: {e}")
             return {"status": "failed", "error": str(e)}
 
-    async def initiate_agent_auction(self, auction_id: str, task: Dict,
-                                   participants: List[str], duration: int = 60) -> Dict:
+    async def initiate_agent_auction(
+        self, auction_id: str, task: Dict, participants: List[str], duration: int = 60
+    ) -> Dict:
         """Initiate task auction among agents"""
         try:
             result = await self.coordination_manager.auction_manager.start_auction(
                 auction_id=auction_id,
                 task=task,
                 participants=participants,
-                duration_seconds=duration
+                duration_seconds=duration,
             )
 
             logger.info(f"Auction {auction_id} result: {result}")
@@ -1018,7 +1135,9 @@ if __name__ == "__main__":
             logger.error(f"Error initiating auction: {e}")
             return {"status": "failed", "error": str(e)}
 
-    async def register_agent_capabilities(self, agent_id: str, capabilities: List[AgentCapability]):
+    async def register_agent_capabilities(
+        self, agent_id: str, capabilities: List[AgentCapability]
+    ):
         """Register capabilities for an agent"""
         self.agent_capabilities[agent_id] = capabilities
 
@@ -1041,7 +1160,7 @@ if __name__ == "__main__":
             "agent_capabilities": {
                 agent_id: len(capabilities)
                 for agent_id, capabilities in self.agent_capabilities.items()
-            }
+            },
         }
 
         return metrics
@@ -1055,7 +1174,7 @@ if __name__ == "__main__":
                 workflow_id = await self.create_agent_workflow(
                     workflow_type=message.content["workflow_type"],
                     participants=message.content["participants"],
-                    tasks=message.content["tasks"]
+                    tasks=message.content["tasks"],
                 )
 
                 # Send response
@@ -1065,7 +1184,7 @@ if __name__ == "__main__":
                     message_type=MessageType.COORDINATION,
                     content={"workflow_id": workflow_id, "status": "created"},
                     routing_strategy=RoutingStrategy.DIRECT,
-                    correlation_id=message.correlation_id
+                    correlation_id=message.correlation_id,
                 )
                 await enhanced_message_bus.send_enhanced_message(response)
 
@@ -1079,7 +1198,7 @@ if __name__ == "__main__":
                     message_type=MessageType.COORDINATION,
                     content={"agents": agents, "capability": capability},
                     routing_strategy=RoutingStrategy.DIRECT,
-                    correlation_id=message.correlation_id
+                    correlation_id=message.correlation_id,
                 )
                 await enhanced_message_bus.send_enhanced_message(response)
 
@@ -1097,9 +1216,9 @@ if __name__ == "__main__":
                     content={
                         "event": "workflow_completed",
                         "workflow_id": workflow_id,
-                        "workflow_type": workflow_info["type"]
+                        "workflow_type": workflow_info["type"],
                     },
-                    routing_strategy=RoutingStrategy.DIRECT
+                    routing_strategy=RoutingStrategy.DIRECT,
                 )
                 await enhanced_message_bus.send_enhanced_message(message)
 
@@ -1120,9 +1239,9 @@ if __name__ == "__main__":
                     content={
                         "event": "workflow_failed",
                         "workflow_id": workflow_id,
-                        "workflow_type": workflow_info["type"]
+                        "workflow_type": workflow_info["type"],
                     },
-                    routing_strategy=RoutingStrategy.DIRECT
+                    routing_strategy=RoutingStrategy.DIRECT,
                 )
                 await enhanced_message_bus.send_enhanced_message(message)
 
@@ -1132,6 +1251,7 @@ if __name__ == "__main__":
             logger.error(f"Error handling workflow failure: {e}")
 
     # ==================== END ENHANCED COORDINATION METHODS ====================
+
 
 # Global agent controller instance
 agent_controller = AgentController()

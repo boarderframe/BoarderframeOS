@@ -19,6 +19,7 @@ class MessagePriority(Enum):
     HIGH = 3
     CRITICAL = 4
 
+
 class MessageType(Enum):
     TASK_REQUEST = "task_request"
     TASK_RESPONSE = "task_response"
@@ -28,9 +29,11 @@ class MessageType(Enum):
     COORDINATION = "coordination"
     ALERT = "alert"
 
+
 @dataclass
 class AgentMessage:
     """Message passed between agents"""
+
     from_agent: str
     to_agent: str
     message_type: MessageType
@@ -41,11 +44,14 @@ class AgentMessage:
     correlation_id: Optional[str] = None
     ttl_seconds: Optional[int] = None  # Time to live
 
+
 class MessageBus:
     """Central message routing system for all agents"""
 
     def __init__(self):
-        self.subscribers: Dict[str, Dict[str, List[Callable]]] = defaultdict(lambda: defaultdict(list))
+        self.subscribers: Dict[str, Dict[str, List[Callable]]] = defaultdict(
+            lambda: defaultdict(list)
+        )
         self.agent_queues: Dict[str, asyncio.Queue] = {}
         self.topic_subscribers: Dict[str, Set[str]] = defaultdict(set)
         self.message_history: List[AgentMessage] = []
@@ -81,7 +87,9 @@ class MessageBus:
                 self.topic_subscribers[topic].discard(agent_name)
             self.logger.info(f"Unregistered agent: {agent_name}")
 
-    async def subscribe_to_topic(self, agent_name: str, topic: str, callback: Optional[Callable] = None):
+    async def subscribe_to_topic(
+        self, agent_name: str, topic: str, callback: Optional[Callable] = None
+    ):
         """Subscribe an agent to a topic"""
         self.topic_subscribers[topic].add(agent_name)
         if callback:
@@ -98,7 +106,7 @@ class MessageBus:
     async def subscribe(self, agent_name: str, callback: Callable):
         """Subscribe an agent to receive all messages with a callback"""
         await self.register_agent(agent_name)
-        self.subscribers[agent_name]['default'] = [callback]
+        self.subscribers[agent_name]["default"] = [callback]
         self.logger.info(f"Agent {agent_name} subscribed with default callback")
 
     async def send_message(self, message: AgentMessage):
@@ -116,7 +124,9 @@ class MessageBus:
             if len(self.message_history) > 1000:  # Keep last 1000 messages
                 self.message_history = self.message_history[-1000:]
 
-            self.logger.debug(f"Message sent from {message.from_agent} to {message.to_agent}")
+            self.logger.debug(
+                f"Message sent from {message.from_agent} to {message.to_agent}"
+            )
             return True
 
         except asyncio.QueueFull:
@@ -144,19 +154,23 @@ class MessageBus:
                     timestamp=message.timestamp,
                     requires_response=message.requires_response,
                     correlation_id=message.correlation_id,
-                    ttl_seconds=message.ttl_seconds
+                    ttl_seconds=message.ttl_seconds,
                 )
                 tasks.append(self.send_message(msg_copy))
 
         await asyncio.gather(*tasks)
-        self.logger.info(f"Broadcast from {message.from_agent} to {len(recipients)} agents")
+        self.logger.info(
+            f"Broadcast from {message.from_agent} to {len(recipients)} agents"
+        )
 
     async def route_to_agent(self, to_agent: str, message: AgentMessage):
         """Route a message to a specific agent"""
         message.to_agent = to_agent
         await self.send_message(message)
 
-    async def get_messages(self, agent_name: str, timeout: Optional[float] = None) -> List[AgentMessage]:
+    async def get_messages(
+        self, agent_name: str, timeout: Optional[float] = None
+    ) -> List[AgentMessage]:
         """Get all pending messages for an agent"""
         if agent_name not in self.agent_queues:
             return []
@@ -184,14 +198,19 @@ class MessageBus:
 
         return messages
 
-    async def wait_for_response(self, correlation_id: str, timeout: float = 30.0) -> Optional[AgentMessage]:
+    async def wait_for_response(
+        self, correlation_id: str, timeout: float = 30.0
+    ) -> Optional[AgentMessage]:
         """Wait for a response message with a specific correlation ID"""
         start_time = asyncio.get_event_loop().time()
 
         while asyncio.get_event_loop().time() - start_time < timeout:
             # Check recent messages
             for msg in reversed(self.message_history):
-                if msg.correlation_id == correlation_id and msg.message_type == MessageType.TASK_RESPONSE:
+                if (
+                    msg.correlation_id == correlation_id
+                    and msg.message_type == MessageType.TASK_RESPONSE
+                ):
                     return msg
 
             await asyncio.sleep(0.1)
@@ -229,7 +248,7 @@ class MessageBus:
             "total_topics": len(self.topic_subscribers),
             "message_history_size": len(self.message_history),
             "queue_sizes": {},
-            "topic_subscribers": {}
+            "topic_subscribers": {},
         }
 
         for agent_name, queue in self.agent_queues.items():
@@ -240,14 +259,21 @@ class MessageBus:
 
         return stats
 
+
 # Global message bus instance
 message_bus = MessageBus()
 
+
 # Convenience functions
-async def send_task_request(from_agent: str, to_agent: str, task: Dict[str, Any],
-                          priority: MessagePriority = MessagePriority.NORMAL) -> str:
+async def send_task_request(
+    from_agent: str,
+    to_agent: str,
+    task: Dict[str, Any],
+    priority: MessagePriority = MessagePriority.NORMAL,
+) -> str:
     """Send a task request to another agent"""
     import uuid
+
     correlation_id = str(uuid.uuid4())
 
     message = AgentMessage(
@@ -257,11 +283,12 @@ async def send_task_request(from_agent: str, to_agent: str, task: Dict[str, Any]
         content={"task": task},
         priority=priority,
         requires_response=True,
-        correlation_id=correlation_id
+        correlation_id=correlation_id,
     )
 
     await message_bus.send_message(message)
     return correlation_id
+
 
 async def broadcast_status(agent_name: str, status: Dict[str, Any]):
     """Broadcast agent status update"""
@@ -270,10 +297,11 @@ async def broadcast_status(agent_name: str, status: Dict[str, Any]):
         to_agent="*",
         message_type=MessageType.STATUS_UPDATE,
         content=status,
-        priority=MessagePriority.LOW
+        priority=MessagePriority.LOW,
     )
 
     await message_bus.broadcast(message, topic="status_updates")
+
 
 async def share_knowledge(from_agent: str, knowledge: Dict[str, Any], topic: str):
     """Share knowledge with agents subscribed to a topic"""
@@ -282,7 +310,7 @@ async def share_knowledge(from_agent: str, knowledge: Dict[str, Any], topic: str
         to_agent="*",
         message_type=MessageType.KNOWLEDGE_SHARE,
         content={"knowledge": knowledge, "topic": topic},
-        priority=MessagePriority.NORMAL
+        priority=MessagePriority.NORMAL,
     )
 
     await message_bus.broadcast(message, topic=topic)

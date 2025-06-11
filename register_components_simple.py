@@ -21,43 +21,43 @@ def register_all_components():
             "server_type": "mcp",
             "port": 8009,
             "url": "http://localhost:8009",
-            "capabilities": ["service_discovery", "health_monitoring", "registration"]
+            "capabilities": ["service_discovery", "health_monitoring", "registration"],
         },
         {
             "name": "Filesystem Server",
             "server_type": "mcp",
             "port": 8001,
             "url": "http://localhost:8001",
-            "capabilities": ["file_operations", "directory_management", "search"]
+            "capabilities": ["file_operations", "directory_management", "search"],
         },
         {
             "name": "Database Server",
             "server_type": "mcp",
             "port": 8004,
             "url": "http://localhost:8004",
-            "capabilities": ["sqlite_operations", "query_execution"]
+            "capabilities": ["sqlite_operations", "query_execution"],
         },
         {
             "name": "Analytics Server",
             "server_type": "mcp",
             "port": 8007,
             "url": "http://localhost:8007",
-            "capabilities": ["data_analytics", "metrics_collection", "reporting"]
+            "capabilities": ["data_analytics", "metrics_collection", "reporting"],
         },
         {
             "name": "Payment Server",
             "server_type": "mcp",
             "port": 8006,
             "url": "http://localhost:8006",
-            "capabilities": ["payment_processing", "billing", "revenue_tracking"]
+            "capabilities": ["payment_processing", "billing", "revenue_tracking"],
         },
         {
             "name": "Customer Server",
             "server_type": "mcp",
             "port": 8008,
             "url": "http://localhost:8008",
-            "capabilities": ["customer_management", "crm", "support_tickets"]
-        }
+            "capabilities": ["customer_management", "crm", "support_tickets"],
+        },
     ]
 
     # Core Systems
@@ -67,15 +67,19 @@ def register_all_components():
             "server_type": "core_system",
             "port": 8888,
             "url": "http://localhost:8888",
-            "capabilities": ["dashboard", "system_monitoring", "agent_management"]
+            "capabilities": ["dashboard", "system_monitoring", "agent_management"],
         },
         {
             "name": "Agent Cortex Management",
             "server_type": "core_system",
             "port": 8889,
             "url": "http://localhost:8889",
-            "capabilities": ["llm_orchestration", "model_management", "cost_optimization"]
-        }
+            "capabilities": [
+                "llm_orchestration",
+                "model_management",
+                "cost_optimization",
+            ],
+        },
     ]
 
     # All servers combined
@@ -109,10 +113,22 @@ def register_all_components():
             updated_at = CURRENT_TIMESTAMP;
         """
 
-        result = subprocess.run([
-            "docker", "exec", "boarderframeos_postgres",
-            "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", query
-        ], capture_output=True, text=True)
+        result = subprocess.run(
+            [
+                "docker",
+                "exec",
+                "boarderframeos_postgres",
+                "psql",
+                "-U",
+                "boarderframe",
+                "-d",
+                "boarderframeos",
+                "-c",
+                query,
+            ],
+            capture_output=True,
+            text=True,
+        )
 
         if result.returncode == 0:
             print(f"   ✅ {server['name']} (port {server['port']})")
@@ -127,20 +143,20 @@ def register_all_components():
             "db_type": "postgresql",
             "host": "localhost",
             "port": 5434,
-            "database_name": "boarderframeos"
+            "database_name": "boarderframeos",
         },
         {
             "name": "Redis Cache",
             "db_type": "redis",
             "host": "localhost",
             "port": 6379,
-            "database_name": None
-        }
+            "database_name": None,
+        },
     ]
 
     for db in databases:
         db_id = str(uuid.uuid4())
-        db_name_value = f"'{db['database_name']}'" if db['database_name'] else "NULL"
+        db_name_value = f"'{db['database_name']}'" if db["database_name"] else "NULL"
 
         query = f"""
         INSERT INTO database_registry (
@@ -167,10 +183,22 @@ def register_all_components():
             updated_at = CURRENT_TIMESTAMP;
         """
 
-        result = subprocess.run([
-            "docker", "exec", "boarderframeos_postgres",
-            "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", query
-        ], capture_output=True, text=True)
+        result = subprocess.run(
+            [
+                "docker",
+                "exec",
+                "boarderframeos_postgres",
+                "psql",
+                "-U",
+                "boarderframe",
+                "-d",
+                "boarderframeos",
+                "-c",
+                query,
+            ],
+            capture_output=True,
+            text=True,
+        )
 
         if result.returncode == 0:
             print(f"   ✅ {db['name']} ({db['db_type']} on port {db['port']})")
@@ -191,16 +219,29 @@ def register_all_components():
         'Agents' as type, COUNT(*) as count FROM agent_registry;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", count_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-c",
+            count_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
         print("\nRegistry Contents:")
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 2:
                     type_name = parts[0].strip()
                     count = parts[1].strip()

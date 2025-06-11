@@ -16,6 +16,7 @@ import psutil
 
 try:
     import nvidia_ml_py3 as nvml
+
     HAS_NVIDIA = True
 except ImportError:
     HAS_NVIDIA = False
@@ -25,32 +26,40 @@ from .message_bus import AgentMessage, MessagePriority, MessageType, message_bus
 
 logger = logging.getLogger("resource_manager")
 
+
 class ResourceType(Enum):
     """Types of resources managed"""
+
     CPU = "cpu"
     MEMORY = "memory"
     GPU = "gpu"
     DISK = "disk"
     NETWORK = "network"
 
+
 class ResourceAlert(Enum):
     """Resource alert levels"""
+
     INFO = "info"
     WARNING = "warning"
     CRITICAL = "critical"
 
+
 @dataclass
 class ResourceLimit:
     """Resource limits for agents"""
+
     cpu_percent: float = 100.0  # CPU percentage limit
-    memory_mb: float = 8192.0   # Memory limit in MB
+    memory_mb: float = 8192.0  # Memory limit in MB
     gpu_percent: float = 100.0  # GPU percentage limit
-    disk_mb: float = 10240.0    # Disk usage limit in MB
+    disk_mb: float = 10240.0  # Disk usage limit in MB
     network_mbps: float = 1000.0  # Network bandwidth limit
+
 
 @dataclass
 class ResourceUsage:
     """Current resource usage"""
+
     cpu_percent: float = 0.0
     memory_mb: float = 0.0
     memory_percent: float = 0.0
@@ -70,12 +79,14 @@ class ResourceUsage:
             "gpu_memory_mb": self.gpu_memory_mb,
             "disk_mb": self.disk_mb,
             "network_mbps": self.network_mbps,
-            "timestamp": self.timestamp.isoformat()
+            "timestamp": self.timestamp.isoformat(),
         }
+
 
 @dataclass
 class SystemResources:
     """System-wide resource information"""
+
     cpu_cores: int
     cpu_frequency_mhz: float
     memory_total_mb: float
@@ -95,8 +106,9 @@ class SystemResources:
             "gpu_count": self.gpu_count,
             "gpu_total_memory_mb": self.gpu_total_memory_mb,
             "disk_total_mb": self.disk_total_mb,
-            "disk_available_mb": self.disk_available_mb
+            "disk_available_mb": self.disk_available_mb,
         }
+
 
 class ResourceManager:
     """Centralized resource management for all agents"""
@@ -108,7 +120,7 @@ class ResourceManager:
         self.system_resources: Optional[SystemResources] = None
         self.alert_thresholds = {
             ResourceAlert.WARNING: 0.80,
-            ResourceAlert.CRITICAL: 0.95
+            ResourceAlert.CRITICAL: 0.95,
         }
         self.running = False
         self.history_retention_hours = 24
@@ -159,7 +171,7 @@ class ResourceManager:
             memory_available = memory.available / 1024 / 1024
 
             # Disk information
-            disk = psutil.disk_usage('/')
+            disk = psutil.disk_usage("/")
             disk_total = disk.total / 1024 / 1024  # Convert to MB
             disk_available = disk.free / 1024 / 1024
 
@@ -173,7 +185,9 @@ class ResourceManager:
                     for i in range(gpu_count):
                         handle = nvml.nvmlDeviceGetHandleByIndex(i)
                         memory_info = nvml.nvmlDeviceGetMemoryInfo(handle)
-                        gpu_total_memory += memory_info.total / 1024 / 1024  # Convert to MB
+                        gpu_total_memory += (
+                            memory_info.total / 1024 / 1024
+                        )  # Convert to MB
                 except Exception as e:
                     logger.warning(f"Error getting GPU information: {e}")
 
@@ -185,11 +199,13 @@ class ResourceManager:
                 gpu_count=gpu_count,
                 gpu_total_memory_mb=gpu_total_memory,
                 disk_total_mb=disk_total,
-                disk_available_mb=disk_available
+                disk_available_mb=disk_available,
             )
 
-            logger.info(f"System resources detected: {cpu_count} CPU cores, "
-                       f"{memory_total:.0f}MB RAM, {gpu_count} GPUs")
+            logger.info(
+                f"System resources detected: {cpu_count} CPU cores, "
+                f"{memory_total:.0f}MB RAM, {gpu_count} GPUs"
+            )
 
         except Exception as e:
             logger.error(f"Failed to detect system resources: {e}")
@@ -243,7 +259,7 @@ class ResourceManager:
                     logger.debug(f"Error getting GPU usage: {e}")
 
             # Disk usage
-            disk = psutil.disk_usage('/')
+            disk = psutil.disk_usage("/")
             disk_used_mb = (disk.total - disk.free) / 1024 / 1024
 
             return ResourceUsage(
@@ -254,21 +270,24 @@ class ResourceManager:
                 gpu_memory_mb=gpu_memory_mb,
                 disk_mb=disk_used_mb,
                 network_mbps=0.0,  # TODO: Implement network monitoring
-                timestamp=datetime.now()
+                timestamp=datetime.now(),
             )
 
         except Exception as e:
             logger.error(f"Error getting system usage: {e}")
             return ResourceUsage()
 
-    def get_agent_resource_history(self, agent_id: str, hours: int = 1) -> List[ResourceUsage]:
+    def get_agent_resource_history(
+        self, agent_id: str, hours: int = 1
+    ) -> List[ResourceUsage]:
         """Get resource usage history for an agent"""
         if agent_id not in self.usage_history:
             return []
 
         cutoff_time = datetime.now() - timedelta(hours=hours)
         return [
-            usage for usage in self.usage_history[agent_id]
+            usage
+            for usage in self.usage_history[agent_id]
             if usage.timestamp >= cutoff_time
         ]
 
@@ -284,30 +303,36 @@ class ResourceManager:
 
         # Check CPU limit
         if usage.cpu_percent > limits.cpu_percent:
-            violations.append({
-                "resource": ResourceType.CPU.value,
-                "usage": usage.cpu_percent,
-                "limit": limits.cpu_percent,
-                "violation_percent": (usage.cpu_percent / limits.cpu_percent) * 100
-            })
+            violations.append(
+                {
+                    "resource": ResourceType.CPU.value,
+                    "usage": usage.cpu_percent,
+                    "limit": limits.cpu_percent,
+                    "violation_percent": (usage.cpu_percent / limits.cpu_percent) * 100,
+                }
+            )
 
         # Check memory limit
         if usage.memory_mb > limits.memory_mb:
-            violations.append({
-                "resource": ResourceType.MEMORY.value,
-                "usage": usage.memory_mb,
-                "limit": limits.memory_mb,
-                "violation_percent": (usage.memory_mb / limits.memory_mb) * 100
-            })
+            violations.append(
+                {
+                    "resource": ResourceType.MEMORY.value,
+                    "usage": usage.memory_mb,
+                    "limit": limits.memory_mb,
+                    "violation_percent": (usage.memory_mb / limits.memory_mb) * 100,
+                }
+            )
 
         # Check GPU limit
         if usage.gpu_percent > limits.gpu_percent:
-            violations.append({
-                "resource": ResourceType.GPU.value,
-                "usage": usage.gpu_percent,
-                "limit": limits.gpu_percent,
-                "violation_percent": (usage.gpu_percent / limits.gpu_percent) * 100
-            })
+            violations.append(
+                {
+                    "resource": ResourceType.GPU.value,
+                    "usage": usage.gpu_percent,
+                    "limit": limits.gpu_percent,
+                    "violation_percent": (usage.gpu_percent / limits.gpu_percent) * 100,
+                }
+            )
 
         return violations
 
@@ -332,39 +357,47 @@ class ResourceManager:
 
         # CPU recommendations
         if avg_cpu < limits.cpu_percent * 0.5:
-            recommendations.append({
-                "resource": ResourceType.CPU.value,
-                "type": "reduce_limit",
-                "current_limit": limits.cpu_percent,
-                "suggested_limit": max(avg_cpu * 1.5, 10.0),
-                "reason": "Low CPU utilization detected"
-            })
+            recommendations.append(
+                {
+                    "resource": ResourceType.CPU.value,
+                    "type": "reduce_limit",
+                    "current_limit": limits.cpu_percent,
+                    "suggested_limit": max(avg_cpu * 1.5, 10.0),
+                    "reason": "Low CPU utilization detected",
+                }
+            )
         elif avg_cpu > limits.cpu_percent * 0.9:
-            recommendations.append({
-                "resource": ResourceType.CPU.value,
-                "type": "increase_limit",
-                "current_limit": limits.cpu_percent,
-                "suggested_limit": min(avg_cpu * 1.2, 100.0),
-                "reason": "High CPU utilization detected"
-            })
+            recommendations.append(
+                {
+                    "resource": ResourceType.CPU.value,
+                    "type": "increase_limit",
+                    "current_limit": limits.cpu_percent,
+                    "suggested_limit": min(avg_cpu * 1.2, 100.0),
+                    "reason": "High CPU utilization detected",
+                }
+            )
 
         # Memory recommendations
         if avg_memory < limits.memory_mb * 0.5:
-            recommendations.append({
-                "resource": ResourceType.MEMORY.value,
-                "type": "reduce_limit",
-                "current_limit": limits.memory_mb,
-                "suggested_limit": max(avg_memory * 1.5, 512.0),
-                "reason": "Low memory utilization detected"
-            })
+            recommendations.append(
+                {
+                    "resource": ResourceType.MEMORY.value,
+                    "type": "reduce_limit",
+                    "current_limit": limits.memory_mb,
+                    "suggested_limit": max(avg_memory * 1.5, 512.0),
+                    "reason": "Low memory utilization detected",
+                }
+            )
         elif avg_memory > limits.memory_mb * 0.9:
-            recommendations.append({
-                "resource": ResourceType.MEMORY.value,
-                "type": "increase_limit",
-                "current_limit": limits.memory_mb,
-                "suggested_limit": avg_memory * 1.2,
-                "reason": "High memory utilization detected"
-            })
+            recommendations.append(
+                {
+                    "resource": ResourceType.MEMORY.value,
+                    "type": "increase_limit",
+                    "current_limit": limits.memory_mb,
+                    "suggested_limit": avg_memory * 1.2,
+                    "reason": "High memory utilization detected",
+                }
+            )
 
         return recommendations
 
@@ -375,16 +408,23 @@ class ResourceManager:
                 system_usage = self.get_system_usage()
 
                 # Broadcast system resource update
-                await message_bus.broadcast(AgentMessage(
-                    from_agent="resource_manager",
-                    to_agent="system",
-                    message_type=MessageType.STATUS_UPDATE,
-                    content={
-                        "event": "system_resources_update",
-                        "usage": system_usage.to_dict(),
-                        "resources": self.system_resources.to_dict() if self.system_resources else {}
-                    }
-                ), topic="system_events")
+                await message_bus.broadcast(
+                    AgentMessage(
+                        from_agent="resource_manager",
+                        to_agent="system",
+                        message_type=MessageType.STATUS_UPDATE,
+                        content={
+                            "event": "system_resources_update",
+                            "usage": system_usage.to_dict(),
+                            "resources": (
+                                self.system_resources.to_dict()
+                                if self.system_resources
+                                else {}
+                            ),
+                        },
+                    ),
+                    topic="system_events",
+                )
 
                 await asyncio.sleep(30)  # Update every 30 seconds
 
@@ -421,12 +461,20 @@ class ResourceManager:
                         usage = ResourceUsage(
                             cpu_percent=cpu_percent,
                             memory_mb=memory_mb,
-                            memory_percent=(memory_mb / self.system_resources.memory_total_mb * 100) if self.system_resources else 0,
+                            memory_percent=(
+                                (
+                                    memory_mb
+                                    / self.system_resources.memory_total_mb
+                                    * 100
+                                )
+                                if self.system_resources
+                                else 0
+                            ),
                             gpu_percent=gpu_percent,
                             gpu_memory_mb=gpu_memory_mb,
                             disk_mb=0.0,  # TODO: Implement disk monitoring
                             network_mbps=0.0,  # TODO: Implement network monitoring
-                            timestamp=datetime.now()
+                            timestamp=datetime.now(),
                         )
 
                         # Store current usage
@@ -438,11 +486,14 @@ class ResourceManager:
                         self.usage_history[agent_id].append(usage)
 
                         # Update agent registry with metrics
-                        await agent_registry.update_agent_heartbeat(agent_id, {
-                            "cpu_usage": cpu_percent,
-                            "memory_usage_mb": memory_mb,
-                            "gpu_usage": gpu_percent
-                        })
+                        await agent_registry.update_agent_heartbeat(
+                            agent_id,
+                            {
+                                "cpu_usage": cpu_percent,
+                                "memory_usage_mb": memory_mb,
+                                "gpu_usage": gpu_percent,
+                            },
+                        )
 
                     except psutil.NoSuchProcess:
                         # Process no longer exists
@@ -462,13 +513,14 @@ class ResourceManager:
         """Clean up old resource usage history"""
         while self.running:
             try:
-                cutoff_time = datetime.now() - timedelta(hours=self.history_retention_hours)
+                cutoff_time = datetime.now() - timedelta(
+                    hours=self.history_retention_hours
+                )
 
                 for agent_id in list(self.usage_history.keys()):
                     history = self.usage_history[agent_id]
                     cleaned_history = [
-                        usage for usage in history
-                        if usage.timestamp >= cutoff_time
+                        usage for usage in history if usage.timestamp >= cutoff_time
                     ]
                     self.usage_history[agent_id] = cleaned_history
 
@@ -487,23 +539,43 @@ class ResourceManager:
 
                 if self.system_resources:
                     # Check system memory usage
-                    memory_usage_percent = (system_usage.memory_mb / self.system_resources.memory_total_mb) * 100
+                    memory_usage_percent = (
+                        system_usage.memory_mb / self.system_resources.memory_total_mb
+                    ) * 100
 
-                    if memory_usage_percent > self.alert_thresholds[ResourceAlert.CRITICAL] * 100:
-                        await self._send_alert(ResourceAlert.CRITICAL, ResourceType.MEMORY,
-                                             f"System memory usage at {memory_usage_percent:.1f}%")
-                    elif memory_usage_percent > self.alert_thresholds[ResourceAlert.WARNING] * 100:
-                        await self._send_alert(ResourceAlert.WARNING, ResourceType.MEMORY,
-                                             f"System memory usage at {memory_usage_percent:.1f}%")
+                    if (
+                        memory_usage_percent
+                        > self.alert_thresholds[ResourceAlert.CRITICAL] * 100
+                    ):
+                        await self._send_alert(
+                            ResourceAlert.CRITICAL,
+                            ResourceType.MEMORY,
+                            f"System memory usage at {memory_usage_percent:.1f}%",
+                        )
+                    elif (
+                        memory_usage_percent
+                        > self.alert_thresholds[ResourceAlert.WARNING] * 100
+                    ):
+                        await self._send_alert(
+                            ResourceAlert.WARNING,
+                            ResourceType.MEMORY,
+                            f"System memory usage at {memory_usage_percent:.1f}%",
+                        )
 
                 # Check individual agent violations
                 for agent_id in self.agent_usage.keys():
                     violations = self.check_resource_violations(agent_id)
                     for violation in violations:
-                        if violation['violation_percent'] > self.alert_thresholds[ResourceAlert.CRITICAL] * 100:
-                            await self._send_alert(ResourceAlert.CRITICAL, ResourceType(violation['resource']),
-                                                 f"Agent {agent_id} exceeding {violation['resource']} limit: "
-                                                 f"{violation['usage']:.1f} > {violation['limit']:.1f}")
+                        if (
+                            violation["violation_percent"]
+                            > self.alert_thresholds[ResourceAlert.CRITICAL] * 100
+                        ):
+                            await self._send_alert(
+                                ResourceAlert.CRITICAL,
+                                ResourceType(violation["resource"]),
+                                f"Agent {agent_id} exceeding {violation['resource']} limit: "
+                                f"{violation['usage']:.1f} > {violation['limit']:.1f}",
+                            )
 
                 await asyncio.sleep(60)  # Check alerts every minute
 
@@ -511,22 +583,32 @@ class ResourceManager:
                 logger.error(f"Alert monitoring error: {e}")
                 await asyncio.sleep(60)
 
-    async def _send_alert(self, level: ResourceAlert, resource_type: ResourceType, message: str):
+    async def _send_alert(
+        self, level: ResourceAlert, resource_type: ResourceType, message: str
+    ):
         """Send a resource alert"""
-        await message_bus.broadcast(AgentMessage(
-            from_agent="resource_manager",
-            to_agent="system",
-            message_type=MessageType.ALERT,
-            content={
-                "alert_level": level.value,
-                "resource_type": resource_type.value,
-                "message": message,
-                "timestamp": datetime.now().isoformat()
-            },
-            priority=MessagePriority.HIGH if level == ResourceAlert.CRITICAL else MessagePriority.NORMAL
-        ), topic="system_alerts")
+        await message_bus.broadcast(
+            AgentMessage(
+                from_agent="resource_manager",
+                to_agent="system",
+                message_type=MessageType.ALERT,
+                content={
+                    "alert_level": level.value,
+                    "resource_type": resource_type.value,
+                    "message": message,
+                    "timestamp": datetime.now().isoformat(),
+                },
+                priority=(
+                    MessagePriority.HIGH
+                    if level == ResourceAlert.CRITICAL
+                    else MessagePriority.NORMAL
+                ),
+            ),
+            topic="system_alerts",
+        )
 
         logger.warning(f"Resource alert ({level.value}): {message}")
+
 
 # Global resource manager instance
 resource_manager = ResourceManager()

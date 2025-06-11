@@ -21,14 +21,15 @@ from boarderframeos.core.resource_manager import resource_manager
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler('/Users/cosburn/BoarderframeOS/logs/david_deployment.log'),
-        logging.StreamHandler()
-    ]
+        logging.FileHandler("/Users/cosburn/BoarderframeOS/logs/david_deployment.log"),
+        logging.StreamHandler(),
+    ],
 )
 
 logger = logging.getLogger("david_deployment")
+
 
 async def deploy_david():
     """Deploy David agent with full system integration"""
@@ -55,18 +56,14 @@ async def deploy_david():
                 "resource_allocation",
                 "executive_decision_making",
                 "biome_coordination",
-                "performance_monitoring"
+                "performance_monitoring",
             ],
-            "resources": {
-                "cpu_percent": 15.0,
-                "memory_mb": 512,
-                "priority": "high"
-            },
+            "resources": {"cpu_percent": 15.0, "memory_mb": 512, "priority": "high"},
             "config": {
                 "model": "claude-3-opus-20240229",
                 "temperature": 0.6,
-                "max_concurrent_tasks": 5
-            }
+                "max_concurrent_tasks": 5,
+            },
         }
 
         # Deploy David using agent controller
@@ -75,10 +72,7 @@ async def deploy_david():
 
         logger.info("🎯 Creating David agent instance...")
         agent_info = await agent_controller.create_agent(
-            template_id="david_ceo",
-            agent_id="david",
-            zone="executive",
-            priority="high"
+            template_id="david_ceo", agent_id="david", zone="executive", priority="high"
         )
 
         if agent_info.get("success"):
@@ -106,8 +100,8 @@ async def deploy_david():
                     content={
                         "message": "Welcome David! You are now CEO of BoarderframeOS. Solomon is your Chief of Staff.",
                         "system_state": "operational",
-                        "active_agents": await agent_registry.list_agents()
-                    }
+                        "active_agents": await agent_registry.list_agents(),
+                    },
                 )
 
                 logger.info("📨 Welcome message sent to David")
@@ -123,6 +117,7 @@ async def deploy_david():
     except Exception as e:
         logger.error(f"💥 David deployment failed: {e}")
         return False
+
 
 async def verify_david_deployment():
     """Verify David is running and responsive"""
@@ -153,7 +148,7 @@ async def verify_david_deployment():
             from_agent="system",
             to_agent="david",
             message_type="status_request",
-            content={"request": "initial_status"}
+            content={"request": "initial_status"},
         )
 
         if response:
@@ -167,6 +162,7 @@ async def verify_david_deployment():
     except Exception as e:
         logger.error(f"💥 Verification failed: {e}")
         return False
+
 
 async def main():
     """Main deployment orchestration"""
@@ -191,7 +187,9 @@ async def main():
                 logger.info("\n📊 Current System Status:")
                 agents = await agent_registry.list_agents()
                 for agent in agents:
-                    logger.info(f"  • {agent.get('agent_id', 'Unknown')}: {agent.get('status', 'Unknown')} ({agent.get('role', 'No role')})")
+                    logger.info(
+                        f"  • {agent.get('agent_id', 'Unknown')}: {agent.get('status', 'Unknown')} ({agent.get('role', 'No role')})"
+                    )
 
                 return 0
             else:
@@ -207,6 +205,7 @@ async def main():
     except Exception as e:
         logger.error(f"💥 Deployment error: {e}")
         return 1
+
 
 if __name__ == "__main__":
     try:

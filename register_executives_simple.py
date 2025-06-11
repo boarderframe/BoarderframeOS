@@ -22,7 +22,7 @@ def register_executives():
             "role": "Chief of Staff",
             "department": "Executive Leadership",
             "authority": 10,
-            "capabilities": ["coordination", "leadership", "wisdom", "decision_making"]
+            "capabilities": ["coordination", "leadership", "wisdom", "decision_making"],
         },
         {
             "id": str(uuid.uuid5(uuid.NAMESPACE_DNS, "boarderframeos.agent.david")),
@@ -30,7 +30,7 @@ def register_executives():
             "role": "CEO",
             "department": "Executive Leadership",
             "authority": 10,
-            "capabilities": ["executive", "strategy", "vision", "leadership"]
+            "capabilities": ["executive", "strategy", "vision", "leadership"],
         },
         {
             "id": str(uuid.uuid5(uuid.NAMESPACE_DNS, "boarderframeos.agent.adam")),
@@ -38,7 +38,7 @@ def register_executives():
             "role": "Agent Creator",
             "department": "Primordial Agents",
             "authority": 9,
-            "capabilities": ["agent_creation", "automation", "development"]
+            "capabilities": ["agent_creation", "automation", "development"],
         },
         {
             "id": str(uuid.uuid5(uuid.NAMESPACE_DNS, "boarderframeos.agent.eve")),
@@ -46,7 +46,7 @@ def register_executives():
             "role": "Agent Evolver",
             "department": "Primordial Agents",
             "authority": 9,
-            "capabilities": ["agent_evolution", "optimization", "adaptation"]
+            "capabilities": ["agent_evolution", "optimization", "adaptation"],
         },
         {
             "id": str(uuid.uuid5(uuid.NAMESPACE_DNS, "boarderframeos.agent.bezalel")),
@@ -54,8 +54,8 @@ def register_executives():
             "role": "Master Programmer",
             "department": "Primordial Agents",
             "authority": 9,
-            "capabilities": ["programming", "architecture", "craftsmanship"]
-        }
+            "capabilities": ["programming", "architecture", "craftsmanship"],
+        },
     ]
 
     print("\n📝 Creating Executive Agents...")
@@ -76,10 +76,22 @@ def register_executives():
             updated_at = CURRENT_TIMESTAMP;
         """
 
-        result = subprocess.run([
-            "docker", "exec", "boarderframeos_postgres",
-            "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", agent_query
-        ], capture_output=True, text=True)
+        result = subprocess.run(
+            [
+                "docker",
+                "exec",
+                "boarderframeos_postgres",
+                "psql",
+                "-U",
+                "boarderframe",
+                "-d",
+                "boarderframeos",
+                "-c",
+                agent_query,
+            ],
+            capture_output=True,
+            text=True,
+        )
 
         if result.returncode == 0:
             print(f"   ✅ Created agent: {exec['name']}")
@@ -115,10 +127,22 @@ def register_executives():
             updated_at = CURRENT_TIMESTAMP;
         """
 
-        result = subprocess.run([
-            "docker", "exec", "boarderframeos_postgres",
-            "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", registry_query
-        ], capture_output=True, text=True)
+        result = subprocess.run(
+            [
+                "docker",
+                "exec",
+                "boarderframeos_postgres",
+                "psql",
+                "-U",
+                "boarderframe",
+                "-d",
+                "boarderframeos",
+                "-c",
+                registry_query,
+            ],
+            capture_output=True,
+            text=True,
+        )
 
         if result.returncode == 0:
             print(f"   ✅ Registered: {exec['name']} ({exec['role']})")
@@ -139,15 +163,31 @@ def register_executives():
     LIMIT 10;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", dept_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-A",
+            "-F",
+            "|",
+            "-c",
+            dept_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0 and result.stdout:
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 6:
                     dept_id = parts[0]
                     name = parts[1]
@@ -176,10 +216,22 @@ def register_executives():
                         updated_at = CURRENT_TIMESTAMP;
                     """
 
-                    reg_result = subprocess.run([
-                        "docker", "exec", "boarderframeos_postgres",
-                        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", register_dept_query
-                    ], capture_output=True, text=True)
+                    reg_result = subprocess.run(
+                        [
+                            "docker",
+                            "exec",
+                            "boarderframeos_postgres",
+                            "psql",
+                            "-U",
+                            "boarderframe",
+                            "-d",
+                            "boarderframeos",
+                            "-c",
+                            register_dept_query,
+                        ],
+                        capture_output=True,
+                        text=True,
+                    )
 
                     if reg_result.returncode == 0:
                         print(f"   ✅ {name}")
@@ -208,16 +260,29 @@ def register_executives():
         'Databases' as type, COUNT(*) as count FROM database_registry;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", count_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-c",
+            count_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
         print("\nRegistry Contents:")
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 2:
                     type_name = parts[0].strip()
                     count = parts[1].strip()

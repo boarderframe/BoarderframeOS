@@ -19,7 +19,7 @@ def check_mcp_servers():
         ("Filesystem", 8001),
         ("PostgreSQL Database", 8010),
         ("LLM", 8005),
-        ("Dashboard", 8888)
+        ("Dashboard", 8888),
     ]
 
     print("🚀 BoarderframeOS System Status")
@@ -33,19 +33,22 @@ def check_mcp_servers():
         except requests.RequestException:
             print(f"{name:12} | Port {port:4} | ❌ OFFLINE")
 
+
 def check_agents():
     """Check running agents"""
     agents = ["solomon", "david"]
     running_agents = []
 
-    for process in psutil.process_iter(['pid', 'name', 'cmdline']):
+    for process in psutil.process_iter(["pid", "name", "cmdline"]):
         try:
-            cmdline = ' '.join(process.info['cmdline'] or [])
+            cmdline = " ".join(process.info["cmdline"] or [])
 
             for agent in agents:
                 if f"{agent}.py" in cmdline:
                     memory_mb = process.memory_info().rss // 1024 // 1024
-                    running_agents.append((agent.title(), process.info['pid'], memory_mb))
+                    running_agents.append(
+                        (agent.title(), process.info["pid"], memory_mb)
+                    )
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             continue
 
@@ -57,27 +60,33 @@ def check_agents():
     else:
         print("❌ No agents currently running")
 
+
 def check_startup_status():
     """Check startup status file"""
     status_file = "/tmp/boarderframe_startup_status.json"
     if os.path.exists(status_file):
-        with open(status_file, 'r') as f:
+        with open(status_file, "r") as f:
             data = json.load(f)
 
         print(f"\n📊 System Phase: {data.get('startup_phase', 'unknown').upper()}")
         print(f"🕐 Started: {data.get('start_time', 'unknown')}")
 
         # MCP Servers summary
-        mcp_servers = data.get('mcp_servers', {})
+        mcp_servers = data.get("mcp_servers", {})
         if mcp_servers:
-            running_count = sum(1 for s in mcp_servers.values() if s.get('status') == 'running')
+            running_count = sum(
+                1 for s in mcp_servers.values() if s.get("status") == "running"
+            )
             print(f"📡 MCP Servers: {running_count}/{len(mcp_servers)} running")
 
         # Agents summary
-        agents = data.get('agents', {})
+        agents = data.get("agents", {})
         if agents:
-            running_count = sum(1 for a in agents.values() if a.get('status') == 'running')
+            running_count = sum(
+                1 for a in agents.values() if a.get("status") == "running"
+            )
             print(f"🤖 Agents: {running_count}/{len(agents)} running")
+
 
 def main():
     print(f"🔍 System Status Check - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -89,6 +98,7 @@ def main():
 
     print(f"\n🌐 Dashboard: http://localhost:8888")
     print("✨ System appears to be fully operational!")
+
 
 if __name__ == "__main__":
     main()

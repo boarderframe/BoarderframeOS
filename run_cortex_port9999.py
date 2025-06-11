@@ -12,8 +12,8 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Disable Flask debug reloader
-os.environ['FLASK_ENV'] = 'production'
-os.environ['WERKZEUG_RUN_MAIN'] = 'true'
+os.environ["FLASK_ENV"] = "production"
+os.environ["WERKZEUG_RUN_MAIN"] = "true"
 
 from ui.agent_cortex_panel import AgentCortexPanel
 
@@ -36,7 +36,9 @@ async def main():
 
     # Override the run method to ensure it uses our port
     from flask import Flask
-    panel.app.run(host='127.0.0.1', port=9999, debug=False, use_reloader=False)
+
+    panel.app.run(host="127.0.0.1", port=9999, debug=False, use_reloader=False)
+
 
 if __name__ == "__main__":
     try:

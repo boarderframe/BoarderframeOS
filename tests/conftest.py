@@ -1,6 +1,7 @@
 """
 Pytest configuration and fixtures for BoarderframeOS tests.
 """
+
 import asyncio
 import os
 from typing import AsyncGenerator, Generator
@@ -12,7 +13,9 @@ from sqlalchemy.orm import sessionmaker
 
 # Set testing environment
 os.environ["TESTING"] = "true"
-os.environ["DATABASE_URL"] = "postgresql+asyncpg://boarderframe:test@localhost:5434/test_db"
+os.environ["DATABASE_URL"] = (
+    "postgresql+asyncpg://boarderframe:test@localhost:5434/test_db"
+)
 os.environ["REDIS_URL"] = "redis://localhost:6379/1"
 
 
@@ -33,11 +36,7 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
         pool_pre_ping=True,
     )
 
-    async_session = sessionmaker(
-        engine,
-        class_=AsyncSession,
-        expire_on_commit=False
-    )
+    async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     async with async_session() as session:
         yield session
@@ -49,20 +48,17 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
 @pytest.fixture
 def mock_llm_response():
     """Mock LLM API responses for testing."""
+
     def _mock_response(content: str):
         return {
-            "choices": [{
-                "message": {
-                    "content": content,
-                    "role": "assistant"
-                }
-            }],
+            "choices": [{"message": {"content": content, "role": "assistant"}}],
             "usage": {
                 "total_tokens": 100,
                 "prompt_tokens": 50,
-                "completion_tokens": 50
-            }
+                "completion_tokens": 50,
+            },
         }
+
     return _mock_response
 
 
@@ -76,5 +72,5 @@ def test_agent_config():
         "tier": 3,
         "model_binding": "worker_swarm",
         "capabilities": ["testing", "validation"],
-        "memory_size": 1000
+        "memory_size": 1000,
     }

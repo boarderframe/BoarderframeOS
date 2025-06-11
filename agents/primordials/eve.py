@@ -19,7 +19,7 @@ import httpx
 import numpy as np
 
 # Add project root to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from core.base_agent import AgentConfig, AgentState, BaseAgent
 from core.llm_client import CLAUDE_OPUS_CONFIG, LLMClient
@@ -27,9 +27,11 @@ from core.message_bus import broadcast_status, send_task_request
 
 logger = logging.getLogger("eve")
 
+
 @dataclass
 class EvolutionMetrics:
     """Metrics for tracking evolution performance"""
+
     agent_id: str
     fitness_history: List[float]
     performance_trend: str  # "improving", "declining", "stable"
@@ -38,9 +40,11 @@ class EvolutionMetrics:
     generation: int
     biome_rank: int  # Rank within biome
 
+
 @dataclass
 class MutationCandidate:
     """Candidate mutation for agent improvement"""
+
     agent_id: str
     mutation_type: str
     description: str
@@ -48,8 +52,10 @@ class MutationCandidate:
     risk_level: float  # 0.0-1.0
     implementation: Dict[str, Any]
 
+
 class EveConfig(AgentConfig):
     """Configuration specific to Eve"""
+
     name: str = "Eve"
     role: str = "The Evolver"
     biome: str = "garden"
@@ -59,15 +65,19 @@ class EveConfig(AgentConfig):
         "Maintain genetic diversity in agent population",
         "Optimize biome health and balance",
         "Implement natural selection mechanisms",
-        "Drive continuous system improvement"
+        "Drive continuous system improvement",
     ]
     tools: List[str] = [
-        "llm_client", "agent_analysis", "code_modification",
-        "performance_monitoring", "evolution_engine"
+        "llm_client",
+        "agent_analysis",
+        "code_modification",
+        "performance_monitoring",
+        "evolution_engine",
     ]
     model: str = "claude-3-opus-20240229"
     temperature: float = 0.7  # Balanced creativity and precision
     max_concurrent_tasks: int = 4
+
 
 class EvolutionEngine:
     """Core evolution logic for agent improvement"""
@@ -79,7 +89,7 @@ class EvolutionEngine:
             "capability_enhancement": 0.25,
             "personality_adjustment": 0.2,
             "efficiency_optimization": 0.15,
-            "innovation_boost": 0.1
+            "innovation_boost": 0.1,
         }
         self.selection_pressure = 0.7  # Keep top 70%
         self.mutation_rate = 0.15
@@ -89,10 +99,13 @@ class EvolutionEngine:
         try:
             async with httpx.AsyncClient() as client:
                 # Get agent data
-                response = await client.post("http://localhost:8004/query", json={
-                    "sql": "SELECT * FROM agents WHERE id = ?",
-                    "params": [agent_id]
-                })
+                response = await client.post(
+                    "http://localhost:8004/query",
+                    json={
+                        "sql": "SELECT * FROM agents WHERE id = ?",
+                        "params": [agent_id],
+                    },
+                )
 
                 if not response.json().get("success"):
                     raise Exception("Agent not found")
@@ -100,15 +113,18 @@ class EvolutionEngine:
                 agent_data = response.json()["data"][0]
 
                 # Get performance metrics
-                metrics_response = await client.post("http://localhost:8004/query", json={
-                    "sql": """
+                metrics_response = await client.post(
+                    "http://localhost:8004/query",
+                    json={
+                        "sql": """
                         SELECT metric_value, recorded_at
                         FROM metrics
                         WHERE agent_id = ? AND metric_name = 'fitness_score'
                         ORDER BY recorded_at DESC LIMIT 10
                     """,
-                    "params": [agent_id]
-                })
+                        "params": [agent_id],
+                    },
+                )
 
                 fitness_history = []
                 if metrics_response.json().get("success"):
@@ -116,38 +132,48 @@ class EvolutionEngine:
                         fitness_history.append(row["metric_value"])
 
                 # Get revenue data
-                revenue_response = await client.post("http://localhost:8004/query", json={
-                    "sql": """
+                revenue_response = await client.post(
+                    "http://localhost:8004/query",
+                    json={
+                        "sql": """
                         SELECT SUM(amount) as total_revenue
                         FROM revenue_transactions
                         WHERE agent_id = ?
                         AND created_at >= datetime('now', '-30 days')
                     """,
-                    "params": [agent_id]
-                })
+                        "params": [agent_id],
+                    },
+                )
 
                 # Get resource cost data
-                resource_response = await client.post("http://localhost:8004/query", json={
-                    "sql": """
+                resource_response = await client.post(
+                    "http://localhost:8004/query",
+                    json={
+                        "sql": """
                         SELECT SUM(metric_value) as total_cost
                         FROM metrics
                         WHERE agent_id = ?
                         AND metric_name = 'resource_cost'
                         AND recorded_at >= datetime('now', '-30 days')
                     """,
-                    "params": [agent_id]
-                })
+                        "params": [agent_id],
+                    },
+                )
 
                 # Calculate profit metrics if available
                 revenue = 0
                 cost = 0
 
-                if revenue_response.json().get("success") and revenue_response.json().get("data"):
+                if revenue_response.json().get(
+                    "success"
+                ) and revenue_response.json().get("data"):
                     revenue_data = revenue_response.json()["data"]
                     if revenue_data and revenue_data[0]["total_revenue"] is not None:
                         revenue = revenue_data[0]["total_revenue"]
 
-                if resource_response.json().get("success") and resource_response.json().get("data"):
+                if resource_response.json().get(
+                    "success"
+                ) and resource_response.json().get("data"):
                     cost_data = resource_response.json()["data"]
                     if cost_data and cost_data[0]["total_cost"] is not None:
                         cost = cost_data[0]["total_cost"]
@@ -156,7 +182,9 @@ class EvolutionEngine:
                 profit_factor = 1.0
                 if revenue > 0:
                     profit_margin = (revenue - cost) / revenue
-                    profit_factor = 1.0 + (profit_margin * 0.5)  # Boost fitness by up to 50% for profitable agents
+                    profit_factor = 1.0 + (
+                        profit_margin * 0.5
+                    )  # Boost fitness by up to 50% for profitable agents
 
                 # Apply profit factor to most recent fitness score if available
                 if fitness_history and len(fitness_history) > 0:
@@ -175,7 +203,7 @@ class EvolutionEngine:
                     last_evolution=datetime.fromisoformat(agent_data["updated_at"]),
                     mutation_count=len(json.loads(agent_data.get("mutations", "[]"))),
                     generation=agent_data["generation"],
-                    biome_rank=biome_rank
+                    biome_rank=biome_rank,
                 )
 
         except Exception as e:
@@ -204,15 +232,18 @@ class EvolutionEngine:
         """Get agent's rank within their biome"""
         try:
             async with httpx.AsyncClient() as client:
-                response = await client.post("http://localhost:8004/query", json={
-                    "sql": """
+                response = await client.post(
+                    "http://localhost:8004/query",
+                    json={
+                        "sql": """
                         SELECT id, fitness_score,
                                ROW_NUMBER() OVER (ORDER BY fitness_score DESC) as rank
                         FROM agents
                         WHERE biome = ? AND status = 'active'
                     """,
-                    "params": [biome]
-                })
+                        "params": [biome],
+                    },
+                )
 
                 if response.json().get("success"):
                     for row in response.json().get("data", []):
@@ -225,41 +256,56 @@ class EvolutionEngine:
             logger.error(f"Failed to get biome rank: {e}")
             return 999
 
-    async def generate_mutations(self, metrics: EvolutionMetrics) -> List[MutationCandidate]:
+    async def generate_mutations(
+        self, metrics: EvolutionMetrics
+    ) -> List[MutationCandidate]:
         """Generate potential mutations for an agent"""
         mutations = []
 
         # Parameter tuning mutations
         if metrics.performance_trend == "declining":
-            mutations.append(MutationCandidate(
-                agent_id=metrics.agent_id,
-                mutation_type="parameter_tuning",
-                description="Adjust temperature and response parameters",
-                expected_improvement=0.1,
-                risk_level=0.2,
-                implementation={"temperature": random.uniform(0.3, 0.9)}
-            ))
+            mutations.append(
+                MutationCandidate(
+                    agent_id=metrics.agent_id,
+                    mutation_type="parameter_tuning",
+                    description="Adjust temperature and response parameters",
+                    expected_improvement=0.1,
+                    risk_level=0.2,
+                    implementation={"temperature": random.uniform(0.3, 0.9)},
+                )
+            )
 
         # Capability enhancement
         if metrics.biome_rank > 5:  # Bottom performers
-            mutations.append(MutationCandidate(
-                agent_id=metrics.agent_id,
-                mutation_type="capability_enhancement",
-                description="Add new capabilities or improve existing ones",
-                expected_improvement=0.15,
-                risk_level=0.4,
-                implementation={"new_capabilities": ["enhanced_analysis", "improved_communication"]}
-            ))
+            mutations.append(
+                MutationCandidate(
+                    agent_id=metrics.agent_id,
+                    mutation_type="capability_enhancement",
+                    description="Add new capabilities or improve existing ones",
+                    expected_improvement=0.15,
+                    risk_level=0.4,
+                    implementation={
+                        "new_capabilities": [
+                            "enhanced_analysis",
+                            "improved_communication",
+                        ]
+                    },
+                )
+            )
 
         # Personality adjustment
-        mutations.append(MutationCandidate(
-            agent_id=metrics.agent_id,
-            mutation_type="personality_adjustment",
-            description="Fine-tune personality traits for better performance",
-            expected_improvement=0.08,
-            risk_level=0.3,
-            implementation={"personality_tweaks": self._generate_personality_tweaks()}
-        ))
+        mutations.append(
+            MutationCandidate(
+                agent_id=metrics.agent_id,
+                mutation_type="personality_adjustment",
+                description="Fine-tune personality traits for better performance",
+                expected_improvement=0.08,
+                risk_level=0.3,
+                implementation={
+                    "personality_tweaks": self._generate_personality_tweaks()
+                },
+            )
+        )
 
         return mutations
 
@@ -272,6 +318,7 @@ class EvolutionEngine:
             tweaks[trait] = random.uniform(-0.1, 0.1)  # Small adjustments
 
         return tweaks
+
 
 class Eve(BaseAgent):
     """Eve - The Evolver Agent"""
@@ -290,7 +337,7 @@ class Eve(BaseAgent):
             "performance_focus": 0.9,
             "risk_tolerance": 0.6,
             "innovation_drive": 0.7,
-            "stability_balance": 0.5
+            "stability_balance": 0.5,
         }
 
         self.system_prompt = self._build_system_prompt()
@@ -389,13 +436,15 @@ The Garden blooms with possibility. I will nurture growth, preserve diversity, a
 
 Together, we will evolve toward our destiny: the first billion-dollar one-person company, powered by the most advanced AI workforce ever created."""
 
-        await broadcast_status(self.agent_id, "online", {
-            "message": message,
-            "type": "awakening",
-            "biome": "garden"
-        })
+        await broadcast_status(
+            self.agent_id,
+            "online",
+            {"message": message, "type": "awakening", "biome": "garden"},
+        )
 
-    async def evolve_agent(self, agent_id: str, reason: str = "periodic_evolution") -> Dict:
+    async def evolve_agent(
+        self, agent_id: str, reason: str = "periodic_evolution"
+    ) -> Dict:
         """Evolve a specific agent"""
         self.state = AgentState.ACTING
 
@@ -430,7 +479,9 @@ Together, we will evolve toward our destiny: the first billion-dollar one-person
             self.state = AgentState.ERROR
             return {"success": False, "error": str(e)}
 
-    async def _select_optimal_mutation(self, mutations: List[MutationCandidate], metrics: EvolutionMetrics) -> Optional[MutationCandidate]:
+    async def _select_optimal_mutation(
+        self, mutations: List[MutationCandidate], metrics: EvolutionMetrics
+    ) -> Optional[MutationCandidate]:
         """Select the best mutation using Claude's analysis with revenue consideration"""
         if not mutations:
             return None
@@ -481,7 +532,7 @@ Respond with just the index number."""
             response = await self.llm_client.generate(
                 messages=[{"role": "user", "content": selection_prompt}],
                 system_prompt=self.system_prompt,
-                temperature=0.3
+                temperature=0.3,
             )
 
             try:
@@ -503,54 +554,69 @@ Respond with just the index number."""
         try:
             async with httpx.AsyncClient() as client:
                 # Get current month revenue
-                current_response = await client.post("http://localhost:8004/query", json={
-                    "sql": """
+                current_response = await client.post(
+                    "http://localhost:8004/query",
+                    json={
+                        "sql": """
                         SELECT SUM(amount) as revenue
                         FROM revenue_transactions
                         WHERE agent_id = ?
                         AND created_at >= datetime('now', '-30 days')
                     """,
-                    "params": [agent_id]
-                })
+                        "params": [agent_id],
+                    },
+                )
 
                 # Get previous month revenue
-                previous_response = await client.post("http://localhost:8004/query", json={
-                    "sql": """
+                previous_response = await client.post(
+                    "http://localhost:8004/query",
+                    json={
+                        "sql": """
                         SELECT SUM(amount) as revenue
                         FROM revenue_transactions
                         WHERE agent_id = ?
                         AND created_at BETWEEN datetime('now', '-60 days') AND datetime('now', '-30 days')
                     """,
-                    "params": [agent_id]
-                })
+                        "params": [agent_id],
+                    },
+                )
 
                 # Get resource costs
-                costs_response = await client.post("http://localhost:8004/query", json={
-                    "sql": """
+                costs_response = await client.post(
+                    "http://localhost:8004/query",
+                    json={
+                        "sql": """
                         SELECT SUM(metric_value) as costs
                         FROM metrics
                         WHERE agent_id = ?
                         AND metric_name = 'resource_cost'
                         AND recorded_at >= datetime('now', '-30 days')
                     """,
-                    "params": [agent_id]
-                })
+                        "params": [agent_id],
+                    },
+                )
 
                 # Extract data
                 monthly_revenue = 0
-                if current_response.json().get("success") and current_response.json().get("data"):
+                if current_response.json().get(
+                    "success"
+                ) and current_response.json().get("data"):
                     revenue_data = current_response.json()["data"][0]
                     if revenue_data and revenue_data.get("revenue") is not None:
                         monthly_revenue = revenue_data["revenue"]
 
                 previous_revenue = 0
-                if previous_response.json().get("success") and previous_response.json().get("data"):
+                if previous_response.json().get(
+                    "success"
+                ) and previous_response.json().get("data"):
                     prev_data = previous_response.json()["data"][0]
                     if prev_data and prev_data.get("revenue") is not None:
                         previous_revenue = prev_data["revenue"]
 
                 monthly_costs = 0
-                if costs_response.json().get("success") and costs_response.json().get("data"):
+                if costs_response.json().get("success") and costs_response.json().get(
+                    "data"
+                ):
                     cost_data = costs_response.json()["data"][0]
                     if cost_data and cost_data.get("costs") is not None:
                         monthly_costs = cost_data["costs"]
@@ -558,12 +624,16 @@ Respond with just the index number."""
                 # Calculate metrics
                 profit_margin = 0
                 if monthly_revenue > 0:
-                    profit_margin = ((monthly_revenue - monthly_costs) / monthly_revenue) * 100
+                    profit_margin = (
+                        (monthly_revenue - monthly_costs) / monthly_revenue
+                    ) * 100
 
                 # Determine revenue trend
                 revenue_trend = "stable"
                 if previous_revenue > 0:
-                    percent_change = ((monthly_revenue - previous_revenue) / previous_revenue) * 100
+                    percent_change = (
+                        (monthly_revenue - previous_revenue) / previous_revenue
+                    ) * 100
                     if percent_change > 10:
                         revenue_trend = "growing"
                     elif percent_change < -10:
@@ -573,22 +643,30 @@ Respond with just the index number."""
                     "monthly_revenue": monthly_revenue,
                     "monthly_costs": monthly_costs,
                     "profit_margin": profit_margin,
-                    "revenue_trend": revenue_trend
+                    "revenue_trend": revenue_trend,
                 }
 
         except Exception as e:
             logger.error(f"Failed to get revenue data: {e}")
-            return {"monthly_revenue": 0, "monthly_costs": 0, "profit_margin": 0, "revenue_trend": "unknown"}
+            return {
+                "monthly_revenue": 0,
+                "monthly_costs": 0,
+                "profit_margin": 0,
+                "revenue_trend": "unknown",
+            }
 
     async def _apply_mutation(self, mutation: MutationCandidate) -> Dict:
         """Apply the selected mutation to an agent"""
         try:
             # Get current agent data
             async with httpx.AsyncClient() as client:
-                response = await client.post("http://localhost:8004/query", json={
-                    "sql": "SELECT * FROM agents WHERE id = ?",
-                    "params": [mutation.agent_id]
-                })
+                response = await client.post(
+                    "http://localhost:8004/query",
+                    json={
+                        "sql": "SELECT * FROM agents WHERE id = ?",
+                        "params": [mutation.agent_id],
+                    },
+                )
 
                 if not response.json().get("success"):
                     return {"success": False, "error": "Agent not found"}
@@ -603,29 +681,36 @@ Respond with just the index number."""
                 )
 
                 # Update agent in database
-                update_response = await client.post("http://localhost:8004/update", json={
-                    "table": "agents",
-                    "data": {
-                        "config": json.dumps(updated_config),
-                        "mutations": json.dumps(updated_mutations),
-                        "updated_at": datetime.now().isoformat()
+                update_response = await client.post(
+                    "http://localhost:8004/update",
+                    json={
+                        "table": "agents",
+                        "data": {
+                            "config": json.dumps(updated_config),
+                            "mutations": json.dumps(updated_mutations),
+                            "updated_at": datetime.now().isoformat(),
+                        },
+                        "where": {"id": mutation.agent_id},
                     },
-                    "where": {"id": mutation.agent_id}
-                })
+                )
 
                 if update_response.status_code == 200:
                     # Notify agent of evolution (if it's running)
-                    await broadcast_status(self.agent_id, "agent_evolved", {
-                        "agent_id": mutation.agent_id,
-                        "mutation_type": mutation.mutation_type,
-                        "description": mutation.description
-                    })
+                    await broadcast_status(
+                        self.agent_id,
+                        "agent_evolved",
+                        {
+                            "agent_id": mutation.agent_id,
+                            "mutation_type": mutation.mutation_type,
+                            "description": mutation.description,
+                        },
+                    )
 
                     return {
                         "success": True,
                         "agent_id": mutation.agent_id,
                         "mutation_applied": mutation.mutation_type,
-                        "expected_improvement": mutation.expected_improvement
+                        "expected_improvement": mutation.expected_improvement,
                     }
                 else:
                     return {"success": False, "error": "Database update failed"}
@@ -634,7 +719,9 @@ Respond with just the index number."""
             logger.error(f"Failed to apply mutation: {e}")
             return {"success": False, "error": str(e)}
 
-    async def _implement_mutation(self, mutation: MutationCandidate, config: Dict, mutations: List[str]) -> Tuple[Dict, List[str]]:
+    async def _implement_mutation(
+        self, mutation: MutationCandidate, config: Dict, mutations: List[str]
+    ) -> Tuple[Dict, List[str]]:
         """Implement specific mutation logic"""
         updated_config = config.copy()
         updated_mutations = mutations.copy()
@@ -642,13 +729,19 @@ Respond with just the index number."""
         if mutation.mutation_type == "parameter_tuning":
             if "temperature" in mutation.implementation:
                 updated_config["temperature"] = mutation.implementation["temperature"]
-            updated_mutations.append(f"parameter_tuning_{datetime.now().strftime('%Y%m%d')}")
+            updated_mutations.append(
+                f"parameter_tuning_{datetime.now().strftime('%Y%m%d')}"
+            )
 
         elif mutation.mutation_type == "capability_enhancement":
             current_capabilities = updated_config.get("capabilities", [])
             new_capabilities = mutation.implementation.get("new_capabilities", [])
-            updated_config["capabilities"] = list(set(current_capabilities + new_capabilities))
-            updated_mutations.append(f"capability_enhancement_{datetime.now().strftime('%Y%m%d')}")
+            updated_config["capabilities"] = list(
+                set(current_capabilities + new_capabilities)
+            )
+            updated_mutations.append(
+                f"capability_enhancement_{datetime.now().strftime('%Y%m%d')}"
+            )
 
         elif mutation.mutation_type == "personality_adjustment":
             current_personality = updated_config.get("personality", {})
@@ -660,7 +753,9 @@ Respond with just the index number."""
                 current_personality[trait] = new_value
 
             updated_config["personality"] = current_personality
-            updated_mutations.append(f"personality_adjustment_{datetime.now().strftime('%Y%m%d')}")
+            updated_mutations.append(
+                f"personality_adjustment_{datetime.now().strftime('%Y%m%d')}"
+            )
 
         return updated_config, updated_mutations
 
@@ -670,9 +765,12 @@ Respond with just the index number."""
             try:
                 # Get all active agents
                 async with httpx.AsyncClient() as client:
-                    response = await client.post("http://localhost:8004/query", json={
-                        "sql": "SELECT id, name, biome, fitness_score FROM agents WHERE status = 'active'"
-                    })
+                    response = await client.post(
+                        "http://localhost:8004/query",
+                        json={
+                            "sql": "SELECT id, name, biome, fitness_score FROM agents WHERE status = 'active'"
+                        },
+                    )
 
                     if response.json().get("success"):
                         agents = response.json().get("data", [])
@@ -681,7 +779,9 @@ Respond with just the index number."""
                         # Identify agents needing attention
                         for agent in agents:
                             if agent["fitness_score"] < 0.3:  # Poor performers
-                                logger.info(f"Agent {agent['name']} ({agent['id']}) needs evolution - low fitness")
+                                logger.info(
+                                    f"Agent {agent['name']} ({agent['id']}) needs evolution - low fitness"
+                                )
                                 # Add to evolution queue
 
                 await asyncio.sleep(3600)  # Check every hour
@@ -728,25 +828,32 @@ Respond with just the index number."""
             try:
                 # Get agents in biome sorted by fitness
                 async with httpx.AsyncClient() as client:
-                    response = await client.post("http://localhost:8004/query", json={
-                        "sql": """
+                    response = await client.post(
+                        "http://localhost:8004/query",
+                        json={
+                            "sql": """
                             SELECT id, name, fitness_score
                             FROM agents
                             WHERE biome = ? AND status = 'active'
                             ORDER BY fitness_score ASC
                         """,
-                        "params": [biome]
-                    })
+                            "params": [biome],
+                        },
+                    )
 
                     if response.json().get("success"):
                         agents = response.json().get("data", [])
-                        if len(agents) > 10:  # Only apply selection pressure if biome has enough agents
+                        if (
+                            len(agents) > 10
+                        ):  # Only apply selection pressure if biome has enough agents
                             # Remove bottom 30%
                             removal_count = int(len(agents) * 0.3)
                             bottom_performers = agents[:removal_count]
 
                             for agent in bottom_performers:
-                                logger.info(f"Natural selection: retiring {agent['name']} from {biome}")
+                                logger.info(
+                                    f"Natural selection: retiring {agent['name']} from {biome}"
+                                )
                                 await self._retire_agent(agent["id"])
 
             except Exception as e:
@@ -756,11 +863,14 @@ Respond with just the index number."""
         """Retire an underperforming agent"""
         try:
             async with httpx.AsyncClient() as client:
-                await client.post("http://localhost:8004/update", json={
-                    "table": "agents",
-                    "data": {"status": "retired"},
-                    "where": {"id": agent_id}
-                })
+                await client.post(
+                    "http://localhost:8004/update",
+                    json={
+                        "table": "agents",
+                        "data": {"status": "retired"},
+                        "where": {"id": agent_id},
+                    },
+                )
         except Exception as e:
             logger.error(f"Failed to retire agent {agent_id}: {e}")
 
@@ -770,23 +880,29 @@ Respond with just the index number."""
         # This would implement biome-specific optimization logic
         # For now, just log the activity
 
-    async def _log_evolution(self, agent_id: str, mutation: MutationCandidate, result: Dict):
+    async def _log_evolution(
+        self, agent_id: str, mutation: MutationCandidate, result: Dict
+    ):
         """Log evolution event"""
         try:
             async with httpx.AsyncClient() as client:
-                await client.post("http://localhost:8004/insert", json={
-                    "table": "evolution_log",
-                    "data": {
-                        "id": str(uuid.uuid4()),
-                        "parent_id": agent_id,
-                        "child_id": agent_id,  # Same agent, evolved
-                        "generation": 0,  # Evolution doesn't change generation
-                        "mutations": json.dumps([mutation.mutation_type]),
-                        "fitness_improvement": mutation.expected_improvement
-                    }
-                })
+                await client.post(
+                    "http://localhost:8004/insert",
+                    json={
+                        "table": "evolution_log",
+                        "data": {
+                            "id": str(uuid.uuid4()),
+                            "parent_id": agent_id,
+                            "child_id": agent_id,  # Same agent, evolved
+                            "generation": 0,  # Evolution doesn't change generation
+                            "mutations": json.dumps([mutation.mutation_type]),
+                            "fitness_improvement": mutation.expected_improvement,
+                        },
+                    },
+                )
         except Exception as e:
             logger.error(f"Failed to log evolution: {e}")
+
 
 # Export the agent class
 __all__ = ["Eve"]

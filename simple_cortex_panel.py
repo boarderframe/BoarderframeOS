@@ -10,9 +10,9 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 class CortexHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path == '/':
+        if self.path == "/":
             self.send_response(200)
-            self.send_header('Content-type', 'text/html')
+            self.send_header("Content-type", "text/html")
             self.end_headers()
 
             html = """
@@ -95,22 +95,22 @@ class CortexHandler(BaseHTTPRequestHandler):
 """
             self.wfile.write(html.encode())
 
-        elif self.path == '/api/status':
+        elif self.path == "/api/status":
             self.send_response(200)
-            self.send_header('Content-type', 'application/json')
+            self.send_header("Content-type", "application/json")
             self.end_headers()
 
             status = {
                 "status": "operational",
                 "agents": 5,
                 "providers": 3,
-                "port": 9999
+                "port": 9999,
             }
             self.wfile.write(json.dumps(status).encode())
 
-        elif self.path == '/api/agents':
+        elif self.path == "/api/agents":
             self.send_response(200)
-            self.send_header('Content-type', 'application/json')
+            self.send_header("Content-type", "application/json")
             self.end_headers()
 
             agents = [
@@ -118,7 +118,7 @@ class CortexHandler(BaseHTTPRequestHandler):
                 {"name": "Solomon", "model": "claude-opus-4-20250514"},
                 {"name": "Adam", "model": "claude-4-sonnet-20250514"},
                 {"name": "Eve", "model": "claude-4-sonnet-20250514"},
-                {"name": "Bezalel", "model": "claude-4-sonnet-20250514"}
+                {"name": "Bezalel", "model": "claude-4-sonnet-20250514"},
             ]
             self.wfile.write(json.dumps(agents).encode())
 
@@ -130,6 +130,7 @@ class CortexHandler(BaseHTTPRequestHandler):
         # Suppress request logging
         pass
 
+
 def main():
     print("\n🚀 Starting Simple Agent Cortex Panel...")
     print("=" * 60)
@@ -137,7 +138,7 @@ def main():
     print("🛑 Press Ctrl+C to stop")
     print("=" * 60)
 
-    server = HTTPServer(('localhost', 9999), CortexHandler)
+    server = HTTPServer(("localhost", 9999), CortexHandler)
 
     try:
         server.serve_forever()
@@ -145,5 +146,6 @@ def main():
         print("\n✅ Server stopped")
         server.server_close()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

@@ -22,6 +22,7 @@ import psutil
 try:
     from core.hq_metrics_integration import METRICS_CSS, HQMetricsIntegration
     from core.hq_metrics_layer import BFColors, BFIcons, MetricValue
+
     METRICS_AVAILABLE = True
 except ImportError:
     print("Warning: Metrics layer not available")
@@ -30,8 +31,10 @@ except ImportError:
 
 PORT = 8888
 
+
 class HealthDataManager:
     """Centralized Health Data Collection and Management"""
+
     def __init__(self, dashboard_data):
         self.dashboard = dashboard_data
         self.refresh_steps = [
@@ -53,17 +56,17 @@ class HealthDataManager:
             "Loading organizational data from database...",
             "Checking department and division status...",
             "Updating service registry information...",
-            "Finalizing health metrics and status..."
+            "Finalizing health metrics and status...",
         ]
 
     async def global_refresh_all_data(self, progress_callback=None):
         """Perform comprehensive refresh of all Corporate Headquarters data with progress tracking"""
         print("🔄 Starting global_refresh_all_data...")
-        self.dashboard.unified_data['refresh_in_progress'] = True
+        self.dashboard.unified_data["refresh_in_progress"] = True
 
         # Ensure services_status exists in unified_data
-        if 'services_status' not in self.dashboard.unified_data:
-            self.dashboard.unified_data['services_status'] = {}
+        if "services_status" not in self.dashboard.unified_data:
+            self.dashboard.unified_data["services_status"] = {}
             print("🔄 Initialized empty services_status in unified_data")
 
         start_time = time.time()
@@ -88,7 +91,7 @@ class HealthDataManager:
                 await asyncio.sleep(0.1)
 
             # Update global refresh timestamp
-            self.dashboard.unified_data['last_refresh'] = datetime.now().isoformat()
+            self.dashboard.unified_data["last_refresh"] = datetime.now().isoformat()
 
             # Sync unified data to legacy properties for compatibility
             self._sync_to_legacy_properties()
@@ -101,10 +104,11 @@ class HealthDataManager:
         except Exception as e:
             print(f"❌ Global refresh failed: {e}")
             import traceback
+
             traceback.print_exc()
             return False
         finally:
-            self.dashboard.unified_data['refresh_in_progress'] = False
+            self.dashboard.unified_data["refresh_in_progress"] = False
 
     async def _execute_refresh_step(self, step_index: int):
         """Execute specific refresh step based on index"""
@@ -126,31 +130,31 @@ class HealthDataManager:
                 await self._refresh_corporate_headquarters_status()
             elif step_index == 5:  # Registry MCP
                 print("🗜 Checking Registry MCP...")
-                await self._refresh_mcp_server('registry', 8000)
+                await self._refresh_mcp_server("registry", 8000)
             elif step_index == 6:  # Filesystem MCP
                 print("📁 Checking Filesystem MCP...")
-                await self._refresh_mcp_server('filesystem', 8001)
+                await self._refresh_mcp_server("filesystem", 8001)
             elif step_index == 7:  # Database MCP
                 print("🖾 Checking Database MCP...")
-                await self._refresh_mcp_server('database_postgres', 8010)
+                await self._refresh_mcp_server("database_postgres", 8010)
             elif step_index == 8:  # Agent Cortex (replaced LLM MCP)
                 print("🧠 Checking Agent Cortex system...")
                 await self._refresh_agent_cortex_status()
             elif step_index == 9:  # Analytics MCP
                 print("📊 Checking Analytics MCP...")
-                await self._refresh_mcp_server('analytics', 8007)
+                await self._refresh_mcp_server("analytics", 8007)
             elif step_index == 10:  # Payment MCP
                 print("💳 Checking Payment MCP...")
-                await self._refresh_mcp_server('payment', 8006)
+                await self._refresh_mcp_server("payment", 8006)
             elif step_index == 11:  # Customer MCP
                 print("👥 Checking Customer MCP...")
-                await self._refresh_mcp_server('customer', 8008)
+                await self._refresh_mcp_server("customer", 8008)
             elif step_index == 12:  # PostgreSQL MCP
                 print("🐘 Checking PostgreSQL MCP...")
-                await self._refresh_mcp_server('postgres', 8010)
+                await self._refresh_mcp_server("postgres", 8010)
             elif step_index == 13:  # LLM MCP
                 print("🤖 Checking LLM MCP...")
-                await self._refresh_mcp_server('llm', 8005)
+                await self._refresh_mcp_server("llm", 8005)
             elif step_index == 14:  # Running agents
                 print("🤖 Refreshing agents status...")
                 await self._refresh_agents_status()
@@ -171,6 +175,7 @@ class HealthDataManager:
         except Exception as e:
             print(f"❌ Refresh step {step_index} failed: {e}")
             import traceback
+
             traceback.print_exc()
             # Don't re-raise - let other steps continue
 
@@ -179,17 +184,17 @@ class HealthDataManager:
         try:
             cpu_percent = psutil.cpu_percent(interval=0.1)
             memory = psutil.virtual_memory()
-            disk = psutil.disk_usage('/')
+            disk = psutil.disk_usage("/")
 
-            self.dashboard.unified_data['system_metrics'] = {
-                'cpu_percent': cpu_percent,
-                'memory_percent': memory.percent,
-                'disk_percent': disk.percent,
-                'memory_used_gb': memory.used / (1024**3),
-                'memory_total_gb': memory.total / (1024**3),
-                'disk_used_gb': disk.used / (1024**3),
-                'disk_total_gb': disk.total / (1024**3),
-                'timestamp': datetime.now().isoformat()
+            self.dashboard.unified_data["system_metrics"] = {
+                "cpu_percent": cpu_percent,
+                "memory_percent": memory.percent,
+                "disk_percent": disk.percent,
+                "memory_used_gb": memory.used / (1024**3),
+                "memory_total_gb": memory.total / (1024**3),
+                "disk_used_gb": disk.used / (1024**3),
+                "disk_total_gb": disk.total / (1024**3),
+                "timestamp": datetime.now().isoformat(),
             }
         except Exception as e:
             print(f"System metrics refresh failed: {e}")
@@ -198,7 +203,9 @@ class HealthDataManager:
         """Refresh PostgreSQL database health"""
         await self.dashboard._update_database_health()
         # Copy to unified data
-        self.dashboard.unified_data['database_health'] = getattr(self.dashboard, 'database_health_metrics', {})
+        self.dashboard.unified_data["database_health"] = getattr(
+            self.dashboard, "database_health_metrics", {}
+        )
 
     async def _refresh_database_details(self):
         """Refresh detailed database information"""
@@ -209,33 +216,37 @@ class HealthDataManager:
         """Refresh specific MCP server status"""
         try:
             print(f"⚙️ Checking {server_name} server on port {port}...")
-            async with httpx.AsyncClient(timeout=self.dashboard.monitoring_config['health_check_timeout']) as client:
+            async with httpx.AsyncClient(
+                timeout=self.dashboard.monitoring_config["health_check_timeout"]
+            ) as client:
                 url = f"http://localhost:{port}/health"
                 response = await client.get(url)
 
                 if response.status_code == 200:
                     health_data = response.json()
-                    self.dashboard.unified_data['services_status'][server_name] = {
-                        'status': 'healthy',
-                        'port': port,
-                        'response_time': response.elapsed.total_seconds(),
-                        'details': health_data,
-                        'last_check': datetime.now().isoformat()
+                    self.dashboard.unified_data["services_status"][server_name] = {
+                        "status": "healthy",
+                        "port": port,
+                        "response_time": response.elapsed.total_seconds(),
+                        "details": health_data,
+                        "last_check": datetime.now().isoformat(),
                     }
                     print(f"✅ {server_name} server is healthy")
                 else:
-                    self.dashboard.unified_data['services_status'][server_name] = {
-                        'status': 'unhealthy',
-                        'port': port,
-                        'last_check': datetime.now().isoformat()
+                    self.dashboard.unified_data["services_status"][server_name] = {
+                        "status": "unhealthy",
+                        "port": port,
+                        "last_check": datetime.now().isoformat(),
                     }
-                    print(f"⚠️ {server_name} server returned status {response.status_code}")
+                    print(
+                        f"⚠️ {server_name} server returned status {response.status_code}"
+                    )
         except Exception as e:
-            self.dashboard.unified_data['services_status'][server_name] = {
-                'status': 'offline',
-                'port': port,
-                'error': str(e),
-                'last_check': datetime.now().isoformat()
+            self.dashboard.unified_data["services_status"][server_name] = {
+                "status": "offline",
+                "port": port,
+                "error": str(e),
+                "last_check": datetime.now().isoformat(),
             }
             print(f"❌ {server_name} server offline: {e}")
 
@@ -243,8 +254,12 @@ class HealthDataManager:
         """Refresh running agents status"""
         try:
             # Copy current running agents to unified data
-            self.dashboard.unified_data['agents_status'] = dict(self.dashboard.running_agents)
-            print(f"✅ Refreshed agents status: {len(self.dashboard.running_agents)} agents")
+            self.dashboard.unified_data["agents_status"] = dict(
+                self.dashboard.running_agents
+            )
+            print(
+                f"✅ Refreshed agents status: {len(self.dashboard.running_agents)} agents"
+            )
         except Exception as e:
             print(f"❌ Failed to refresh agents status: {e}")
 
@@ -252,10 +267,13 @@ class HealthDataManager:
         """Refresh organizational structure data"""
         # Run sync method in executor to avoid blocking
         import asyncio
+
         loop = asyncio.get_event_loop()
-        org_data = await loop.run_in_executor(None, self.dashboard._fetch_organizational_data)
+        org_data = await loop.run_in_executor(
+            None, self.dashboard._fetch_organizational_data
+        )
         if org_data:
-            self.dashboard.unified_data['organizational_data'] = org_data
+            self.dashboard.unified_data["organizational_data"] = org_data
             print(f"✅ Refreshed organizational data: {len(org_data)} divisions")
         else:
             print("⚠️ No organizational data returned from fetch")
@@ -266,14 +284,20 @@ class HealthDataManager:
             # Get fresh departments data from database
             departments_from_db = await self._fetch_departments_from_database()
             if departments_from_db:
-                self.dashboard.unified_data['departments_data'] = departments_from_db
+                self.dashboard.unified_data["departments_data"] = departments_from_db
                 # Also update the instance variable
                 self.departments_data = departments_from_db
-                print(f"✅ Refreshed departments data: {len(departments_from_db)} departments from database")
+                print(
+                    f"✅ Refreshed departments data: {len(departments_from_db)} departments from database"
+                )
             else:
                 # Fallback to existing data
-                self.dashboard.unified_data['departments_data'] = dict(self.departments_data)
-                print(f"✅ Refreshed departments data: {len(self.departments_data)} departments from cache")
+                self.dashboard.unified_data["departments_data"] = dict(
+                    self.departments_data
+                )
+                print(
+                    f"✅ Refreshed departments data: {len(self.departments_data)} departments from cache"
+                )
         except Exception as e:
             print(f"❌ Failed to refresh departments data: {e}")
 
@@ -281,12 +305,13 @@ class HealthDataManager:
         """Fetch departments from PostgreSQL database"""
         try:
             import asyncpg
+
             connection = await asyncpg.connect(
                 host="localhost",
                 port=5434,
                 user="boarderframe",
                 password="boarderframe_secure_2025",
-                database="boarderframeos"
+                database="boarderframeos",
             )
 
             # Fetch all departments with their division info
@@ -313,13 +338,15 @@ class HealthDataManager:
             for row in rows:
                 dept_key = f"dept_{row['id']}"
                 departments_dict[dept_key] = {
-                    'name': row['department_name'],
-                    'description': row['description'],
-                    'status': row['operational_status'],
-                    'category': row['category'],
-                    'division': row['division_name'],
-                    'division_description': row['division_description'],
-                    'created_at': row['created_at'].isoformat() if row['created_at'] else None
+                    "name": row["department_name"],
+                    "description": row["description"],
+                    "status": row["operational_status"],
+                    "category": row["category"],
+                    "division": row["division_name"],
+                    "division_description": row["division_description"],
+                    "created_at": (
+                        row["created_at"].isoformat() if row["created_at"] else None
+                    ),
                 }
 
             return departments_dict
@@ -332,47 +359,50 @@ class HealthDataManager:
         """Refresh Agent Cortex system status"""
         try:
             # Check Cortex Management UI
-            async with httpx.AsyncClient(timeout=self.dashboard.monitoring_config['health_check_timeout']) as client:
+            async with httpx.AsyncClient(
+                timeout=self.dashboard.monitoring_config["health_check_timeout"]
+            ) as client:
                 url = "http://localhost:8889/api/agent-cortex/status"
                 response = await client.get(url)
 
                 if response.status_code == 200:
                     agent_cortex_status = response.json()
-                    self.dashboard.unified_data['services_status']['agent_cortex'] = {
-                        'status': 'healthy',
-                        'port': 8889,
-                        'response_time': response.elapsed.total_seconds(),
-                        'details': agent_cortex_status,
-                        'last_check': datetime.now().isoformat()
+                    self.dashboard.unified_data["services_status"]["agent_cortex"] = {
+                        "status": "healthy",
+                        "port": 8889,
+                        "response_time": response.elapsed.total_seconds(),
+                        "details": agent_cortex_status,
+                        "last_check": datetime.now().isoformat(),
                     }
                     print(f"✅ Agent Cortex system is healthy")
                 else:
-                    self.dashboard.unified_data['services_status']['agent_cortex'] = {
-                        'status': 'unhealthy',
-                        'port': 8889,
-                        'last_check': datetime.now().isoformat()
+                    self.dashboard.unified_data["services_status"]["agent_cortex"] = {
+                        "status": "unhealthy",
+                        "port": 8889,
+                        "last_check": datetime.now().isoformat(),
                     }
                     print(f"⚠️ Agent Cortex returned status {response.status_code}")
         except Exception as e:
             # Try to check if Agent Cortex instance exists even if UI is not running
             try:
                 from core.agent_cortex import get_agent_cortex_instance
+
                 agent_cortex = await get_agent_cortex_instance()
                 status = await agent_cortex.get_status()
-                self.dashboard.unified_data['services_status']['agent_cortex'] = {
-                    'status': 'healthy',
-                    'port': 8889,
-                    'details': status,
-                    'note': 'UI not running but Cortex operational',
-                    'last_check': datetime.now().isoformat()
+                self.dashboard.unified_data["services_status"]["agent_cortex"] = {
+                    "status": "healthy",
+                    "port": 8889,
+                    "details": status,
+                    "note": "UI not running but Cortex operational",
+                    "last_check": datetime.now().isoformat(),
                 }
                 print(f"✅ Agent Cortex system is operational (UI not accessible)")
             except:
-                self.dashboard.unified_data['services_status']['agent_cortex'] = {
-                    'status': 'offline',
-                    'port': 8889,
-                    'error': str(e),
-                    'last_check': datetime.now().isoformat()
+                self.dashboard.unified_data["services_status"]["agent_cortex"] = {
+                    "status": "offline",
+                    "port": 8889,
+                    "error": str(e),
+                    "last_check": datetime.now().isoformat(),
                 }
                 print(f"❌ Agent Cortex system offline: {e}")
 
@@ -381,30 +411,30 @@ class HealthDataManager:
         try:
             # Corporate HQ is special - we check ourselves
             # Since we're running, we can mark ourselves as healthy
-            self.dashboard.unified_data['services_status']['corporate_headquarters'] = {
-                'status': 'healthy',
-                'port': 8888,
-                'name': 'Corporate Headquarters',
-                'category': 'Core Infrastructure',
-                'priority': 1,
-                'description': 'Main management interface',
-                'details': {
-                    'status': 'healthy',
-                    'uptime': 'Active',
-                    'services': len(self.dashboard.services_status),
-                    'agents': len(self.dashboard.running_agents)
+            self.dashboard.unified_data["services_status"]["corporate_headquarters"] = {
+                "status": "healthy",
+                "port": 8888,
+                "name": "Corporate Headquarters",
+                "category": "Core Infrastructure",
+                "priority": 1,
+                "description": "Main management interface",
+                "details": {
+                    "status": "healthy",
+                    "uptime": "Active",
+                    "services": len(self.dashboard.services_status),
+                    "agents": len(self.dashboard.running_agents),
                 },
-                'last_check': datetime.now().isoformat(),
-                'note': 'Self-check (we are running)'
+                "last_check": datetime.now().isoformat(),
+                "note": "Self-check (we are running)",
             }
             print(f"✅ Corporate Headquarters is healthy (self-check)")
         except Exception as e:
             # This should never happen since we're running
-            self.dashboard.unified_data['services_status']['corporate_headquarters'] = {
-                'status': 'unknown',
-                'port': 8888,
-                'error': str(e),
-                'last_check': datetime.now().isoformat()
+            self.dashboard.unified_data["services_status"]["corporate_headquarters"] = {
+                "status": "unknown",
+                "port": 8888,
+                "error": str(e),
+                "last_check": datetime.now().isoformat(),
             }
             print(f"⚠️ Corporate Headquarters status unknown: {e}")
 
@@ -412,33 +442,34 @@ class HealthDataManager:
         """Collect comprehensive organizational metrics from database and registry"""
         try:
             # Ensure we have fresh data from unified store
-            if 'departments_data' in self.dashboard.unified_data:
-                departments_data = self.dashboard.unified_data['departments_data']
+            if "departments_data" in self.dashboard.unified_data:
+                departments_data = self.dashboard.unified_data["departments_data"]
             else:
                 departments_data = self.departments_data
 
-            if 'organizational_data' in self.dashboard.unified_data:
-                org_data = self.dashboard.unified_data['organizational_data']
+            if "organizational_data" in self.dashboard.unified_data:
+                org_data = self.dashboard.unified_data["organizational_data"]
             else:
                 org_data = self.dashboard._fetch_organizational_data() or {}
 
             print("📊 Collecting organizational metrics...")
             metrics = {
-                'divisions': {'total': 0, 'active': 0, 'percentage': 0},
-                'departments': {'total': 0, 'active': 0, 'percentage': 0},
-                'leaders': {'total': 0, 'active': 0, 'percentage': 0},
-                'agents': {'total': 0, 'active': 0, 'percentage': 0},
-                'by_division': {}  # Division-specific metrics
+                "divisions": {"total": 0, "active": 0, "percentage": 0},
+                "departments": {"total": 0, "active": 0, "percentage": 0},
+                "leaders": {"total": 0, "active": 0, "percentage": 0},
+                "agents": {"total": 0, "active": 0, "percentage": 0},
+                "by_division": {},  # Division-specific metrics
             }
 
             # Collect from database
             import asyncpg
+
             connection = await asyncpg.connect(
                 host="localhost",
                 port=5434,
                 user="boarderframe",
                 password="boarderframe_secure_2025",
-                database="boarderframeos"
+                database="boarderframeos",
             )
 
             # Get divisions metrics
@@ -448,10 +479,14 @@ class HealthDataManager:
                 FROM divisions
             """
             div_result = await connection.fetchrow(divisions_query)
-            metrics['divisions']['total'] = div_result['total']
-            metrics['divisions']['active'] = div_result['active']
-            if metrics['divisions']['total'] > 0:
-                metrics['divisions']['percentage'] = round((metrics['divisions']['active'] / metrics['divisions']['total']) * 100, 1)
+            metrics["divisions"]["total"] = div_result["total"]
+            metrics["divisions"]["active"] = div_result["active"]
+            if metrics["divisions"]["total"] > 0:
+                metrics["divisions"]["percentage"] = round(
+                    (metrics["divisions"]["active"] / metrics["divisions"]["total"])
+                    * 100,
+                    1,
+                )
 
             # Get departments metrics
             departments_query = """
@@ -460,10 +495,14 @@ class HealthDataManager:
                 FROM departments
             """
             dept_result = await connection.fetchrow(departments_query)
-            metrics['departments']['total'] = dept_result['total']
-            metrics['departments']['active'] = dept_result['active']
-            if metrics['departments']['total'] > 0:
-                metrics['departments']['percentage'] = round((metrics['departments']['active'] / metrics['departments']['total']) * 100, 1)
+            metrics["departments"]["total"] = dept_result["total"]
+            metrics["departments"]["active"] = dept_result["active"]
+            if metrics["departments"]["total"] > 0:
+                metrics["departments"]["percentage"] = round(
+                    (metrics["departments"]["active"] / metrics["departments"]["total"])
+                    * 100,
+                    1,
+                )
 
             # Get leaders metrics
             leaders_query = """
@@ -472,10 +511,13 @@ class HealthDataManager:
                 FROM leaders
             """
             leader_result = await connection.fetchrow(leaders_query)
-            metrics['leaders']['total'] = leader_result['total']
-            metrics['leaders']['active'] = leader_result['active']
-            if metrics['leaders']['total'] > 0:
-                metrics['leaders']['percentage'] = round((metrics['leaders']['active'] / metrics['leaders']['total']) * 100, 1)
+            metrics["leaders"]["total"] = leader_result["total"]
+            metrics["leaders"]["active"] = leader_result["active"]
+            if metrics["leaders"]["total"] > 0:
+                metrics["leaders"]["percentage"] = round(
+                    (metrics["leaders"]["active"] / metrics["leaders"]["total"]) * 100,
+                    1,
+                )
 
             # Get division-specific metrics
             division_metrics_query = """
@@ -496,24 +538,42 @@ class HealthDataManager:
             div_metrics = await connection.fetch(division_metrics_query)
 
             for row in div_metrics:
-                div_name = row['division_name']
-                metrics['by_division'][div_name] = {
-                    'departments': {
-                        'total': row['total_departments'],
-                        'active': row['active_departments'],
-                        'percentage': round((row['active_departments'] / row['total_departments'] * 100) if row['total_departments'] > 0 else 0, 1)
+                div_name = row["division_name"]
+                metrics["by_division"][div_name] = {
+                    "departments": {
+                        "total": row["total_departments"],
+                        "active": row["active_departments"],
+                        "percentage": round(
+                            (
+                                (
+                                    row["active_departments"]
+                                    / row["total_departments"]
+                                    * 100
+                                )
+                                if row["total_departments"] > 0
+                                else 0
+                            ),
+                            1,
+                        ),
                     },
-                    'leaders': {
-                        'total': row['total_leaders'],
-                        'active': row['active_leaders'],
-                        'percentage': round((row['active_leaders'] / row['total_leaders'] * 100) if row['total_leaders'] > 0 else 0, 1)
+                    "leaders": {
+                        "total": row["total_leaders"],
+                        "active": row["active_leaders"],
+                        "percentage": round(
+                            (
+                                (row["active_leaders"] / row["total_leaders"] * 100)
+                                if row["total_leaders"] > 0
+                                else 0
+                            ),
+                            1,
+                        ),
                     },
-                    'agents': {
-                        'total': 0,  # Will be populated from agent mapping
-                        'active': 0,
-                        'percentage': 0
+                    "agents": {
+                        "total": 0,  # Will be populated from agent mapping
+                        "active": 0,
+                        "percentage": 0,
                     },
-                    'is_active': row['division_active']
+                    "is_active": row["division_active"],
                 }
 
             await connection.close()
@@ -524,21 +584,34 @@ class HealthDataManager:
                     response = await client.get("http://localhost:8000/api/agents")
                     if response.status_code == 200:
                         agents_data = response.json()
-                        metrics['agents']['total'] = agents_data.get('total', 0)
-                        metrics['agents']['active'] = agents_data.get('online', 0)
-                        if metrics['agents']['total'] > 0:
-                            metrics['agents']['percentage'] = round((metrics['agents']['active'] / metrics['agents']['total']) * 100, 1)
+                        metrics["agents"]["total"] = agents_data.get("total", 0)
+                        metrics["agents"]["active"] = agents_data.get("online", 0)
+                        if metrics["agents"]["total"] > 0:
+                            metrics["agents"]["percentage"] = round(
+                                (
+                                    metrics["agents"]["active"]
+                                    / metrics["agents"]["total"]
+                                )
+                                * 100,
+                                1,
+                            )
             except:
                 # Fallback to counting from unified data
-                if 'agents' in self.dashboard.unified_data:
-                    agents_list = self.dashboard.unified_data['agents']
-                    metrics['agents']['total'] = len(agents_list)
-                    metrics['agents']['active'] = sum(1 for a in agents_list if a.get('status') == 'online')
-                    if metrics['agents']['total'] > 0:
-                        metrics['agents']['percentage'] = round((metrics['agents']['active'] / metrics['agents']['total']) * 100, 1)
+                if "agents" in self.dashboard.unified_data:
+                    agents_list = self.dashboard.unified_data["agents"]
+                    metrics["agents"]["total"] = len(agents_list)
+                    metrics["agents"]["active"] = sum(
+                        1 for a in agents_list if a.get("status") == "online"
+                    )
+                    if metrics["agents"]["total"] > 0:
+                        metrics["agents"]["percentage"] = round(
+                            (metrics["agents"]["active"] / metrics["agents"]["total"])
+                            * 100,
+                            1,
+                        )
 
             # Store metrics in unified data
-            self.dashboard.unified_data['organizational_metrics'] = metrics
+            self.dashboard.unified_data["organizational_metrics"] = metrics
             print(f"✅ Collected organizational metrics: {metrics}")
 
             return metrics
@@ -547,10 +620,10 @@ class HealthDataManager:
             print(f"❌ Failed to collect organizational metrics: {e}")
             # Return default metrics
             return {
-                'divisions': {'total': 0, 'active': 0, 'percentage': 0},
-                'departments': {'total': 0, 'active': 0, 'percentage': 0},
-                'leaders': {'total': 0, 'active': 0, 'percentage': 0},
-                'agents': {'total': 0, 'active': 0, 'percentage': 0}
+                "divisions": {"total": 0, "active": 0, "percentage": 0},
+                "departments": {"total": 0, "active": 0, "percentage": 0},
+                "leaders": {"total": 0, "active": 0, "percentage": 0},
+                "agents": {"total": 0, "active": 0, "percentage": 0},
             }
 
     async def _refresh_registry_data(self):
@@ -561,38 +634,60 @@ class HealthDataManager:
     async def _finalize_health_metrics(self):
         """Finalize and calculate overall health metrics"""
         # Calculate overall system health
-        services_online = len([s for s in self.dashboard.unified_data['services_status'].values() if s.get('status') == 'healthy'])
-        total_services = len(self.dashboard.unified_data['services_status'])
+        services_online = len(
+            [
+                s
+                for s in self.dashboard.unified_data["services_status"].values()
+                if s.get("status") == "healthy"
+            ]
+        )
+        total_services = len(self.dashboard.unified_data["services_status"])
 
-        self.dashboard.unified_data['overall_health'] = {
-            'status': 'online' if services_online > total_services * 0.7 else 'warning' if services_online > 0 else 'offline',
-            'services_ratio': f"{services_online}/{total_services}",
-            'last_calculated': datetime.now().isoformat()
+        self.dashboard.unified_data["overall_health"] = {
+            "status": (
+                "online"
+                if services_online > total_services * 0.7
+                else "warning" if services_online > 0 else "offline"
+            ),
+            "services_ratio": f"{services_online}/{total_services}",
+            "last_calculated": datetime.now().isoformat(),
         }
 
     def _sync_to_legacy_properties(self):
         """Sync unified data back to legacy properties for compatibility"""
         try:
             # Only sync if data exists in unified_data
-            if 'services_status' in self.dashboard.unified_data:
-                self.dashboard.services_status = dict(self.dashboard.unified_data['services_status'])
-                print(f"✅ Synced {len(self.dashboard.services_status)} services to legacy")
+            if "services_status" in self.dashboard.unified_data:
+                self.dashboard.services_status = dict(
+                    self.dashboard.unified_data["services_status"]
+                )
+                print(
+                    f"✅ Synced {len(self.dashboard.services_status)} services to legacy"
+                )
 
                 # Also update metrics layer if available
-                if hasattr(self.dashboard, 'metrics_layer') and hasattr(self.dashboard.metrics_layer, 'set_server_status'):
-                    self.dashboard.metrics_layer.set_server_status(self.dashboard.unified_data['services_status'])
+                if hasattr(self.dashboard, "metrics_layer") and hasattr(
+                    self.dashboard.metrics_layer, "set_server_status"
+                ):
+                    self.dashboard.metrics_layer.set_server_status(
+                        self.dashboard.unified_data["services_status"]
+                    )
                     print(f"✅ Updated metrics layer with server status")
 
-            if 'system_metrics' in self.dashboard.unified_data:
-                self.dashboard.system_metrics = dict(self.dashboard.unified_data['system_metrics'])
+            if "system_metrics" in self.dashboard.unified_data:
+                self.dashboard.system_metrics = dict(
+                    self.dashboard.unified_data["system_metrics"]
+                )
                 print(f"✅ Synced system metrics to legacy")
 
-            if 'database_health' in self.dashboard.unified_data:
-                self.dashboard.database_health_metrics = dict(self.dashboard.unified_data['database_health'])
+            if "database_health" in self.dashboard.unified_data:
+                self.dashboard.database_health_metrics = dict(
+                    self.dashboard.unified_data["database_health"]
+                )
                 print(f"✅ Synced database health to legacy")
 
-            if 'last_refresh' in self.dashboard.unified_data:
-                self.dashboard.last_update = self.dashboard.unified_data['last_refresh']
+            if "last_refresh" in self.dashboard.unified_data:
+                self.dashboard.last_update = self.dashboard.unified_data["last_refresh"]
                 print(f"✅ Synced last update timestamp")
 
             print(f"✅ Legacy property sync completed")
@@ -603,14 +698,19 @@ class HealthDataManager:
     async def enhanced_global_refresh(self, components=None, progress_callback=None):
         """Enhanced global refresh with granular component selection"""
         print("🔄 Starting enhanced global refresh...")
-        self.dashboard.unified_data['refresh_in_progress'] = True
+        self.dashboard.unified_data["refresh_in_progress"] = True
 
         # Default components to refresh if none specified
         if components is None:
             components = [
-                'system_metrics', 'database_health', 'services_status',
-                'agents_status', 'mcp_servers', 'registry_data',
-                'departments_data', 'organizational_data'
+                "system_metrics",
+                "database_health",
+                "services_status",
+                "agents_status",
+                "mcp_servers",
+                "registry_data",
+                "departments_data",
+                "organizational_data",
             ]
 
         start_time = time.time()
@@ -641,58 +741,64 @@ class HealthDataManager:
                 await asyncio.sleep(0.1)  # UI feedback delay
 
             # Update timestamps
-            self.dashboard.unified_data['last_refresh'] = datetime.now().isoformat()
+            self.dashboard.unified_data["last_refresh"] = datetime.now().isoformat()
             self._sync_to_legacy_properties()
 
             refresh_time = time.time() - start_time
             print(f"✅ Enhanced global refresh completed in {refresh_time:.2f}s")
 
             return {
-                'success': True,
-                'total_components': len(components),
-                'refreshed_components': refreshed_components,
-                'failed_components': failed_components,
-                'refresh_time': refresh_time
+                "success": True,
+                "total_components": len(components),
+                "refreshed_components": refreshed_components,
+                "failed_components": failed_components,
+                "refresh_time": refresh_time,
             }
 
         except Exception as e:
             print(f"❌ Enhanced global refresh failed: {e}")
             import traceback
+
             traceback.print_exc()
             return {
-                'success': False,
-                'error': str(e),
-                'refreshed_components': refreshed_components,
-                'failed_components': failed_components
+                "success": False,
+                "error": str(e),
+                "refreshed_components": refreshed_components,
+                "failed_components": failed_components,
             }
         finally:
-            self.dashboard.unified_data['refresh_in_progress'] = False
+            self.dashboard.unified_data["refresh_in_progress"] = False
 
     async def _refresh_component(self, component):
         """Refresh specific component based on type"""
         try:
-            if component == 'system_metrics':
+            if component == "system_metrics":
                 await self._refresh_system_metrics()
-            elif component == 'database_health':
+            elif component == "database_health":
                 await self._refresh_database_health()
                 await self._refresh_database_details()
-            elif component == 'services_status':
+            elif component == "services_status":
                 await self._refresh_corporate_headquarters_status()
-            elif component == 'agents_status':
+            elif component == "agents_status":
                 await self._refresh_agents_status()
-            elif component == 'mcp_servers':
+            elif component == "mcp_servers":
                 # Refresh all MCP servers
                 mcp_servers = [
-                    ('registry', 8000), ('filesystem', 8001), ('database_postgres', 8010),
-                    ('analytics', 8007), ('payment', 8006), ('customer', 8008), ('llm', 8005)
+                    ("registry", 8000),
+                    ("filesystem", 8001),
+                    ("database_postgres", 8010),
+                    ("analytics", 8007),
+                    ("payment", 8006),
+                    ("customer", 8008),
+                    ("llm", 8005),
                 ]
                 for server_name, port in mcp_servers:
                     await self._refresh_mcp_server(server_name, port)
-            elif component == 'registry_data':
+            elif component == "registry_data":
                 await self._refresh_registry_data()
-            elif component == 'departments_data':
+            elif component == "departments_data":
                 await self._refresh_departments_data()
-            elif component == 'organizational_data':
+            elif component == "organizational_data":
                 await self._refresh_organizational_data()
             else:
                 print(f"⚠️ Unknown component: {component}")
@@ -703,25 +809,27 @@ class HealthDataManager:
             print(f"❌ Component {component} refresh failed: {e}")
             return False
 
+
 class DashboardData:
     """Centralized Health & Data Management System for BoarderframeOS Corporate Headquarters"""
+
     def __init__(self):
         # === CENTRALIZED DATA STORE ===
         # All Corporate Headquarters components pull from these unified data structures
         self.unified_data = {
-            'services_status': {},      # All MCP servers and services
-            'agents_status': {},        # All agent states and metrics
-            'system_metrics': {},       # CPU, memory, disk, network
-            'database_health': {},      # PostgreSQL health and metrics
-            'registry_data': {},        # Service registry information
-            'departments_data': {},     # Organizational structure
-            'leaders_data': {},         # Leadership information
-            'organizational_data': {},  # Full org chart data
-            'mcp_details': {},         # Detailed MCP server information
-            'startup_status': {},       # System startup state
-            'health_history': {},       # Historical health data
-            'last_refresh': None,       # Global last refresh timestamp
-            'refresh_in_progress': False # Global refresh state
+            "services_status": {},  # All MCP servers and services
+            "agents_status": {},  # All agent states and metrics
+            "system_metrics": {},  # CPU, memory, disk, network
+            "database_health": {},  # PostgreSQL health and metrics
+            "registry_data": {},  # Service registry information
+            "departments_data": {},  # Organizational structure
+            "leaders_data": {},  # Leadership information
+            "organizational_data": {},  # Full org chart data
+            "mcp_details": {},  # Detailed MCP server information
+            "startup_status": {},  # System startup state
+            "health_history": {},  # Historical health data
+            "last_refresh": None,  # Global last refresh timestamp
+            "refresh_in_progress": False,  # Global refresh state
         }
 
         # === LEGACY COMPATIBILITY ===
@@ -745,28 +853,30 @@ class DashboardData:
         self.health_history = {}
         self.alert_conditions = {}
         self.monitoring_config = {
-            'update_interval': 15,  # seconds
-            'health_check_timeout': 8,  # seconds
-            'max_history_entries': 100,
-            'global_refresh_steps': 16,  # Total steps in global refresh
-            'alert_thresholds': {
-                'cpu_percent': 90,
-                'memory_percent': 85,
-                'disk_percent': 90
-            }
+            "update_interval": 15,  # seconds
+            "health_check_timeout": 8,  # seconds
+            "max_history_entries": 100,
+            "global_refresh_steps": 16,  # Total steps in global refresh
+            "alert_thresholds": {
+                "cpu_percent": 90,
+                "memory_percent": 85,
+                "disk_percent": 90,
+            },
         }
 
         # Initialize Corporate HQ as healthy since we're running
-        self.unified_data['services_status']['corporate_headquarters'] = {
-            'status': 'healthy',
-            'port': 8888,
-            'name': 'Corporate Headquarters',
-            'category': 'Core Infrastructure',
-            'priority': 1,
-            'description': 'Main management interface',
-            'last_check': datetime.now().isoformat()
+        self.unified_data["services_status"]["corporate_headquarters"] = {
+            "status": "healthy",
+            "port": 8888,
+            "name": "Corporate Headquarters",
+            "category": "Core Infrastructure",
+            "priority": 1,
+            "description": "Main management interface",
+            "last_check": datetime.now().isoformat(),
         }
-        self.services_status['corporate_headquarters'] = self.unified_data['services_status']['corporate_headquarters']
+        self.services_status["corporate_headquarters"] = self.unified_data[
+            "services_status"
+        ]["corporate_headquarters"]
 
         # Initialize metrics layer
         self.metrics_layer = None
@@ -774,11 +884,11 @@ class DashboardData:
             try:
                 # Create database configuration for metrics layer
                 db_config = {
-                    'host': 'localhost',
-                    'port': 5434,
-                    'database': 'boarderframeos',
-                    'user': 'boarderframe',
-                    'password': 'boarderframe_secure_2025'
+                    "host": "localhost",
+                    "port": 5434,
+                    "database": "boarderframeos",
+                    "user": "boarderframe",
+                    "password": "boarderframe_secure_2025",
                 }
                 self.metrics_layer = HQMetricsIntegration(db_config)
                 print("✓ Metrics layer initialized successfully")
@@ -807,9 +917,13 @@ class DashboardData:
 
         print("🎯 Centralized Health & Data Management System initialized")
         print(f"📊 Monitoring {len(self.unified_data)} data categories")
-        print(f"⚡ Global refresh system ready with {self.monitoring_config['global_refresh_steps']} steps")
+        print(
+            f"⚡ Global refresh system ready with {self.monitoring_config['global_refresh_steps']} steps"
+        )
         print(f"🔄 Health manager type: {type(self.health_manager)}")
-        print(f"📦 Available methods: {[m for m in dir(self.health_manager) if not m.startswith('_')]}")
+        print(
+            f"📦 Available methods: {[m for m in dir(self.health_manager) if not m.startswith('_')]}"
+        )
 
         # Test basic functionality
         try:
@@ -821,9 +935,13 @@ class DashboardData:
     def _load_department_data(self):
         """Load department data from JSON file"""
         try:
-            departments_file = Path(__file__).parent / "departments" / "boarderframeos-departments.json"
+            departments_file = (
+                Path(__file__).parent
+                / "departments"
+                / "boarderframeos-departments.json"
+            )
             if departments_file.exists():
-                with open(departments_file, 'r') as f:
+                with open(departments_file, "r") as f:
                     data = json.load(f)
                     self.departments_data = data.get("boarderframeos_departments", {})
                     self._create_agent_department_mapping()
@@ -838,161 +956,222 @@ class DashboardData:
 
         # Define known agent to department mappings
         agent_mappings = {
-            'solomon': 'executive_leadership',
-            'david': 'executive_leadership',
-            'michael': 'coordination_orchestration',
-            'adam': 'agent_development',
-            'eve': 'agent_development',
-            'levi': 'finance',
-            'judah': 'legal',
-            'benjamin': 'sales',
-            'ephraim': 'marketing',
-            'nehemiah': 'procurement',
-            'bezalel': 'engineering',
-            'dan': 'research_development',
-            'daniel': 'innovation',
-            'naphtali': 'operations',
-            'gad': 'security',
-            'ezra': 'data_management',
-            'gabriel': 'infrastructure',
-            'apollos': 'learning_development',
-            'aaron': 'human_resources',
-            'zebulun': 'production',
-            'asher': 'customer_support',
-            'jubal': 'creative_services',
-            'enoch': 'data_generation',
-            'issachar': 'analytics',
-            'joseph': 'strategic_planning',
-            'joshua': 'change_management'
+            "solomon": "executive_leadership",
+            "david": "executive_leadership",
+            "michael": "coordination_orchestration",
+            "adam": "agent_development",
+            "eve": "agent_development",
+            "levi": "finance",
+            "judah": "legal",
+            "benjamin": "sales",
+            "ephraim": "marketing",
+            "nehemiah": "procurement",
+            "bezalel": "engineering",
+            "dan": "research_development",
+            "daniel": "innovation",
+            "naphtali": "operations",
+            "gad": "security",
+            "ezra": "data_management",
+            "gabriel": "infrastructure",
+            "apollos": "learning_development",
+            "aaron": "human_resources",
+            "zebulun": "production",
+            "asher": "customer_support",
+            "jubal": "creative_services",
+            "enoch": "data_generation",
+            "issachar": "analytics",
+            "joseph": "strategic_planning",
+            "joshua": "change_management",
         }
 
         for agent, dept_key in agent_mappings.items():
             if dept_key in self.departments_data:
                 self.agent_department_mapping[agent] = {
-                    'department_key': dept_key,
-                    'department_name': self.departments_data[dept_key]['department_name'],
-                    'category': self.departments_data[dept_key]['category']
+                    "department_key": dept_key,
+                    "department_name": self.departments_data[dept_key][
+                        "department_name"
+                    ],
+                    "category": self.departments_data[dept_key]["category"],
                 }
 
     def get_department_summary(self, departments_data=None):
         """Get summary of departments and their statistics using centralized data"""
         # Use provided data or fallback to centralized/legacy data
         if departments_data is None:
-            departments_data = self.unified_data.get('departments_data', self.departments_data)
+            departments_data = self.unified_data.get(
+                "departments_data", self.departments_data
+            )
 
         if not departments_data:
             return {}
 
         summary = {
-            'total_departments': len(departments_data),
-            'categories': {},
-            'total_leaders': 0,
-            'total_agents': 0,
-            'departments_by_category': {}
+            "total_departments": len(departments_data),
+            "categories": {},
+            "total_leaders": 0,
+            "total_agents": 0,
+            "departments_by_category": {},
         }
 
         for dept_key, dept_data in departments_data.items():
-            category = dept_data.get('category', 'Other')
+            category = dept_data.get("category", "Other")
 
             # Count by category
-            if category not in summary['categories']:
-                summary['categories'][category] = 0
-            summary['categories'][category] += 1
+            if category not in summary["categories"]:
+                summary["categories"][category] = 0
+            summary["categories"][category] += 1
 
             # Group departments by category
-            if category not in summary['departments_by_category']:
-                summary['departments_by_category'][category] = []
-            summary['departments_by_category'][category].append(dept_data)
+            if category not in summary["departments_by_category"]:
+                summary["departments_by_category"][category] = []
+            summary["departments_by_category"][category].append(dept_data)
 
             # Count leaders and agents
-            summary['total_leaders'] += len(dept_data.get('leaders', []))
-            summary['total_agents'] += len(dept_data.get('native_agents', []))
+            summary["total_leaders"] += len(dept_data.get("leaders", []))
+            summary["total_agents"] += len(dept_data.get("native_agents", []))
 
         return summary
 
     def _get_subsystem_status(self, subsystem: str) -> str:
         """Get status for a specific subsystem using centralized data"""
         # Use unified_data when available, fallback to legacy data
-        agents_data = self.unified_data.get('agents_status', self.running_agents)
-        services_data = self.unified_data.get('services_status', self.services_status)
-        db_data = self.unified_data.get('database_health', getattr(self, 'database_health_metrics', {}))
-        departments_data = self.unified_data.get('departments_data', self.departments_data)
+        agents_data = self.unified_data.get("agents_status", self.running_agents)
+        services_data = self.unified_data.get("services_status", self.services_status)
+        db_data = self.unified_data.get(
+            "database_health", getattr(self, "database_health_metrics", {})
+        )
+        departments_data = self.unified_data.get(
+            "departments_data", self.departments_data
+        )
 
-        if subsystem == 'agents':
-            running_count = len([a for a in agents_data.values() if a.get('status') == 'running'])
-            return 'online' if running_count > 0 else 'offline'
-        elif subsystem == 'leaders':
-            leader_agents = ['solomon', 'david', 'michael']
-            running_leaders = len([a for a in leader_agents if a in agents_data and agents_data[a].get('status') == 'running'])
-            return 'online' if running_leaders > 0 else 'offline'
-        elif subsystem == 'departments':
-            return 'online' if len(departments_data) > 0 else 'offline'
-        elif subsystem == 'servers':
-            online_servers = len([s for s in services_data.values() if s.get('status') in ['healthy', 'online']])
-            return 'online' if online_servers > 0 else 'offline'
-        elif subsystem == 'registry':
-            registry_status = services_data.get('registry', {}).get('status', 'offline')
-            return 'online' if registry_status in ['healthy', 'online'] else 'offline'
-        elif subsystem == 'database':
-            db_status = db_data.get('status', 'offline')
-            return 'online' if db_status == 'healthy' else 'offline'
-        elif subsystem == 'divisions':
+        if subsystem == "agents":
+            running_count = len(
+                [a for a in agents_data.values() if a.get("status") == "running"]
+            )
+            return "online" if running_count > 0 else "offline"
+        elif subsystem == "leaders":
+            leader_agents = ["solomon", "david", "michael"]
+            running_leaders = len(
+                [
+                    a
+                    for a in leader_agents
+                    if a in agents_data and agents_data[a].get("status") == "running"
+                ]
+            )
+            return "online" if running_leaders > 0 else "offline"
+        elif subsystem == "departments":
+            return "online" if len(departments_data) > 0 else "offline"
+        elif subsystem == "servers":
+            online_servers = len(
+                [
+                    s
+                    for s in services_data.values()
+                    if s.get("status") in ["healthy", "online"]
+                ]
+            )
+            return "online" if online_servers > 0 else "offline"
+        elif subsystem == "registry":
+            registry_status = services_data.get("registry", {}).get("status", "offline")
+            return "online" if registry_status in ["healthy", "online"] else "offline"
+        elif subsystem == "database":
+            db_status = db_data.get("status", "offline")
+            return "online" if db_status == "healthy" else "offline"
+        elif subsystem == "divisions":
             # Try to get from organizational data, fallback to departments count
-            org_data = self.unified_data.get('organizational_data', {})
-            return 'online' if len(org_data) > 0 or len(departments_data) > 0 else 'offline'
-        elif subsystem == 'mcps':
-            mcp_services = ['registry', 'filesystem', 'database', 'llm', 'customer', 'analytics', 'payment']
-            healthy_mcps = len([s for s in mcp_services if services_data.get(s, {}).get('status') in ['healthy', 'online']])
-            return 'online' if healthy_mcps > 0 else 'offline'
-        elif subsystem == 'boarderframe_servers':
+            org_data = self.unified_data.get("organizational_data", {})
+            return (
+                "online"
+                if len(org_data) > 0 or len(departments_data) > 0
+                else "offline"
+            )
+        elif subsystem == "mcps":
+            mcp_services = [
+                "registry",
+                "filesystem",
+                "database",
+                "llm",
+                "customer",
+                "analytics",
+                "payment",
+            ]
+            healthy_mcps = len(
+                [
+                    s
+                    for s in mcp_services
+                    if services_data.get(s, {}).get("status") in ["healthy", "online"]
+                ]
+            )
+            return "online" if healthy_mcps > 0 else "offline"
+        elif subsystem == "boarderframe_servers":
             # BoarderFrame specific servers like Corporate Headquarters
-            return 'online'  # Corporate Headquarters is always online if we're seeing this
-        return 'unknown'
+            return (
+                "online"  # Corporate Headquarters is always online if we're seeing this
+            )
+        return "unknown"
 
     def _get_agents_count(self) -> str:
         """Get agents count summary using centralized data"""
-        agents_data = self.unified_data.get('agents_status', self.running_agents)
-        running = len([a for a in agents_data.values() if a.get('status') == 'running'])
+        agents_data = self.unified_data.get("agents_status", self.running_agents)
+        running = len([a for a in agents_data.values() if a.get("status") == "running"])
         total = len(agents_data) if agents_data else 2  # Default: Solomon, David
         return f"{running}/{total}"
 
     def _get_leaders_count(self) -> str:
         """Get leaders count summary using centralized data"""
-        agents_data = self.unified_data.get('agents_status', self.running_agents)
-        leader_agents = ['solomon', 'david', 'michael']
-        running = len([a for a in leader_agents if a in agents_data and agents_data[a].get('status') == 'running'])
+        agents_data = self.unified_data.get("agents_status", self.running_agents)
+        leader_agents = ["solomon", "david", "michael"]
+        running = len(
+            [
+                a
+                for a in leader_agents
+                if a in agents_data and agents_data[a].get("status") == "running"
+            ]
+        )
         return f"{running}/{len(leader_agents)}"
 
     def _get_departments_count(self) -> str:
         """Get departments count summary using centralized data"""
-        departments_data = self.unified_data.get('departments_data', self.departments_data)
+        departments_data = self.unified_data.get(
+            "departments_data", self.departments_data
+        )
         total = len(departments_data)
-        active = len([d for d in departments_data.values() if d.get('status') != 'inactive'])
+        active = len(
+            [d for d in departments_data.values() if d.get("status") != "inactive"]
+        )
         return f"{active}/{total}"
 
     def _get_servers_count(self) -> str:
         """Get servers count summary using centralized data"""
-        services_data = self.unified_data.get('services_status', self.services_status)
-        online = len([s for s in services_data.values() if s.get('status') in ['healthy', 'online']])
+        services_data = self.unified_data.get("services_status", self.services_status)
+        online = len(
+            [
+                s
+                for s in services_data.values()
+                if s.get("status") in ["healthy", "online"]
+            ]
+        )
         total = len(services_data) if services_data else 8  # Default MCP servers
         return f"{online}/{total}"
 
     def _get_database_status(self) -> str:
         """Get database status summary with key metrics using centralized data"""
-        db_metrics = self.unified_data.get('database_health', getattr(self, 'database_health_metrics', {}))
+        db_metrics = self.unified_data.get(
+            "database_health", getattr(self, "database_health_metrics", {})
+        )
 
-        if not db_metrics or db_metrics.get('status') != 'healthy':
-            return 'Offline'
+        if not db_metrics or db_metrics.get("status") != "healthy":
+            return "Offline"
 
         # Show only tables and size as requested
-        tables = db_metrics.get('total_tables', 0)
-        size = db_metrics.get('database_size', 'Unknown')
+        tables = db_metrics.get("total_tables", 0)
+        size = db_metrics.get("database_size", "Unknown")
 
         return f"{tables} tables • {size}"
 
     def _get_formatted_timestamp(self) -> str:
         """Get formatted timestamp with date first and AM/PM format"""
         from datetime import datetime
+
         now = datetime.now()
         # Format: "Dec 31, 2025 at 11:59 PM"
         return now.strftime("%b %d, %Y at %I:%M %p")
@@ -1001,17 +1180,29 @@ class DashboardData:
         """Get divisions count summary using centralized data"""
         try:
             # Try to get from unified organizational data first
-            org_data = self.unified_data.get('organizational_data', {})
+            org_data = self.unified_data.get("organizational_data", {})
             if org_data:
                 total = len(org_data)
-                active = len([div for div in org_data.values() if div.get('status') != 'inactive'])
+                active = len(
+                    [
+                        div
+                        for div in org_data.values()
+                        if div.get("status") != "inactive"
+                    ]
+                )
                 return f"{active}/{total}"
             else:
                 # Try fetching from database
                 org_data = self._fetch_organizational_data()
                 if org_data:
                     total = len(org_data)
-                    active = len([div for div in org_data.values() if div.get('status') != 'inactive'])
+                    active = len(
+                        [
+                            div
+                            for div in org_data.values()
+                            if div.get("status") != "inactive"
+                        ]
+                    )
                     return f"{active}/{total}"
                 else:
                     # Fallback to estimated count based on our known structure
@@ -1021,16 +1212,34 @@ class DashboardData:
 
     def _get_mcps_count(self) -> str:
         """Get MCP servers count summary using centralized data"""
-        services_data = self.unified_data.get('services_status', self.services_status)
-        mcp_services = ['registry', 'filesystem', 'database', 'llm', 'customer', 'analytics', 'payment']
-        healthy_mcps = len([s for s in mcp_services if services_data.get(s, {}).get('status') in ['healthy', 'online']])
+        services_data = self.unified_data.get("services_status", self.services_status)
+        mcp_services = [
+            "registry",
+            "filesystem",
+            "database",
+            "llm",
+            "customer",
+            "analytics",
+            "payment",
+        ]
+        healthy_mcps = len(
+            [
+                s
+                for s in mcp_services
+                if services_data.get(s, {}).get("status") in ["healthy", "online"]
+            ]
+        )
         total_mcps = len(mcp_services)
         return f"{healthy_mcps}/{total_mcps}"
 
     def _get_boarderframe_servers_count(self) -> str:
         """Get BoarderFrame servers count summary"""
         # BoarderFrame specific tools/servers
-        boarderframe_tools = ['Corporate Headquarters', 'Message Bus', 'Agent Orchestrator']
+        boarderframe_tools = [
+            "Corporate Headquarters",
+            "Message Bus",
+            "Agent Orchestrator",
+        ]
         # Corporate Headquarters is always online if we're seeing this interface
         # Message Bus and Orchestrator status would need to be checked separately
         # For now, assume Corporate Headquarters is online (1) and check for others
@@ -1044,7 +1253,7 @@ class DashboardData:
     def _get_category_count(self, category_name: str) -> str:
         """Get server count for a specific category"""
         # Get the most up-to-date services data, preferring unified_data
-        services_data = self.unified_data.get('services_status', {})
+        services_data = self.unified_data.get("services_status", {})
         if not services_data:
             services_data = self.services_status
 
@@ -1052,18 +1261,20 @@ class DashboardData:
         category_servers = {
             "Core Systems": ["corporate_headquarters", "agent_cortex", "registry"],
             "MCP Servers": ["filesystem", "database_postgres", "analytics"],
-            "Business Services": ["payment", "customer"]
+            "Business Services": ["payment", "customer"],
         }
 
         servers = category_servers.get(category_name, [])
-        online_count = len([s for s in servers if services_data.get(s, {}).get('status') == 'healthy'])
+        online_count = len(
+            [s for s in servers if services_data.get(s, {}).get("status") == "healthy"]
+        )
         total_count = len(servers)
         return f"{online_count}/{total_count}"
 
     def _get_category_status(self, category_name: str) -> str:
         """Get status for a specific server category"""
         # Get the most up-to-date services data, preferring unified_data
-        services_data = self.unified_data.get('services_status', {})
+        services_data = self.unified_data.get("services_status", {})
         if not services_data:
             services_data = self.services_status
 
@@ -1071,14 +1282,16 @@ class DashboardData:
         category_servers = {
             "Core Systems": ["corporate_headquarters", "agent_cortex", "registry"],
             "MCP Servers": ["filesystem", "database_postgres", "analytics"],
-            "Business Services": ["payment", "customer"]
+            "Business Services": ["payment", "customer"],
         }
 
         servers = category_servers.get(category_name, [])
         if not servers:
             return "offline"
 
-        online_count = len([s for s in servers if services_data.get(s, {}).get('status') == 'healthy'])
+        online_count = len(
+            [s for s in servers if services_data.get(s, {}).get("status") == "healthy"]
+        )
         total_count = len(servers)
 
         if online_count == total_count:
@@ -1090,8 +1303,12 @@ class DashboardData:
 
     def start_updates(self, enhanced=True):
         """Start background data updates with enhanced monitoring"""
-        print(f"🔄 Starting {'enhanced' if enhanced else 'standard'} monitoring system...")
-        print(f"📊 Update interval: {self.monitoring_config['update_interval']} seconds")
+        print(
+            f"🔄 Starting {'enhanced' if enhanced else 'standard'} monitoring system..."
+        )
+        print(
+            f"📊 Update interval: {self.monitoring_config['update_interval']} seconds"
+        )
 
         # Run initial update immediately
         try:
@@ -1105,7 +1322,9 @@ class DashboardData:
 
         # Start enhanced or standard update thread
         if enhanced:
-            self.update_thread = threading.Thread(target=self._enhanced_update_wrapper, daemon=True)
+            self.update_thread = threading.Thread(
+                target=self._enhanced_update_wrapper, daemon=True
+            )
         else:
             self.update_thread = threading.Thread(target=self._update_loop, daemon=True)
 
@@ -1137,7 +1356,9 @@ class DashboardData:
 
     async def _async_update(self):
         """Async update of all dashboard data"""
-        async with httpx.AsyncClient(timeout=self.monitoring_config['health_check_timeout']) as client:
+        async with httpx.AsyncClient(
+            timeout=self.monitoring_config["health_check_timeout"]
+        ) as client:
             await self._update_services(client)
             await self._update_agents()
             await self._update_system_metrics()
@@ -1145,14 +1366,14 @@ class DashboardData:
             await self._update_database_health()
 
             # Update organizational metrics every 3rd update cycle (every 45 seconds at 15s interval)
-            update_count = getattr(self, '_update_count', 0)
+            update_count = getattr(self, "_update_count", 0)
             self._update_count = update_count + 1
 
             if self._update_count % 3 == 0:
                 try:
                     health_manager = HealthDataManager(self)
                     metrics = await health_manager._collect_organizational_metrics()
-                    self.unified_data['organizational_metrics'] = metrics
+                    self.unified_data["organizational_metrics"] = metrics
                 except Exception as e:
                     print(f"⚠️ Failed to update organizational metrics: {e}")
 
@@ -1163,44 +1384,90 @@ class DashboardData:
         try:
             self.database_health_metrics = await self._get_database_health_metrics()
             # Also update unified_data for consistency
-            self.unified_data['database_health'] = self.database_health_metrics
+            self.unified_data["database_health"] = self.database_health_metrics
         except Exception as e:
             print(f"⚠️  Database health check failed: {e}")
             self.database_health_metrics = {
-                'status': 'error',
-                'error': str(e),
-                'last_check': datetime.now().isoformat(),
-                'database_size': 'Unknown',
-                'total_tables': 0,
-                'active_connections': 0,
-                'tables': []
+                "status": "error",
+                "error": str(e),
+                "last_check": datetime.now().isoformat(),
+                "database_size": "Unknown",
+                "total_tables": 0,
+                "active_connections": 0,
+                "tables": [],
             }
             # Also update unified_data for consistency
-            self.unified_data['database_health'] = self.database_health_metrics
+            self.unified_data["database_health"] = self.database_health_metrics
 
     async def _update_services(self, client):
         """Update services status with enhanced MCP server details"""
         services = {
             # MCP Servers - Model Context Protocol servers
-            "filesystem": {"port": 8001, "name": "File System Server", "icon": "fas fa-folder-tree", "category": "MCP Servers"},
-            "database_postgres": {"port": 8010, "name": "PostgreSQL Database Server", "icon": "fas fa-database", "category": "MCP Servers"},
-            "analytics": {"port": 8007, "name": "Analytics Server", "icon": "fas fa-chart-bar", "category": "MCP Servers"},
-
+            "filesystem": {
+                "port": 8001,
+                "name": "File System Server",
+                "icon": "fas fa-folder-tree",
+                "category": "MCP Servers",
+            },
+            "database_postgres": {
+                "port": 8010,
+                "name": "PostgreSQL Database Server",
+                "icon": "fas fa-database",
+                "category": "MCP Servers",
+            },
+            "analytics": {
+                "port": 8007,
+                "name": "Analytics Server",
+                "icon": "fas fa-chart-bar",
+                "category": "MCP Servers",
+            },
             # Core Systems - Essential infrastructure
-            "corporate_headquarters": {"port": 8888, "name": "HR", "icon": "fas fa-users-cog", "category": "Core Systems"},
-            "agent_cortex": {"port": 8889, "name": "Agent Cortex", "icon": "fas fa-brain", "category": "Core Systems"},
-            "registry": {"port": 8009, "name": "Registry", "icon": "fas fa-server", "category": "Core Systems"},
-
+            "corporate_headquarters": {
+                "port": 8888,
+                "name": "HR",
+                "icon": "fas fa-users-cog",
+                "category": "Core Systems",
+            },
+            "agent_cortex": {
+                "port": 8889,
+                "name": "Agent Cortex",
+                "icon": "fas fa-brain",
+                "category": "Core Systems",
+            },
+            "registry": {
+                "port": 8009,
+                "name": "Registry",
+                "icon": "fas fa-server",
+                "category": "Core Systems",
+            },
             # Business Services - Business-focused services
-            "payment": {"port": 8006, "name": "Payment Server", "icon": "fas fa-credit-card", "category": "Business Services"},
-            "customer": {"port": 8008, "name": "Customer Server", "icon": "fas fa-users", "category": "Business Services"}
+            "payment": {
+                "port": 8006,
+                "name": "Payment Server",
+                "icon": "fas fa-credit-card",
+                "category": "Business Services",
+            },
+            "customer": {
+                "port": 8008,
+                "name": "Customer Server",
+                "icon": "fas fa-users",
+                "category": "Business Services",
+            },
         }
 
         for service_id, service_info in services.items():
             try:
-                resp = await client.get(f"http://localhost:{service_info['port']}/health")
+                resp = await client.get(
+                    f"http://localhost:{service_info['port']}/health"
+                )
                 if resp.status_code == 200:
-                    health_data = resp.json() if resp.headers.get('content-type', '').startswith('application/json') else {}
+                    health_data = (
+                        resp.json()
+                        if resp.headers.get("content-type", "").startswith(
+                            "application/json"
+                        )
+                        else {}
+                    )
 
                     # Enhanced data for filesystem server
                     if service_id == "filesystem":
@@ -1212,7 +1479,9 @@ class DashboardData:
                             "vector_db_size": health_data.get("vector_db_entries", 0),
                             "base_path": health_data.get("base_path", "/"),
                             "disk_usage": health_data.get("disk_usage", {}),
-                            "recent_operations": health_data.get("recent_operations", [])
+                            "recent_operations": health_data.get(
+                                "recent_operations", []
+                            ),
                         }
 
                     # Calculate uptime if not provided by server
@@ -1222,7 +1491,9 @@ class DashboardData:
                         if resp.elapsed.total_seconds() < 1.0:
                             server_uptime = "Online"
                         else:
-                            server_uptime = f"{resp.elapsed.total_seconds():.1f}s response"
+                            server_uptime = (
+                                f"{resp.elapsed.total_seconds():.1f}s response"
+                            )
 
                     self.services_status[service_id] = {
                         "status": "healthy",
@@ -1230,7 +1501,7 @@ class DashboardData:
                         "details": health_data,
                         "last_check": datetime.now().strftime("%I:%M:%S %p"),
                         "uptime": server_uptime,
-                        **service_info
+                        **service_info,
                     }
                 else:
                     self.services_status[service_id] = {
@@ -1238,7 +1509,7 @@ class DashboardData:
                         "error": f"HTTP {resp.status_code}",
                         "last_check": datetime.now().strftime("%I:%M:%S %p"),
                         "uptime": "Unknown",
-                        **service_info
+                        **service_info,
                     }
             except Exception as e:
                 self.services_status[service_id] = {
@@ -1246,7 +1517,7 @@ class DashboardData:
                     "error": str(e)[:50],
                     "last_check": datetime.now().strftime("%I:%M:%S %p"),
                     "uptime": "Offline",
-                    **service_info
+                    **service_info,
                 }
 
     async def _update_agents(self):
@@ -1267,71 +1538,84 @@ class DashboardData:
                     # Get process information
                     try:
                         import psutil
+
                         process = psutil.Process(pid)
                         memory_percent = process.memory_percent()
                         cpu_percent = process.cpu_percent()
-                        create_time = datetime.fromtimestamp(process.create_time()).strftime("%H:%M:%S")
+                        create_time = datetime.fromtimestamp(
+                            process.create_time()
+                        ).strftime("%H:%M:%S")
                     except (psutil.NoSuchProcess, psutil.AccessDenied, Exception):
                         memory_percent = 0
                         cpu_percent = 0
                         create_time = "Unknown"
 
                     running_agents[agent_name] = {
-                        'name': agent_name.title(),
-                        'status': 'running',
-                        'pid': pid,
-                        'type': config.get('description', 'AI Agent'),
-                        'model': config.get('model', 'Unknown'),
-                        'priority': config.get('priority', 0),
-                        'memory_percent': memory_percent,
-                        'cpu_percent': cpu_percent,
-                        'start_time': create_time,
-                        'health': 'healthy'
+                        "name": agent_name.title(),
+                        "status": "running",
+                        "pid": pid,
+                        "type": config.get("description", "AI Agent"),
+                        "model": config.get("model", "Unknown"),
+                        "priority": config.get("priority", 0),
+                        "memory_percent": memory_percent,
+                        "cpu_percent": cpu_percent,
+                        "start_time": create_time,
+                        "health": "healthy",
                     }
                 else:
                     # Agent not running
                     running_agents[agent_name] = {
-                        'name': agent_name.title(),
-                        'status': 'stopped',
-                        'pid': None,
-                        'type': config.get('description', 'AI Agent'),
-                        'model': config.get('model', 'Unknown'),
-                        'priority': config.get('priority', 0),
-                        'memory_percent': 0,
-                        'cpu_percent': 0,
-                        'start_time': None,
-                        'health': 'offline'
+                        "name": agent_name.title(),
+                        "status": "stopped",
+                        "pid": None,
+                        "type": config.get("description", "AI Agent"),
+                        "model": config.get("model", "Unknown"),
+                        "priority": config.get("priority", 0),
+                        "memory_percent": 0,
+                        "cpu_percent": 0,
+                        "start_time": None,
+                        "health": "offline",
                     }
 
         except ImportError:
             # Fallback to basic process detection if agent manager unavailable
             import psutil
-            for process in psutil.process_iter(['pid', 'name', 'cmdline']):
+
+            for process in psutil.process_iter(["pid", "name", "cmdline"]):
                 try:
-                    cmdline = ' '.join(process.info['cmdline']) if process.info['cmdline'] else ''
-                    if 'solomon.py' in cmdline or 'solomon' in process.info['name'].lower():
-                        running_agents['solomon'] = {
-                            'name': 'Solomon',
-                            'status': 'running',
-                            'pid': process.info['pid'],
-                            'type': 'Strategic Planning Agent',
-                            'model': 'claude-3-5-sonnet-latest',
-                            'priority': 1,
-                            'memory_percent': process.memory_percent(),
-                            'cpu_percent': process.cpu_percent(),
-                            'health': 'healthy'
+                    cmdline = (
+                        " ".join(process.info["cmdline"])
+                        if process.info["cmdline"]
+                        else ""
+                    )
+                    if (
+                        "solomon.py" in cmdline
+                        or "solomon" in process.info["name"].lower()
+                    ):
+                        running_agents["solomon"] = {
+                            "name": "Solomon",
+                            "status": "running",
+                            "pid": process.info["pid"],
+                            "type": "Strategic Planning Agent",
+                            "model": "claude-3-5-sonnet-latest",
+                            "priority": 1,
+                            "memory_percent": process.memory_percent(),
+                            "cpu_percent": process.cpu_percent(),
+                            "health": "healthy",
                         }
-                    elif 'david.py' in cmdline or 'david' in process.info['name'].lower():
-                        running_agents['david'] = {
-                            'name': 'David',
-                            'status': 'running',
-                            'pid': process.info['pid'],
-                            'type': 'Research Agent',
-                            'model': 'claude-3-5-sonnet-latest',
-                            'priority': 2,
-                            'memory_percent': process.memory_percent(),
-                            'cpu_percent': process.cpu_percent(),
-                            'health': 'healthy'
+                    elif (
+                        "david.py" in cmdline or "david" in process.info["name"].lower()
+                    ):
+                        running_agents["david"] = {
+                            "name": "David",
+                            "status": "running",
+                            "pid": process.info["pid"],
+                            "type": "Research Agent",
+                            "model": "claude-3-5-sonnet-latest",
+                            "priority": 2,
+                            "memory_percent": process.memory_percent(),
+                            "cpu_percent": process.cpu_percent(),
+                            "health": "healthy",
                         }
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     continue
@@ -1351,17 +1635,25 @@ class DashboardData:
             except (psutil.AccessDenied, PermissionError):
                 # Fall back to counting listening sockets instead
                 try:
-                    active_connections = len([c for c in psutil.net_connections(kind='inet') if c.status == 'LISTEN'])
+                    active_connections = len(
+                        [
+                            c
+                            for c in psutil.net_connections(kind="inet")
+                            if c.status == "LISTEN"
+                        ]
+                    )
                 except (psutil.AccessDenied, PermissionError):
                     active_connections = 0
 
             self.system_metrics = {
                 "cpu_percent": psutil.cpu_percent(interval=1),
                 "memory_percent": psutil.virtual_memory().percent,
-                "disk_percent": psutil.disk_usage('/').percent,
+                "disk_percent": psutil.disk_usage("/").percent,
                 "active_connections": active_connections,
-                "boot_time": datetime.fromtimestamp(psutil.boot_time()).strftime("%Y-%m-%d %H:%M:%S"),
-                "load_avg": os.getloadavg() if hasattr(os, 'getloadavg') else [0, 0, 0]
+                "boot_time": datetime.fromtimestamp(psutil.boot_time()).strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                ),
+                "load_avg": os.getloadavg() if hasattr(os, "getloadavg") else [0, 0, 0],
             }
         except ImportError:
             self.system_metrics = {
@@ -1370,14 +1662,14 @@ class DashboardData:
                 "disk_percent": 0,
                 "active_connections": 0,
                 "boot_time": "Unknown",
-                "load_avg": [0, 0, 0]
+                "load_avg": [0, 0, 0],
             }
 
     async def _update_startup_status(self):
         """Update startup status from file"""
         try:
-            if os.path.exists('startup_status.json'):
-                with open('startup_status.json', 'r') as f:
+            if os.path.exists("startup_status.json"):
+                with open("startup_status.json", "r") as f:
                     self.startup_status = json.load(f)
         except:
             pass
@@ -1386,55 +1678,81 @@ class DashboardData:
         """Load persistent system status data"""
         try:
             if os.path.exists(self.status_file):
-                with open(self.status_file, 'r') as f:
+                with open(self.status_file, "r") as f:
                     data = json.load(f)
-                    self.health_history = data.get('health_history', {})
-                    self.last_update = data.get('last_update')
+                    self.health_history = data.get("health_history", {})
+                    self.last_update = data.get("last_update")
 
             # Also load startup status from startup.py
             startup_status_file = "/tmp/boarderframe_startup_status.json"
             if os.path.exists(startup_status_file):
                 print(f"📁 Loading startup status from {startup_status_file}")
-                with open(startup_status_file, 'r') as f:
+                with open(startup_status_file, "r") as f:
                     startup_data = json.load(f)
 
                     # Load MCP server status
-                    if 'mcp_servers' in startup_data:
-                        print(f"✅ Found {len(startup_data['mcp_servers'])} MCP servers in startup status")
-                        for server_name, server_info in startup_data['mcp_servers'].items():
-                            if server_info.get('status') == 'running':
+                    if "mcp_servers" in startup_data:
+                        print(
+                            f"✅ Found {len(startup_data['mcp_servers'])} MCP servers in startup status"
+                        )
+                        for server_name, server_info in startup_data[
+                            "mcp_servers"
+                        ].items():
+                            if server_info.get("status") == "running":
                                 # Add to unified data
-                                self.unified_data['services_status'][server_name] = {
-                                    'status': 'healthy',
-                                    'port': server_info.get('details', {}).get('port', 0),
-                                    'pid': server_info.get('details', {}).get('pid'),
-                                    'name': server_name.replace('_', ' ').title(),
-                                    'category': 'MCP Servers',
-                                    'last_check': server_info.get('last_update', datetime.now().isoformat())
+                                self.unified_data["services_status"][server_name] = {
+                                    "status": "healthy",
+                                    "port": server_info.get("details", {}).get(
+                                        "port", 0
+                                    ),
+                                    "pid": server_info.get("details", {}).get("pid"),
+                                    "name": server_name.replace("_", " ").title(),
+                                    "category": "MCP Servers",
+                                    "last_check": server_info.get(
+                                        "last_update", datetime.now().isoformat()
+                                    ),
                                 }
                                 # Also add to legacy for compatibility
-                                self.services_status[server_name] = self.unified_data['services_status'][server_name]
-                                print(f"  ✅ Loaded {server_name} as healthy on port {server_info.get('details', {}).get('port', 0)}")
+                                self.services_status[server_name] = self.unified_data[
+                                    "services_status"
+                                ][server_name]
+                                print(
+                                    f"  ✅ Loaded {server_name} as healthy on port {server_info.get('details', {}).get('port', 0)}"
+                                )
 
                     # Load other services status
-                    if 'services' in startup_data:
-                        for service_name, service_info in startup_data['services'].items():
-                            if service_info.get('status') == 'running':
-                                self.unified_data['services_status'][service_name] = {
-                                    'status': 'healthy',
-                                    'port': service_info.get('details', {}).get('port', 0),
-                                    'category': 'Core Services',
-                                    'last_check': service_info.get('last_update', datetime.now().isoformat())
+                    if "services" in startup_data:
+                        for service_name, service_info in startup_data[
+                            "services"
+                        ].items():
+                            if service_info.get("status") == "running":
+                                self.unified_data["services_status"][service_name] = {
+                                    "status": "healthy",
+                                    "port": service_info.get("details", {}).get(
+                                        "port", 0
+                                    ),
+                                    "category": "Core Services",
+                                    "last_check": service_info.get(
+                                        "last_update", datetime.now().isoformat()
+                                    ),
                                 }
-                                self.services_status[service_name] = self.unified_data['services_status'][service_name]
+                                self.services_status[service_name] = self.unified_data[
+                                    "services_status"
+                                ][service_name]
 
                     # Update metrics layer with initial status
-                    if self.metrics_layer and hasattr(self.metrics_layer, 'set_server_status'):
-                        print(f"📊 Updating metrics layer with {len(self.unified_data['services_status'])} servers")
-                        self.metrics_layer.set_server_status(self.unified_data['services_status'])
+                    if self.metrics_layer and hasattr(
+                        self.metrics_layer, "set_server_status"
+                    ):
+                        print(
+                            f"📊 Updating metrics layer with {len(self.unified_data['services_status'])} servers"
+                        )
+                        self.metrics_layer.set_server_status(
+                            self.unified_data["services_status"]
+                        )
 
                     # Also ensure health manager syncs to legacy properties
-                    if hasattr(self, 'health_manager'):
+                    if hasattr(self, "health_manager"):
                         self.health_manager._sync_to_legacy_properties()
                         print("✅ Synced startup status to legacy properties")
 
@@ -1445,21 +1763,27 @@ class DashboardData:
         """Save current system status to persistent storage"""
         try:
             status_data = {
-                'last_update': datetime.now().isoformat(),
-                'services_status': self.services_status,
-                'agents_status': self.agents_status,
-                'system_metrics': self.system_metrics,
-                'health_history': self.health_history,
-                'timestamp': time.time()
+                "last_update": datetime.now().isoformat(),
+                "services_status": self.services_status,
+                "agents_status": self.agents_status,
+                "system_metrics": self.system_metrics,
+                "health_history": self.health_history,
+                "timestamp": time.time(),
             }
 
-            with open(self.status_file, 'w') as f:
+            with open(self.status_file, "w") as f:
                 json.dump(status_data, f, indent=2)
 
         except Exception as e:
             print(f"⚠️  Error saving persistent status: {e}")
 
-    def _record_health_event(self, component_type: str, component_name: str, status: str, details: dict = None):
+    def _record_health_event(
+        self,
+        component_type: str,
+        component_name: str,
+        status: str,
+        details: dict = None,
+    ):
         """Record a health status change event with history"""
         timestamp = datetime.now().isoformat()
 
@@ -1470,55 +1794,65 @@ class DashboardData:
 
         # Record the event
         event = {
-            'timestamp': timestamp,
-            'status': status,
-            'details': details or {},
-            'component_type': component_type,
-            'component_name': component_name
+            "timestamp": timestamp,
+            "status": status,
+            "details": details or {},
+            "component_type": component_type,
+            "component_name": component_name,
         }
 
         self.health_history[component_key].append(event)
 
         # Keep only recent history
-        max_entries = self.monitoring_config['max_history_entries']
+        max_entries = self.monitoring_config["max_history_entries"]
         if len(self.health_history[component_key]) > max_entries:
-            self.health_history[component_key] = self.health_history[component_key][-max_entries:]
+            self.health_history[component_key] = self.health_history[component_key][
+                -max_entries:
+            ]
 
     def _check_alert_conditions(self):
         """Check for alert conditions and record them"""
         alerts = []
 
         # Check system metrics against thresholds
-        for metric, threshold in self.monitoring_config['alert_thresholds'].items():
+        for metric, threshold in self.monitoring_config["alert_thresholds"].items():
             current_value = self.system_metrics.get(metric, 0)
             if current_value > threshold:
-                alerts.append({
-                    'type': 'system_threshold',
-                    'metric': metric,
-                    'value': current_value,
-                    'threshold': threshold,
-                    'severity': 'warning' if current_value < threshold * 1.1 else 'critical'
-                })
+                alerts.append(
+                    {
+                        "type": "system_threshold",
+                        "metric": metric,
+                        "value": current_value,
+                        "threshold": threshold,
+                        "severity": (
+                            "warning" if current_value < threshold * 1.1 else "critical"
+                        ),
+                    }
+                )
 
         # Check for service failures
         for service_name, service_data in self.services_status.items():
-            if service_data.get('status') not in ['healthy', 'online']:
-                alerts.append({
-                    'type': 'service_down',
-                    'service': service_name,
-                    'status': service_data.get('status', 'unknown'),
-                    'severity': 'critical'
-                })
+            if service_data.get("status") not in ["healthy", "online"]:
+                alerts.append(
+                    {
+                        "type": "service_down",
+                        "service": service_name,
+                        "status": service_data.get("status", "unknown"),
+                        "severity": "critical",
+                    }
+                )
 
         # Check for agent failures
         for agent_name, agent_data in self.agents_status.items():
-            if agent_data.get('status') != 'running':
-                alerts.append({
-                    'type': 'agent_down',
-                    'agent': agent_name,
-                    'status': agent_data.get('status', 'unknown'),
-                    'severity': 'critical'
-                })
+            if agent_data.get("status") != "running":
+                alerts.append(
+                    {
+                        "type": "agent_down",
+                        "agent": agent_name,
+                        "status": agent_data.get("status", "unknown"),
+                        "severity": "critical",
+                    }
+                )
 
         return alerts
 
@@ -1530,19 +1864,27 @@ class DashboardData:
 
                 # Record health events
                 for service_name, service_data in self.services_status.items():
-                    self._record_health_event('service', service_name,
-                                            service_data.get('status', 'unknown'),
-                                            service_data)
+                    self._record_health_event(
+                        "service",
+                        service_name,
+                        service_data.get("status", "unknown"),
+                        service_data,
+                    )
 
                 for agent_name, agent_data in self.agents_status.items():
-                    self._record_health_event('agent', agent_name,
-                                            agent_data.get('status', 'unknown'),
-                                            agent_data)
+                    self._record_health_event(
+                        "agent",
+                        agent_name,
+                        agent_data.get("status", "unknown"),
+                        agent_data,
+                    )
 
                 # Check for alerts
                 alerts = self._check_alert_conditions()
                 if alerts:
-                    self._record_health_event('system', 'alerts', 'active', {'alerts': alerts})
+                    self._record_health_event(
+                        "system", "alerts", "active", {"alerts": alerts}
+                    )
 
                 # Save persistent status
                 self._save_persistent_status()
@@ -1551,51 +1893,73 @@ class DashboardData:
 
             except Exception as e:
                 print(f"❌ Enhanced update loop error: {e}")
-                self._record_health_event('system', 'update_loop', 'error', {'error': str(e)})
+                self._record_health_event(
+                    "system", "update_loop", "error", {"error": str(e)}
+                )
 
-            await asyncio.sleep(self.monitoring_config['update_interval'])
+            await asyncio.sleep(self.monitoring_config["update_interval"])
 
     def get_health_summary(self):
         """Get comprehensive health summary for dashboard using centralized data"""
         # Use centralized data when available, fallback to legacy data
-        services_data = self.unified_data.get('services_status', self.services_status)
-        agents_data = self.unified_data.get('agents_status', self.agents_status)
-        departments_data = self.unified_data.get('departments_data', self.departments_data)
+        services_data = self.unified_data.get("services_status", self.services_status)
+        agents_data = self.unified_data.get("agents_status", self.agents_status)
+        departments_data = self.unified_data.get(
+            "departments_data", self.departments_data
+        )
 
         # Check if we have overall health from unified data
-        if 'overall_health' in self.unified_data:
-            unified_health = self.unified_data['overall_health']
-            overall_status = unified_health.get('status', 'unknown')
+        if "overall_health" in self.unified_data:
+            unified_health = self.unified_data["overall_health"]
+            overall_status = unified_health.get("status", "unknown")
         else:
             # Calculate overall status from individual components
             overall_status = self._calculate_overall_status(services_data, agents_data)
 
         summary = {
-            'overall_status': overall_status,
-            'services': {
-                'total': len(services_data),
-                'healthy': sum(1 for s in services_data.values() if s.get('status') == 'healthy'),
-                'degraded': sum(1 for s in services_data.values() if s.get('status') == 'degraded'),
-                'critical': sum(1 for s in services_data.values() if s.get('status') not in ['healthy', 'degraded'])
+            "overall_status": overall_status,
+            "services": {
+                "total": len(services_data),
+                "healthy": sum(
+                    1 for s in services_data.values() if s.get("status") == "healthy"
+                ),
+                "degraded": sum(
+                    1 for s in services_data.values() if s.get("status") == "degraded"
+                ),
+                "critical": sum(
+                    1
+                    for s in services_data.values()
+                    if s.get("status") not in ["healthy", "degraded"]
+                ),
             },
-            'agents': {
-                'total': len(agents_data),
-                'running': sum(1 for a in agents_data.values() if a.get('status') == 'running'),
-                'stopped': sum(1 for a in agents_data.values() if a.get('status') != 'running')
+            "agents": {
+                "total": len(agents_data),
+                "running": sum(
+                    1 for a in agents_data.values() if a.get("status") == "running"
+                ),
+                "stopped": sum(
+                    1 for a in agents_data.values() if a.get("status") != "running"
+                ),
             },
-            'leaders': {
-                'total': self._get_leaders_count_from_unified_data(),
-                'active': self._get_active_leaders_count_from_unified_data()
+            "leaders": {
+                "total": self._get_leaders_count_from_unified_data(),
+                "active": self._get_active_leaders_count_from_unified_data(),
             },
-            'departments': {
-                'total': len(departments_data),
-                'active': len([d for d in departments_data.values() if d.get('status', 'active') == 'active'])
+            "departments": {
+                "total": len(departments_data),
+                "active": len(
+                    [
+                        d
+                        for d in departments_data.values()
+                        if d.get("status", "active") == "active"
+                    ]
+                ),
             },
-            'registry': {
-                'status': services_data.get('registry', {}).get('status', 'offline')
+            "registry": {
+                "status": services_data.get("registry", {}).get("status", "offline")
             },
-            'last_update': self.unified_data.get('last_refresh', self.last_update),
-            'alerts': self._check_alert_conditions()
+            "last_update": self.unified_data.get("last_refresh", self.last_update),
+            "alerts": self._check_alert_conditions(),
         }
 
         return summary
@@ -1614,7 +1978,7 @@ class DashboardData:
                 "last_check": "Self-check",
                 "category": "Core Infrastructure",
                 "priority": 1,
-                "description": "Main management interface"
+                "description": "Main management interface",
             },
             "agent_cortex": {
                 "name": "Agent Cortex",
@@ -1623,7 +1987,7 @@ class DashboardData:
                 "last_check": "Initializing...",
                 "category": "Core Infrastructure",
                 "priority": 2,
-                "description": "Intelligent model orchestration"
+                "description": "Intelligent model orchestration",
             },
             "registry": {
                 "name": "Registry Server",
@@ -1632,9 +1996,8 @@ class DashboardData:
                 "last_check": "Initializing...",
                 "category": "Core Infrastructure",
                 "priority": 3,
-                "description": "Service discovery and registration"
+                "description": "Service discovery and registration",
             },
-
             # MCP Servers (High Priority)
             "filesystem": {
                 "name": "Filesystem Server",
@@ -1643,7 +2006,7 @@ class DashboardData:
                 "last_check": "Initializing...",
                 "category": "MCP Servers",
                 "priority": 4,
-                "description": "File operations and management"
+                "description": "File operations and management",
             },
             "database_postgres": {
                 "name": "PostgreSQL Database Server",
@@ -1652,7 +2015,7 @@ class DashboardData:
                 "last_check": "Initializing...",
                 "category": "MCP Servers",
                 "priority": 5,
-                "description": "Data storage and retrieval"
+                "description": "Data storage and retrieval",
             },
             "analytics": {
                 "name": "Analytics Server",
@@ -1661,9 +2024,8 @@ class DashboardData:
                 "last_check": "Initializing...",
                 "category": "MCP Servers",
                 "priority": 6,
-                "description": "Business intelligence and metrics"
+                "description": "Business intelligence and metrics",
             },
-
             # Business Services (Medium Priority)
             "payment": {
                 "name": "Payment Server",
@@ -1672,7 +2034,7 @@ class DashboardData:
                 "last_check": "Initializing...",
                 "category": "Business Services",
                 "priority": 7,
-                "description": "Revenue and billing management"
+                "description": "Revenue and billing management",
             },
             "customer": {
                 "name": "Customer Server",
@@ -1681,8 +2043,8 @@ class DashboardData:
                 "last_check": "Initializing...",
                 "category": "Business Services",
                 "priority": 8,
-                "description": "Customer relationship management"
-            }
+                "description": "Customer relationship management",
+            },
         }
 
         # Initialize both legacy and unified data
@@ -1691,16 +2053,20 @@ class DashboardData:
         preserved_count = 0
 
         for server_id, server_info in default_servers.items():
-            if server_id not in self.unified_data['services_status']:
+            if server_id not in self.unified_data["services_status"]:
                 self.services_status[server_id] = server_info
-                self.unified_data['services_status'][server_id] = server_info
+                self.unified_data["services_status"][server_id] = server_info
                 initialized_count += 1
             else:
                 # Keep the existing loaded status
                 preserved_count += 1
-                print(f"  ⏩ Preserved {server_id} - status: {self.unified_data['services_status'][server_id].get('status')}")
+                print(
+                    f"  ⏩ Preserved {server_id} - status: {self.unified_data['services_status'][server_id].get('status')}"
+                )
 
-        print(f"✅ Initialized {initialized_count} new servers, preserved {preserved_count} loaded servers")
+        print(
+            f"✅ Initialized {initialized_count} new servers, preserved {preserved_count} loaded servers"
+        )
 
     def _run_initial_health_check(self):
         """Run a quick initial health check to populate server status"""
@@ -1718,7 +2084,7 @@ class DashboardData:
             ("database_postgres", 8010),
             ("analytics", 8007),
             ("payment", 8006),
-            ("customer", 8008)
+            ("customer", 8008),
         ]
 
         healthy_count = 0
@@ -1728,110 +2094,153 @@ class DashboardData:
                 # Quick socket check to see if port is open
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 sock.settimeout(1)  # 1 second timeout
-                result = sock.connect_ex(('localhost', port))
+                result = sock.connect_ex(("localhost", port))
                 sock.close()
 
                 if result == 0:
                     # Port is open, assume healthy
-                    self.services_status[server_name]['status'] = 'healthy'
-                    self.services_status[server_name]['last_check'] = datetime.now().isoformat()
-                    self.unified_data['services_status'][server_name]['status'] = 'healthy'
-                    self.unified_data['services_status'][server_name]['last_check'] = datetime.now().isoformat()
+                    self.services_status[server_name]["status"] = "healthy"
+                    self.services_status[server_name][
+                        "last_check"
+                    ] = datetime.now().isoformat()
+                    self.unified_data["services_status"][server_name][
+                        "status"
+                    ] = "healthy"
+                    self.unified_data["services_status"][server_name][
+                        "last_check"
+                    ] = datetime.now().isoformat()
                     healthy_count += 1
                     print(f"✅ {server_name} server is healthy on port {port}")
                 else:
                     # Port is closed, mark as offline
-                    self.services_status[server_name]['status'] = 'offline'
-                    self.services_status[server_name]['last_check'] = datetime.now().isoformat()
-                    self.unified_data['services_status'][server_name]['status'] = 'offline'
-                    self.unified_data['services_status'][server_name]['last_check'] = datetime.now().isoformat()
+                    self.services_status[server_name]["status"] = "offline"
+                    self.services_status[server_name][
+                        "last_check"
+                    ] = datetime.now().isoformat()
+                    self.unified_data["services_status"][server_name][
+                        "status"
+                    ] = "offline"
+                    self.unified_data["services_status"][server_name][
+                        "last_check"
+                    ] = datetime.now().isoformat()
                     print(f"❌ {server_name} server is offline on port {port}")
 
             except Exception as e:
                 # Error checking, mark as offline
-                self.services_status[server_name]['status'] = 'offline'
-                self.services_status[server_name]['last_check'] = datetime.now().isoformat()
-                self.unified_data['services_status'][server_name]['status'] = 'offline'
-                self.unified_data['services_status'][server_name]['last_check'] = datetime.now().isoformat()
+                self.services_status[server_name]["status"] = "offline"
+                self.services_status[server_name][
+                    "last_check"
+                ] = datetime.now().isoformat()
+                self.unified_data["services_status"][server_name]["status"] = "offline"
+                self.unified_data["services_status"][server_name][
+                    "last_check"
+                ] = datetime.now().isoformat()
                 print(f"❌ {server_name} server check failed: {e}")
 
-        print(f"✅ Initial health check complete: {healthy_count}/{len(servers_to_check)} servers healthy")
+        print(
+            f"✅ Initial health check complete: {healthy_count}/{len(servers_to_check)} servers healthy"
+        )
 
         # Also collect initial organizational metrics
         try:
             print("📊 Collecting initial organizational metrics...")
             import asyncio
+
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
 
             # Create HealthDataManager instance to collect metrics
             health_manager = HealthDataManager(self)
-            metrics = loop.run_until_complete(health_manager._collect_organizational_metrics())
+            metrics = loop.run_until_complete(
+                health_manager._collect_organizational_metrics()
+            )
 
             # Store in unified data
-            self.unified_data['organizational_metrics'] = metrics
+            self.unified_data["organizational_metrics"] = metrics
             print(f"✅ Initial organizational metrics collected")
 
         except Exception as e:
             print(f"⚠️ Failed to collect initial organizational metrics: {e}")
             # Set default metrics
-            self.unified_data['organizational_metrics'] = {
-                'divisions': {'total': 0, 'active': 0, 'percentage': 0},
-                'departments': {'total': 0, 'active': 0, 'percentage': 0},
-                'leaders': {'total': 0, 'active': 0, 'percentage': 0},
-                'agents': {'total': 0, 'active': 0, 'percentage': 0}
+            self.unified_data["organizational_metrics"] = {
+                "divisions": {"total": 0, "active": 0, "percentage": 0},
+                "departments": {"total": 0, "active": 0, "percentage": 0},
+                "leaders": {"total": 0, "active": 0, "percentage": 0},
+                "agents": {"total": 0, "active": 0, "percentage": 0},
             }
 
     def _calculate_overall_status(self, services_data, agents_data):
         """Calculate overall system status from component health"""
         # Use unified data if available, fallback to passed data
-        if hasattr(self, 'unified_data') and self.unified_data.get('services_status'):
-            services_data = self.unified_data['services_status']
+        if hasattr(self, "unified_data") and self.unified_data.get("services_status"):
+            services_data = self.unified_data["services_status"]
 
         # Debug: log status calculation
-        healthy_services = sum(1 for s in services_data.values() if s.get('status') == 'healthy')
-        degraded_services = sum(1 for s in services_data.values() if s.get('status') == 'degraded')
-        critical_services = sum(1 for s in services_data.values() if s.get('status') not in ['healthy', 'degraded'])
-        running_agents = sum(1 for a in agents_data.values() if a.get('status') == 'running')
-        stopped_agents = sum(1 for a in agents_data.values() if a.get('status') != 'running')
+        healthy_services = sum(
+            1 for s in services_data.values() if s.get("status") == "healthy"
+        )
+        degraded_services = sum(
+            1 for s in services_data.values() if s.get("status") == "degraded"
+        )
+        critical_services = sum(
+            1
+            for s in services_data.values()
+            if s.get("status") not in ["healthy", "degraded"]
+        )
+        running_agents = sum(
+            1 for a in agents_data.values() if a.get("status") == "running"
+        )
+        stopped_agents = sum(
+            1 for a in agents_data.values() if a.get("status") != "running"
+        )
 
-        print(f"📊 Status calculation: {healthy_services} healthy, {degraded_services} degraded, {critical_services} critical services; {running_agents} running, {stopped_agents} stopped agents")
+        print(
+            f"📊 Status calculation: {healthy_services} healthy, {degraded_services} degraded, {critical_services} critical services; {running_agents} running, {stopped_agents} stopped agents"
+        )
 
         # Determine overall status with more nuanced logic
         if critical_services > 2 or stopped_agents > 1:
-            return 'offline'
+            return "offline"
         elif critical_services > 0 or stopped_agents > 0 or degraded_services > 0:
-            return 'warning'
+            return "warning"
         else:
-            return 'online'
+            return "online"
 
     def _get_centralized_metrics(self):
         """Get all centralized metrics from the unified data store"""
         try:
             metrics = {
-                'system': self.unified_data.get('system_metrics', {}),
-                'services': self.unified_data.get('services_status', {}),
-                'agents': self.unified_data.get('agents_status', {}),
-                'database': self.unified_data.get('database_health', {}),
-                'registry': self.unified_data.get('registry_data', {}),
-                'departments': self.unified_data.get('departments_data', {}),
-                'leaders': self.unified_data.get('leaders_data', {}),
-                'organizational': self.unified_data.get('organizational_data', {}),
-                'mcp_details': self.unified_data.get('mcp_details', {}),
-                'startup_status': self.unified_data.get('startup_status', {}),
-                'health_history': self.unified_data.get('health_history', {}),
-                'last_refresh': self.unified_data.get('last_refresh'),
-                'metrics_layer_available': self.metrics_layer is not None
+                "system": self.unified_data.get("system_metrics", {}),
+                "services": self.unified_data.get("services_status", {}),
+                "agents": self.unified_data.get("agents_status", {}),
+                "database": self.unified_data.get("database_health", {}),
+                "registry": self.unified_data.get("registry_data", {}),
+                "departments": self.unified_data.get("departments_data", {}),
+                "leaders": self.unified_data.get("leaders_data", {}),
+                "organizational": self.unified_data.get("organizational_data", {}),
+                "mcp_details": self.unified_data.get("mcp_details", {}),
+                "startup_status": self.unified_data.get("startup_status", {}),
+                "health_history": self.unified_data.get("health_history", {}),
+                "last_refresh": self.unified_data.get("last_refresh"),
+                "metrics_layer_available": self.metrics_layer is not None,
             }
 
             # Add summary metrics
-            metrics['summary'] = {
-                'total_agents': len(metrics['agents']),
-                'running_agents': sum(1 for a in metrics['agents'].values() if a.get('status') == 'running'),
-                'total_services': len(metrics['services']),
-                'healthy_services': sum(1 for s in metrics['services'].values() if s.get('status') == 'healthy'),
-                'total_departments': len(metrics['departments']),
-                'total_leaders': len(metrics['leaders'])
+            metrics["summary"] = {
+                "total_agents": len(metrics["agents"]),
+                "running_agents": sum(
+                    1
+                    for a in metrics["agents"].values()
+                    if a.get("status") == "running"
+                ),
+                "total_services": len(metrics["services"]),
+                "healthy_services": sum(
+                    1
+                    for s in metrics["services"].values()
+                    if s.get("status") == "healthy"
+                ),
+                "total_departments": len(metrics["departments"]),
+                "total_leaders": len(metrics["leaders"]),
             }
 
             return metrics
@@ -1846,22 +2255,28 @@ class DashboardData:
 
         try:
             # Pass real server status to metrics layer
-            services_status = self.unified_data.get('services_status', {})
+            services_status = self.unified_data.get("services_status", {})
 
             # Force Corporate HQ to be healthy since we're running
-            if not services_status.get('corporate_headquarters') or services_status.get('corporate_headquarters', {}).get('status') != 'healthy':
-                services_status['corporate_headquarters'] = {
-                    'status': 'healthy',
-                    'port': 8888,
-                    'name': 'Corporate Headquarters',
-                    'category': 'Core Infrastructure',
-                    'last_check': datetime.now().isoformat()
+            if (
+                not services_status.get("corporate_headquarters")
+                or services_status.get("corporate_headquarters", {}).get("status")
+                != "healthy"
+            ):
+                services_status["corporate_headquarters"] = {
+                    "status": "healthy",
+                    "port": 8888,
+                    "name": "Corporate Headquarters",
+                    "category": "Core Infrastructure",
+                    "last_check": datetime.now().isoformat(),
                 }
 
             print(f"🔍 Passing {len(services_status)} servers to metrics layer")
-            if 'corporate_headquarters' in services_status:
-                print(f"🔍 Corporate HQ status: {services_status['corporate_headquarters'].get('status', 'unknown')}")
-            if hasattr(self.metrics_layer, 'set_server_status'):
+            if "corporate_headquarters" in services_status:
+                print(
+                    f"🔍 Corporate HQ status: {services_status['corporate_headquarters'].get('status', 'unknown')}"
+                )
+            if hasattr(self.metrics_layer, "set_server_status"):
                 self.metrics_layer.set_server_status(services_status)
 
             # Use the metrics layer to generate the metrics page
@@ -1874,7 +2289,7 @@ class DashboardData:
         """Generate fallback metrics display when metrics layer is not available"""
         metrics = self._get_centralized_metrics()
 
-        html = f'''
+        html = f"""
         <div class="metrics-container">
             <h3 style="margin-bottom: 2rem;">System Metrics Overview</h3>
 
@@ -1911,14 +2326,14 @@ class DashboardData:
                 </pre>
             </div>
         </div>
-        '''
+        """
 
         return html
 
     def _generate_server_cards(self, category_name: str) -> str:
         """Generate server cards for a specific category"""
         # Get the most up-to-date services data
-        services_data = self.unified_data.get('services_status', {})
+        services_data = self.unified_data.get("services_status", {})
         if not services_data:
             services_data = self.services_status
 
@@ -1926,7 +2341,7 @@ class DashboardData:
         category_servers = {
             "Core Systems": ["corporate_headquarters", "agent_cortex", "registry"],
             "MCP Servers": ["filesystem", "database_postgres", "analytics"],
-            "Business Services": ["payment", "customer"]
+            "Business Services": ["payment", "customer"],
         }
 
         servers = category_servers.get(category_name, [])
@@ -1934,30 +2349,30 @@ class DashboardData:
 
         for server_id in servers:
             server_info = services_data.get(server_id, {})
-            status = server_info.get('status', 'unknown')
-            name = server_info.get('name', server_id.replace('_', ' ').title())
-            port = server_info.get('port', 'N/A')
-            last_check = server_info.get('last_check', 'Never')
-            uptime = server_info.get('uptime', 'Unknown')
-            response_time = server_info.get('response_time', 0)
-            icon = server_info.get('icon', 'fas fa-server')
+            status = server_info.get("status", "unknown")
+            name = server_info.get("name", server_id.replace("_", " ").title())
+            port = server_info.get("port", "N/A")
+            last_check = server_info.get("last_check", "Never")
+            uptime = server_info.get("uptime", "Unknown")
+            response_time = server_info.get("response_time", 0)
+            icon = server_info.get("icon", "fas fa-server")
 
             # Determine status color and icon
-            if status == 'healthy':
-                status_color = 'var(--success-color)'
-                status_icon = 'fa-check-circle'
-                status_text = 'Online'
-            elif status == 'degraded':
-                status_color = 'var(--warning-color)'
-                status_icon = 'fa-exclamation-circle'
-                status_text = 'Degraded'
+            if status == "healthy":
+                status_color = "var(--success-color)"
+                status_icon = "fa-check-circle"
+                status_text = "Online"
+            elif status == "degraded":
+                status_color = "var(--warning-color)"
+                status_icon = "fa-exclamation-circle"
+                status_text = "Degraded"
             else:
-                status_color = 'var(--danger-color)'
-                status_icon = 'fa-times-circle'
-                status_text = 'Offline'
+                status_color = "var(--danger-color)"
+                status_icon = "fa-times-circle"
+                status_text = "Offline"
 
             # Generate server card HTML
-            card_html = f'''
+            card_html = f"""
             <div class="server-card" style="
                 background: rgba(255, 255, 255, 0.05);
                 border: 1px solid var(--border-color);
@@ -2029,20 +2444,26 @@ class DashboardData:
                 <!-- Enhanced details for specific servers -->
                 {self._generate_server_specific_details(server_id, server_info)}
             </div>
-            '''
+            """
             cards_html.append(card_html)
 
-        return '\n'.join(cards_html) if cards_html else '<p style="color: var(--secondary-text); text-align: center;">No servers in this category</p>'
+        return (
+            "\n".join(cards_html)
+            if cards_html
+            else '<p style="color: var(--secondary-text); text-align: center;">No servers in this category</p>'
+        )
 
-    def _generate_server_specific_details(self, server_id: str, server_info: dict) -> str:
+    def _generate_server_specific_details(
+        self, server_id: str, server_info: dict
+    ) -> str:
         """Generate additional details for specific servers"""
         details_html = ""
 
         # Add specific details for filesystem server
-        if server_id == "filesystem" and self.mcp_details.get('filesystem'):
-            fs_details = self.mcp_details['filesystem']
-            if fs_details.get('ai_features'):
-                details_html += f'''
+        if server_id == "filesystem" and self.mcp_details.get("filesystem"):
+            fs_details = self.mcp_details["filesystem"]
+            if fs_details.get("ai_features"):
+                details_html += f"""
                 <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-color);">
                     <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--accent-color);">
                         <i class="fas fa-brain"></i>
@@ -2052,7 +2473,7 @@ class DashboardData:
                         Vector DB: {fs_details.get('vector_db_size', 0)} entries
                     </div>
                 </div>
-                '''
+                """
 
         return details_html
 
@@ -2062,26 +2483,38 @@ class DashboardData:
         health_summary = self.get_health_summary()
 
         # Extract data for widgets
-        total_agents = health_summary['agents']['total'] or 2
-        active_agents = health_summary['agents']['running']
+        total_agents = health_summary["agents"]["total"] or 2
+        active_agents = health_summary["agents"]["running"]
 
         # Count servers by category for better tracking
-        services_data = self.unified_data.get('services_status', self.services_status)
+        services_data = self.unified_data.get("services_status", self.services_status)
 
         # Core infrastructure servers
-        core_servers = ['corporate_headquarters', 'agent_cortex', 'registry']
+        core_servers = ["corporate_headquarters", "agent_cortex", "registry"]
         # MCP (Model Context Protocol) servers
-        mcp_servers = ['filesystem', 'database_postgres', 'analytics']
+        mcp_servers = ["filesystem", "database_postgres", "analytics"]
         # Business services
-        business_servers = ['payment', 'customer']
+        business_servers = ["payment", "customer"]
 
         # Calculate totals - we have exactly 8 servers in the system
         total_servers = 8  # 3 Core + 3 MCP + 2 Business = 8 servers
 
         # Count healthy servers from each category
-        healthy_core = sum(1 for s in core_servers if s in services_data and services_data[s].get('status') == 'healthy')
-        healthy_mcp = sum(1 for s in mcp_servers if s in services_data and services_data[s].get('status') == 'healthy')
-        healthy_business = sum(1 for s in business_servers if s in services_data and services_data[s].get('status') == 'healthy')
+        healthy_core = sum(
+            1
+            for s in core_servers
+            if s in services_data and services_data[s].get("status") == "healthy"
+        )
+        healthy_mcp = sum(
+            1
+            for s in mcp_servers
+            if s in services_data and services_data[s].get("status") == "healthy"
+        )
+        healthy_business = sum(
+            1
+            for s in business_servers
+            if s in services_data and services_data[s].get("status") == "healthy"
+        )
 
         # Total healthy servers across all categories
         total_healthy_servers = healthy_core + healthy_mcp + healthy_business
@@ -2097,23 +2530,57 @@ class DashboardData:
         # Get real-time leader data from database
         leaders_data = self._fetch_leaders_data()
         total_leaders = len(leaders_data) if leaders_data else 0
-        active_leaders = len([l for l in leaders_data if l.get('active_status', 'active') == 'active']) if leaders_data else 0
+        active_leaders = (
+            len(
+                [
+                    l
+                    for l in leaders_data
+                    if l.get("active_status", "active") == "active"
+                ]
+            )
+            if leaders_data
+            else 0
+        )
 
         # Get real-time department data
-        departments_data = self.unified_data.get('departments_data', {})
-        total_departments = len(departments_data) if departments_data else self._get_department_count_from_db()
-        active_departments = len([d for d in departments_data.values() if d.get('status', 'active') == 'active']) if departments_data else total_departments
+        departments_data = self.unified_data.get("departments_data", {})
+        total_departments = (
+            len(departments_data)
+            if departments_data
+            else self._get_department_count_from_db()
+        )
+        active_departments = (
+            len(
+                [
+                    d
+                    for d in departments_data.values()
+                    if d.get("status", "active") == "active"
+                ]
+            )
+            if departments_data
+            else total_departments
+        )
 
         # Get real-time divisions count from database
-        total_divisions = len(set(l['division_name'] for l in leaders_data)) if leaders_data else self._get_division_count_from_db()
+        total_divisions = (
+            len(set(l["division_name"] for l in leaders_data))
+            if leaders_data
+            else self._get_division_count_from_db()
+        )
 
-        registry_status = health_summary['registry']['status']
-        overall_status = health_summary['overall_status']
+        registry_status = health_summary["registry"]["status"]
+        overall_status = health_summary["overall_status"]
 
         # Generate smart recommendations based on current metrics
         smart_recommendations = self._generate_smart_recommendations(
-            overall_status, active_agents, total_agents,
-            healthy_services, total_services, active_leaders, total_leaders, registry_status
+            overall_status,
+            active_agents,
+            total_agents,
+            healthy_services,
+            total_services,
+            active_leaders,
+            total_leaders,
+            registry_status,
         )
 
         return f"""<!DOCTYPE html>
@@ -8332,11 +8799,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             return '<div style="text-align: center; color: var(--secondary-text); padding: 2rem;">No services detected</div>'
 
         # Organize services by category
-        categories = {
-            "Tech Ops": [],
-            "Departments": [],
-            "Service": []
-        }
+        categories = {"Tech Ops": [], "Departments": [], "Service": []}
 
         for service_id, service in self.services_status.items():
             category = service.get("category", "Service")
@@ -8349,11 +8812,11 @@ ${{JSON.stringify(data.data, null, 2)}}
             if not category_services:
                 continue
 
-            services_html += f'''
+            services_html += f"""
                 <div class="category-section">
                     <h3 class="category-title">{category_name}</h3>
                     <div class="category-services">
-            '''
+            """
 
             for service_id, service in category_services:
                 status_class = service.get("status", "critical")
@@ -8361,7 +8824,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 response_time = service.get("response_time", 0)
                 port = service.get("port", "Unknown")
 
-                services_html += f'''
+                services_html += f"""
                     <div class="service-item {border_class}">
                         <div class="service-info">
                             <div class="service-icon {service_id}">
@@ -8377,12 +8840,12 @@ ${{JSON.stringify(data.data, null, 2)}}
                             {status_class.title()}
                         </div>
                     </div>
-                '''
+                """
 
-            services_html += '''
+            services_html += """
                     </div>
                 </div>
-            '''
+            """
 
         return services_html
 
@@ -8394,45 +8857,81 @@ ${{JSON.stringify(data.data, null, 2)}}
         # Define tools/capabilities for each MCP server
         server_tools = {
             "registry": {
-                "tools": ["🔍 Server Discovery", "📋 Health Monitoring", "🔗 Server Registry", "🎯 Load Balancing"],
-                "color": "#6366f1"
+                "tools": [
+                    "🔍 Server Discovery",
+                    "📋 Health Monitoring",
+                    "🔗 Server Registry",
+                    "🎯 Load Balancing",
+                ],
+                "color": "#6366f1",
             },
             "filesystem": {
-                "tools": ["📁 File Operations", "🔍 Smart Search", "📊 Content Analysis", "🗂️ Directory Management"],
-                "color": "#10b981"
+                "tools": [
+                    "📁 File Operations",
+                    "🔍 Smart Search",
+                    "📊 Content Analysis",
+                    "🗂️ Directory Management",
+                ],
+                "color": "#10b981",
             },
             "database_postgres": {
-                "tools": ["💾 Data Storage", "🔍 Query Engine", "📈 Analytics", "🔐 Data Security"],
-                "color": "#f59e0b"
+                "tools": [
+                    "💾 Data Storage",
+                    "🔍 Query Engine",
+                    "📈 Analytics",
+                    "🔐 Data Security",
+                ],
+                "color": "#f59e0b",
             },
             "agent_cortex": {
-                "tools": ["🧠 Intelligent Orchestration", "🔄 Model Selection", "💡 Cost Optimization", "📊 Performance Learning"],
-                "color": "#8b5cf6"
+                "tools": [
+                    "🧠 Intelligent Orchestration",
+                    "🔄 Model Selection",
+                    "💡 Cost Optimization",
+                    "📊 Performance Learning",
+                ],
+                "color": "#8b5cf6",
             },
             "dashboard": {
-                "tools": ["📊 System Control", "📈 Performance Metrics", "🎛️ Control Panel", "📋 Status Reports"],
-                "color": "#ef4444"
+                "tools": [
+                    "📊 System Control",
+                    "📈 Performance Metrics",
+                    "🎛️ Control Panel",
+                    "📋 Status Reports",
+                ],
+                "color": "#ef4444",
             },
             "payment": {
-                "tools": ["💳 Payment Processing", "🔐 Secure Transactions", "📊 Payment Analytics", "💰 Revenue Tracking"],
-                "color": "#059669"
+                "tools": [
+                    "💳 Payment Processing",
+                    "🔐 Secure Transactions",
+                    "📊 Payment Analytics",
+                    "💰 Revenue Tracking",
+                ],
+                "color": "#059669",
             },
             "analytics": {
-                "tools": ["📈 Data Analysis", "📊 Reporting", "🎯 Business Intelligence", "📋 Insights"],
-                "color": "#dc2626"
+                "tools": [
+                    "📈 Data Analysis",
+                    "📊 Reporting",
+                    "🎯 Business Intelligence",
+                    "📋 Insights",
+                ],
+                "color": "#dc2626",
             },
             "customer": {
-                "tools": ["👥 Customer Management", "📞 Support Tickets", "📊 Customer Analytics", "🎯 CRM"],
-                "color": "#7c2d92"
-            }
+                "tools": [
+                    "👥 Customer Management",
+                    "📞 Support Tickets",
+                    "📊 Customer Analytics",
+                    "🎯 CRM",
+                ],
+                "color": "#7c2d92",
+            },
         }
 
         # Organize services by category
-        categories = {
-            "Tech Ops": [],
-            "Departments": [],
-            "Service": []
-        }
+        categories = {"Tech Ops": [], "Departments": [], "Service": []}
 
         for service_id, service in self.services_status.items():
             category = service.get("category", "Service")
@@ -8445,25 +8944,27 @@ ${{JSON.stringify(data.data, null, 2)}}
             if not category_services:
                 continue
 
-            services_html += f'''
+            services_html += f"""
                 <div class="category-section">
                     <h3 class="category-title">{category_name}</h3>
                     <div class="category-services">
-            '''
+            """
 
             for service_id, service in category_services:
                 status_class = service.get("status", "critical")
                 border_class = f"server-{service_id}"
                 response_time = service.get("response_time", 0)
                 port = service.get("port", "Unknown")
-                tools = server_tools.get(service_id, {"tools": ["🔧 General Tools"], "color": "#6B7280"})
+                tools = server_tools.get(
+                    service_id, {"tools": ["🔧 General Tools"], "color": "#6B7280"}
+                )
 
                 # Generate tool charms
                 tool_charms = ""
                 for tool in tools["tools"]:
                     tool_charms += f'<div class="tool-charm">{tool}</div>'
 
-                services_html += f'''
+                services_html += f"""
                     <div class="enhanced-service-card {border_class}">
                         <div class="service-header">
                             <div class="service-icon-large {service_id}">
@@ -8488,25 +8989,26 @@ ${{JSON.stringify(data.data, null, 2)}}
                             </div>
                         </div>
                     </div>
-                '''
+                """
 
-            services_html += '''
+            services_html += """
                     </div>
                 </div>
-            '''
+            """
 
         return services_html
 
     def _generate_enhanced_agents_html(self):
         """Generate enhanced agents HTML with detailed UI including model information using centralized data"""
         # Use centralized data when available, fallback to legacy
-        agents_data = self.unified_data.get('agents_status', self.running_agents)
+        agents_data = self.unified_data.get("agents_status", self.running_agents)
 
         agents_html = ""
 
         # Get all configured agents
         try:
             from scripts.start_agents import AgentManager
+
             agent_manager = AgentManager()
             all_agents = list(agent_manager.agent_configs.keys())
         except ImportError:
@@ -8519,10 +9021,10 @@ ${{JSON.stringify(data.data, null, 2)}}
 
                 # Format uptime
                 uptime_display = "Running"
-                if agent.get('start_time'):
+                if agent.get("start_time"):
                     uptime_display = f"Since {agent['start_time']}"
 
-                agents_html += f'''
+                agents_html += f"""
                     <div class="enhanced-agent-card active" data-agent-status="active" data-agent-name="{agent['name']}" data-agent-health="{agent.get('health', 'unknown')}" data-agent-cpu="{agent.get('cpu_percent', 0)}">
                         <div class="agent-avatar">
                             <i class="fas fa-robot"></i>
@@ -8566,25 +9068,26 @@ ${{JSON.stringify(data.data, null, 2)}}
                             </div>
                         </div>
                     </div>
-                '''
+                """
             else:
                 # Agent not running
-                agent_name = agent_id.replace('_', ' ').title()
+                agent_name = agent_id.replace("_", " ").title()
 
                 # Get config info if available
                 try:
                     from scripts.start_agents import AgentManager
+
                     agent_manager = AgentManager()
                     config = agent_manager.agent_configs.get(agent_id, {})
-                    model = config.get('model', 'claude-3-5-sonnet-latest')
-                    description = config.get('description', 'AI Assistant')
-                    priority = config.get('priority', 'N/A')
+                    model = config.get("model", "claude-3-5-sonnet-latest")
+                    description = config.get("description", "AI Assistant")
+                    priority = config.get("priority", "N/A")
                 except ImportError:
-                    model = 'claude-3-5-sonnet-latest'
-                    description = 'AI Assistant'
-                    priority = 'N/A'
+                    model = "claude-3-5-sonnet-latest"
+                    description = "AI Assistant"
+                    priority = "N/A"
 
-                agents_html += f'''
+                agents_html += f"""
                     <div class="enhanced-agent-card inactive" data-agent-status="inactive" data-agent-name="{agent_name}" data-agent-health="unknown" data-agent-cpu="0">
                         <div class="agent-avatar offline">
                             <i class="fas fa-robot"></i>
@@ -8615,77 +9118,101 @@ ${{JSON.stringify(data.data, null, 2)}}
                             </div>
                         </div>
                     </div>
-                '''
+                """
 
         return agents_html
 
     def _get_agent_capabilities(self, agent_id: str, active: bool = True) -> str:
         """Get capabilities HTML for an agent"""
         capabilities = {
-            "solomon": ["🧠 Strategic Planning", "📊 System Analysis", "🔧 Problem Solving", "📈 Business Intelligence"],
-            "david": ["💬 Communication", "📝 Documentation", "🎯 Task Execution", "👥 Leadership"],
-            "eve": ["🧬 System Evolution", "🔄 Adaptation", "🌱 Growth Management", "⚡ Optimization"]
+            "solomon": [
+                "🧠 Strategic Planning",
+                "📊 System Analysis",
+                "🔧 Problem Solving",
+                "📈 Business Intelligence",
+            ],
+            "david": [
+                "💬 Communication",
+                "📝 Documentation",
+                "🎯 Task Execution",
+                "👥 Leadership",
+            ],
+            "eve": [
+                "🧬 System Evolution",
+                "🔄 Adaptation",
+                "🌱 Growth Management",
+                "⚡ Optimization",
+            ],
         }
 
         agent_caps = capabilities.get(agent_id, ["🤖 AI Assistant"])
         status_class = "" if active else " disabled"
 
-        return "".join([f'<div class="capability-tag{status_class}">{cap}</div>' for cap in agent_caps])
+        return "".join(
+            [
+                f'<div class="capability-tag{status_class}">{cap}</div>'
+                for cap in agent_caps
+            ]
+        )
 
     def _get_agent_department_info(self, agent_id: str) -> str:
         """Get department information HTML for an agent"""
         if agent_id in self.agent_department_mapping:
             dept_info = self.agent_department_mapping[agent_id]
-            dept_name = dept_info['department_name']
-            category = dept_info['category']
+            dept_name = dept_info["department_name"]
+            category = dept_info["category"]
 
             # Get icon based on category
             category_icon = {
-                'Executive': 'fas fa-crown',
-                'Operations': 'fas fa-cogs',
-                'Technology': 'fas fa-microchip',
-                'Business': 'fas fa-briefcase',
-                'Support': 'fas fa-hands-helping'
-            }.get(category, 'fas fa-building')
+                "Executive": "fas fa-crown",
+                "Operations": "fas fa-cogs",
+                "Technology": "fas fa-microchip",
+                "Business": "fas fa-briefcase",
+                "Support": "fas fa-hands-helping",
+            }.get(category, "fas fa-building")
 
             return f'<span class="agent-department"><i class="{category_icon}"></i> {dept_name}</span>'
 
-        return ''
+        return ""
 
     def _generate_department_overview_html(self):
         """Generate department overview HTML with statistics and quick navigation using centralized data"""
         # Use centralized data when available, fallback to legacy
-        departments_data = self.unified_data.get('departments_data', self.departments_data)
+        departments_data = self.unified_data.get(
+            "departments_data", self.departments_data
+        )
 
         if not departments_data:
-            return '''
+            return """
                 <div style="text-align: center; padding: 2rem; color: var(--secondary-text);">
                     <i class="fas fa-building" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
                     <h4>Department data not available</h4>
                     <p>The department configuration file was not found or could not be loaded.</p>
                 </div>
-            '''
+            """
 
         dept_summary = self.get_department_summary(departments_data)
 
         # Generate category statistics
         category_cards = ""
-        for category, count in dept_summary['categories'].items():
+        for category, count in dept_summary["categories"].items():
             # Get departments in this category
-            category_depts = dept_summary['departments_by_category'].get(category, [])
-            leaders_count = sum(len(dept.get('leaders', [])) for dept in category_depts)
-            agents_count = sum(len(dept.get('native_agents', [])) for dept in category_depts)
+            category_depts = dept_summary["departments_by_category"].get(category, [])
+            leaders_count = sum(len(dept.get("leaders", [])) for dept in category_depts)
+            agents_count = sum(
+                len(dept.get("native_agents", [])) for dept in category_depts
+            )
 
             category_icon = {
-                'Executive': 'fas fa-crown',
-                'Operations': 'fas fa-cogs',
-                'Technology': 'fas fa-microchip',
-                'Business': 'fas fa-briefcase',
-                'Support': 'fas fa-hands-helping',
-                'Other': 'fas fa-building'
-            }.get(category, 'fas fa-building')
+                "Executive": "fas fa-crown",
+                "Operations": "fas fa-cogs",
+                "Technology": "fas fa-microchip",
+                "Business": "fas fa-briefcase",
+                "Support": "fas fa-hands-helping",
+                "Other": "fas fa-building",
+            }.get(category, "fas fa-building")
 
-            category_cards += f'''
+            category_cards += f"""
                 <div class="department-category-card" onclick="toggleCategoryDetails('{category}')">
                     <div class="category-header">
                         <div class="category-icon">
@@ -8710,14 +9237,14 @@ ${{JSON.stringify(data.data, null, 2)}}
                         {self._generate_category_departments_html(category_depts)}
                     </div>
                 </div>
-            '''
+            """
 
         # Generate overall statistics
-        total_depts = dept_summary['total_departments']
-        total_leaders = dept_summary['total_leaders']
-        total_agents = dept_summary['total_agents']
+        total_depts = dept_summary["total_departments"]
+        total_leaders = dept_summary["total_leaders"]
+        total_agents = dept_summary["total_agents"]
 
-        return f'''
+        return f"""
             <div class="department-overview">
                 <div class="department-stats-bar">
                     <div class="stat-card">
@@ -8765,7 +9292,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     </button>
                 </div>
             </div>
-        '''
+        """
 
     def _generate_category_departments_html(self, category_depts):
         """Generate HTML for departments within a category"""
@@ -8774,15 +9301,19 @@ ${{JSON.stringify(data.data, null, 2)}}
 
         depts_html = ""
         for dept in category_depts:
-            dept_name = dept.get('department_name', 'Unknown Department')
-            leader_count = len(dept.get('leaders', []))
-            agent_count = len(dept.get('native_agents', []))
+            dept_name = dept.get("department_name", "Unknown Department")
+            leader_count = len(dept.get("leaders", []))
+            agent_count = len(dept.get("native_agents", []))
 
             # Get first leader for display
-            first_leader = dept.get('leaders', [{}])[0]
-            leader_name = first_leader.get('name', 'No leader assigned') if first_leader else 'No leader assigned'
+            first_leader = dept.get("leaders", [{}])[0]
+            leader_name = (
+                first_leader.get("name", "No leader assigned")
+                if first_leader
+                else "No leader assigned"
+            )
 
-            depts_html += f'''
+            depts_html += f"""
                 <div class="mini-dept-card">
                     <div class="mini-dept-name">{dept_name}</div>
                     <div class="mini-dept-leader">👤 {leader_name}</div>
@@ -8791,28 +9322,28 @@ ${{JSON.stringify(data.data, null, 2)}}
                         <span>🤖 {agent_count}</span>
                     </div>
                 </div>
-            '''
+            """
 
         return f'<div class="mini-dept-grid">{depts_html}</div>'
 
     def _generate_agent_department_analytics_html(self):
         """Generate analytics showing agent-department relationships"""
         if not self.departments_data or not self.agent_department_mapping:
-            return '''
+            return """
                 <div style="text-align: center; padding: 2rem; color: var(--secondary-text);">
                     <i class="fas fa-chart-network" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
                     <h4>Analytics not available</h4>
                     <p>Insufficient data for agent-department analytics.</p>
                 </div>
-            '''
+            """
 
         # Analyze agent distribution by department
         dept_agent_count = {}
         active_agents_by_dept = {}
 
         for agent_id, dept_info in self.agent_department_mapping.items():
-            dept_key = dept_info['department_key']
-            dept_name = dept_info['department_name']
+            dept_key = dept_info["department_key"]
+            dept_name = dept_info["department_name"]
 
             if dept_name not in dept_agent_count:
                 dept_agent_count[dept_name] = 0
@@ -8828,31 +9359,33 @@ ${{JSON.stringify(data.data, null, 2)}}
         dept_cards = ""
         for dept_name, total_agents in dept_agent_count.items():
             active_agents = active_agents_by_dept.get(dept_name, 0)
-            activity_percentage = (active_agents / total_agents * 100) if total_agents > 0 else 0
+            activity_percentage = (
+                (active_agents / total_agents * 100) if total_agents > 0 else 0
+            )
 
             # Find the department data for additional info
             dept_data = None
             for dept_info in self.departments_data.values():
-                if dept_info.get('department_name') == dept_name:
+                if dept_info.get("department_name") == dept_name:
                     dept_data = dept_info
                     break
 
             if dept_data:
-                category = dept_data.get('category', 'Other')
-                leaders_count = len(dept_data.get('leaders', []))
-                total_teams = len(dept_data.get('native_agents', []))
+                category = dept_data.get("category", "Other")
+                leaders_count = len(dept_data.get("leaders", []))
+                total_teams = len(dept_data.get("native_agents", []))
 
                 category_icon = {
-                    'Executive': 'fas fa-crown',
-                    'Operations': 'fas fa-cogs',
-                    'Technology': 'fas fa-microchip',
-                    'Business': 'fas fa-briefcase',
-                    'Support': 'fas fa-hands-helping'
-                }.get(category, 'fas fa-building')
+                    "Executive": "fas fa-crown",
+                    "Operations": "fas fa-cogs",
+                    "Technology": "fas fa-microchip",
+                    "Business": "fas fa-briefcase",
+                    "Support": "fas fa-hands-helping",
+                }.get(category, "fas fa-building")
 
                 status_class = "active" if active_agents > 0 else "inactive"
 
-                dept_cards += f'''
+                dept_cards += f"""
                     <div class="dept-analytics-card {status_class}">
                         <div class="dept-analytics-header">
                             <div class="dept-analytics-icon">
@@ -8890,14 +9423,14 @@ ${{JSON.stringify(data.data, null, 2)}}
                             <div class="activity-text">{activity_percentage:.0f}% Agent Activity</div>
                         </div>
                     </div>
-                '''
+                """
 
         # Generate summary statistics
         total_configured = len(self.agent_department_mapping)
         total_active = len(self.running_agents)
         total_departments_with_agents = len(dept_agent_count)
 
-        return f'''
+        return f"""
             <div class="analytics-overview">
                 <div class="analytics-summary">
                     <div class="analytics-stat">
@@ -8922,7 +9455,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     {dept_cards}
                 </div>
             </div>
-        '''
+        """
 
     def _generate_service_widgets_html(self):
         """Generate service widgets HTML"""
@@ -8935,7 +9468,7 @@ ${{JSON.stringify(data.data, null, 2)}}
 
         details = self.mcp_details["filesystem"]
 
-        return f'''
+        return f"""
             <div class="card">
                 <h3><i class="fas fa-folder-tree"></i> Filesystem Server Details</h3>
                 <div class="metrics-grid">
@@ -8963,7 +9496,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     </div>
                 </div>
             </div>
-        '''
+        """
 
     def _generate_simple_server_status(self):
         """Generate simple, clean server status cards"""
@@ -8972,16 +9505,52 @@ ${{JSON.stringify(data.data, null, 2)}}
 
         # Define server info
         servers = {
-            "registry": {"name": "Registry Server", "icon": "fas fa-server", "port": 8009},
-            "filesystem": {"name": "File System Server", "icon": "fas fa-folder-tree", "port": 8001},
-            "database_postgres": {"name": "PostgreSQL Database Server", "icon": "fas fa-database", "port": 8010},
-            "agent_cortex": {"name": "Agent Cortex", "icon": "fas fa-brain", "port": 8889},
-            "payment": {"name": "Payment Server", "icon": "fas fa-credit-card", "port": 8006},
-            "analytics": {"name": "Analytics Server", "icon": "fas fa-chart-bar", "port": 8007},
-            "customer": {"name": "Customer Server", "icon": "fas fa-users", "port": 8008},
-            "postgres": {"name": "PostgreSQL Server", "icon": "fas fa-database", "port": 8010},
+            "registry": {
+                "name": "Registry Server",
+                "icon": "fas fa-server",
+                "port": 8009,
+            },
+            "filesystem": {
+                "name": "File System Server",
+                "icon": "fas fa-folder-tree",
+                "port": 8001,
+            },
+            "database_postgres": {
+                "name": "PostgreSQL Database Server",
+                "icon": "fas fa-database",
+                "port": 8010,
+            },
+            "agent_cortex": {
+                "name": "Agent Cortex",
+                "icon": "fas fa-brain",
+                "port": 8889,
+            },
+            "payment": {
+                "name": "Payment Server",
+                "icon": "fas fa-credit-card",
+                "port": 8006,
+            },
+            "analytics": {
+                "name": "Analytics Server",
+                "icon": "fas fa-chart-bar",
+                "port": 8007,
+            },
+            "customer": {
+                "name": "Customer Server",
+                "icon": "fas fa-users",
+                "port": 8008,
+            },
+            "postgres": {
+                "name": "PostgreSQL Server",
+                "icon": "fas fa-database",
+                "port": 8010,
+            },
             "llm": {"name": "LLM Server", "icon": "fas fa-robot", "port": 8005},
-            "corporate_headquarters": {"name": "Corporate Headquarters", "icon": "fas fa-chart-line", "port": 8888}
+            "corporate_headquarters": {
+                "name": "Corporate Headquarters",
+                "icon": "fas fa-chart-line",
+                "port": 8888,
+            },
         }
 
         html = ""
@@ -9009,7 +9578,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 status_text = "Offline"
                 status_icon = "fas fa-times-circle"
 
-            html += f'''
+            html += f"""
             <div style="background: {status_bg}; border: 1px solid {status_color}; border-radius: 12px; padding: 1.5rem; transition: all 0.3s ease;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
                     <div style="display: flex; align-items: center; gap: 1rem;">
@@ -9032,7 +9601,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 <!-- Optional: Show basic metrics if available -->
                 {f'<div style="font-size: 0.85rem; color: var(--secondary-text);">Uptime: {service.get("uptime", "Unknown")}</div>' if service.get("uptime") else ""}
             </div>
-            '''
+            """
 
         return html
 
@@ -9060,7 +9629,10 @@ ${{JSON.stringify(data.data, null, 2)}}
                     return f"{days}d {hours}h"
 
             # If it's a string that might be a number
-            if isinstance(uptime_value, str) and uptime_value.replace('.', '').isdigit():
+            if (
+                isinstance(uptime_value, str)
+                and uptime_value.replace(".", "").isdigit()
+            ):
                 return self._format_uptime(float(uptime_value))
 
             # Otherwise return as-is
@@ -9072,16 +9644,21 @@ ${{JSON.stringify(data.data, null, 2)}}
     def _get_average_response_time(self):
         """Calculate average response time across all healthy services"""
         try:
-            services_data = self.unified_data.get('services_status', self.services_status)
+            services_data = self.unified_data.get(
+                "services_status", self.services_status
+            )
 
             if not services_data:
                 return "0"
 
             response_times = []
             for service in services_data.values():
-                if service.get('status') in ['healthy', 'online'] and 'response_time' in service:
+                if (
+                    service.get("status") in ["healthy", "online"]
+                    and "response_time" in service
+                ):
                     try:
-                        rt = float(service['response_time'])
+                        rt = float(service["response_time"])
                         response_times.append(rt * 1000)  # Convert to milliseconds
                     except (ValueError, TypeError):
                         continue
@@ -9097,7 +9674,7 @@ ${{JSON.stringify(data.data, null, 2)}}
 
     def _generate_header_status_dropdown(self):
         """Generate the header status dropdown content with navigation links"""
-        return f'''
+        return f"""
                     <div class="dropdown-header">
                         <i class="fas fa-heartbeat"></i> System Status
                         <span style="margin-left: auto; font-size: 0.8rem; color: var(--secondary-text);">
@@ -9205,12 +9782,12 @@ ${{JSON.stringify(data.data, null, 2)}}
                             </div>
                         </div>
                     </div>
-        '''
+        """
 
     def _generate_enhanced_server_status(self):
         """Generate enhanced, grouped server status cards by category and importance"""
         # Use centralized data when available, fallback to legacy
-        services_data = self.unified_data.get('services_status', self.services_status)
+        services_data = self.unified_data.get("services_status", self.services_status)
 
         if not services_data:
             return '<div style="text-align: center; color: var(--secondary-text); padding: 2rem;">No servers detected</div>'
@@ -9227,7 +9804,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                         "port": 8888,
                         "description": "Main management and monitoring interface",
                         "emoji": "🏢",
-                        "priority": 1
+                        "priority": 1,
                     },
                     "agent_cortex": {
                         "name": "Agent Cortex",
@@ -9235,7 +9812,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                         "port": 8889,
                         "description": "Intelligent model orchestration and optimization",
                         "emoji": "🧠",
-                        "priority": 2
+                        "priority": 2,
                     },
                     "registry": {
                         "name": "Registry Server",
@@ -9243,9 +9820,9 @@ ${{JSON.stringify(data.data, null, 2)}}
                         "port": 8009,
                         "description": "Agent and service discovery management",
                         "emoji": "📋",
-                        "priority": 3
-                    }
-                }
+                        "priority": 3,
+                    },
+                },
             },
             "MCP Servers": {
                 "emoji": "🔌",
@@ -9257,7 +9834,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                         "port": 8001,
                         "description": "File operations and management",
                         "emoji": "📁",
-                        "priority": 4
+                        "priority": 4,
                     },
                     "database_postgres": {
                         "name": "PostgreSQL Database Server",
@@ -9265,7 +9842,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                         "port": 8010,
                         "description": "Data storage and retrieval operations",
                         "emoji": "💾",
-                        "priority": 5
+                        "priority": 5,
                     },
                     "analytics": {
                         "name": "Analytics Server",
@@ -9273,9 +9850,9 @@ ${{JSON.stringify(data.data, null, 2)}}
                         "port": 8007,
                         "description": "Business intelligence and metrics",
                         "emoji": "📊",
-                        "priority": 6
-                    }
-                }
+                        "priority": 6,
+                    },
+                },
             },
             "Business Services": {
                 "emoji": "💼",
@@ -9287,7 +9864,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                         "port": 8006,
                         "description": "Payment processing and billing",
                         "emoji": "💳",
-                        "priority": 9
+                        "priority": 9,
                     },
                     "customer": {
                         "name": "Customer Server",
@@ -9295,10 +9872,10 @@ ${{JSON.stringify(data.data, null, 2)}}
                         "port": 8008,
                         "description": "Customer relationship management",
                         "emoji": "👥",
-                        "priority": 10
-                    }
-                }
-            }
+                        "priority": 10,
+                    },
+                },
+            },
         }
 
         html = ""
@@ -9326,7 +9903,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 category_color = "var(--danger-color)"
                 category_bg = "rgba(239, 68, 68, 0.1)"
 
-            html += f'''
+            html += f"""
             <div style="margin-bottom: 2.5rem;">
                 <!-- Category Header -->
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding: 1rem; background: {category_bg}; border-radius: 12px; border: 1px solid {category_color}33; height: 80px;">
@@ -9349,10 +9926,12 @@ ${{JSON.stringify(data.data, null, 2)}}
 
                 <!-- Servers Grid -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem;">
-            '''
+            """
 
             # Generate server cards for this category (sorted by priority)
-            sorted_servers = sorted(category_info["servers"].items(), key=lambda x: x[1]["priority"])
+            sorted_servers = sorted(
+                category_info["servers"].items(), key=lambda x: x[1]["priority"]
+            )
 
             for server_id, server_info in sorted_servers:
                 service = services_data.get(server_id, {})
@@ -9391,7 +9970,8 @@ ${{JSON.stringify(data.data, null, 2)}}
                 if last_check:
                     try:
                         from datetime import datetime
-                        dt = datetime.fromisoformat(last_check.replace('Z', '+00:00'))
+
+                        dt = datetime.fromisoformat(last_check.replace("Z", "+00:00"))
                         last_check_formatted = dt.strftime("%b %d at %I:%M %p")
                     except:
                         last_check_formatted = "Just now"
@@ -9417,7 +9997,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 elif server_id == "customer":
                     server_details = "👥 CRM system"
 
-                html += f'''
+                html += f"""
                 <div data-server-status="{status}" data-server-name="{server_info['name']}" data-server-port="{server_info['port']}" data-server-category="{category_name}" style="background: {status_bg}; border: 1px solid {border_color}; border-radius: 12px; padding: 1.5rem; transition: all 0.3s ease; position: relative; overflow: hidden; min-height: 200px; display: flex; flex-direction: column;">
                     <!-- Priority Badge -->
                     <div style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 0.25rem 0.5rem; font-size: 0.7rem; color: var(--secondary-text); font-weight: 600;">
@@ -9455,12 +10035,12 @@ ${{JSON.stringify(data.data, null, 2)}}
                     </div>
 
                 </div>
-                '''
+                """
 
-            html += '''
+            html += """
                 </div>
             </div>
-            '''
+            """
 
         return html
 
@@ -9552,93 +10132,102 @@ ${{JSON.stringify(data.data, null, 2)}}
 
                     # Color mapping for divisions
                     division_colors = {
-                        'executive': '#6366f1',
-                        'programming_development': '#10b981',
-                        'information_technology': '#f59e0b',
-                        'product_operations': '#8b5cf6',
-                        'revenue_generation': '#ef4444',
-                        'business_operations': '#06b6d4',
-                        'customer_experience': '#f97316',
-                        'content_generation': '#ec4899',
-                        'continuous_improvement': '#84cc16'
+                        "executive": "#6366f1",
+                        "programming_development": "#10b981",
+                        "information_technology": "#f59e0b",
+                        "product_operations": "#8b5cf6",
+                        "revenue_generation": "#ef4444",
+                        "business_operations": "#06b6d4",
+                        "customer_experience": "#f97316",
+                        "content_generation": "#ec4899",
+                        "continuous_improvement": "#84cc16",
                     }
 
                     # Icon mapping for divisions
                     division_icons = {
-                        'executive': 'fas fa-crown',
-                        'programming_development': 'fas fa-code',
-                        'information_technology': 'fas fa-server',
-                        'product_operations': 'fas fa-cogs',
-                        'revenue_generation': 'fas fa-dollar-sign',
-                        'business_operations': 'fas fa-building',
-                        'customer_experience': 'fas fa-heart',
-                        'content_generation': 'fas fa-palette',
-                        'continuous_improvement': 'fas fa-lightbulb'
+                        "executive": "fas fa-crown",
+                        "programming_development": "fas fa-code",
+                        "information_technology": "fas fa-server",
+                        "product_operations": "fas fa-cogs",
+                        "revenue_generation": "fas fa-dollar-sign",
+                        "business_operations": "fas fa-building",
+                        "customer_experience": "fas fa-heart",
+                        "content_generation": "fas fa-palette",
+                        "continuous_improvement": "fas fa-lightbulb",
                     }
 
                     # Process divisions
                     for div in divisions:
-                        div_key = div['division_key']
-                        org_structure[div['division_name']] = {
-                            'key': div_key,
-                            'description': div['division_description'] or '',
-                            'purpose': div['division_purpose'] or '',
-                            'color': division_colors.get(div_key, '#6366f1'),
-                            'icon': division_icons.get(div_key, 'fas fa-building'),
-                            'priority': div['priority'],
-                            'departments': {}
+                        div_key = div["division_key"]
+                        org_structure[div["division_name"]] = {
+                            "key": div_key,
+                            "description": div["division_description"] or "",
+                            "purpose": div["division_purpose"] or "",
+                            "color": division_colors.get(div_key, "#6366f1"),
+                            "icon": division_icons.get(div_key, "fas fa-building"),
+                            "priority": div["priority"],
+                            "departments": {},
                         }
 
                     # Process departments
                     for dept in departments:
-                        div_key = dept['division_key']
+                        div_key = dept["division_key"]
                         div_name = None
                         for div in divisions:
-                            if div['division_key'] == div_key:
-                                div_name = div['division_name']
+                            if div["division_key"] == div_key:
+                                div_name = div["division_name"]
                                 break
 
                         if div_name and div_name in org_structure:
-                            org_structure[div_name]['departments'][dept['department_name']] = {
-                                'key': dept['department_key'],
-                                'description': dept['description'] or '',
-                                'purpose': dept['department_purpose'] or '',
-                                'category': dept['category'] or '',
-                                'status': dept['operational_status'] or 'planning',
-                                'agents': dept['agent_capacity'] or 0,
-                                'leader_count': dept['leader_count'] or 0,
-                                'leaders': []
+                            org_structure[div_name]["departments"][
+                                dept["department_name"]
+                            ] = {
+                                "key": dept["department_key"],
+                                "description": dept["description"] or "",
+                                "purpose": dept["department_purpose"] or "",
+                                "category": dept["category"] or "",
+                                "status": dept["operational_status"] or "planning",
+                                "agents": dept["agent_capacity"] or 0,
+                                "leader_count": dept["leader_count"] or 0,
+                                "leaders": [],
                             }
 
                     # Process leaders
                     for leader in leaders:
-                        div_key = leader['division_key']
-                        dept_key = leader['department_key']
+                        div_key = leader["division_key"]
+                        dept_key = leader["department_key"]
 
                         # Find the division and department
                         for div_name, div_data in org_structure.items():
-                            if div_data['key'] == div_key:
-                                for dept_name, dept_data in div_data['departments'].items():
-                                    if dept_data['key'] == dept_key:
+                            if div_data["key"] == div_key:
+                                for dept_name, dept_data in div_data[
+                                    "departments"
+                                ].items():
+                                    if dept_data["key"] == dept_key:
                                         leader_info = {
-                                            'name': leader['name'],
-                                            'title': leader['title'],
-                                            'description': leader['description'] or '',
-                                            'tier': leader['leadership_tier'] or 'department',
-                                            'archetype': leader['biblical_archetype'] or '',
-                                            'authority': leader['authority_level'] or 5,
-                                            'is_primary': leader['is_primary'] or False
+                                            "name": leader["name"],
+                                            "title": leader["title"],
+                                            "description": leader["description"] or "",
+                                            "tier": leader["leadership_tier"]
+                                            or "department",
+                                            "archetype": leader["biblical_archetype"]
+                                            or "",
+                                            "authority": leader["authority_level"] or 5,
+                                            "is_primary": leader["is_primary"] or False,
                                         }
-                                        dept_data['leaders'].append(leader_info)
+                                        dept_data["leaders"].append(leader_info)
                                         break
                                 break
 
-                    print(f"✅ Successfully loaded organizational data: {len(org_structure)} divisions")
+                    print(
+                        f"✅ Successfully loaded organizational data: {len(org_structure)} divisions"
+                    )
                     return org_structure
 
                 except Exception as e:
                     print(f"Database fetch error: {e}")
                     import traceback
+
                     traceback.print_exc()
                     return None
 
@@ -9663,228 +10252,228 @@ ${{JSON.stringify(data.data, null, 2)}}
         if not org_structure:
             # Fallback to mock data if database unavailable
             org_structure = {
-            "Executive": {
-                "color": "#6366f1",
-                "icon": "fas fa-crown",
-                "departments": {
-                    "Executive Leadership": {
-                        "leaders": ["Solomon (Digital Twin)", "David (CEO)"],
-                        "status": "operational",
-                        "agents": 15
+                "Executive": {
+                    "color": "#6366f1",
+                    "icon": "fas fa-crown",
+                    "departments": {
+                        "Executive Leadership": {
+                            "leaders": ["Solomon (Digital Twin)", "David (CEO)"],
+                            "status": "operational",
+                            "agents": 15,
+                        },
+                        "Strategic Planning": {
+                            "leaders": ["Joseph (Chief Strategy Officer)"],
+                            "status": "operational",
+                            "agents": 10,
+                        },
+                        "Coordination & Orchestration": {
+                            "leaders": ["Michael (Chief Orchestration Officer)"],
+                            "status": "operational",
+                            "agents": 12,
+                        },
+                        "Agent Development": {
+                            "leaders": ["Adam (The Creator)", "Eve (The Evolver)"],
+                            "status": "operational",
+                            "agents": 20,
+                        },
                     },
-                    "Strategic Planning": {
-                        "leaders": ["Joseph (Chief Strategy Officer)"],
-                        "status": "operational",
-                        "agents": 10
+                },
+                "Programming & Development": {
+                    "color": "#10b981",
+                    "icon": "fas fa-code",
+                    "departments": {
+                        "Core Systems Programming": {
+                            "leaders": ["Bezalel (Master Programmer)"],
+                            "status": "operational",
+                            "agents": 25,
+                        },
+                        "Software Factory": {
+                            "leaders": ["Bezalel (Master Programmer)"],
+                            "status": "operational",
+                            "agents": 30,
+                        },
+                        "Quality Assurance": {
+                            "leaders": ["Caleb (Chief Quality Officer)"],
+                            "status": "planning",
+                            "agents": 15,
+                        },
                     },
-                    "Coordination & Orchestration": {
-                        "leaders": ["Michael (Chief Orchestration Officer)"],
-                        "status": "operational",
-                        "agents": 12
+                },
+                "Information Technology": {
+                    "color": "#f59e0b",
+                    "icon": "fas fa-server",
+                    "departments": {
+                        "Infrastructure & Operations": {
+                            "leaders": ["Gabriel (Chief Infrastructure Officer)"],
+                            "status": "operational",
+                            "agents": 20,
+                        },
+                        "Security": {
+                            "leaders": ["Gad (Chief Security Officer)"],
+                            "status": "operational",
+                            "agents": 15,
+                        },
+                        "Data Management": {
+                            "leaders": ["Ezra (Chief Knowledge Officer)"],
+                            "status": "operational",
+                            "agents": 18,
+                        },
+                        "Analytics & Monitoring": {
+                            "leaders": ["Issachar (Chief Analytics Officer)"],
+                            "status": "planning",
+                            "agents": 12,
+                        },
                     },
-                    "Agent Development": {
-                        "leaders": ["Adam (The Creator)", "Eve (The Evolver)"],
-                        "status": "operational",
-                        "agents": 20
-                    }
-                }
-            },
-            "Programming & Development": {
-                "color": "#10b981",
-                "icon": "fas fa-code",
-                "departments": {
-                    "Core Systems Programming": {
-                        "leaders": ["Bezalel (Master Programmer)"],
-                        "status": "operational",
-                        "agents": 25
+                },
+                "Product Operations": {
+                    "color": "#8b5cf6",
+                    "icon": "fas fa-cogs",
+                    "departments": {
+                        "Platform Services": {
+                            "leaders": ["Zebulun (Chief Production Officer)"],
+                            "status": "operational",
+                            "agents": 20,
+                        },
+                        "DevOps & Deployment": {
+                            "leaders": ["Naphtali (Chief Operations Officer)"],
+                            "status": "operational",
+                            "agents": 15,
+                        },
+                        "Product Management": {
+                            "leaders": ["Timothy (Chief Product Officer)"],
+                            "status": "planning",
+                            "agents": 10,
+                        },
+                        "API Gateway & Integration": {
+                            "leaders": ["Philip (Chief Integration Officer)"],
+                            "status": "planning",
+                            "agents": 12,
+                        },
                     },
-                    "Software Factory": {
-                        "leaders": ["Bezalel (Master Programmer)"],
-                        "status": "operational",
-                        "agents": 30
+                },
+                "Revenue Generation": {
+                    "color": "#ef4444",
+                    "icon": "fas fa-dollar-sign",
+                    "departments": {
+                        "Sales": {
+                            "leaders": ["Benjamin (Chief Sales Officer)"],
+                            "status": "operational",
+                            "agents": 20,
+                        },
+                        "Marketing": {
+                            "leaders": ["Ephraim (Chief Marketing Officer)"],
+                            "status": "operational",
+                            "agents": 18,
+                        },
+                        "Revenue Operations": {
+                            "leaders": ["Matthew (Chief Revenue Officer)"],
+                            "status": "planning",
+                            "agents": 12,
+                        },
                     },
-                    "Quality Assurance": {
-                        "leaders": ["Caleb (Chief Quality Officer)"],
-                        "status": "planning",
-                        "agents": 15
-                    }
-                }
-            },
-            "Information Technology": {
-                "color": "#f59e0b",
-                "icon": "fas fa-server",
-                "departments": {
-                    "Infrastructure & Operations": {
-                        "leaders": ["Gabriel (Chief Infrastructure Officer)"],
-                        "status": "operational",
-                        "agents": 20
+                },
+                "Business Operations": {
+                    "color": "#06b6d4",
+                    "icon": "fas fa-briefcase",
+                    "departments": {
+                        "Finance": {
+                            "leaders": ["Levi (Chief Financial Officer)"],
+                            "status": "operational",
+                            "agents": 15,
+                        },
+                        "Legal & Compliance": {
+                            "leaders": ["Judah (Chief Legal Officer)"],
+                            "status": "operational",
+                            "agents": 10,
+                        },
+                        "Human Resources": {
+                            "leaders": ["Aaron (Chief People Officer)"],
+                            "status": "operational",
+                            "agents": 12,
+                        },
+                        "Procurement & Partnerships": {
+                            "leaders": ["Nehemiah (Chief Procurement Officer)"],
+                            "status": "planning",
+                            "agents": 8,
+                        },
+                        "Learning & Development": {
+                            "leaders": ["Apollos (Chief Learning Officer)"],
+                            "status": "planning",
+                            "agents": 10,
+                        },
                     },
-                    "Security": {
-                        "leaders": ["Gad (Chief Security Officer)"],
-                        "status": "operational",
-                        "agents": 15
+                },
+                "Customer Experience": {
+                    "color": "#ec4899",
+                    "icon": "fas fa-heart",
+                    "departments": {
+                        "Customer Success": {
+                            "leaders": ["Asher (Chief Customer Officer)"],
+                            "status": "operational",
+                            "agents": 15,
+                        },
+                        "Customer Support": {
+                            "leaders": ["Silas (Chief Support Officer)"],
+                            "status": "operational",
+                            "agents": 20,
+                        },
+                        "Customer Experience Design": {
+                            "leaders": ["Lydia (Chief Experience Officer)"],
+                            "status": "planning",
+                            "agents": 8,
+                        },
+                        "Customer Retention": {
+                            "leaders": ["Priscilla (Chief Retention Officer)"],
+                            "status": "planning",
+                            "agents": 10,
+                        },
+                        "Account Management": {
+                            "leaders": ["Aquila (Chief Account Officer)"],
+                            "status": "planning",
+                            "agents": 12,
+                        },
                     },
-                    "Data Management": {
-                        "leaders": ["Ezra (Chief Knowledge Officer)"],
-                        "status": "operational",
-                        "agents": 18
+                },
+                "Content Generation": {
+                    "color": "#84cc16",
+                    "icon": "fas fa-palette",
+                    "departments": {
+                        "Creative Services": {
+                            "leaders": ["Jubal (Chief Creative Officer)"],
+                            "status": "operational",
+                            "agents": 15,
+                        },
+                        "Content Strategy": {
+                            "leaders": ["Luke (Chief Content Officer)"],
+                            "status": "planning",
+                            "agents": 10,
+                        },
+                        "Media Production": {
+                            "leaders": ["Mark (Chief Media Officer)"],
+                            "status": "planning",
+                            "agents": 12,
+                        },
                     },
-                    "Analytics & Monitoring": {
-                        "leaders": ["Issachar (Chief Analytics Officer)"],
-                        "status": "planning",
-                        "agents": 12
-                    }
-                }
-            },
-            "Product Operations": {
-                "color": "#8b5cf6",
-                "icon": "fas fa-cogs",
-                "departments": {
-                    "Platform Services": {
-                        "leaders": ["Zebulun (Chief Production Officer)"],
-                        "status": "operational",
-                        "agents": 20
+                },
+                "Continuous Improvement": {
+                    "color": "#f97316",
+                    "icon": "fas fa-lightbulb",
+                    "departments": {
+                        "Innovation Office": {
+                            "leaders": ["Daniel (Chief Innovation Officer)"],
+                            "status": "operational",
+                            "agents": 15,
+                        },
+                        "Research & Development": {
+                            "leaders": ["Dan (Chief Research Officer)"],
+                            "status": "operational",
+                            "agents": 12,
+                        },
                     },
-                    "DevOps & Deployment": {
-                        "leaders": ["Naphtali (Chief Operations Officer)"],
-                        "status": "operational",
-                        "agents": 15
-                    },
-                    "Product Management": {
-                        "leaders": ["Timothy (Chief Product Officer)"],
-                        "status": "planning",
-                        "agents": 10
-                    },
-                    "API Gateway & Integration": {
-                        "leaders": ["Philip (Chief Integration Officer)"],
-                        "status": "planning",
-                        "agents": 12
-                    }
-                }
-            },
-            "Revenue Generation": {
-                "color": "#ef4444",
-                "icon": "fas fa-dollar-sign",
-                "departments": {
-                    "Sales": {
-                        "leaders": ["Benjamin (Chief Sales Officer)"],
-                        "status": "operational",
-                        "agents": 20
-                    },
-                    "Marketing": {
-                        "leaders": ["Ephraim (Chief Marketing Officer)"],
-                        "status": "operational",
-                        "agents": 18
-                    },
-                    "Revenue Operations": {
-                        "leaders": ["Matthew (Chief Revenue Officer)"],
-                        "status": "planning",
-                        "agents": 12
-                    }
-                }
-            },
-            "Business Operations": {
-                "color": "#06b6d4",
-                "icon": "fas fa-briefcase",
-                "departments": {
-                    "Finance": {
-                        "leaders": ["Levi (Chief Financial Officer)"],
-                        "status": "operational",
-                        "agents": 15
-                    },
-                    "Legal & Compliance": {
-                        "leaders": ["Judah (Chief Legal Officer)"],
-                        "status": "operational",
-                        "agents": 10
-                    },
-                    "Human Resources": {
-                        "leaders": ["Aaron (Chief People Officer)"],
-                        "status": "operational",
-                        "agents": 12
-                    },
-                    "Procurement & Partnerships": {
-                        "leaders": ["Nehemiah (Chief Procurement Officer)"],
-                        "status": "planning",
-                        "agents": 8
-                    },
-                    "Learning & Development": {
-                        "leaders": ["Apollos (Chief Learning Officer)"],
-                        "status": "planning",
-                        "agents": 10
-                    }
-                }
-            },
-            "Customer Experience": {
-                "color": "#ec4899",
-                "icon": "fas fa-heart",
-                "departments": {
-                    "Customer Success": {
-                        "leaders": ["Asher (Chief Customer Officer)"],
-                        "status": "operational",
-                        "agents": 15
-                    },
-                    "Customer Support": {
-                        "leaders": ["Silas (Chief Support Officer)"],
-                        "status": "operational",
-                        "agents": 20
-                    },
-                    "Customer Experience Design": {
-                        "leaders": ["Lydia (Chief Experience Officer)"],
-                        "status": "planning",
-                        "agents": 8
-                    },
-                    "Customer Retention": {
-                        "leaders": ["Priscilla (Chief Retention Officer)"],
-                        "status": "planning",
-                        "agents": 10
-                    },
-                    "Account Management": {
-                        "leaders": ["Aquila (Chief Account Officer)"],
-                        "status": "planning",
-                        "agents": 12
-                    }
-                }
-            },
-            "Content Generation": {
-                "color": "#84cc16",
-                "icon": "fas fa-palette",
-                "departments": {
-                    "Creative Services": {
-                        "leaders": ["Jubal (Chief Creative Officer)"],
-                        "status": "operational",
-                        "agents": 15
-                    },
-                    "Content Strategy": {
-                        "leaders": ["Luke (Chief Content Officer)"],
-                        "status": "planning",
-                        "agents": 10
-                    },
-                    "Media Production": {
-                        "leaders": ["Mark (Chief Media Officer)"],
-                        "status": "planning",
-                        "agents": 12
-                    }
-                }
-            },
-            "Continuous Improvement": {
-                "color": "#f97316",
-                "icon": "fas fa-lightbulb",
-                "departments": {
-                    "Innovation Office": {
-                        "leaders": ["Daniel (Chief Innovation Officer)"],
-                        "status": "operational",
-                        "agents": 15
-                    },
-                    "Research & Development": {
-                        "leaders": ["Dan (Chief Research Officer)"],
-                        "status": "operational",
-                        "agents": 12
-                    }
-                }
+                },
             }
-        }
 
-        html = '''
+        html = """
         <div class="org-chart" style="
             display: flex;
             flex-direction: column;
@@ -9900,18 +10489,26 @@ ${{JSON.stringify(data.data, null, 2)}}
                 max-width: 1200px;
                 width: 100%;
             ">
-        '''
+        """
 
         # Generate division cards
         for i, (division_name, division_data) in enumerate(org_structure.items()):
             dept_count = len(division_data["departments"])
-            total_agents = sum(dept["agents"] for dept in division_data["departments"].values())
-            operational_depts = len([d for d in division_data["departments"].values() if d["status"] == "operational"])
+            total_agents = sum(
+                dept["agents"] for dept in division_data["departments"].values()
+            )
+            operational_depts = len(
+                [
+                    d
+                    for d in division_data["departments"].values()
+                    if d["status"] == "operational"
+                ]
+            )
 
             # Create unique ID for the division
             division_id = f"division-{division_name.lower().replace(' ', '-').replace('&', 'and')}"
 
-            html += f'''
+            html += f"""
             <div class="division-card" id="{division_id}" style="
                 background: var(--card-bg);
                 border: 2px solid {division_data['color']};
@@ -9990,15 +10587,21 @@ ${{JSON.stringify(data.data, null, 2)}}
                     display: none;
                     background: var(--card-bg);
                 ">
-            '''
+            """
 
             # Generate department cards within the division
             for dept_name, dept_data in division_data["departments"].items():
                 dept_id = f"dept-{division_name.lower().replace(' ', '-')}-{dept_name.lower().replace(' ', '-').replace('&', 'and')}"
-                status_color = "#10b981" if dept_data["status"] == "active" else "#f59e0b"
-                status_icon = "fas fa-check-circle" if dept_data["status"] == "active" else "fas fa-clock"
+                status_color = (
+                    "#10b981" if dept_data["status"] == "active" else "#f59e0b"
+                )
+                status_icon = (
+                    "fas fa-check-circle"
+                    if dept_data["status"] == "active"
+                    else "fas fa-clock"
+                )
 
-                html += f'''
+                html += f"""
                 <div class="department-card" id="{dept_id}" style="
                     padding: 1rem;
                     border-bottom: 1px solid var(--border-color);
@@ -10078,7 +10681,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                             <div style="font-size: 0.8rem; font-weight: 600; color: var(--secondary-text); margin-bottom: 0.5rem;">
                                 <i class="fas fa-crown"></i> Leadership
                             </div>
-                '''
+                """
 
                 # Add leaders - check if leaders is a list of strings (fallback) or objects (database)
                 for leader in dept_data["leaders"]:
@@ -10090,17 +10693,25 @@ ${{JSON.stringify(data.data, null, 2)}}
                         leader_archetype = ""
                         is_primary = False
                     else:
-                        leader_name = leader.get('name', '')
-                        leader_title = leader.get('title', '')
-                        leader_desc = leader.get('description', '')
-                        leader_archetype = leader.get('archetype', '')
-                        is_primary = leader.get('is_primary', False)
+                        leader_name = leader.get("name", "")
+                        leader_title = leader.get("title", "")
+                        leader_desc = leader.get("description", "")
+                        leader_archetype = leader.get("archetype", "")
+                        is_primary = leader.get("is_primary", False)
 
                     # Style primary leaders differently
-                    bg_color = division_data['color'] if is_primary else f"{division_data['color']}66"
-                    border_style = f"border: 2px solid {division_data['color']};" if is_primary else ""
+                    bg_color = (
+                        division_data["color"]
+                        if is_primary
+                        else f"{division_data['color']}66"
+                    )
+                    border_style = (
+                        f"border: 2px solid {division_data['color']};"
+                        if is_primary
+                        else ""
+                    )
 
-                    html += f'''
+                    html += f"""
                     <div style="
                         display: flex;
                         align-items: flex-start;
@@ -10181,20 +10792,20 @@ ${{JSON.stringify(data.data, null, 2)}}
                             </div>
                         </div>
                     </div>
-                    '''
+                    """
 
-                html += '''
+                html += """
                         </div>
                     </div>
                 </div>
-                '''
+                """
 
-            html += '''
+            html += """
                 </div>
             </div>
-            '''
+            """
 
-        html += '''
+        html += """
             </div>
         </div>
 
@@ -10235,7 +10846,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             }
         }
         </style>
-        '''
+        """
 
         return html
 
@@ -10268,7 +10879,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 widget_content = self._generate_generic_widget_content(service)
                 server_title = f"{service.get('name', service_id.title())} Details"
 
-            widgets_html += f'''
+            widgets_html += f"""
                 <div class="card {border_class}">
                     <h3>
                         <i class="{service.get('icon', 'fas fa-server')}"></i>
@@ -10276,7 +10887,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                     </h3>
                     {widget_content}
                 </div>
-            '''
+            """
 
         return widgets_html
 
@@ -10289,7 +10900,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 return '<div style="text-align: center; color: var(--secondary-text); padding: 1rem;">File System Server not available</div>'
 
             # Show basic info if detailed data is not available
-            return f'''
+            return f"""
                 <div class="metrics-grid">
                     <div class="metric-item">
                         <div class="metric-value">{fs_service.get("port", "Unknown")}</div>
@@ -10316,10 +10927,10 @@ ${{JSON.stringify(data.data, null, 2)}}
                         Provides file operations, directory management, and AI-powered content analysis capabilities.
                     </p>
                 </div>
-            '''
+            """
 
         details = self.mcp_details["filesystem"]
-        return f'''
+        return f"""
             <div class="metrics-grid">
                 <div class="metric-item">
                     <div class="metric-value">{details.get("total_operations", 0)}</div>
@@ -10347,14 +10958,14 @@ ${{JSON.stringify(data.data, null, 2)}}
                     <div><i class="fas fa-folder-open"></i> Base Path: <code style="color: var(--primary-text); background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">{details.get("base_path", "/")}</code></div>
                 </div>
             </div>
-        '''
+        """
 
     def _generate_registry_widget_content(self):
         """Generate registry server widget content"""
         registry_service = self.services_status.get("registry", {})
         details = registry_service.get("details", {})
 
-        return f'''
+        return f"""
             <div class="metrics-grid">
                 <div class="metric-item">
                     <div class="metric-value">{details.get("registered_services", 0)}</div>
@@ -10379,7 +10990,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 </h4>
                 <p style="margin: 0; color: var(--secondary-text);">Central coordination hub for all MCP services</p>
             </div>
-        '''
+        """
 
     async def _get_database_health_metrics(self):
         """Get comprehensive database health and metrics with improved accuracy"""
@@ -10396,9 +11007,13 @@ ${{JSON.stringify(data.data, null, 2)}}
             metrics = {}
 
             # Basic database info
-            db_size_query = "SELECT pg_size_pretty(pg_database_size('boarderframeos')) as size"
+            db_size_query = (
+                "SELECT pg_size_pretty(pg_database_size('boarderframeos')) as size"
+            )
             db_size_result = await conn.fetchrow(db_size_query)
-            metrics['database_size'] = db_size_result['size'] if db_size_result else 'Unknown'
+            metrics["database_size"] = (
+                db_size_result["size"] if db_size_result else "Unknown"
+            )
 
             # Get table count and info
             tables_query = """
@@ -10414,15 +11029,17 @@ ${{JSON.stringify(data.data, null, 2)}}
 
             table_info = []
             for row in tables_result:
-                table_info.append({
-                    'schema': row['schemaname'],
-                    'name': row['tablename'],
-                    'size': row['size'],
-                    'columns': row['columns']
-                })
+                table_info.append(
+                    {
+                        "schema": row["schemaname"],
+                        "name": row["tablename"],
+                        "size": row["size"],
+                        "columns": row["columns"],
+                    }
+                )
 
-            metrics['tables'] = table_info
-            metrics['total_tables'] = len(table_info)
+            metrics["tables"] = table_info
+            metrics["total_tables"] = len(table_info)
 
             # More accurate connection stats - filter out background processes
             connections_query = """
@@ -10437,15 +11054,17 @@ ${{JSON.stringify(data.data, null, 2)}}
             conn_result = await conn.fetchrow(connections_query)
             if conn_result:
                 # Use the filtered active connections count for more accuracy
-                metrics['active_connections'] = conn_result['active_connections'] or 0
-                metrics['max_connections'] = conn_result['max_connections']
-                metrics['active_queries'] = conn_result['active_queries'] or 0
-                metrics['idle_connections'] = conn_result['idle_connections'] or 0
-                metrics['available_connections'] = metrics['max_connections'] - metrics['active_connections']
+                metrics["active_connections"] = conn_result["active_connections"] or 0
+                metrics["max_connections"] = conn_result["max_connections"]
+                metrics["active_queries"] = conn_result["active_queries"] or 0
+                metrics["idle_connections"] = conn_result["idle_connections"] or 0
+                metrics["available_connections"] = (
+                    metrics["max_connections"] - metrics["active_connections"]
+                )
             else:
-                metrics['active_connections'] = 0
-                metrics['max_connections'] = 0
-                metrics['available_connections'] = 0
+                metrics["active_connections"] = 0
+                metrics["max_connections"] = 0
+                metrics["available_connections"] = 0
 
             # Database activity stats for our specific database
             activity_query = """
@@ -10464,68 +11083,79 @@ ${{JSON.stringify(data.data, null, 2)}}
             """
             activity_result = await conn.fetchrow(activity_query)
             if activity_result:
-                metrics['backends'] = activity_result['backends'] or 0
-                metrics['commits'] = activity_result['commits'] or 0
-                metrics['rollbacks'] = activity_result['rollbacks'] or 0
-                metrics['blocks_read'] = activity_result['blocks_read'] or 0
-                metrics['blocks_hit'] = activity_result['blocks_hit'] or 0
-                metrics['tuples_returned'] = activity_result['tup_returned'] or 0
-                metrics['tuples_fetched'] = activity_result['tup_fetched'] or 0
-                metrics['tuples_inserted'] = activity_result['tup_inserted'] or 0
-                metrics['tuples_updated'] = activity_result['tup_updated'] or 0
-                metrics['tuples_deleted'] = activity_result['tup_deleted'] or 0
+                metrics["backends"] = activity_result["backends"] or 0
+                metrics["commits"] = activity_result["commits"] or 0
+                metrics["rollbacks"] = activity_result["rollbacks"] or 0
+                metrics["blocks_read"] = activity_result["blocks_read"] or 0
+                metrics["blocks_hit"] = activity_result["blocks_hit"] or 0
+                metrics["tuples_returned"] = activity_result["tup_returned"] or 0
+                metrics["tuples_fetched"] = activity_result["tup_fetched"] or 0
+                metrics["tuples_inserted"] = activity_result["tup_inserted"] or 0
+                metrics["tuples_updated"] = activity_result["tup_updated"] or 0
+                metrics["tuples_deleted"] = activity_result["tup_deleted"] or 0
 
                 # Calculate cache hit ratio
-                total_blocks = (activity_result['blocks_read'] or 0) + (activity_result['blocks_hit'] or 0)
+                total_blocks = (activity_result["blocks_read"] or 0) + (
+                    activity_result["blocks_hit"] or 0
+                )
                 if total_blocks > 0:
-                    metrics['cache_hit_ratio'] = round((activity_result['blocks_hit'] / total_blocks) * 100, 2)
+                    metrics["cache_hit_ratio"] = round(
+                        (activity_result["blocks_hit"] / total_blocks) * 100, 2
+                    )
                 else:
-                    metrics['cache_hit_ratio'] = 100  # If no blocks read, assume perfect cache
+                    metrics["cache_hit_ratio"] = (
+                        100  # If no blocks read, assume perfect cache
+                    )
             else:
-                metrics['backends'] = 0
-                metrics['commits'] = 0
-                metrics['rollbacks'] = 0
-                metrics['cache_hit_ratio'] = 0
+                metrics["backends"] = 0
+                metrics["commits"] = 0
+                metrics["rollbacks"] = 0
+                metrics["cache_hit_ratio"] = 0
 
             # Get PostgreSQL version
             version_query = "SELECT version()"
             version_result = await conn.fetchrow(version_query)
             if version_result:
-                version_full = version_result['version']
+                version_full = version_result["version"]
                 # Extract just the version number
                 import re
-                version_match = re.search(r'PostgreSQL (\d+\.\d+)', version_full)
-                metrics['version'] = version_match.group(1) if version_match else version_full
+
+                version_match = re.search(r"PostgreSQL (\d+\.\d+)", version_full)
+                metrics["version"] = (
+                    version_match.group(1) if version_match else version_full
+                )
             else:
-                metrics['version'] = 'Unknown'
+                metrics["version"] = "Unknown"
 
             # Check if pgvector extension is available
             pgvector_query = "SELECT extname FROM pg_extension WHERE extname = 'vector'"
             pgvector_result = await conn.fetchrow(pgvector_query)
-            metrics['pgvector_enabled'] = bool(pgvector_result)
+            metrics["pgvector_enabled"] = bool(pgvector_result)
 
             # Get current time for last update
-            metrics['last_check'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            metrics["last_check"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
             await conn.close()
 
-            metrics['status'] = 'healthy'
-            print(f"✅ Database health check completed - Active connections: {metrics['active_connections']}")
+            metrics["status"] = "healthy"
+            print(
+                f"✅ Database health check completed - Active connections: {metrics['active_connections']}"
+            )
 
             return metrics
 
         except Exception as e:
             print(f"❌ Database health check failed: {e}")
             return {
-                'status': 'error',
-                'error': str(e),
-                'last_check': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                'database_size': 'Unknown',
-                'total_tables': 0,
-                'active_connections': 0,
-                'max_connections': 0,
-                'cache_hit_ratio': 0,
-                'tables': []
+                "status": "error",
+                "error": str(e),
+                "last_check": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "database_size": "Unknown",
+                "total_tables": 0,
+                "active_connections": 0,
+                "max_connections": 0,
+                "cache_hit_ratio": 0,
+                "tables": [],
             }
 
     def _categorize_table(self, table_name):
@@ -10533,73 +11163,134 @@ ${{JSON.stringify(data.data, null, 2)}}
         table_name_lower = table_name.lower()
 
         # System and Core Tables
-        if any(keyword in table_name_lower for keyword in ['pg_', 'information_schema', 'sql_', 'sys_']):
-            return 'system', 'fas fa-cogs', '#6b7280'
+        if any(
+            keyword in table_name_lower
+            for keyword in ["pg_", "information_schema", "sql_", "sys_"]
+        ):
+            return "system", "fas fa-cogs", "#6b7280"
 
         # Agent-related tables
-        if any(keyword in table_name_lower for keyword in ['agent', 'solomon', 'david', 'adam', 'eve', 'bezalel', 'michael']):
-            return 'agents', 'fas fa-robot', '#3b82f6'
+        if any(
+            keyword in table_name_lower
+            for keyword in [
+                "agent",
+                "solomon",
+                "david",
+                "adam",
+                "eve",
+                "bezalel",
+                "michael",
+            ]
+        ):
+            return "agents", "fas fa-robot", "#3b82f6"
 
         # Division tables
-        if any(keyword in table_name_lower for keyword in ['division', 'leadership', 'coordination', 'executive']):
-            return 'divisions', 'fas fa-sitemap', '#8b5cf6'
+        if any(
+            keyword in table_name_lower
+            for keyword in ["division", "leadership", "coordination", "executive"]
+        ):
+            return "divisions", "fas fa-sitemap", "#8b5cf6"
 
         # Department tables
-        if any(keyword in table_name_lower for keyword in [
-            'department', 'finance', 'legal', 'sales', 'marketing', 'procurement',
-            'engineering', 'research', 'innovation', 'operations', 'security',
-            'data_management', 'infrastructure', 'learning', 'human_resources',
-            'production', 'quality', 'customer_service', 'supply_chain',
-            'communications', 'strategic', 'technology', 'business', 'creative'
-        ]):
-            return 'departments', 'fas fa-building', '#10b981'
+        if any(
+            keyword in table_name_lower
+            for keyword in [
+                "department",
+                "finance",
+                "legal",
+                "sales",
+                "marketing",
+                "procurement",
+                "engineering",
+                "research",
+                "innovation",
+                "operations",
+                "security",
+                "data_management",
+                "infrastructure",
+                "learning",
+                "human_resources",
+                "production",
+                "quality",
+                "customer_service",
+                "supply_chain",
+                "communications",
+                "strategic",
+                "technology",
+                "business",
+                "creative",
+            ]
+        ):
+            return "departments", "fas fa-building", "#10b981"
 
         # Registry and service tables
-        if any(keyword in table_name_lower for keyword in ['registry', 'server', 'service', 'mcp']):
-            return 'registry', 'fas fa-network-wired', '#f59e0b'
+        if any(
+            keyword in table_name_lower
+            for keyword in ["registry", "server", "service", "mcp"]
+        ):
+            return "registry", "fas fa-network-wired", "#f59e0b"
 
         # Message and communication tables
-        if any(keyword in table_name_lower for keyword in ['message', 'chat', 'communication', 'log']):
-            return 'messaging', 'fas fa-comments', '#ec4899'
+        if any(
+            keyword in table_name_lower
+            for keyword in ["message", "chat", "communication", "log"]
+        ):
+            return "messaging", "fas fa-comments", "#ec4899"
 
         # Migration and schema tables
-        if any(keyword in table_name_lower for keyword in ['migration', 'schema', 'version']):
-            return 'migrations', 'fas fa-database', '#ef4444'
+        if any(
+            keyword in table_name_lower
+            for keyword in ["migration", "schema", "version"]
+        ):
+            return "migrations", "fas fa-database", "#ef4444"
 
         # Default category
-        return 'other', 'fas fa-table', '#6b7280'
+        return "other", "fas fa-table", "#6b7280"
 
     def _generate_database_tables_rows(self):
         """Generate HTML rows for database tables display with categorization"""
-        if not hasattr(self, 'database_health_metrics'):
-            return '''
+        if not hasattr(self, "database_health_metrics"):
+            return """
                 <tr>
                     <td colspan="5" style="text-align: center; padding: 2rem; color: var(--secondary-text);">
                         <i class="fas fa-spinner fa-spin"></i> Loading database table information...
                     </td>
                 </tr>
-            '''
+            """
 
-        tables = self.database_health_metrics.get('tables', [])
+        tables = self.database_health_metrics.get("tables", [])
         if not tables:
-            return '''
+            return """
                 <tr>
                     <td colspan="5" style="text-align: center; padding: 2rem; color: var(--secondary-text);">
                         No tables found or database connection error
                     </td>
                 </tr>
-            '''
+            """
 
         # Categorize and sort tables
         categorized_tables = {}
         for table in tables:
-            category, icon, color = self._categorize_table(table.get('name', ''))
+            category, icon, color = self._categorize_table(table.get("name", ""))
             if category not in categorized_tables:
-                categorized_tables[category] = {'tables': [], 'icon': icon, 'color': color}
-            categorized_tables[category]['tables'].append(table)
+                categorized_tables[category] = {
+                    "tables": [],
+                    "icon": icon,
+                    "color": color,
+                }
+            categorized_tables[category]["tables"].append(table)
 
         # Sort categories by priority
-        category_order = ['agents', 'divisions', 'departments', 'registry', 'messaging', 'migrations', 'system', 'other']
+        category_order = [
+            "agents",
+            "divisions",
+            "departments",
+            "registry",
+            "messaging",
+            "migrations",
+            "system",
+            "other",
+        ]
 
         rows_html = ""
         for category in category_order:
@@ -10607,22 +11298,24 @@ ${{JSON.stringify(data.data, null, 2)}}
                 continue
 
             category_data = categorized_tables[category]
-            category_tables = sorted(category_data['tables'], key=lambda x: x.get('name', ''))
+            category_tables = sorted(
+                category_data["tables"], key=lambda x: x.get("name", "")
+            )
 
             # Add category header
-            category_display = category.replace('_', ' ').title()
-            rows_html += f'''
+            category_display = category.replace("_", " ").title()
+            rows_html += f"""
                 <tr style="background: rgba(255,255,255,0.03);">
                     <td colspan="5" style="padding: 1rem 0.75rem; font-weight: 600; color: {category_data['color']}; border-top: 2px solid {category_data['color']}20;">
                         <i class="{category_data['icon']}" style="margin-right: 0.5rem;"></i>
                         {category_display} ({len(category_tables)} tables)
                     </td>
                 </tr>
-            '''
+            """
 
             # Add tables in this category
             for table in category_tables:
-                rows_html += f'''
+                rows_html += f"""
                     <tr style="border-bottom: 1px solid var(--border-color);">
                         <td style="padding: 0.75rem; color: var(--primary-text); padding-left: 2rem;">
                             <i class="fas fa-table" style="color: {category_data['color']}; margin-right: 0.5rem;"></i>
@@ -10643,21 +11336,23 @@ ${{JSON.stringify(data.data, null, 2)}}
                             </span>
                         </td>
                     </tr>
-                '''
+                """
 
         return rows_html
 
     def _generate_database_widget_content(self):
         """Generate database server widget content using centralized data"""
         # Use centralized data when available, fallback to legacy
-        services_data = self.unified_data.get('services_status', self.services_status)
+        services_data = self.unified_data.get("services_status", self.services_status)
         db_service = services_data.get("database", {})
         details = db_service.get("details", {})
 
         # Use centralized database health metrics
-        db_metrics = self.unified_data.get('database_health', getattr(self, 'database_health_metrics', {}))
+        db_metrics = self.unified_data.get(
+            "database_health", getattr(self, "database_health_metrics", {})
+        )
 
-        return f'''
+        return f"""
             <div class="metrics-grid">
                 <div class="metric-item">
                     <div class="metric-value">{db_metrics.get("total_tables", details.get("total_queries", 0))}</div>
@@ -10682,14 +11377,14 @@ ${{JSON.stringify(data.data, null, 2)}}
                 </h4>
                 <p style="margin: 0; color: var(--secondary-text);">BoarderframeOS primary data storage with pgvector support</p>
             </div>
-        '''
+        """
 
     def _generate_agent_cortex_widget_content(self):
         """Generate Cortex widget content"""
         agent_cortex_service = self.services_status.get("agent_cortex", {})
         details = agent_cortex_service.get("details", {})
 
-        return f'''
+        return f"""
             <div class="metrics-grid">
                 <div class="metric-item">
                     <div class="metric-value">{details.get("active_sessions", 0)}</div>
@@ -10714,13 +11409,13 @@ ${{JSON.stringify(data.data, null, 2)}}
                 </h4>
                 <p style="margin: 0; color: var(--secondary-text);">Dynamic model selection, cost optimization, and performance learning</p>
             </div>
-        '''
+        """
 
     def _generate_generic_widget_content(self, service):
         """Generate generic widget content for unknown services"""
         details = service.get("details", {})
 
-        return f'''
+        return f"""
             <div class="metrics-grid">
                 <div class="metric-item">
                     <div class="metric-value">{service.get("port", "Unknown")}</div>
@@ -10745,7 +11440,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 </h4>
                 <p style="margin: 0; color: var(--secondary-text);">MCP service running on port {service.get("port", "Unknown")}</p>
             </div>
-        '''
+        """
 
     def _generate_leaders_html(self):
         """Generate comprehensive leaders overview HTML with database integration"""
@@ -10758,44 +11453,48 @@ ${{JSON.stringify(data.data, null, 2)}}
             leaders_data = self._fetch_leaders_data()
 
             if not leaders_data:
-                return '''
+                return """
                     <div style="text-align: center; padding: 2rem; color: var(--secondary-text);">
                         <i class="fas fa-crown" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
                         <h4>No Leaders Data Available</h4>
                         <p>Unable to load leadership information from database.</p>
                     </div>
-                '''
+                """
 
             # Group leaders by division for better organization
             divisions_leaders = {}
             division_colors = {
-                'Executive Division': '#6366f1',
-                'Programming & Development Division': '#10b981',
-                'Information Technology Division': '#06b6d4',
-                'Customer Experience Division': '#ec4899',
-                'Content Generation Division': '#84cc16',
-                'Innovation Division': '#f59e0b',
-                'Finance Division': '#8b5cf6',
-                'Operations Division': '#ef4444',
-                'Human Resources Division': '#14b8a6'
+                "Executive Division": "#6366f1",
+                "Programming & Development Division": "#10b981",
+                "Information Technology Division": "#06b6d4",
+                "Customer Experience Division": "#ec4899",
+                "Content Generation Division": "#84cc16",
+                "Innovation Division": "#f59e0b",
+                "Finance Division": "#8b5cf6",
+                "Operations Division": "#ef4444",
+                "Human Resources Division": "#14b8a6",
             }
 
             for leader in leaders_data:
-                div_name = leader['division_name']
+                div_name = leader["division_name"]
                 if div_name not in divisions_leaders:
                     divisions_leaders[div_name] = {
-                        'leaders': [],
-                        'color': division_colors.get(div_name, '#6b7280'),
-                        'total_departments': 0,
-                        'active_departments': 0
+                        "leaders": [],
+                        "color": division_colors.get(div_name, "#6b7280"),
+                        "total_departments": 0,
+                        "active_departments": 0,
                     }
-                divisions_leaders[div_name]['leaders'].append(leader)
-                if leader['department_name'] not in [l['department_name'] for l in divisions_leaders[div_name]['leaders'][:-1]]:
-                    divisions_leaders[div_name]['total_departments'] += 1
-                    if leader['operational_status'] == 'active':
-                        divisions_leaders[div_name]['active_departments'] += 1
+                divisions_leaders[div_name]["leaders"].append(leader)
+                if leader["department_name"] not in [
+                    l["department_name"]
+                    for l in divisions_leaders[div_name]["leaders"][:-1]
+                ]:
+                    divisions_leaders[div_name]["total_departments"] += 1
+                    if leader["operational_status"] == "active":
+                        divisions_leaders[div_name]["active_departments"] += 1
 
-            html = '''
+            html = (
+                """
                 <!-- Leaders Overview Card -->
                 <div class="card full-width" style="margin-bottom: 2rem; border: 2px solid #f59e0b20; background: linear-gradient(135deg, #f59e0b08, #f59e0b03);">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
@@ -10812,7 +11511,9 @@ ${{JSON.stringify(data.data, null, 2)}}
                             <div>
                                 <h3 style="margin: 0; color: var(--primary-text); font-size: 1.25rem;">Leaders Status</h3>
                                 <p style="margin: 0.25rem 0; color: var(--secondary-text); font-size: 0.9rem;">
-                                    ''' + str(len(leaders_data)) + ''' active leaders • Organizational hierarchy management
+                                    """
+                + str(len(leaders_data))
+                + """ active leaders • Organizational hierarchy management
                                 </p>
                             </div>
                         </div>
@@ -10833,7 +11534,11 @@ ${{JSON.stringify(data.data, null, 2)}}
                                     <span>Executive Leaders</span>
                                 </div>
                             </div>
-                            <div class="widget-value" style="color: var(--success-color);">''' + str(len([l for l in leaders_data if 'Executive' in l['division_name']])) + '''</div>
+                            <div class="widget-value" style="color: var(--success-color);">"""
+                + str(
+                    len([l for l in leaders_data if "Executive" in l["division_name"]])
+                )
+                + """</div>
                             <div class="widget-subtitle">Executive division leaders</div>
                         </div>
                         <div class="widget widget-small">
@@ -10843,7 +11548,9 @@ ${{JSON.stringify(data.data, null, 2)}}
                                     <span>Leaders</span>
                                 </div>
                             </div>
-                            <div class="widget-value" style="color: var(--accent-color);">''' + str(len(leaders_data)) + '''</div>
+                            <div class="widget-value" style="color: var(--accent-color);">"""
+                + str(len(leaders_data))
+                + """</div>
                             <div class="widget-subtitle">Active leadership positions</div>
                         </div>
                         <div class="widget widget-small">
@@ -10853,7 +11560,9 @@ ${{JSON.stringify(data.data, null, 2)}}
                                     <span>Departments</span>
                                 </div>
                             </div>
-                            <div class="widget-value" style="color: var(--accent-color);">''' + str(len(set(l['department_name'] for l in leaders_data))) + '''</div>
+                            <div class="widget-value" style="color: var(--accent-color);">"""
+                + str(len(set(l["department_name"] for l in leaders_data)))
+                + """</div>
                             <div class="widget-subtitle">Departments with leaders</div>
                         </div>
                         <div class="widget widget-small">
@@ -10863,22 +11572,25 @@ ${{JSON.stringify(data.data, null, 2)}}
                                     <span>Divisions</span>
                                 </div>
                             </div>
-                            <div class="widget-value" style="color: var(--warning-color);">''' + str(len(divisions_leaders)) + '''</div>
+                            <div class="widget-value" style="color: var(--warning-color);">"""
+                + str(len(divisions_leaders))
+                + """</div>
                             <div class="widget-subtitle">Organizational divisions</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Division Leadership Overview -->
-            '''
+            """
+            )
 
             for division_name, division_data in divisions_leaders.items():
-                division_color = division_data['color']
-                leaders = division_data['leaders']
-                active_depts = division_data['active_departments']
-                total_depts = division_data['total_departments']
+                division_color = division_data["color"]
+                leaders = division_data["leaders"]
+                active_depts = division_data["active_departments"]
+                total_depts = division_data["total_departments"]
 
-                html += f'''
+                html += f"""
                     <div class="card full-width" style="margin-bottom: 2rem; border: 2px solid {division_color}20; background: linear-gradient(135deg, {division_color}08, {division_color}03);">
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
                             <div style="display: flex; align-items: center; gap: 1rem;">
@@ -10908,23 +11620,31 @@ ${{JSON.stringify(data.data, null, 2)}}
 
                         <!-- Leaders Grid -->
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1rem;">
-                '''
+                """
 
                 for leader in leaders:
                     archetype_icon = {
-                        'Visionary': 'fas fa-eye',
-                        'Commander': 'fas fa-shield-alt',
-                        'Creator': 'fas fa-hammer',
-                        'Builder': 'fas fa-tools',
-                        'Guardian': 'fas fa-shield',
-                        'Shepherd': 'fas fa-heart',
-                        'Prophet': 'fas fa-bolt'
-                    }.get(leader.get('biblical_archetype', ''), 'fas fa-crown')
+                        "Visionary": "fas fa-eye",
+                        "Commander": "fas fa-shield-alt",
+                        "Creator": "fas fa-hammer",
+                        "Builder": "fas fa-tools",
+                        "Guardian": "fas fa-shield",
+                        "Shepherd": "fas fa-heart",
+                        "Prophet": "fas fa-bolt",
+                    }.get(leader.get("biblical_archetype", ""), "fas fa-crown")
 
-                    status_color = '#10b981' if leader['operational_status'] == 'active' else '#f59e0b'
-                    status_text = 'Operational' if leader['operational_status'] == 'active' else 'Planning'
+                    status_color = (
+                        "#10b981"
+                        if leader["operational_status"] == "active"
+                        else "#f59e0b"
+                    )
+                    status_text = (
+                        "Operational"
+                        if leader["operational_status"] == "active"
+                        else "Planning"
+                    )
 
-                    html += f'''
+                    html += f"""
                         <div style="
                             background: var(--card-bg);
                             border: 1px solid var(--border-color);
@@ -11034,24 +11754,24 @@ ${{JSON.stringify(data.data, null, 2)}}
                                 </div>
                             </div>
                         </div>
-                    '''
+                    """
 
-                html += '''
+                html += """
                         </div>
                     </div>
-                '''
+                """
 
             return html
 
         except Exception as e:
             print(f"Error generating leaders HTML: {e}")
-            return '''
+            return """
                 <div style="text-align: center; padding: 2rem; color: var(--secondary-text);">
                     <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; color: var(--warning-color);"></i>
                     <h4>Error Loading Leaders</h4>
                     <p>Unable to generate leaders overview. Please try again.</p>
                 </div>
-            '''
+            """
 
     def _generate_divisions_html(self):
         """Generate comprehensive divisions overview HTML with database integration"""
@@ -11060,67 +11780,76 @@ ${{JSON.stringify(data.data, null, 2)}}
             leaders_data = self._fetch_leaders_data()
 
             if not leaders_data:
-                return '''
+                return """
                     <div style="text-align: center; padding: 2rem; color: var(--secondary-text);">
                         <i class="fas fa-sitemap" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
                         <h4>No Divisions Data Available</h4>
                         <p>Unable to load division information from database.</p>
                     </div>
-                '''
+                """
 
             # Group and analyze divisions
             divisions_data = {}
             division_colors = {
-                'Executive Division': '#6366f1',
-                'Programming & Development Division': '#10b981',
-                'Information Technology Division': '#06b6d4',
-                'Customer Experience Division': '#ec4899',
-                'Content Generation Division': '#84cc16',
-                'Innovation Division': '#f59e0b',
-                'Finance Division': '#8b5cf6',
-                'Operations Division': '#ef4444',
-                'Human Resources Division': '#14b8a6'
+                "Executive Division": "#6366f1",
+                "Programming & Development Division": "#10b981",
+                "Information Technology Division": "#06b6d4",
+                "Customer Experience Division": "#ec4899",
+                "Content Generation Division": "#84cc16",
+                "Innovation Division": "#f59e0b",
+                "Finance Division": "#8b5cf6",
+                "Operations Division": "#ef4444",
+                "Human Resources Division": "#14b8a6",
             }
 
             for leader in leaders_data:
-                div_name = leader['division_name']
-                div_desc = leader.get('division_description', 'Strategic organizational division')
+                div_name = leader["division_name"]
+                div_desc = leader.get(
+                    "division_description", "Strategic organizational division"
+                )
 
                 if div_name not in divisions_data:
                     divisions_data[div_name] = {
-                        'name': div_name,
-                        'description': div_desc,
-                        'color': division_colors.get(div_name, '#6b7280'),
-                        'leaders': [],
-                        'departments': set(),
-                        'total_leaders': 0,
-                        'active_leaders': 0,
-                        'primary_leaders': 0
+                        "name": div_name,
+                        "description": div_desc,
+                        "color": division_colors.get(div_name, "#6b7280"),
+                        "leaders": [],
+                        "departments": set(),
+                        "total_leaders": 0,
+                        "active_leaders": 0,
+                        "primary_leaders": 0,
                     }
 
-                divisions_data[div_name]['leaders'].append(leader)
-                divisions_data[div_name]['departments'].add(leader['department_name'])
-                divisions_data[div_name]['total_leaders'] += 1
+                divisions_data[div_name]["leaders"].append(leader)
+                divisions_data[div_name]["departments"].add(leader["department_name"])
+                divisions_data[div_name]["total_leaders"] += 1
 
-                if leader.get('active_status', 'active') == 'active':
-                    divisions_data[div_name]['active_leaders'] += 1
-                if leader.get('is_primary', False):
-                    divisions_data[div_name]['primary_leaders'] += 1
+                if leader.get("active_status", "active") == "active":
+                    divisions_data[div_name]["active_leaders"] += 1
+                if leader.get("is_primary", False):
+                    divisions_data[div_name]["primary_leaders"] += 1
 
             # Convert departments set to count
             for div_name in divisions_data:
-                divisions_data[div_name]['total_departments'] = len(divisions_data[div_name]['departments'])
-                divisions_data[div_name]['departments'] = list(divisions_data[div_name]['departments'])
+                divisions_data[div_name]["total_departments"] = len(
+                    divisions_data[div_name]["departments"]
+                )
+                divisions_data[div_name]["departments"] = list(
+                    divisions_data[div_name]["departments"]
+                )
 
             # Get organizational metrics from unified data
-            org_metrics = self.unified_data.get('organizational_metrics', {
-                'divisions': {'total': 0, 'active': 0, 'percentage': 0},
-                'departments': {'total': 0, 'active': 0, 'percentage': 0},
-                'leaders': {'total': 0, 'active': 0, 'percentage': 0},
-                'agents': {'total': 0, 'active': 0, 'percentage': 0}
-            })
+            org_metrics = self.unified_data.get(
+                "organizational_metrics",
+                {
+                    "divisions": {"total": 0, "active": 0, "percentage": 0},
+                    "departments": {"total": 0, "active": 0, "percentage": 0},
+                    "leaders": {"total": 0, "active": 0, "percentage": 0},
+                    "agents": {"total": 0, "active": 0, "percentage": 0},
+                },
+            )
 
-            html = f'''
+            html = f"""
                 <!-- Divisions Overview Card -->
                 <div class="card full-width" style="margin-bottom: 2rem; border: 2px solid #8b5cf620; background: linear-gradient(135deg, #8b5cf608, #8b5cf603);">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
@@ -11231,21 +11960,32 @@ ${{JSON.stringify(data.data, null, 2)}}
 
                 <!-- Divisions Grid -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
-            '''
+            """
 
             # Get division-specific metrics from data layer
-            div_metrics = org_metrics.get('by_division', {})
+            div_metrics = org_metrics.get("by_division", {})
 
             # Generate division cards
             for div_name, division in divisions_data.items():
                 # Get metrics for this division from data layer
-                div_data = div_metrics.get(div_name, {
-                    'departments': {'total': division['total_departments'], 'active': 0, 'percentage': 0},
-                    'leaders': {'total': division['total_leaders'], 'active': division['active_leaders'], 'percentage': 0},
-                    'agents': {'total': 0, 'active': 0, 'percentage': 0}
-                })
+                div_data = div_metrics.get(
+                    div_name,
+                    {
+                        "departments": {
+                            "total": division["total_departments"],
+                            "active": 0,
+                            "percentage": 0,
+                        },
+                        "leaders": {
+                            "total": division["total_leaders"],
+                            "active": division["active_leaders"],
+                            "percentage": 0,
+                        },
+                        "agents": {"total": 0, "active": 0, "percentage": 0},
+                    },
+                )
 
-                html += f'''
+                html += f"""
                     <div class="card" style="border-left: 4px solid {division['color']}; background: linear-gradient(135deg, {division['color']}08, {division['color']}03);">
                         <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem;">
                             <div style="flex: 1;">
@@ -11298,13 +12038,13 @@ ${{JSON.stringify(data.data, null, 2)}}
                         <div style="margin-bottom: 1rem;">
                             <div style="font-size: 0.8rem; font-weight: 600; color: var(--primary-text); margin-bottom: 0.5rem;">Departments:</div>
                             <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
-                '''
+                """
 
                 # Sort departments alphabetically
-                sorted_departments = sorted(division['departments'])
+                sorted_departments = sorted(division["departments"])
 
                 for dept in sorted_departments[:6]:  # Show first 6 departments
-                    html += f'''
+                    html += f"""
                         <span style="
                             font-size: 0.7rem;
                             background: {division['color']}15;
@@ -11314,10 +12054,10 @@ ${{JSON.stringify(data.data, null, 2)}}
                             border: 1px solid {division['color']}30;
                             white-space: nowrap;
                         ">{dept}</span>
-                    '''
+                    """
 
                 if len(sorted_departments) > 6:
-                    html += f'''
+                    html += f"""
                         <span style="
                             font-size: 0.7rem;
                             background: var(--secondary-bg);
@@ -11326,29 +12066,29 @@ ${{JSON.stringify(data.data, null, 2)}}
                             border-radius: 4px;
                             border: 1px solid var(--border-color);
                         ">+{len(sorted_departments) - 6} more</span>
-                    '''
+                    """
 
-                html += '''
+                html += """
                             </div>
                         </div>
                     </div>
-                '''
+                """
 
-            html += '''
+            html += """
                 </div>
-            '''
+            """
 
             return html
 
         except Exception as e:
             print(f"Error generating divisions HTML: {e}")
-            return f'''
+            return f"""
                 <div style="text-align: center; padding: 2rem; color: var(--error-color);">
                     <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
                     <h4>Error Loading Divisions</h4>
                     <p>Unable to generate divisions overview: {str(e)}</p>
                 </div>
-            '''
+            """
 
     def _fetch_leaders_data(self):
         """Fetch comprehensive leaders data from database"""
@@ -11395,23 +12135,30 @@ ${{JSON.stringify(data.data, null, 2)}}
                     # Convert to list of dictionaries for easier processing
                     leaders_list = []
                     for leader in leaders:
-                        leaders_list.append({
-                            'name': leader['name'],
-                            'title': leader['title'],
-                            'description': leader['description'] or '',
-                            'leadership_tier': leader['leadership_tier'] or 'department',
-                            'biblical_archetype': leader['biblical_archetype'] or '',
-                            'authority_level': leader['authority_level'] or 5,
-                            'is_primary': leader['is_primary'] or False,
-                            'active_status': leader['active_status'],
-                            'department_name': leader['department_name'],
-                            'operational_status': leader['operational_status'],
-                            'category': leader['category'] or '',
-                            'division_name': leader['division_name'],
-                            'division_description': leader['division_description'] or ''
-                        })
+                        leaders_list.append(
+                            {
+                                "name": leader["name"],
+                                "title": leader["title"],
+                                "description": leader["description"] or "",
+                                "leadership_tier": leader["leadership_tier"]
+                                or "department",
+                                "biblical_archetype": leader["biblical_archetype"]
+                                or "",
+                                "authority_level": leader["authority_level"] or 5,
+                                "is_primary": leader["is_primary"] or False,
+                                "active_status": leader["active_status"],
+                                "department_name": leader["department_name"],
+                                "operational_status": leader["operational_status"],
+                                "category": leader["category"] or "",
+                                "division_name": leader["division_name"],
+                                "division_description": leader["division_description"]
+                                or "",
+                            }
+                        )
 
-                    print(f"✅ Successfully loaded {len(leaders_list)} leaders from database")
+                    print(
+                        f"✅ Successfully loaded {len(leaders_list)} leaders from database"
+                    )
                     return leaders_list
 
                 except Exception as e:
@@ -11433,24 +12180,28 @@ ${{JSON.stringify(data.data, null, 2)}}
     def _get_department_count_from_db(self):
         """Get real-time department count from database"""
         try:
+
             async def fetch_count():
                 try:
                     # Use existing database health connection
-                    db_health = self.unified_data.get('database_health', {})
-                    if db_health.get('status') != 'connected':
+                    db_health = self.unified_data.get("database_health", {})
+                    if db_health.get("status") != "connected":
                         return 0
 
                     # Get department count from PostgreSQL
                     import asyncpg
+
                     connection = await asyncpg.connect(
                         host="localhost",
                         port=5434,
                         user="boarderframe",
                         password="boarderframe123",
-                        database="boarderframeos"
+                        database="boarderframeos",
                     )
 
-                    count = await connection.fetchval("SELECT COUNT(*) FROM departments")
+                    count = await connection.fetchval(
+                        "SELECT COUNT(*) FROM departments"
+                    )
                     await connection.close()
                     return count or 0
 
@@ -11472,24 +12223,28 @@ ${{JSON.stringify(data.data, null, 2)}}
     def _get_division_count_from_db(self):
         """Get real-time division count from database"""
         try:
+
             async def fetch_count():
                 try:
                     # Use existing database health connection
-                    db_health = self.unified_data.get('database_health', {})
-                    if db_health.get('status') != 'connected':
+                    db_health = self.unified_data.get("database_health", {})
+                    if db_health.get("status") != "connected":
                         return 0
 
                     # Get division count from PostgreSQL
                     import asyncpg
+
                     connection = await asyncpg.connect(
                         host="localhost",
                         port=5434,
                         user="boarderframe",
                         password="boarderframe123",
-                        database="boarderframeos"
+                        database="boarderframeos",
                     )
 
-                    count = await connection.fetchval("SELECT COUNT(DISTINCT division_name) FROM divisions")
+                    count = await connection.fetchval(
+                        "SELECT COUNT(DISTINCT division_name) FROM divisions"
+                    )
                     await connection.close()
                     return count or 0
 
@@ -11511,7 +12266,7 @@ ${{JSON.stringify(data.data, null, 2)}}
     def _get_leaders_count_from_unified_data(self):
         """Get total leaders count from unified data or database"""
         # Try to get from unified data first
-        leaders_data = self.unified_data.get('leaders_data', [])
+        leaders_data = self.unified_data.get("leaders_data", [])
         if leaders_data:
             return len(leaders_data)
 
@@ -11522,15 +12277,41 @@ ${{JSON.stringify(data.data, null, 2)}}
     def _get_active_leaders_count_from_unified_data(self):
         """Get active leaders count from unified data or database"""
         # Try to get from unified data first
-        leaders_data = self.unified_data.get('leaders_data', [])
+        leaders_data = self.unified_data.get("leaders_data", [])
         if leaders_data:
-            return len([l for l in leaders_data if l.get('active_status', 'active') == 'active'])
+            return len(
+                [
+                    l
+                    for l in leaders_data
+                    if l.get("active_status", "active") == "active"
+                ]
+            )
 
         # Fallback to fresh database query
         fresh_leaders = self._fetch_leaders_data()
-        return len([l for l in fresh_leaders if l.get('active_status', 'active') == 'active']) if fresh_leaders else 0
+        return (
+            len(
+                [
+                    l
+                    for l in fresh_leaders
+                    if l.get("active_status", "active") == "active"
+                ]
+            )
+            if fresh_leaders
+            else 0
+        )
 
-    def _generate_smart_recommendations(self, overall_status, active_agents, total_agents, healthy_services, total_services, active_leaders, total_leaders, registry_status):
+    def _generate_smart_recommendations(
+        self,
+        overall_status,
+        active_agents,
+        total_agents,
+        healthy_services,
+        total_services,
+        active_leaders,
+        total_leaders,
+        registry_status,
+    ):
         """Generate intelligent recommendations based on system metrics"""
         recommendations = []
 
@@ -11539,22 +12320,34 @@ ${{JSON.stringify(data.data, null, 2)}}
         if agent_ratio == 1.0:
             recommendations.append("🤖 Agent workforce at full capacity")
         elif agent_ratio >= 0.8:
-            recommendations.append(f"🤖 Agent workforce running strong ({active_agents}/{total_agents})")
+            recommendations.append(
+                f"🤖 Agent workforce running strong ({active_agents}/{total_agents})"
+            )
         elif agent_ratio >= 0.5:
-            recommendations.append(f"⚠️ {total_agents - active_agents} agents offline - check agent health")
+            recommendations.append(
+                f"⚠️ {total_agents - active_agents} agents offline - check agent health"
+            )
         else:
-            recommendations.append(f"🚨 Critical: {total_agents - active_agents} agents down - immediate intervention needed")
+            recommendations.append(
+                f"🚨 Critical: {total_agents - active_agents} agents down - immediate intervention needed"
+            )
 
         # Infrastructure analysis
         service_ratio = healthy_services / total_services if total_services > 0 else 0
         if service_ratio == 1.0:
             recommendations.append("⚡ All MCP servers operational")
         elif service_ratio >= 0.8:
-            recommendations.append(f"⚡ Infrastructure stable ({healthy_services}/{total_services} healthy)")
+            recommendations.append(
+                f"⚡ Infrastructure stable ({healthy_services}/{total_services} healthy)"
+            )
         elif service_ratio >= 0.5:
-            recommendations.append(f"⚠️ {total_services - healthy_services} MCP servers need attention")
+            recommendations.append(
+                f"⚠️ {total_services - healthy_services} MCP servers need attention"
+            )
         else:
-            recommendations.append(f"🚨 Infrastructure crisis: {total_services - healthy_services} servers failing")
+            recommendations.append(
+                f"🚨 Infrastructure crisis: {total_services - healthy_services} servers failing"
+            )
 
         # Leadership analysis
         leader_ratio = active_leaders / total_leaders if total_leaders > 0 else 0
@@ -11566,18 +12359,22 @@ ${{JSON.stringify(data.data, null, 2)}}
             recommendations.append("⚠️ Leadership capacity reduced - check key agents")
 
         # Registry health
-        if registry_status == 'healthy':
+        if registry_status == "healthy":
             recommendations.append("🌐 Service registry providing full coordination")
         else:
             recommendations.append("🚨 Service registry issues affecting coordination")
 
         # System performance recommendation
-        if overall_status == 'online':
+        if overall_status == "online":
             recommendations.append("✅ Continue monitoring for peak efficiency")
-        elif overall_status == 'warning':
-            recommendations.append("⚠️ Run system diagnostics and address failing components")
+        elif overall_status == "warning":
+            recommendations.append(
+                "⚠️ Run system diagnostics and address failing components"
+            )
         else:
-            recommendations.append("🚨 Emergency protocols: restart critical services immediately")
+            recommendations.append(
+                "🚨 Emergency protocols: restart critical services immediately"
+            )
 
         return " • ".join(recommendations)
 
@@ -11588,7 +12385,9 @@ ${{JSON.stringify(data.data, null, 2)}}
             import subprocess
 
             # Check if Docker is available first
-            docker_check = subprocess.run(["docker", "ps"], capture_output=True, timeout=3)
+            docker_check = subprocess.run(
+                ["docker", "ps"], capture_output=True, timeout=3
+            )
             if docker_check.returncode != 0:
                 return self._generate_fallback_registry_html("Docker not available")
 
@@ -11596,10 +12395,12 @@ ${{JSON.stringify(data.data, null, 2)}}
             registry_data = self._fetch_registry_data()
 
             if not registry_data:
-                return self._generate_fallback_registry_html("Registry data unavailable")
+                return self._generate_fallback_registry_html(
+                    "Registry data unavailable"
+                )
 
             # Generate visualization HTML
-            return f'''
+            return f"""
                 <!-- Registry Statistics Overview -->
                 <div class="card full-width" style="margin-bottom: 2rem;">
                     <h4 style="color: var(--accent-color); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
@@ -11778,7 +12579,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                         }}).join('');
                     }}
                 </script>
-            '''
+            """
 
         except Exception as e:
             return self._generate_fallback_registry_html(str(e)[:100])
@@ -11849,10 +12650,24 @@ ${{JSON.stringify(data.data, null, 2)}}
             SELECT json_agg(row_to_json(registry_stats)) FROM registry_stats;
             """
 
-            result = subprocess.run([
-                "docker", "exec", "boarderframeos_postgres",
-                "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", query
-            ], capture_output=True, text=True, timeout=5)
+            result = subprocess.run(
+                [
+                    "docker",
+                    "exec",
+                    "boarderframeos_postgres",
+                    "psql",
+                    "-U",
+                    "boarderframe",
+                    "-d",
+                    "boarderframeos",
+                    "-t",
+                    "-c",
+                    query,
+                ],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
 
             if result.returncode != 0:
                 return None
@@ -11862,24 +12677,24 @@ ${{JSON.stringify(data.data, null, 2)}}
 
                 # Process the data
                 registry_data = {
-                    'totals': {},
-                    'health_distribution': {'healthy': 0, 'warning': 0, 'critical': 0},
-                    'agents_by_department': {},
-                    'servers': [],
-                    'recent_events': [],
-                    'dependencies': {},
-                    'performance': {
-                        'avg_response_time': '12',
-                        'cache_hit_rate': '92',
-                        'uptime': '99.9'
-                    }
+                    "totals": {},
+                    "health_distribution": {"healthy": 0, "warning": 0, "critical": 0},
+                    "agents_by_department": {},
+                    "servers": [],
+                    "recent_events": [],
+                    "dependencies": {},
+                    "performance": {
+                        "avg_response_time": "12",
+                        "cache_hit_rate": "92",
+                        "uptime": "99.9",
+                    },
                 }
 
                 for stat in stats_data:
-                    registry_data['totals'][stat['type']] = stat['total']
-                    registry_data['health_distribution']['healthy'] += stat['healthy']
-                    registry_data['health_distribution']['warning'] += stat['warning']
-                    registry_data['health_distribution']['critical'] += stat['critical']
+                    registry_data["totals"][stat["type"]] = stat["total"]
+                    registry_data["health_distribution"]["healthy"] += stat["healthy"]
+                    registry_data["health_distribution"]["warning"] += stat["warning"]
+                    registry_data["health_distribution"]["critical"] += stat["critical"]
 
                 # Get agents by department
                 dept_query = """
@@ -11891,19 +12706,39 @@ ${{JSON.stringify(data.data, null, 2)}}
                 LIMIT 10;
                 """
 
-                dept_result = subprocess.run([
-                    "docker", "exec", "boarderframeos_postgres",
-                    "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", dept_query
-                ], capture_output=True, text=True, timeout=5)
+                dept_result = subprocess.run(
+                    [
+                        "docker",
+                        "exec",
+                        "boarderframeos_postgres",
+                        "psql",
+                        "-U",
+                        "boarderframe",
+                        "-d",
+                        "boarderframeos",
+                        "-t",
+                        "-c",
+                        dept_query,
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                )
 
                 if dept_result.returncode == 0:
-                    for line in dept_result.stdout.strip().split('\n'):
-                        if '|' in line:
-                            parts = line.split('|')
+                    for line in dept_result.stdout.strip().split("\n"):
+                        if "|" in line:
+                            parts = line.split("|")
                             if len(parts) >= 2:
                                 dept_name = parts[0].strip()
-                                agent_count = int(parts[1].strip()) if parts[1].strip().isdigit() else 0
-                                registry_data['agents_by_department'][dept_name] = agent_count
+                                agent_count = (
+                                    int(parts[1].strip())
+                                    if parts[1].strip().isdigit()
+                                    else 0
+                                )
+                                registry_data["agents_by_department"][
+                                    dept_name
+                                ] = agent_count
 
                 # Get server details
                 server_query = """
@@ -11913,23 +12748,39 @@ ${{JSON.stringify(data.data, null, 2)}}
                 LIMIT 20;
                 """
 
-                server_result = subprocess.run([
-                    "docker", "exec", "boarderframeos_postgres",
-                    "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", server_query
-                ], capture_output=True, text=True, timeout=5)
+                server_result = subprocess.run(
+                    [
+                        "docker",
+                        "exec",
+                        "boarderframeos_postgres",
+                        "psql",
+                        "-U",
+                        "boarderframe",
+                        "-d",
+                        "boarderframeos",
+                        "-t",
+                        "-c",
+                        server_query,
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                )
 
                 if server_result.returncode == 0:
-                    for line in server_result.stdout.strip().split('\n'):
-                        if '|' in line:
-                            parts = line.split('|')
+                    for line in server_result.stdout.strip().split("\n"):
+                        if "|" in line:
+                            parts = line.split("|")
                             if len(parts) >= 5:
-                                registry_data['servers'].append({
-                                    'name': parts[0].strip(),
-                                    'type': parts[1].strip(),
-                                    'status': parts[2].strip(),
-                                    'health': parts[3].strip(),
-                                    'url': parts[4].strip()
-                                })
+                                registry_data["servers"].append(
+                                    {
+                                        "name": parts[0].strip(),
+                                        "type": parts[1].strip(),
+                                        "status": parts[2].strip(),
+                                        "health": parts[3].strip(),
+                                        "url": parts[4].strip(),
+                                    }
+                                )
 
                 return registry_data
 
@@ -11947,31 +12798,31 @@ ${{JSON.stringify(data.data, null, 2)}}
         if total == 0:
             return '<div style="text-align: center; color: var(--secondary-text);">No data available</div>'
 
-        healthy_pct = (health_data['healthy'] / total) * 100
-        warning_pct = (health_data['warning'] / total) * 100
-        critical_pct = (health_data['critical'] / total) * 100
+        healthy_pct = (health_data["healthy"] / total) * 100
+        warning_pct = (health_data["warning"] / total) * 100
+        critical_pct = (health_data["critical"] / total) * 100
 
-        return f'''
+        return f"""
         <div style="display: flex; height: 20px; border-radius: 10px; overflow: hidden; background: var(--border-color);">
             <div style="width: {healthy_pct}%; background: #10b981; transition: width 0.3s;"></div>
             <div style="width: {warning_pct}%; background: #f59e0b; transition: width 0.3s;"></div>
             <div style="width: {critical_pct}%; background: #ef4444; transition: width 0.3s;"></div>
         </div>
-        '''
+        """
 
     def _generate_department_agent_list(self, dept_data):
         """Generate department agent count list"""
         if not dept_data:
             return '<div style="text-align: center; color: var(--secondary-text);">No department data available</div>'
 
-        html = ''
+        html = ""
         for dept, count in sorted(dept_data.items(), key=lambda x: x[1], reverse=True):
-            html += f'''
+            html += f"""
             <div style="display: flex; justify-content: space-between; padding: 0.5rem; border-bottom: 1px solid var(--border-color);">
                 <span>{dept}</span>
                 <span style="font-weight: 600; color: var(--accent-color);">{count}</span>
             </div>
-            '''
+            """
         return html
 
     def _generate_server_status_list(self, servers):
@@ -11979,12 +12830,16 @@ ${{JSON.stringify(data.data, null, 2)}}
         if not servers:
             return '<div style="text-align: center; color: var(--secondary-text);">No servers registered</div>'
 
-        html = ''
+        html = ""
         for server in servers:
-            status_color = '#10b981' if server['status'] == 'online' else '#ef4444'
-            health_icon = 'fa-check-circle' if server['health'] == 'healthy' else 'fa-exclamation-circle'
+            status_color = "#10b981" if server["status"] == "online" else "#ef4444"
+            health_icon = (
+                "fa-check-circle"
+                if server["health"] == "healthy"
+                else "fa-exclamation-circle"
+            )
 
-            html += f'''
+            html += f"""
             <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px;">
                 <div style="color: {status_color};">
                     <i class="fas {health_icon}"></i>
@@ -11995,7 +12850,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 </div>
                 <div style="font-size: 0.75rem; color: {status_color};">{server['status'].upper()}</div>
             </div>
-            '''
+            """
         return html
 
     def _generate_registry_events(self, events):
@@ -12004,31 +12859,33 @@ ${{JSON.stringify(data.data, null, 2)}}
             return '<div style="text-align: center; color: var(--secondary-text); padding: 2rem;">No recent events</div>'
 
         # For now, return placeholder since we don't have real events yet
-        return '''
+        return """
         <div style="text-align: center; color: var(--secondary-text); padding: 2rem;">
             <i class="fas fa-info-circle" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
             <p>Event streaming will be available when registry service is running</p>
         </div>
-        '''
+        """
 
     def _generate_dependency_visualization(self, dependencies):
         """Generate service dependency visualization"""
-        return '''
+        return """
         <div style="text-align: center; padding: 3rem; color: var(--secondary-text);">
             <i class="fas fa-project-diagram" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
             <p>Service dependency graph visualization</p>
             <p style="font-size: 0.8rem;">Interactive dependency mapping coming soon</p>
         </div>
-        '''
+        """
 
     def _generate_fallback_registry_html(self, error_msg: str = ""):
         """Generate fallback registry content when database is unavailable"""
         # Use local data for fallback
         local_agents = len(self.running_agents)
         total_services = len(self.services_status)
-        healthy_services = len([s for s in self.services_status.values() if s.get('status') == 'healthy'])
+        healthy_services = len(
+            [s for s in self.services_status.values() if s.get("status") == "healthy"]
+        )
 
-        return f'''
+        return f"""
             <div class="card">
                 <h4 style="color: var(--accent-color); margin-bottom: 1rem;">
                     <i class="fas fa-robot"></i> Local Agent Status
@@ -12088,24 +12945,26 @@ ${{JSON.stringify(data.data, null, 2)}}
                     </div>
                 </div>
             </div>
-        '''
+        """
+
 
 # Global dashboard data instance
 dashboard_data = DashboardData()
+
 
 class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/" or self.path == "/index.html":
             self.send_response(200)
-            self.send_header('Content-type', 'text/html')
+            self.send_header("Content-type", "text/html")
             self.end_headers()
 
             html_content = dashboard_data.generate_dashboard_html()
-            self.wfile.write(html_content.encode('utf-8'))
+            self.wfile.write(html_content.encode("utf-8"))
         elif self.path == "/health":
             # Health endpoint for the dashboard itself
             self.send_response(200)
-            self.send_header('Content-type', 'application/json')
+            self.send_header("Content-type", "application/json")
             self.end_headers()
 
             health_data = {
@@ -12113,74 +12972,74 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 "uptime": "Active",
                 "service": "BoarderframeOS Corporate Headquarters",
                 "port": PORT,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
-            self.wfile.write(json.dumps(health_data).encode('utf-8'))
+            self.wfile.write(json.dumps(health_data).encode("utf-8"))
         elif self.path == "/api/screenshot":
             # Screenshot endpoint for UI inspection
             try:
                 screenshot_data = self._capture_screenshot()
                 self.send_response(200)
-                self.send_header('Content-type', 'application/json')
+                self.send_header("Content-type", "application/json")
                 self.end_headers()
 
                 response = {
                     "screenshot": screenshot_data,
                     "timestamp": datetime.now().isoformat(),
                     "status": "success",
-                    "method": "macos_screencapture"
+                    "method": "macos_screencapture",
                 }
-                self.wfile.write(json.dumps(response).encode('utf-8'))
+                self.wfile.write(json.dumps(response).encode("utf-8"))
             except Exception as e:
                 self.send_response(500)
-                self.send_header('Content-type', 'application/json')
+                self.send_header("Content-type", "application/json")
                 self.end_headers()
 
                 error_response = {
                     "status": "error",
                     "message": str(e),
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
                 }
-                self.wfile.write(json.dumps(error_response).encode('utf-8'))
+                self.wfile.write(json.dumps(error_response).encode("utf-8"))
         elif self.path.startswith("/api/screenshot/display/"):
             # Screenshot specific display endpoint
             try:
                 display_num = int(self.path.split("/")[-1])
                 screenshot_data = self._capture_specific_display(display_num)
                 self.send_response(200)
-                self.send_header('Content-type', 'application/json')
+                self.send_header("Content-type", "application/json")
                 self.end_headers()
 
                 response = {
                     "screenshot": screenshot_data,
                     "timestamp": datetime.now().isoformat(),
                     "status": "success",
-                    "method": f"macos_screencapture_display_{display_num}"
+                    "method": f"macos_screencapture_display_{display_num}",
                 }
-                self.wfile.write(json.dumps(response).encode('utf-8'))
+                self.wfile.write(json.dumps(response).encode("utf-8"))
             except Exception as e:
                 self.send_response(500)
-                self.send_header('Content-type', 'application/json')
+                self.send_header("Content-type", "application/json")
                 self.end_headers()
 
                 error_response = {
                     "status": "error",
                     "message": str(e),
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
                 }
-                self.wfile.write(json.dumps(error_response).encode('utf-8'))
+                self.wfile.write(json.dumps(error_response).encode("utf-8"))
         elif self.path == "/api/test":
             # Simple test endpoint to verify API routing works
             self.send_response(200)
-            self.send_header('Content-type', 'application/json')
+            self.send_header("Content-type", "application/json")
             self.end_headers()
 
             response = {
                 "status": "success",
                 "message": "API routing is working",
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
-            self.wfile.write(json.dumps(response).encode('utf-8'))
+            self.wfile.write(json.dumps(response).encode("utf-8"))
         else:
             super().do_GET()
 
@@ -12188,12 +13047,12 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
         """Enhanced global refresh with component selection"""
         try:
             # Parse request body for component selection
-            content_length = int(self.headers.get('Content-Length', 0))
+            content_length = int(self.headers.get("Content-Length", 0))
             if content_length > 0:
                 post_data = self.rfile.read(content_length)
                 try:
-                    request_data = json.loads(post_data.decode('utf-8'))
-                    components = request_data.get('components', None)
+                    request_data = json.loads(post_data.decode("utf-8"))
+                    components = request_data.get("components", None)
                 except:
                     components = None
             else:
@@ -12202,7 +13061,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
             print(f"🔄 Starting enhanced global refresh with components: {components}")
 
             # Check if health_manager exists
-            if not hasattr(dashboard_data, 'health_manager'):
+            if not hasattr(dashboard_data, "health_manager"):
                 raise Exception("HealthDataManager not initialized")
 
             # Run enhanced refresh
@@ -12215,16 +13074,16 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 )
 
                 self.send_response(200)
-                self.send_header('Content-type', 'application/json')
+                self.send_header("Content-type", "application/json")
                 self.end_headers()
 
                 response = {
                     "status": "success",
                     "message": "Enhanced global refresh completed",
                     "result": result,
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
                 }
-                self.wfile.write(json.dumps(response).encode('utf-8'))
+                self.wfile.write(json.dumps(response).encode("utf-8"))
                 print("✅ Enhanced global refresh API response sent successfully")
 
             finally:
@@ -12233,18 +13092,19 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
         except Exception as e:
             print(f"❌ Enhanced global refresh API failed: {str(e)}")
             import traceback
+
             traceback.print_exc()
 
             self.send_response(500)
-            self.send_header('Content-type', 'application/json')
+            self.send_header("Content-type", "application/json")
             self.end_headers()
 
             error_response = {
                 "status": "error",
                 "message": f"Enhanced global refresh failed: {str(e)}",
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
-            self.wfile.write(json.dumps(error_response).encode('utf-8'))
+            self.wfile.write(json.dumps(error_response).encode("utf-8"))
 
     def _handle_component_refresh(self, component):
         """Handle specific component refresh requests"""
@@ -12252,7 +13112,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
             print(f"🔄 Starting component refresh for: {component}")
 
             # Check if health_manager exists
-            if not hasattr(dashboard_data, 'health_manager'):
+            if not hasattr(dashboard_data, "health_manager"):
                 raise Exception("HealthDataManager not initialized")
 
             # Run component refresh
@@ -12265,7 +13125,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 )
 
                 self.send_response(200)
-                self.send_header('Content-type', 'application/json')
+                self.send_header("Content-type", "application/json")
                 self.end_headers()
 
                 response = {
@@ -12273,10 +13133,12 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                     "message": f"Component {component} refresh completed",
                     "component": component,
                     "success": success,
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
                 }
-                self.wfile.write(json.dumps(response).encode('utf-8'))
-                print(f"✅ Component {component} refresh API response sent successfully")
+                self.wfile.write(json.dumps(response).encode("utf-8"))
+                print(
+                    f"✅ Component {component} refresh API response sent successfully"
+                )
 
             finally:
                 loop.close()
@@ -12284,19 +13146,20 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
         except Exception as e:
             print(f"❌ Component {component} refresh API failed: {str(e)}")
             import traceback
+
             traceback.print_exc()
 
             self.send_response(500)
-            self.send_header('Content-type', 'application/json')
+            self.send_header("Content-type", "application/json")
             self.end_headers()
 
             error_response = {
                 "status": "error",
                 "message": f"Component {component} refresh failed: {str(e)}",
                 "component": component,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
-            self.wfile.write(json.dumps(error_response).encode('utf-8'))
+            self.wfile.write(json.dumps(error_response).encode("utf-8"))
 
     def do_POST(self):
         if self.path == "/api/enhanced/refresh":
@@ -12316,27 +13179,27 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 loop.close()
 
                 self.send_response(200)
-                self.send_header('Content-type', 'application/json')
+                self.send_header("Content-type", "application/json")
                 self.end_headers()
 
                 response = {
                     "status": "success",
                     "message": "Database metrics refreshed successfully",
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
                 }
-                self.wfile.write(json.dumps(response).encode('utf-8'))
+                self.wfile.write(json.dumps(response).encode("utf-8"))
 
             except Exception as e:
                 self.send_response(500)
-                self.send_header('Content-type', 'application/json')
+                self.send_header("Content-type", "application/json")
                 self.end_headers()
 
                 error_response = {
                     "status": "error",
                     "message": str(e),
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
                 }
-                self.wfile.write(json.dumps(error_response).encode('utf-8'))
+                self.wfile.write(json.dumps(error_response).encode("utf-8"))
         elif self.path == "/api/enhanced/refresh":
             # Enhanced global refresh with component selection
             self._handle_enhanced_global_refresh()
@@ -12350,7 +13213,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 print("🔄 Starting global refresh API call...")
 
                 # Check if health_manager exists
-                if not hasattr(dashboard_data, 'health_manager'):
+                if not hasattr(dashboard_data, "health_manager"):
                     raise Exception("HealthDataManager not initialized")
 
                 print("✅ HealthDataManager found, starting refresh...")
@@ -12368,7 +13231,9 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
 
                     # Mark as success
                     success = True
-                    dashboard_data.unified_data['last_refresh'] = datetime.now().isoformat()
+                    dashboard_data.unified_data["last_refresh"] = (
+                        datetime.now().isoformat()
+                    )
                     dashboard_data.last_update = datetime.now().isoformat()
 
                     print(f"✅ Simplified global refresh completed successfully")
@@ -12376,6 +13241,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 except Exception as refresh_error:
                     print(f"❌ Refresh execution failed: {refresh_error}")
                     import traceback
+
                     traceback.print_exc()
                     raise refresh_error
                 finally:
@@ -12383,16 +13249,16 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
 
                 if success:
                     self.send_response(200)
-                    self.send_header('Content-type', 'application/json')
+                    self.send_header("Content-type", "application/json")
                     self.end_headers()
 
                     response = {
                         "status": "success",
                         "message": "Global refresh completed successfully",
                         "components_refreshed": 16,
-                        "timestamp": datetime.now().isoformat()
+                        "timestamp": datetime.now().isoformat(),
                     }
-                    self.wfile.write(json.dumps(response).encode('utf-8'))
+                    self.wfile.write(json.dumps(response).encode("utf-8"))
                     print("✅ Global refresh API response sent successfully")
                 else:
                     raise Exception("Global refresh returned False")
@@ -12400,52 +13266,50 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
             except Exception as e:
                 print(f"❌ Global refresh API failed: {str(e)}")
                 import traceback
+
                 traceback.print_exc()
 
                 self.send_response(500)
-                self.send_header('Content-type', 'application/json')
+                self.send_header("Content-type", "application/json")
                 self.end_headers()
 
                 error_response = {
                     "status": "error",
                     "message": f"Global refresh failed: {str(e)}",
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
                 }
-                self.wfile.write(json.dumps(error_response).encode('utf-8'))
+                self.wfile.write(json.dumps(error_response).encode("utf-8"))
         elif self.path == "/api/chat":
             # Handle chat message
             try:
-                content_length = int(self.headers['Content-Length'])
+                content_length = int(self.headers["Content-Length"])
                 post_data = self.rfile.read(content_length)
-                data = json.loads(post_data.decode('utf-8'))
+                data = json.loads(post_data.decode("utf-8"))
 
-                agent_name = data.get('agent', '')
-                message = data.get('message', '')
+                agent_name = data.get("agent", "")
+                message = data.get("message", "")
 
                 # Send message to agent via message bus
                 response_text = self._send_to_agent(agent_name, message)
 
                 self.send_response(200)
-                self.send_header('Content-type', 'application/json')
+                self.send_header("Content-type", "application/json")
                 self.end_headers()
 
                 response = {
                     "status": "success",
                     "agent": agent_name,
-                    "response": response_text
+                    "response": response_text,
                 }
-                self.wfile.write(json.dumps(response).encode('utf-8'))
+                self.wfile.write(json.dumps(response).encode("utf-8"))
 
             except Exception as e:
                 self.send_response(500)
-                self.send_header('Content-type', 'application/json')
+                self.send_header("Content-type", "application/json")
                 self.end_headers()
 
-                error_response = {
-                    "status": "error",
-                    "message": str(e)
-                }
-                self.wfile.write(json.dumps(error_response).encode('utf-8'))
+                error_response = {"status": "error", "message": str(e)}
+                self.wfile.write(json.dumps(error_response).encode("utf-8"))
         else:
             super().do_POST()
 
@@ -12463,12 +13327,14 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 # Route to fresh agents using Cortex + LangGraph
                 if agent_name.lower() == "solomon":
                     from agents.solomon.solomon_fresh import create_fresh_solomon
+
                     agent = loop.run_until_complete(create_fresh_solomon())
                     response = loop.run_until_complete(agent.handle_user_chat(message))
                     return response
 
                 elif agent_name.lower() == "david":
                     from agents.david.david_fresh import create_fresh_david
+
                     agent = loop.run_until_complete(create_fresh_david())
                     response = loop.run_until_complete(agent.handle_user_chat(message))
                     return response
@@ -12476,15 +13342,21 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 elif agent_name.lower() == "adam":
                     # Use orchestrator for agent creation requests
                     from core.cortex_langgraph_orchestrator import get_orchestrator
+
                     orchestrator = loop.run_until_complete(get_orchestrator())
-                    result = loop.run_until_complete(orchestrator.process_user_request(message))
+                    result = loop.run_until_complete(
+                        orchestrator.process_user_request(message)
+                    )
                     return result["response"]
 
                 else:
                     # For other agents, use orchestrator as well
                     from core.cortex_langgraph_orchestrator import get_orchestrator
+
                     orchestrator = loop.run_until_complete(get_orchestrator())
-                    result = loop.run_until_complete(orchestrator.process_user_request(message))
+                    result = loop.run_until_complete(
+                        orchestrator.process_user_request(message)
+                    )
                     return result["response"]
 
             finally:
@@ -12503,7 +13375,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
 
         try:
             # Create temporary file
-            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp_file:
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp_file:
                 temp_path = tmp_file.name
 
             # Try multiple approaches to find the Corporate Headquarters
@@ -12512,7 +13384,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
             # Approach 1: Try to find and focus Safari with Corporate Headquarters
             try:
                 # Find Safari windows with Corporate Headquarters
-                applescript = '''
+                applescript = """
                 tell application "Safari"
                     set windowList to every window
                     repeat with i from 1 to count of windowList
@@ -12531,23 +13403,31 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                     end repeat
                     return false
                 end tell
-                '''
+                """
 
-                result = subprocess.run([
-                    'osascript', '-e', applescript
-                ], timeout=3, capture_output=True, text=True)
+                result = subprocess.run(
+                    ["osascript", "-e", applescript],
+                    timeout=3,
+                    capture_output=True,
+                    text=True,
+                )
 
                 if result.returncode == 0 and "true" in result.stdout:
                     time.sleep(1)  # Wait for window to come to front
 
                     # Capture the active window
-                    capture_result = subprocess.run([
-                        'screencapture',
-                        '-x',  # No camera sound
-                        '-t', 'png',  # PNG format
-                        '-w',  # Capture active window
-                        temp_path
-                    ], timeout=10, capture_output=True)
+                    capture_result = subprocess.run(
+                        [
+                            "screencapture",
+                            "-x",  # No camera sound
+                            "-t",
+                            "png",  # PNG format
+                            "-w",  # Capture active window
+                            temp_path,
+                        ],
+                        timeout=10,
+                        capture_output=True,
+                    )
 
                     if capture_result.returncode == 0:
                         screenshot_captured = True
@@ -12559,13 +13439,19 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
             if not screenshot_captured:
                 # Capture built-in display (display 1) directly
                 try:
-                    capture_result = subprocess.run([
-                        'screencapture',
-                        '-x',  # No camera sound
-                        '-t', 'png',  # PNG format
-                        '-D', '1',  # Built-in MacBook display
-                        temp_path
-                    ], timeout=10, capture_output=True)
+                    capture_result = subprocess.run(
+                        [
+                            "screencapture",
+                            "-x",  # No camera sound
+                            "-t",
+                            "png",  # PNG format
+                            "-D",
+                            "1",  # Built-in MacBook display
+                            temp_path,
+                        ],
+                        timeout=10,
+                        capture_output=True,
+                    )
 
                     if capture_result.returncode == 0:
                         screenshot_captured = True
@@ -12575,18 +13461,23 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
 
             # Approach 3: Fallback to default full screen
             if not screenshot_captured:
-                subprocess.run([
-                    'screencapture',
-                    '-x',  # No camera sound
-                    '-t', 'png',  # PNG format
-                    temp_path
-                ], timeout=10, capture_output=True)
+                subprocess.run(
+                    [
+                        "screencapture",
+                        "-x",  # No camera sound
+                        "-t",
+                        "png",  # PNG format
+                        temp_path,
+                    ],
+                    timeout=10,
+                    capture_output=True,
+                )
                 screenshot_captured = True
 
             # Read and encode the screenshot
-            with open(temp_path, 'rb') as f:
+            with open(temp_path, "rb") as f:
                 screenshot_bytes = f.read()
-                screenshot_base64 = base64.b64encode(screenshot_bytes).decode('utf-8')
+                screenshot_base64 = base64.b64encode(screenshot_bytes).decode("utf-8")
 
             # Cleanup
             os.unlink(temp_path)
@@ -12595,7 +13486,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
 
         except Exception as e:
             # Cleanup on error
-            if 'temp_path' in locals() and os.path.exists(temp_path):
+            if "temp_path" in locals() and os.path.exists(temp_path):
                 os.unlink(temp_path)
             raise Exception(f"Screenshot capture failed: {str(e)}")
 
@@ -12608,14 +13499,14 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
 
         try:
             # Create temporary file
-            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp_file:
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp_file:
                 temp_path = tmp_file.name
 
             # If display_num is 0, try Safari-specific capture on built-in display
             if display_num == 0:
                 # Focus Safari with Corporate Headquarters first
                 try:
-                    applescript = '''
+                    applescript = """
                     tell application "Safari"
                         set windowList to every window
                         repeat with i from 1 to count of windowList
@@ -12634,30 +13525,42 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                         end repeat
                         return false
                     end tell
-                    '''
+                    """
 
-                    result = subprocess.run([
-                        'osascript', '-e', applescript
-                    ], timeout=3, capture_output=True, text=True)
+                    result = subprocess.run(
+                        ["osascript", "-e", applescript],
+                        timeout=3,
+                        capture_output=True,
+                        text=True,
+                    )
 
                     if result.returncode == 0 and "true" in result.stdout:
                         import time
+
                         time.sleep(1)  # Wait for window to come to front
 
                         # Capture the built-in display (usually display 1)
-                        capture_result = subprocess.run([
-                            'screencapture',
-                            '-x',  # No camera sound
-                            '-t', 'png',  # PNG format
-                            '-D', '1',  # Built-in display
-                            temp_path
-                        ], timeout=10, capture_output=True)
+                        capture_result = subprocess.run(
+                            [
+                                "screencapture",
+                                "-x",  # No camera sound
+                                "-t",
+                                "png",  # PNG format
+                                "-D",
+                                "1",  # Built-in display
+                                temp_path,
+                            ],
+                            timeout=10,
+                            capture_output=True,
+                        )
 
                         if capture_result.returncode == 0:
                             # Read and encode the screenshot
-                            with open(temp_path, 'rb') as f:
+                            with open(temp_path, "rb") as f:
                                 screenshot_bytes = f.read()
-                                screenshot_base64 = base64.b64encode(screenshot_bytes).decode('utf-8')
+                                screenshot_base64 = base64.b64encode(
+                                    screenshot_bytes
+                                ).decode("utf-8")
 
                             # Cleanup
                             os.unlink(temp_path)
@@ -12667,31 +13570,42 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                     pass  # Fallback to display capture
 
             # Fallback: capture specified display directly
-            capture_result = subprocess.run([
-                'screencapture',
-                '-x',  # No camera sound
-                '-t', 'png',  # PNG format
-                '-D', str(display_num) if display_num > 0 else '1',
-                temp_path
-            ], timeout=10, capture_output=True)
+            capture_result = subprocess.run(
+                [
+                    "screencapture",
+                    "-x",  # No camera sound
+                    "-t",
+                    "png",  # PNG format
+                    "-D",
+                    str(display_num) if display_num > 0 else "1",
+                    temp_path,
+                ],
+                timeout=10,
+                capture_output=True,
+            )
 
             if capture_result.returncode == 0:
                 # Read and encode the screenshot
-                with open(temp_path, 'rb') as f:
+                with open(temp_path, "rb") as f:
                     screenshot_bytes = f.read()
-                    screenshot_base64 = base64.b64encode(screenshot_bytes).decode('utf-8')
+                    screenshot_base64 = base64.b64encode(screenshot_bytes).decode(
+                        "utf-8"
+                    )
 
                 # Cleanup
                 os.unlink(temp_path)
                 return screenshot_base64
             else:
-                raise Exception(f"screencapture failed with return code {capture_result.returncode}")
+                raise Exception(
+                    f"screencapture failed with return code {capture_result.returncode}"
+                )
 
         except Exception as e:
             # Cleanup on error
-            if 'temp_path' in locals() and os.path.exists(temp_path):
+            if "temp_path" in locals() and os.path.exists(temp_path):
                 os.unlink(temp_path)
             raise Exception(f"Display {display_num} screenshot failed: {str(e)}")
+
 
 def _send_to_agent_flask(agent_name: str, message: str) -> str:
     """Send message to agent via message bus (Flask version)"""
@@ -12714,9 +13628,9 @@ def _send_to_agent_flask(agent_name: str, message: str) -> str:
                     task={
                         "message": message,
                         "type": "user_chat",
-                        "user": "dashboard_user"
+                        "user": "dashboard_user",
                     },
-                    priority=MessagePriority.NORMAL
+                    priority=MessagePriority.NORMAL,
                 )
             )
 
@@ -12730,16 +13644,29 @@ def _send_to_agent_flask(agent_name: str, message: str) -> str:
     except Exception as e:
         return f"Error communicating with {agent_name.title()}: {str(e)}"
 
+
 def signal_handler(sig, frame):
     print("\n🛑 Shutting down BoarderframeOS Corporate Headquarters...")
     dashboard_data.running = False
     sys.exit(0)
 
+
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description='BoarderframeOS Corporate Headquarters')
-    parser.add_argument('--no-flask', action='store_true', help='Use original HTTP server instead of Flask')
-    parser.add_argument('--enable-reload', action='store_true', help='Enable Flask auto-reload (disabled by default)')
+
+    parser = argparse.ArgumentParser(
+        description="BoarderframeOS Corporate Headquarters"
+    )
+    parser.add_argument(
+        "--no-flask",
+        action="store_true",
+        help="Use original HTTP server instead of Flask",
+    )
+    parser.add_argument(
+        "--enable-reload",
+        action="store_true",
+        help="Enable Flask auto-reload (disabled by default)",
+    )
     args = parser.parse_args()
 
     signal.signal(signal.SIGINT, signal_handler)
@@ -12770,87 +13697,94 @@ def main():
         if use_flask:
             # Use Flask development server with auto-reload
             from flask import Flask, jsonify, request
-            app = Flask(__name__)
-            app.config['TEMPLATES_AUTO_RELOAD'] = True
 
-            @app.route('/')
+            app = Flask(__name__)
+            app.config["TEMPLATES_AUTO_RELOAD"] = True
+
+            @app.route("/")
             def dashboard():
                 return dashboard_data.generate_dashboard_html()
 
-            @app.route('/health')
+            @app.route("/health")
             def health():
                 return {
                     "status": "healthy",
                     "uptime": "Active",
                     "services": len(dashboard_data.services_status),
-                    "agents": len(dashboard_data.running_agents)
+                    "agents": len(dashboard_data.running_agents),
                 }
 
-            @app.route('/api/health-summary')
+            @app.route("/api/health-summary")
             def health_summary():
                 """Get comprehensive health summary"""
                 return jsonify(dashboard_data.get_health_summary())
 
-            @app.route('/api/health-history/<component>')
+            @app.route("/api/health-history/<component>")
             def health_history(component):
                 """Get health history for a specific component"""
                 history = dashboard_data.health_history.get(component, [])
-                return jsonify({
-                    'component': component,
-                    'history': history[-20:]  # Last 20 events
-                })
+                return jsonify(
+                    {"component": component, "history": history[-20:]}  # Last 20 events
+                )
 
-            @app.route('/api/monitoring-config')
+            @app.route("/api/monitoring-config")
             def monitoring_config():
                 """Get current monitoring configuration"""
                 return jsonify(dashboard_data.monitoring_config)
 
-            @app.route('/api/chat', methods=['POST'])
+            @app.route("/api/chat", methods=["POST"])
             def chat():
                 try:
                     data = request.get_json()
-                    agent_name = data.get('agent', '')
-                    message = data.get('message', '')
+                    agent_name = data.get("agent", "")
+                    message = data.get("message", "")
 
                     # Send message to agent via message bus
                     response_text = _send_to_agent_flask(agent_name, message)
 
-                    return jsonify({
-                        "status": "success",
-                        "agent": agent_name,
-                        "response": response_text
-                    })
+                    return jsonify(
+                        {
+                            "status": "success",
+                            "agent": agent_name,
+                            "response": response_text,
+                        }
+                    )
 
                 except Exception as e:
-                    return jsonify({
-                        "status": "error",
-                        "message": str(e)
-                    }), 500
+                    return jsonify({"status": "error", "message": str(e)}), 500
 
-            @app.route('/api/database/refresh', methods=['POST'])
+            @app.route("/api/database/refresh", methods=["POST"])
             def database_refresh():
                 try:
                     # Trigger immediate database health update
                     import asyncio
+
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
                     loop.run_until_complete(dashboard_data._update_database_health())
                     loop.close()
 
-                    return jsonify({
-                        "status": "success",
-                        "message": "Database metrics refreshed successfully",
-                        "timestamp": datetime.now().isoformat()
-                    })
+                    return jsonify(
+                        {
+                            "status": "success",
+                            "message": "Database metrics refreshed successfully",
+                            "timestamp": datetime.now().isoformat(),
+                        }
+                    )
 
                 except Exception as e:
-                    return jsonify({
-                        "status": "error",
-                        "message": str(e),
-                        "timestamp": datetime.now().isoformat()
-                    }), 500
+                    return (
+                        jsonify(
+                            {
+                                "status": "error",
+                                "message": str(e),
+                                "timestamp": datetime.now().isoformat(),
+                            }
+                        ),
+                        500,
+                    )
 
-            @app.route('/api/screenshot')
+            @app.route("/api/screenshot")
             def screenshot():
                 try:
                     # Create a mock handler to use screenshot functionality
@@ -12861,42 +13795,52 @@ def main():
                     mock_handler = MockHandler()
                     screenshot_data = mock_handler._capture_screenshot()
 
-                    return jsonify({
-                        "screenshot": screenshot_data,
-                        "timestamp": datetime.now().isoformat(),
-                        "status": "success",
-                        "method": "macos_screencapture"
-                    })
+                    return jsonify(
+                        {
+                            "screenshot": screenshot_data,
+                            "timestamp": datetime.now().isoformat(),
+                            "status": "success",
+                            "method": "macos_screencapture",
+                        }
+                    )
                 except Exception as e:
-                    return jsonify({
-                        "status": "error",
-                        "message": str(e),
-                        "timestamp": datetime.now().isoformat()
-                    }), 500
+                    return (
+                        jsonify(
+                            {
+                                "status": "error",
+                                "message": str(e),
+                                "timestamp": datetime.now().isoformat(),
+                            }
+                        ),
+                        500,
+                    )
 
-            @app.route('/api/test')
+            @app.route("/api/test")
             def api_test():
                 """Simple test endpoint to verify API routing works"""
-                return jsonify({
-                    "status": "success",
-                    "message": "API routing is working",
-                    "timestamp": datetime.now().isoformat()
-                })
+                return jsonify(
+                    {
+                        "status": "success",
+                        "message": "API routing is working",
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                )
 
-            @app.route('/api/global/refresh', methods=['POST'])
+            @app.route("/api/global/refresh", methods=["POST"])
             def global_refresh():
                 """Handle global refresh request"""
                 try:
                     print("🔄 Starting global refresh API call...")
 
                     # Check if health_manager exists
-                    if not hasattr(dashboard_data, 'health_manager'):
+                    if not hasattr(dashboard_data, "health_manager"):
                         raise Exception("HealthDataManager not initialized")
 
                     print("✅ HealthDataManager found, starting refresh...")
 
                     # Trigger comprehensive global refresh
                     import asyncio
+
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
 
@@ -12909,7 +13853,9 @@ def main():
 
                         # Mark as success
                         success = True
-                        dashboard_data.unified_data['last_refresh'] = datetime.now().isoformat()
+                        dashboard_data.unified_data["last_refresh"] = (
+                            datetime.now().isoformat()
+                        )
                         dashboard_data.last_update = datetime.now().isoformat()
 
                         print(f"✅ Simplified global refresh completed successfully")
@@ -12917,33 +13863,42 @@ def main():
                     except Exception as refresh_error:
                         print(f"❌ Refresh execution failed: {refresh_error}")
                         import traceback
+
                         traceback.print_exc()
                         raise refresh_error
                     finally:
                         loop.close()
 
                     if success:
-                        return jsonify({
-                            "status": "success",
-                            "message": "Global refresh completed successfully",
-                            "components_refreshed": 16,
-                            "timestamp": datetime.now().isoformat()
-                        })
+                        return jsonify(
+                            {
+                                "status": "success",
+                                "message": "Global refresh completed successfully",
+                                "components_refreshed": 16,
+                                "timestamp": datetime.now().isoformat(),
+                            }
+                        )
                     else:
                         raise Exception("Global refresh returned False")
 
                 except Exception as e:
                     print(f"❌ Global refresh API failed: {str(e)}")
                     import traceback
+
                     traceback.print_exc()
 
-                    return jsonify({
-                        "status": "error",
-                        "message": str(e),
-                        "timestamp": datetime.now().isoformat()
-                    }), 500
+                    return (
+                        jsonify(
+                            {
+                                "status": "error",
+                                "message": str(e),
+                                "timestamp": datetime.now().isoformat(),
+                            }
+                        ),
+                        500,
+                    )
 
-            @app.route('/api/systems/refresh', methods=['POST'])
+            @app.route("/api/systems/refresh", methods=["POST"])
             def systems_refresh():
                 """Handle systems refresh request"""
                 try:
@@ -12951,6 +13906,7 @@ def main():
 
                     # Trigger systems health check refresh
                     import asyncio
+
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
 
@@ -12964,13 +13920,19 @@ def main():
                         dashboard_data._run_initial_health_check()
 
                         # Update database health specifically
-                        loop.run_until_complete(dashboard_data._update_database_health())
+                        loop.run_until_complete(
+                            dashboard_data._update_database_health()
+                        )
 
                         # Ensure database health is synced to unified_data
-                        dashboard_data.unified_data['database_health'] = getattr(dashboard_data, 'database_health_metrics', {})
+                        dashboard_data.unified_data["database_health"] = getattr(
+                            dashboard_data, "database_health_metrics", {}
+                        )
 
                         # Update timestamp
-                        dashboard_data.unified_data['last_systems_refresh'] = datetime.now().isoformat()
+                        dashboard_data.unified_data["last_systems_refresh"] = (
+                            datetime.now().isoformat()
+                        )
                         dashboard_data.last_update = datetime.now().isoformat()
 
                         print(f"✅ Systems refresh completed successfully")
@@ -12978,30 +13940,39 @@ def main():
                     except Exception as refresh_error:
                         print(f"❌ Systems refresh execution failed: {refresh_error}")
                         import traceback
+
                         traceback.print_exc()
                         raise refresh_error
                     finally:
                         loop.close()
 
-                    return jsonify({
-                        "status": "success",
-                        "message": "Systems refresh completed successfully",
-                        "systems_checked": 11,
-                        "timestamp": datetime.now().isoformat()
-                    })
+                    return jsonify(
+                        {
+                            "status": "success",
+                            "message": "Systems refresh completed successfully",
+                            "systems_checked": 11,
+                            "timestamp": datetime.now().isoformat(),
+                        }
+                    )
 
                 except Exception as e:
                     print(f"❌ Systems refresh API failed: {str(e)}")
                     import traceback
+
                     traceback.print_exc()
 
-                    return jsonify({
-                        "status": "error",
-                        "message": str(e),
-                        "timestamp": datetime.now().isoformat()
-                    }), 500
+                    return (
+                        jsonify(
+                            {
+                                "status": "error",
+                                "message": str(e),
+                                "timestamp": datetime.now().isoformat(),
+                            }
+                        ),
+                        500,
+                    )
 
-            @app.route('/api/enhanced/refresh', methods=['POST'])
+            @app.route("/api/enhanced/refresh", methods=["POST"])
             def enhanced_global_refresh():
                 """Enhanced global refresh with component selection"""
                 try:
@@ -13009,30 +13980,37 @@ def main():
                     components = None
                     if request.is_json:
                         data = request.get_json()
-                        components = data.get('components', None) if data else None
+                        components = data.get("components", None) if data else None
 
-                    print(f"🔄 Starting enhanced global refresh with components: {components}")
+                    print(
+                        f"🔄 Starting enhanced global refresh with components: {components}"
+                    )
 
                     # Check if health_manager exists
-                    if not hasattr(dashboard_data, 'health_manager'):
+                    if not hasattr(dashboard_data, "health_manager"):
                         raise Exception("HealthDataManager not initialized")
 
                     # Run enhanced refresh
                     import asyncio
+
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
 
                     try:
                         result = loop.run_until_complete(
-                            dashboard_data.health_manager.enhanced_global_refresh(components)
+                            dashboard_data.health_manager.enhanced_global_refresh(
+                                components
+                            )
                         )
 
-                        return jsonify({
-                            "status": "success",
-                            "message": "Enhanced global refresh completed",
-                            "result": result,
-                            "timestamp": datetime.now().isoformat()
-                        })
+                        return jsonify(
+                            {
+                                "status": "success",
+                                "message": "Enhanced global refresh completed",
+                                "result": result,
+                                "timestamp": datetime.now().isoformat(),
+                            }
+                        )
 
                     finally:
                         loop.close()
@@ -13040,26 +14018,33 @@ def main():
                 except Exception as e:
                     print(f"❌ Enhanced global refresh API failed: {str(e)}")
                     import traceback
+
                     traceback.print_exc()
 
-                    return jsonify({
-                        "status": "error",
-                        "message": f"Enhanced global refresh failed: {str(e)}",
-                        "timestamp": datetime.now().isoformat()
-                    }), 500
+                    return (
+                        jsonify(
+                            {
+                                "status": "error",
+                                "message": f"Enhanced global refresh failed: {str(e)}",
+                                "timestamp": datetime.now().isoformat(),
+                            }
+                        ),
+                        500,
+                    )
 
-            @app.route('/api/refresh/<component>', methods=['POST'])
+            @app.route("/api/refresh/<component>", methods=["POST"])
             def component_refresh(component):
                 """Handle specific component refresh requests"""
                 try:
                     print(f"🔄 Starting component refresh for: {component}")
 
                     # Check if health_manager exists
-                    if not hasattr(dashboard_data, 'health_manager'):
+                    if not hasattr(dashboard_data, "health_manager"):
                         raise Exception("HealthDataManager not initialized")
 
                     # Run component refresh
                     import asyncio
+
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
 
@@ -13068,13 +14053,15 @@ def main():
                             dashboard_data.health_manager._refresh_component(component)
                         )
 
-                        return jsonify({
-                            "status": "success" if success else "partial_success",
-                            "message": f"Component {component} refresh completed",
-                            "component": component,
-                            "success": success,
-                            "timestamp": datetime.now().isoformat()
-                        })
+                        return jsonify(
+                            {
+                                "status": "success" if success else "partial_success",
+                                "message": f"Component {component} refresh completed",
+                                "component": component,
+                                "success": success,
+                                "timestamp": datetime.now().isoformat(),
+                            }
+                        )
 
                     finally:
                         loop.close()
@@ -13082,34 +14069,47 @@ def main():
                 except Exception as e:
                     print(f"❌ Component {component} refresh API failed: {str(e)}")
                     import traceback
+
                     traceback.print_exc()
 
-                    return jsonify({
-                        "status": "error",
-                        "message": f"Component {component} refresh failed: {str(e)}",
-                        "component": component,
-                        "timestamp": datetime.now().isoformat()
-                    }), 500
+                    return (
+                        jsonify(
+                            {
+                                "status": "error",
+                                "message": f"Component {component} refresh failed: {str(e)}",
+                                "component": component,
+                                "timestamp": datetime.now().isoformat(),
+                            }
+                        ),
+                        500,
+                    )
 
-            @app.route('/api/header-status-dropdown')
+            @app.route("/api/header-status-dropdown")
             def get_header_status_dropdown():
                 """Get updated header status dropdown content"""
                 try:
                     # Generate fresh header dropdown HTML
                     dropdown_html = dashboard_data._generate_header_status_dropdown()
-                    return jsonify({
-                        "status": "success",
-                        "dropdown_html": dropdown_html,
-                        "timestamp": datetime.now().isoformat()
-                    })
+                    return jsonify(
+                        {
+                            "status": "success",
+                            "dropdown_html": dropdown_html,
+                            "timestamp": datetime.now().isoformat(),
+                        }
+                    )
                 except Exception as e:
-                    return jsonify({
-                        "status": "error",
-                        "message": str(e),
-                        "timestamp": datetime.now().isoformat()
-                    }), 500
+                    return (
+                        jsonify(
+                            {
+                                "status": "error",
+                                "message": str(e),
+                                "timestamp": datetime.now().isoformat(),
+                            }
+                        ),
+                        500,
+                    )
 
-            @app.route('/api/registry/events')
+            @app.route("/api/registry/events")
             def registry_events():
                 """Get recent registry events"""
                 try:
@@ -13129,21 +14129,39 @@ def main():
                     LIMIT 20;
                     """
 
-                    result = subprocess.run([
-                        "docker", "exec", "boarderframeos_postgres",
-                        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", query
-                    ], capture_output=True, text=True, timeout=5)
+                    result = subprocess.run(
+                        [
+                            "docker",
+                            "exec",
+                            "boarderframeos_postgres",
+                            "psql",
+                            "-U",
+                            "boarderframe",
+                            "-d",
+                            "boarderframeos",
+                            "-t",
+                            "-c",
+                            query,
+                        ],
+                        capture_output=True,
+                        text=True,
+                        timeout=5,
+                    )
 
                     events = []
 
                     if result.returncode == 0:
-                        for line in result.stdout.strip().split('\n'):
-                            if '|' in line:
-                                parts = line.split('|')
+                        for line in result.stdout.strip().split("\n"):
+                            if "|" in line:
+                                parts = line.split("|")
                                 if len(parts) >= 5:
                                     event_data = {}
                                     try:
-                                        event_data = json.loads(parts[4].strip()) if parts[4].strip() else {}
+                                        event_data = (
+                                            json.loads(parts[4].strip())
+                                            if parts[4].strip()
+                                            else {}
+                                        )
                                     except:
                                         pass
 
@@ -13160,123 +14178,154 @@ def main():
                                     elif event_type == "UNREGISTERED":
                                         description = f"{entity_type.title()} removed from registry"
                                     elif event_type == "STATUS_CHANGED":
-                                        old_status = event_data.get('old_status', 'unknown')
-                                        new_status = event_data.get('new_status', 'unknown')
+                                        old_status = event_data.get(
+                                            "old_status", "unknown"
+                                        )
+                                        new_status = event_data.get(
+                                            "new_status", "unknown"
+                                        )
                                         description = f"Status changed from {old_status} to {new_status}"
                                     elif event_type == "HEARTBEAT":
                                         description = "Heartbeat received"
                                     else:
-                                        description = event_type.replace('_', ' ').title()
+                                        description = event_type.replace(
+                                            "_", " "
+                                        ).title()
 
-                                    events.append({
-                                        'type': event_type,
-                                        'entity_type': entity_type,
-                                        'entity_id': entity_id,
-                                        'entity_name': event_data.get('name', entity_id[:8] + '...'),
-                                        'description': description,
-                                        'timestamp': timestamp.split('.')[0] if '.' in timestamp else timestamp
-                                    })
+                                    events.append(
+                                        {
+                                            "type": event_type,
+                                            "entity_type": entity_type,
+                                            "entity_id": entity_id,
+                                            "entity_name": event_data.get(
+                                                "name", entity_id[:8] + "..."
+                                            ),
+                                            "description": description,
+                                            "timestamp": (
+                                                timestamp.split(".")[0]
+                                                if "." in timestamp
+                                                else timestamp
+                                            ),
+                                        }
+                                    )
 
                     # If no events from database, generate some sample events
                     if not events:
                         from datetime import datetime, timedelta
+
                         now = datetime.now()
                         sample_events = [
                             {
-                                'type': 'REGISTERED',
-                                'entity_type': 'agent',
-                                'entity_id': 'agent-001',
-                                'entity_name': 'DataProcessor',
-                                'description': 'New agent registered',
-                                'timestamp': (now - timedelta(minutes=5)).strftime('%Y-%m-%d %H:%M:%S')
+                                "type": "REGISTERED",
+                                "entity_type": "agent",
+                                "entity_id": "agent-001",
+                                "entity_name": "DataProcessor",
+                                "description": "New agent registered",
+                                "timestamp": (now - timedelta(minutes=5)).strftime(
+                                    "%Y-%m-%d %H:%M:%S"
+                                ),
                             },
                             {
-                                'type': 'STATUS_CHANGED',
-                                'entity_type': 'server',
-                                'entity_id': 'server-mcp-001',
-                                'entity_name': 'Analytics Server',
-                                'description': 'Status changed from offline to online',
-                                'timestamp': (now - timedelta(minutes=10)).strftime('%Y-%m-%d %H:%M:%S')
+                                "type": "STATUS_CHANGED",
+                                "entity_type": "server",
+                                "entity_id": "server-mcp-001",
+                                "entity_name": "Analytics Server",
+                                "description": "Status changed from offline to online",
+                                "timestamp": (now - timedelta(minutes=10)).strftime(
+                                    "%Y-%m-%d %H:%M:%S"
+                                ),
                             },
                             {
-                                'type': 'HEARTBEAT',
-                                'entity_type': 'agent',
-                                'entity_id': 'agent-002',
-                                'entity_name': 'ReportGenerator',
-                                'description': 'Heartbeat received',
-                                'timestamp': (now - timedelta(minutes=2)).strftime('%Y-%m-%d %H:%M:%S')
-                            }
+                                "type": "HEARTBEAT",
+                                "entity_type": "agent",
+                                "entity_id": "agent-002",
+                                "entity_name": "ReportGenerator",
+                                "description": "Heartbeat received",
+                                "timestamp": (now - timedelta(minutes=2)).strftime(
+                                    "%Y-%m-%d %H:%M:%S"
+                                ),
+                            },
                         ]
                         events = sample_events
 
-                    return jsonify({'events': events})
+                    return jsonify({"events": events})
 
                 except Exception as e:
-                    return jsonify({
-                        'events': [],
-                        'error': str(e)
-                    })
+                    return jsonify({"events": [], "error": str(e)})
 
-            @app.route('/api/metrics')
+            @app.route("/api/metrics")
             def api_metrics():
                 """API endpoint for metrics data"""
                 try:
-                    print(f"📊 [Metrics API] Fetching metrics data at {datetime.now().isoformat()}")
+                    print(
+                        f"📊 [Metrics API] Fetching metrics data at {datetime.now().isoformat()}"
+                    )
 
                     # Get all metrics
                     all_metrics = dashboard_data._get_centralized_metrics()
 
                     # Add metrics layer status
                     metrics_status = {
-                        'metrics_layer_available': dashboard_data.metrics_layer is not None,
-                        'timestamp': datetime.now().isoformat()
+                        "metrics_layer_available": dashboard_data.metrics_layer
+                        is not None,
+                        "timestamp": datetime.now().isoformat(),
                     }
 
                     # Log summary
-                    print(f"📊 [Metrics API] Metrics summary: Agents={all_metrics.get('summary', {}).get('total_agents', 0)}, " +
-                          f"Departments={all_metrics.get('summary', {}).get('total_departments', 0)}, " +
-                          f"Services={all_metrics.get('summary', {}).get('total_services', 0)}, " +
-                          f"Leaders={all_metrics.get('summary', {}).get('total_leaders', 0)}")
+                    print(
+                        f"📊 [Metrics API] Metrics summary: Agents={all_metrics.get('summary', {}).get('total_agents', 0)}, "
+                        + f"Departments={all_metrics.get('summary', {}).get('total_departments', 0)}, "
+                        + f"Services={all_metrics.get('summary', {}).get('total_services', 0)}, "
+                        + f"Leaders={all_metrics.get('summary', {}).get('total_leaders', 0)}"
+                    )
 
-                    return jsonify({
-                        'status': 'success',
-                        'data': all_metrics,
-                        'metrics_status': metrics_status
-                    })
+                    return jsonify(
+                        {
+                            "status": "success",
+                            "data": all_metrics,
+                            "metrics_status": metrics_status,
+                        }
+                    )
                 except Exception as e:
                     print(f"❌ [Metrics API] Error fetching metrics: {e}")
-                    return jsonify({
-                        'status': 'error',
-                        'message': str(e)
-                    }), 500
+                    return jsonify({"status": "error", "message": str(e)}), 500
 
-            @app.route('/api/metrics/page')
+            @app.route("/api/metrics/page")
             def api_metrics_page():
                 """API endpoint for metrics page HTML"""
                 try:
-                    print(f"📊 [Metrics Page API] Generating metrics page at {datetime.now().isoformat()}")
+                    print(
+                        f"📊 [Metrics Page API] Generating metrics page at {datetime.now().isoformat()}"
+                    )
 
                     if dashboard_data.metrics_layer:
-                        print("📊 [Metrics Page API] Using metrics layer to generate page")
+                        print(
+                            "📊 [Metrics Page API] Using metrics layer to generate page"
+                        )
                         html = dashboard_data._generate_metrics_page_content()
                     else:
-                        print("⚠️ [Metrics Page API] Metrics layer not available, using fallback")
+                        print(
+                            "⚠️ [Metrics Page API] Metrics layer not available, using fallback"
+                        )
                         html = dashboard_data._generate_metrics_fallback()
 
                     print("✅ [Metrics Page API] Successfully generated metrics page")
-                    return jsonify({
-                        'status': 'success',
-                        'html': html
-                    })
+                    return jsonify({"status": "success", "html": html})
                 except Exception as e:
                     print(f"❌ [Metrics Page API] Error generating page: {e}")
                     import traceback
+
                     traceback.print_exc()
-                    return jsonify({
-                        'status': 'error',
-                        'message': str(e),
-                        'html': f'<div class="alert alert-danger">Error loading metrics: {str(e)}</div>'
-                    }), 500
+                    return (
+                        jsonify(
+                            {
+                                "status": "error",
+                                "message": str(e),
+                                "html": f'<div class="alert alert-danger">Error loading metrics: {str(e)}</div>',
+                            }
+                        ),
+                        500,
+                    )
 
             # Run Flask with development features
             app.run(
@@ -13284,12 +14333,14 @@ def main():
                 port=PORT,
                 debug=True,
                 use_reloader=enable_reload,
-                threaded=True
+                threaded=True,
             )
         else:
             # Use the original HTTPServer
             with socketserver.TCPServer(("", PORT), EnhancedHandler) as httpd:
-                print(f"✅ BoarderframeOS Corporate Headquarters running on port {PORT}")
+                print(
+                    f"✅ BoarderframeOS Corporate Headquarters running on port {PORT}"
+                )
                 print(f"🎯 Access at: http://localhost:{PORT}")
                 print()
                 httpd.serve_forever()
@@ -13301,6 +14352,7 @@ def main():
             print(f"❌ Server error: {e}")
     except KeyboardInterrupt:
         print("\n🛑 BoarderframeOS Corporate Headquarters stopped")
+
 
 if __name__ == "__main__":
     main()

@@ -22,10 +22,10 @@ original_path = sys.path.copy()
 # Remove current and parent directories to avoid local mcp module conflicts
 current_dir = str(Path(__file__).parent)
 parent_dir = str(Path(__file__).parent.parent)
-sys.path = [p for p in sys.path if p not in (current_dir, parent_dir, '')]
+sys.path = [p for p in sys.path if p not in (current_dir, parent_dir, "")]
 
 # Clear any cached local mcp modules
-local_mcp_modules = [name for name in sys.modules.keys() if name.startswith('mcp')]
+local_mcp_modules = [name for name in sys.modules.keys() if name.startswith("mcp")]
 for module_name in local_mcp_modules:
     del sys.modules[module_name]
 
@@ -44,7 +44,7 @@ log_file = Path(__file__).parent / "filesystem_stdio.log"
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler(log_file)]
+    handlers=[logging.FileHandler(log_file)],
 )
 logger = logging.getLogger("filesystem_stdio")
 
@@ -52,6 +52,7 @@ logger = logging.getLogger("filesystem_stdio")
 BASE_PATH = Path(__file__).parent.parent
 
 server = Server("filesystem")
+
 
 @server.list_tools()
 async def handle_list_tools() -> List[types.Tool]:
@@ -63,13 +64,10 @@ async def handle_list_tools() -> List[types.Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "path": {
-                        "type": "string",
-                        "description": "File path to read"
-                    }
+                    "path": {"type": "string", "description": "File path to read"}
                 },
-                "required": ["path"]
-            }
+                "required": ["path"],
+            },
         ),
         types.Tool(
             name="write_file",
@@ -77,17 +75,11 @@ async def handle_list_tools() -> List[types.Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "path": {
-                        "type": "string",
-                        "description": "File path to write"
-                    },
-                    "content": {
-                        "type": "string",
-                        "description": "Content to write"
-                    }
+                    "path": {"type": "string", "description": "File path to write"},
+                    "content": {"type": "string", "description": "Content to write"},
                 },
-                "required": ["path", "content"]
-            }
+                "required": ["path", "content"],
+            },
         ),
         types.Tool(
             name="list_directory",
@@ -95,13 +87,10 @@ async def handle_list_tools() -> List[types.Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "path": {
-                        "type": "string",
-                        "description": "Directory path to list"
-                    }
+                    "path": {"type": "string", "description": "Directory path to list"}
                 },
-                "required": ["path"]
-            }
+                "required": ["path"],
+            },
         ),
         types.Tool(
             name="create_directory",
@@ -111,11 +100,11 @@ async def handle_list_tools() -> List[types.Tool]:
                 "properties": {
                     "path": {
                         "type": "string",
-                        "description": "Directory path to create"
+                        "description": "Directory path to create",
                     }
                 },
-                "required": ["path"]
-            }
+                "required": ["path"],
+            },
         ),
         types.Tool(
             name="delete_file",
@@ -123,18 +112,18 @@ async def handle_list_tools() -> List[types.Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "path": {
-                        "type": "string",
-                        "description": "Path to delete"
-                    }
+                    "path": {"type": "string", "description": "Path to delete"}
                 },
-                "required": ["path"]
-            }
-        )
+                "required": ["path"],
+            },
+        ),
     ]
 
+
 @server.call_tool()
-async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_call_tool(
+    name: str, arguments: Dict[str, Any]
+) -> List[types.TextContent]:
     """Handle tool calls."""
     try:
         if name == "read_file":
@@ -153,6 +142,7 @@ async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[types.T
         logger.error(f"Tool {name} failed: {e}")
         return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
+
 async def read_file(path: str) -> List[types.TextContent]:
     """Read file contents."""
     try:
@@ -160,20 +150,24 @@ async def read_file(path: str) -> List[types.TextContent]:
         if not file_path.exists():
             return [types.TextContent(type="text", text=f"File not found: {path}")]
 
-        content = file_path.read_text(encoding='utf-8')
+        content = file_path.read_text(encoding="utf-8")
         return [types.TextContent(type="text", text=content)]
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error reading file: {str(e)}")]
+
 
 async def write_file(path: str, content: str) -> List[types.TextContent]:
     """Write file contents."""
     try:
         file_path = BASE_PATH / path
         file_path.parent.mkdir(parents=True, exist_ok=True)
-        file_path.write_text(content, encoding='utf-8')
-        return [types.TextContent(type="text", text=f"File written successfully: {path}")]
+        file_path.write_text(content, encoding="utf-8")
+        return [
+            types.TextContent(type="text", text=f"File written successfully: {path}")
+        ]
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error writing file: {str(e)}")]
+
 
 async def list_directory(path: str) -> List[types.TextContent]:
     """List directory contents."""
@@ -193,7 +187,10 @@ async def list_directory(path: str) -> List[types.TextContent]:
         result = f"Contents of {path}:\n" + "\n".join(items)
         return [types.TextContent(type="text", text=result)]
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error listing directory: {str(e)}")]
+        return [
+            types.TextContent(type="text", text=f"Error listing directory: {str(e)}")
+        ]
+
 
 async def create_directory(path: str) -> List[types.TextContent]:
     """Create directory."""
@@ -202,7 +199,10 @@ async def create_directory(path: str) -> List[types.TextContent]:
         dir_path.mkdir(parents=True, exist_ok=True)
         return [types.TextContent(type="text", text=f"Directory created: {path}")]
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error creating directory: {str(e)}")]
+        return [
+            types.TextContent(type="text", text=f"Error creating directory: {str(e)}")
+        ]
+
 
 async def delete_file(path: str) -> List[types.TextContent]:
     """Delete file or directory."""
@@ -213,6 +213,7 @@ async def delete_file(path: str) -> List[types.TextContent]:
 
         if file_path.is_dir():
             import shutil
+
             shutil.rmtree(file_path)
             return [types.TextContent(type="text", text=f"Directory deleted: {path}")]
         else:
@@ -220,6 +221,7 @@ async def delete_file(path: str) -> List[types.TextContent]:
             return [types.TextContent(type="text", text=f"File deleted: {path}")]
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error deleting: {str(e)}")]
+
 
 async def main():
     """Main entry point."""
@@ -236,6 +238,7 @@ async def main():
                 ),
             ),
         )
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -13,6 +13,7 @@ from mcp.server.models import InitializationOptions
 # Create server instance
 server = Server("boarderframeos")
 
+
 @server.list_tools()
 async def handle_list_tools() -> list[types.Tool]:
     """List available tools."""
@@ -20,20 +21,12 @@ async def handle_list_tools() -> list[types.Tool]:
         types.Tool(
             name="get_system_status",
             description="Get BoarderframeOS system status",
-            inputSchema={
-                "type": "object",
-                "properties": {},
-                "required": []
-            }
+            inputSchema={"type": "object", "properties": {}, "required": []},
         ),
         types.Tool(
             name="list_agents",
             description="List all active agents",
-            inputSchema={
-                "type": "object",
-                "properties": {},
-                "required": []
-            }
+            inputSchema={"type": "object", "properties": {}, "required": []},
         ),
         types.Tool(
             name="read_file",
@@ -43,46 +36,58 @@ async def handle_list_tools() -> list[types.Tool]:
                 "properties": {
                     "path": {
                         "type": "string",
-                        "description": "Path to the file relative to BoarderframeOS root"
+                        "description": "Path to the file relative to BoarderframeOS root",
                     }
                 },
-                "required": ["path"]
-            }
-        )
+                "required": ["path"],
+            },
+        ),
     ]
+
 
 @server.call_tool()
 async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent]:
     """Handle tool calls."""
     try:
         if name == "get_system_status":
-            return [types.TextContent(
-                type="text",
-                text="BoarderframeOS Status: Operational\n- MCP Servers: Running\n- Agent Framework: Active\n- Database: Connected"
-            )]
+            return [
+                types.TextContent(
+                    type="text",
+                    text="BoarderframeOS Status: Operational\n- MCP Servers: Running\n- Agent Framework: Active\n- Database: Connected",
+                )
+            ]
 
         elif name == "list_agents":
-            return [types.TextContent(
-                type="text",
-                text="Active Agents:\n- Solomon (Chief of Staff)\n- David (CEO)\n- Adam (Agent Creator)\n- Eve (Agent Evolver)\n- Bezalel (Master Programmer)"
-            )]
+            return [
+                types.TextContent(
+                    type="text",
+                    text="Active Agents:\n- Solomon (Chief of Staff)\n- David (CEO)\n- Adam (Agent Creator)\n- Eve (Agent Evolver)\n- Bezalel (Master Programmer)",
+                )
+            ]
 
         elif name == "read_file":
             file_path = Path("/Users/cosburn/BoarderframeOS") / arguments["path"]
             if not file_path.exists():
-                return [types.TextContent(type="text", text=f"File not found: {arguments['path']}")]
+                return [
+                    types.TextContent(
+                        type="text", text=f"File not found: {arguments['path']}"
+                    )
+                ]
 
             try:
-                content = file_path.read_text(encoding='utf-8')
+                content = file_path.read_text(encoding="utf-8")
                 return [types.TextContent(type="text", text=content)]
             except Exception as e:
-                return [types.TextContent(type="text", text=f"Error reading file: {str(e)}")]
+                return [
+                    types.TextContent(type="text", text=f"Error reading file: {str(e)}")
+                ]
 
         else:
             return [types.TextContent(type="text", text=f"Unknown tool: {name}")]
 
     except Exception as e:
         return [types.TextContent(type="text", text=f"Tool error: {str(e)}")]
+
 
 async def main():
     """Main entry point."""
@@ -99,6 +104,7 @@ async def main():
                 ),
             ),
         )
+
 
 if __name__ == "__main__":
     asyncio.run(main())

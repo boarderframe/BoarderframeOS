@@ -37,7 +37,7 @@ class BoarderframeOSSetup:
             "logs/system",
             "logs/evolution",
             "zones/development",
-            "zones/production"
+            "zones/production",
         ]
 
         self.requirements = [
@@ -54,7 +54,7 @@ class BoarderframeOSSetup:
             "PyYAML==6.0.1",
             "psutil==5.9.6",
             "rich==13.7.0",
-            "typer==0.9.0"
+            "typer==0.9.0",
         ]
 
     def create_directories(self):
@@ -66,7 +66,7 @@ class BoarderframeOSSetup:
             full_path.mkdir(parents=True, exist_ok=True)
 
             # Create __init__.py for Python packages
-            if not dir_path.startswith(('data/', 'logs/', 'experiments/', 'zones/')):
+            if not dir_path.startswith(("data/", "logs/", "experiments/", "zones/")):
                 init_file = full_path / "__init__.py"
                 if not init_file.exists():
                     init_file.write_text("")
@@ -88,7 +88,11 @@ class BoarderframeOSSetup:
 
     def install_dependencies(self, venv_path: Path):
         """Install required Python packages"""
-        pip_path = venv_path / "bin" / "pip" if os.name != "nt" else venv_path / "Scripts" / "pip.exe"
+        pip_path = (
+            venv_path / "bin" / "pip"
+            if os.name != "nt"
+            else venv_path / "Scripts" / "pip.exe"
+        )
 
         print("📦 Installing dependencies...")
         requirements_file = self.base_dir / "requirements.txt"
@@ -97,7 +101,9 @@ class BoarderframeOSSetup:
         requirements_file.write_text("\n".join(self.requirements))
 
         # Install packages
-        subprocess.run([str(pip_path), "install", "-r", str(requirements_file)], check=True)
+        subprocess.run(
+            [str(pip_path), "install", "-r", str(requirements_file)], check=True
+        )
         print("✅ Dependencies installed")
 
     def create_config_files(self):
@@ -113,46 +119,55 @@ class BoarderframeOSSetup:
                     "target_device": "NVIDIA DGX Spark",
                     "compute_tops": 2000,
                     "memory_gb": 256,
-                    "development_mode": True
-                }
+                    "development_mode": True,
+                },
             },
             "agents": {
                 "max_concurrent": 50,
                 "default_memory_limit_gb": 8.0,
-                "default_compute_allocation": 5.0
+                "default_compute_allocation": 5.0,
             },
             "evolution": {
                 "mutation_rate": 0.15,
                 "selection_pressure": 0.7,
-                "generation_interval_hours": 24
+                "generation_interval_hours": 24,
             },
             "mcp_servers": {
                 "filesystem": {"port": 8001, "enabled": True},
                 "git": {"port": 8002, "enabled": True},
                 "browser": {"port": 8003, "enabled": False},
                 "database": {"port": 8004, "enabled": False},
-                "llm": {"port": 8005, "enabled": True}
-            }
+                "llm": {"port": 8005, "enabled": True},
+            },
         }
 
         config_file = self.base_dir / "config" / "system.yaml"
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             import yaml
+
             yaml.dump(system_config, f, default_flow_style=False, indent=2)
 
         # Biome configurations
         biomes = {
             "forge": {"evolution_rate": 0.3, "focus": "innovation", "leader": "adam"},
-            "arena": {"evolution_rate": 0.4, "focus": "performance", "leader": "joshua"},
-            "library": {"evolution_rate": 0.1, "focus": "knowledge", "leader": "daniel"},
+            "arena": {
+                "evolution_rate": 0.4,
+                "focus": "performance",
+                "leader": "joshua",
+            },
+            "library": {
+                "evolution_rate": 0.1,
+                "focus": "knowledge",
+                "leader": "daniel",
+            },
             "market": {"evolution_rate": 0.2, "focus": "profit", "leader": "joseph"},
             "council": {"evolution_rate": 0.05, "focus": "strategy", "leader": "david"},
-            "garden": {"evolution_rate": 0.25, "focus": "harmony", "leader": "eve"}
+            "garden": {"evolution_rate": 0.25, "focus": "harmony", "leader": "eve"},
         }
 
         for biome_name, config in biomes.items():
             biome_file = self.base_dir / "biomes" / biome_name / "config.yaml"
-            with open(biome_file, 'w') as f:
+            with open(biome_file, "w") as f:
                 yaml.dump(config, f, default_flow_style=False, indent=2)
 
         print("✅ Configuration files created")
@@ -231,6 +246,7 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"❌ Setup failed: {e}")
             sys.exit(1)
+
 
 if __name__ == "__main__":
     setup = BoarderframeOSSetup()

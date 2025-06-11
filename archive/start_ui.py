@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
+
 def main():
     """Start the UI server"""
     print("🚀 Starting BoarderframeOS UI Server...")
@@ -31,7 +32,7 @@ def main():
             host="0.0.0.0",
             port=8080,
             reload=False,
-            log_level="info"
+            log_level="info",
         )
     except KeyboardInterrupt:
         print("\n🛑 UI Server stopped")
@@ -40,6 +41,7 @@ def main():
         return 1
 
     return 0
+
 
 if __name__ == "__main__":
     exit(main())

@@ -57,8 +57,10 @@ logger = logging.getLogger(__name__)
 
 # ==================== Enums and Constants ====================
 
+
 class RegistryType(str, Enum):
     """All registry entry types in BoarderframeOS"""
+
     AGENT = "agent"
     LEADER = "leader"
     DEPARTMENT = "department"
@@ -68,8 +70,10 @@ class RegistryType(str, Enum):
     SERVER_MCP = "server_mcp"
     SERVER_BUSINESS = "server_business"
 
+
 class ServiceStatus(str, Enum):
     """Service operational status"""
+
     ONLINE = "online"
     OFFLINE = "offline"
     STARTING = "starting"
@@ -78,15 +82,19 @@ class ServiceStatus(str, Enum):
     MAINTENANCE = "maintenance"
     DEGRADED = "degraded"
 
+
 class HealthStatus(str, Enum):
     """Health status indicators"""
+
     HEALTHY = "healthy"
     WARNING = "warning"
     CRITICAL = "critical"
     UNKNOWN = "unknown"
 
+
 class EventType(str, Enum):
     """Registry event types for streaming"""
+
     REGISTERED = "registered"
     UNREGISTERED = "unregistered"
     STATUS_CHANGED = "status_changed"
@@ -98,15 +106,19 @@ class EventType(str, Enum):
     METRIC_UPDATED = "metric_updated"
     ERROR = "error"
 
+
 class LeadershipTier(str, Enum):
     """Leadership hierarchy tiers"""
+
     EXECUTIVE = "executive"
     DIVISION = "division"
     DEPARTMENT = "department"
     TEAM = "team"
 
+
 class ServerType(str, Enum):
     """Server categories"""
+
     CORE_SYSTEM = "core_system"
     MCP_SERVER = "mcp_server"
     BUSINESS_SERVICE = "business_service"
@@ -114,11 +126,14 @@ class ServerType(str, Enum):
     CACHE = "cache"
     MESSAGE_QUEUE = "message_queue"
 
+
 # ==================== Base Models ====================
+
 
 @dataclass
 class RegistryMetrics:
     """Performance and operational metrics"""
+
     total_requests: int = 0
     successful_requests: int = 0
     failed_requests: int = 0
@@ -128,8 +143,10 @@ class RegistryMetrics:
     last_error_time: Optional[datetime] = None
     custom_metrics: Dict[str, Any] = field(default_factory=dict)
 
+
 class BaseRegistryEntry(BaseModel):
     """Base model for all registry entries"""
+
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     type: RegistryType
@@ -147,12 +164,12 @@ class BaseRegistryEntry(BaseModel):
     metrics: Dict[str, Any] = Field(default_factory=dict)
 
     class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
+        json_encoders = {datetime: lambda v: v.isoformat()}
+
 
 class AgentRegistryEntry(BaseRegistryEntry):
     """Registry entry for AI agents"""
+
     type: RegistryType = RegistryType.AGENT
     department_id: Optional[str] = None
     division_id: Optional[str] = None
@@ -172,14 +189,16 @@ class AgentRegistryEntry(BaseRegistryEntry):
     specializations: List[str] = Field(default_factory=list)
     supported_languages: List[str] = Field(default_factory=lambda: ["en"])
 
-    @validator('current_tasks')
+    @validator("current_tasks")
     def validate_current_tasks(cls, v, values):
-        if 'max_concurrent_tasks' in values and v > values['max_concurrent_tasks']:
-            raise ValueError('current_tasks cannot exceed max_concurrent_tasks')
+        if "max_concurrent_tasks" in values and v > values["max_concurrent_tasks"]:
+            raise ValueError("current_tasks cannot exceed max_concurrent_tasks")
         return v
+
 
 class LeaderRegistryEntry(AgentRegistryEntry):
     """Registry entry for department/division leaders"""
+
     type: RegistryType = RegistryType.LEADER
     leadership_tier: LeadershipTier = LeadershipTier.DEPARTMENT
     subordinates: List[str] = Field(default_factory=list)
@@ -191,8 +210,10 @@ class LeaderRegistryEntry(AgentRegistryEntry):
     delegation_capacity: int = 10
     strategic_initiatives: List[str] = Field(default_factory=list)
 
+
 class DepartmentRegistryEntry(BaseRegistryEntry):
     """Registry entry for departments"""
+
     type: RegistryType = RegistryType.DEPARTMENT
     division_id: str
     leader_ids: List[str] = Field(default_factory=list)
@@ -209,8 +230,10 @@ class DepartmentRegistryEntry(BaseRegistryEntry):
     active_projects: int = 0
     completed_projects: int = 0
 
+
 class DivisionRegistryEntry(BaseRegistryEntry):
     """Registry entry for divisions"""
+
     type: RegistryType = RegistryType.DIVISION
     department_ids: List[str] = Field(default_factory=list)
     executive_leader_id: Optional[str] = None
@@ -223,8 +246,10 @@ class DivisionRegistryEntry(BaseRegistryEntry):
     growth_rate: float = 0.0
     division_purpose: Optional[str] = None
 
+
 class DatabaseRegistryEntry(BaseRegistryEntry):
     """Registry entry for databases"""
+
     type: RegistryType = RegistryType.DATABASE
     db_type: str  # postgresql, sqlite, redis, mongodb
     host: str = "localhost"
@@ -242,8 +267,10 @@ class DatabaseRegistryEntry(BaseRegistryEntry):
     backup_status: Optional[str] = None
     last_backup: Optional[datetime] = None
 
+
 class ServerRegistryEntry(BaseRegistryEntry):
     """Registry entry for servers"""
+
     server_type: ServerType
     host: str = "localhost"
     port: int
@@ -264,10 +291,13 @@ class ServerRegistryEntry(BaseRegistryEntry):
     ssl_enabled: bool = False
     cors_enabled: bool = True
 
+
 # ==================== Event Models ====================
+
 
 class RegistryEvent(BaseModel):
     """Base event model for registry changes"""
+
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     event_type: EventType
     entity_id: str
@@ -279,11 +309,11 @@ class RegistryEvent(BaseModel):
     user_id: Optional[str] = None
 
     class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
+        json_encoders = {datetime: lambda v: v.isoformat()}
+
 
 # ==================== Registry Service ====================
+
 
 class EnhancedRegistrySystem:
     """
@@ -297,7 +327,7 @@ class EnhancedRegistrySystem:
         enable_caching: bool = True,
         cache_ttl: int = 300,
         enable_websockets: bool = True,
-        enable_audit_log: bool = True
+        enable_audit_log: bool = True,
     ):
         self.db_url = db_url
         self.redis_url = redis_url
@@ -332,7 +362,7 @@ class EnhancedRegistrySystem:
         self.app = FastAPI(
             title="BoarderframeOS Enhanced Registry",
             version="2.0.0",
-            lifespan=self.lifespan
+            lifespan=self.lifespan,
         )
         self._setup_middleware()
         self._setup_routes()
@@ -356,14 +386,12 @@ class EnhancedRegistrySystem:
                 max_size=50,
                 max_queries=50000,
                 max_inactive_connection_lifetime=300,
-                command_timeout=60
+                command_timeout=60,
             )
 
             # Initialize Redis
             self.redis = await aioredis.create_redis_pool(
-                self.redis_url,
-                minsize=5,
-                maxsize=20
+                self.redis_url, minsize=5, maxsize=20
             )
 
             # Load initial data from database
@@ -433,7 +461,7 @@ class EnhancedRegistrySystem:
         async def register_entity(
             entity_type: RegistryType,
             entity: BaseRegistryEntry,
-            background_tasks: BackgroundTasks
+            background_tasks: BackgroundTasks,
         ):
             result = await self.register(entity)
             return {"status": "success", "entity": result.dict()}
@@ -447,21 +475,21 @@ class EnhancedRegistrySystem:
             department_id: Optional[str] = None,
             division_id: Optional[str] = None,
             limit: int = Query(default=100, le=1000),
-            offset: int = Query(default=0, ge=0)
+            offset: int = Query(default=0, ge=0),
         ):
             filters = {
                 "status": status,
                 "capability": capability,
                 "tag": tag,
                 "department_id": department_id,
-                "division_id": division_id
+                "division_id": division_id,
             }
             entities = await self.discover(entity_type, filters, limit, offset)
             return {
                 "entities": [e.dict() for e in entities],
                 "total": len(entities),
                 "limit": limit,
-                "offset": offset
+                "offset": offset,
             }
 
         @self.app.get("/entity/{entity_id}")
@@ -473,9 +501,7 @@ class EnhancedRegistrySystem:
 
         @self.app.put("/entity/{entity_id}")
         async def update_entity(
-            entity_id: str,
-            updates: Dict[str, Any],
-            background_tasks: BackgroundTasks
+            entity_id: str, updates: Dict[str, Any], background_tasks: BackgroundTasks
         ):
             entity = await self.update_entity(entity_id, updates)
             if not entity:
@@ -497,12 +523,13 @@ class EnhancedRegistrySystem:
         # Specialized endpoints
         @self.app.post("/assign/agent/{agent_id}/department/{department_id}")
         async def assign_agent_to_department(
-            agent_id: str,
-            department_id: str,
-            background_tasks: BackgroundTasks
+            agent_id: str, department_id: str, background_tasks: BackgroundTasks
         ):
             await self.assign_agent_to_department(agent_id, department_id)
-            return {"status": "success", "message": f"Agent {agent_id} assigned to department {department_id}"}
+            return {
+                "status": "success",
+                "message": f"Agent {agent_id} assigned to department {department_id}",
+            }
 
         @self.app.get("/hierarchy/divisions")
         async def get_division_hierarchy():
@@ -514,6 +541,7 @@ class EnhancedRegistrySystem:
 
         # WebSocket endpoint
         if self.enable_websockets:
+
             @self.app.websocket("/ws")
             async def websocket_endpoint(websocket: WebSocket):
                 await self._handle_websocket(websocket)
@@ -546,7 +574,7 @@ class EnhancedRegistrySystem:
                 event_type=EventType.REGISTERED,
                 entity_id=entity.id,
                 entity_type=entity.type,
-                data=entity.dict()
+                data=entity.dict(),
             )
             await self._publish_event(event)
 
@@ -587,7 +615,7 @@ class EnhancedRegistrySystem:
                 event_type=EventType.UNREGISTERED,
                 entity_id=entity_id,
                 entity_type=entity.type,
-                data={"name": entity.name}
+                data={"name": entity.name},
             )
             await self._publish_event(event)
 
@@ -608,7 +636,7 @@ class EnhancedRegistrySystem:
         entity_type: Optional[RegistryType] = None,
         filters: Optional[Dict[str, Any]] = None,
         limit: int = 100,
-        offset: int = 0
+        offset: int = 0,
     ) -> List[BaseRegistryEntry]:
         """Discover entities based on filters"""
         try:
@@ -619,7 +647,7 @@ class EnhancedRegistrySystem:
             cache_key = self._generate_cache_key("discover", entity_type, filters)
             cached_result = await self._get_cached(cache_key)
             if cached_result:
-                return cached_result[offset:offset + limit]
+                return cached_result[offset : offset + limit]
 
             # Filter entities
             for entity in self.cache.values():
@@ -632,7 +660,10 @@ class EnhancedRegistrySystem:
                     continue
 
                 # Capability filter
-                if filters.get("capability") and filters["capability"] not in entity.capabilities:
+                if (
+                    filters.get("capability")
+                    and filters["capability"] not in entity.capabilities
+                ):
                     continue
 
                 # Tag filter
@@ -641,23 +672,32 @@ class EnhancedRegistrySystem:
 
                 # Department filter (for agents/leaders)
                 if filters.get("department_id"):
-                    if hasattr(entity, "department_id") and entity.department_id != filters["department_id"]:
+                    if (
+                        hasattr(entity, "department_id")
+                        and entity.department_id != filters["department_id"]
+                    ):
                         continue
 
                 # Division filter
                 if filters.get("division_id"):
-                    if hasattr(entity, "division_id") and entity.division_id != filters["division_id"]:
+                    if (
+                        hasattr(entity, "division_id")
+                        and entity.division_id != filters["division_id"]
+                    ):
                         continue
 
                 results.append(entity)
 
             # Sort by health score and status
-            results.sort(key=lambda x: (x.health_score, x.status == ServiceStatus.ONLINE), reverse=True)
+            results.sort(
+                key=lambda x: (x.health_score, x.status == ServiceStatus.ONLINE),
+                reverse=True,
+            )
 
             # Cache result
             await self._set_cached(cache_key, results)
 
-            return results[offset:offset + limit]
+            return results[offset : offset + limit]
 
         except Exception as e:
             logger.error(f"Failed to discover entities: {e}")
@@ -667,7 +707,9 @@ class EnhancedRegistrySystem:
         """Get specific entity by ID"""
         return self.cache.get(entity_id)
 
-    async def update_entity(self, entity_id: str, updates: Dict[str, Any]) -> Optional[BaseRegistryEntry]:
+    async def update_entity(
+        self, entity_id: str, updates: Dict[str, Any]
+    ) -> Optional[BaseRegistryEntry]:
         """Update entity properties"""
         try:
             if entity_id not in self.cache:
@@ -678,9 +720,16 @@ class EnhancedRegistrySystem:
 
             # Update allowed fields
             allowed_fields = {
-                "status", "health_status", "health_score", "metadata",
-                "capabilities", "tags", "metrics", "current_load",
-                "current_tasks", "current_connections"
+                "status",
+                "health_status",
+                "health_score",
+                "metadata",
+                "capabilities",
+                "tags",
+                "metrics",
+                "current_load",
+                "current_tasks",
+                "current_connections",
             }
 
             for field, value in updates.items():
@@ -698,11 +747,7 @@ class EnhancedRegistrySystem:
                 event_type=EventType.STATUS_CHANGED,
                 entity_id=entity_id,
                 entity_type=entity.type,
-                data={
-                    "old": old_data,
-                    "new": entity.dict(),
-                    "changes": updates
-                }
+                data={"old": old_data, "new": entity.dict(), "changes": updates},
             )
             await self._publish_event(event)
 
@@ -731,18 +776,24 @@ class EnhancedRegistrySystem:
 
             # Update database
             async with self.db_pool.acquire() as conn:
-                await conn.execute("""
+                await conn.execute(
+                    """
                     UPDATE agent_registry
                     SET last_heartbeat = $1, health_score = $2, status = $3
                     WHERE id = $4
-                """, entity.last_heartbeat, entity.health_score, entity.status, entity_id)
+                """,
+                    entity.last_heartbeat,
+                    entity.health_score,
+                    entity.status,
+                    entity_id,
+                )
 
             # Publish event
             event = RegistryEvent(
                 event_type=EventType.HEARTBEAT,
                 entity_id=entity_id,
                 entity_type=entity.type,
-                data={"health_score": entity.health_score}
+                data={"health_score": entity.health_score},
             )
             await self._publish_event(event)
 
@@ -780,20 +831,29 @@ class EnhancedRegistrySystem:
             # Update database
             async with self.db_pool.acquire() as conn:
                 # Update agent assignment
-                await conn.execute("""
+                await conn.execute(
+                    """
                     INSERT INTO agent_department_assignments (agent_id, department_id, assigned_at, assignment_status)
                     VALUES ($1, $2, $3, 'active')
                     ON CONFLICT (agent_id) DO UPDATE SET
                         department_id = EXCLUDED.department_id,
                         assigned_at = EXCLUDED.assigned_at,
                         assignment_status = 'active'
-                """, agent_id, department_id, datetime.utcnow())
+                """,
+                    agent_id,
+                    department_id,
+                    datetime.utcnow(),
+                )
 
                 # Update old department if exists
                 if old_dept:
                     old_department = await self.get_entity(old_dept)
-                    if old_department and isinstance(old_department, DepartmentRegistryEntry):
-                        old_department.agent_ids = [aid for aid in old_department.agent_ids if aid != agent_id]
+                    if old_department and isinstance(
+                        old_department, DepartmentRegistryEntry
+                    ):
+                        old_department.agent_ids = [
+                            aid for aid in old_department.agent_ids if aid != agent_id
+                        ]
 
             # Publish event
             event = RegistryEvent(
@@ -803,8 +863,8 @@ class EnhancedRegistrySystem:
                 data={
                     "agent_id": agent_id,
                     "old_department": old_dept,
-                    "new_department": department_id
-                }
+                    "new_department": department_id,
+                },
             )
             await self._publish_event(event)
 
@@ -818,7 +878,7 @@ class EnhancedRegistrySystem:
             "divisions": [],
             "total_agents": 0,
             "total_departments": 0,
-            "total_leaders": 0
+            "total_leaders": 0,
         }
 
         # Get all divisions
@@ -833,14 +893,13 @@ class EnhancedRegistrySystem:
                     "metrics": {
                         "total_agents": division.total_agents,
                         "total_budget": division.total_budget,
-                        "total_revenue": division.total_revenue
-                    }
+                        "total_revenue": division.total_revenue,
+                    },
                 }
 
                 # Get departments in division
                 departments = await self.discover(
-                    RegistryType.DEPARTMENT,
-                    {"division_id": division.id}
+                    RegistryType.DEPARTMENT, {"division_id": division.id}
                 )
 
                 for dept in departments:
@@ -850,18 +909,22 @@ class EnhancedRegistrySystem:
                             "name": dept.name,
                             "leaders": [],
                             "agent_count": len(dept.agent_ids),
-                            "performance_score": dept.performance_score
+                            "performance_score": dept.performance_score,
                         }
 
                         # Get leaders
                         for leader_id in dept.leader_ids:
                             leader = await self.get_entity(leader_id)
                             if leader:
-                                dept_data["leaders"].append({
-                                    "id": leader.id,
-                                    "name": leader.name,
-                                    "tier": getattr(leader, "leadership_tier", "unknown")
-                                })
+                                dept_data["leaders"].append(
+                                    {
+                                        "id": leader.id,
+                                        "name": leader.name,
+                                        "tier": getattr(
+                                            leader, "leadership_tier", "unknown"
+                                        ),
+                                    }
+                                )
                                 hierarchy["total_leaders"] += 1
 
                         div_data["departments"].append(dept_data)
@@ -878,16 +941,11 @@ class EnhancedRegistrySystem:
             "total_entries": len(self.cache),
             "by_type": {},
             "by_status": {},
-            "by_health": {
-                "healthy": 0,
-                "warning": 0,
-                "critical": 0,
-                "unknown": 0
-            },
+            "by_health": {"healthy": 0, "warning": 0, "critical": 0, "unknown": 0},
             "performance": {
                 "average_health_score": 0.0,
                 "online_percentage": 0.0,
-                "average_response_time": 0.0
+                "average_response_time": 0.0,
             },
             "organizational": {
                 "divisions": 0,
@@ -895,8 +953,8 @@ class EnhancedRegistrySystem:
                 "leaders": 0,
                 "agents": 0,
                 "servers": 0,
-                "databases": 0
-            }
+                "databases": 0,
+            },
         }
 
         total_health_score = 0.0
@@ -909,7 +967,9 @@ class EnhancedRegistrySystem:
             stats["by_type"][entity.type] = stats["by_type"].get(entity.type, 0) + 1
 
             # Count by status
-            stats["by_status"][entity.status] = stats["by_status"].get(entity.status, 0) + 1
+            stats["by_status"][entity.status] = (
+                stats["by_status"].get(entity.status, 0) + 1
+            )
 
             # Health categorization
             if entity.health_score >= 80:
@@ -940,18 +1000,28 @@ class EnhancedRegistrySystem:
                 stats["organizational"]["leaders"] += 1
             elif entity.type == RegistryType.AGENT:
                 stats["organizational"]["agents"] += 1
-            elif entity.type in [RegistryType.SERVER_CORE, RegistryType.SERVER_MCP, RegistryType.SERVER_BUSINESS]:
+            elif entity.type in [
+                RegistryType.SERVER_CORE,
+                RegistryType.SERVER_MCP,
+                RegistryType.SERVER_BUSINESS,
+            ]:
                 stats["organizational"]["servers"] += 1
             elif entity.type == RegistryType.DATABASE:
                 stats["organizational"]["databases"] += 1
 
         # Calculate averages
         if stats["total_entries"] > 0:
-            stats["performance"]["average_health_score"] = total_health_score / stats["total_entries"]
-            stats["performance"]["online_percentage"] = (online_count / stats["total_entries"]) * 100
+            stats["performance"]["average_health_score"] = (
+                total_health_score / stats["total_entries"]
+            )
+            stats["performance"]["online_percentage"] = (
+                online_count / stats["total_entries"]
+            ) * 100
 
         if response_time_count > 0:
-            stats["performance"]["average_response_time"] = total_response_time / response_time_count
+            stats["performance"]["average_response_time"] = (
+                total_response_time / response_time_count
+            )
 
         return stats
 
@@ -962,7 +1032,8 @@ class EnhancedRegistrySystem:
         try:
             if entity.type in [RegistryType.AGENT, RegistryType.LEADER]:
                 # Store in agent_registry table
-                await conn.execute("""
+                await conn.execute(
+                    """
                     INSERT INTO agent_registry (
                         id, agent_id, name, department_id, agent_type, status,
                         capabilities, supported_tools, health_status, health_check_url,
@@ -977,34 +1048,46 @@ class EnhancedRegistrySystem:
                         metadata = EXCLUDED.metadata,
                         updated_at = CURRENT_TIMESTAMP
                 """,
-                entity.id, entity.id, entity.name,
-                getattr(entity, 'department_id', None),
-                entity.type, entity.status,
-                json.dumps(entity.capabilities),
-                json.dumps(entity.capabilities),  # Using capabilities as supported_tools
-                entity.health_status,
-                f"http://localhost:8100/entity/{entity.id}/health",
-                entity.last_heartbeat,
-                json.dumps(entity.metadata),
-                entity.version,
-                entity.tags
+                    entity.id,
+                    entity.id,
+                    entity.name,
+                    getattr(entity, "department_id", None),
+                    entity.type,
+                    entity.status,
+                    json.dumps(entity.capabilities),
+                    json.dumps(
+                        entity.capabilities
+                    ),  # Using capabilities as supported_tools
+                    entity.health_status,
+                    f"http://localhost:8100/entity/{entity.id}/health",
+                    entity.last_heartbeat,
+                    json.dumps(entity.metadata),
+                    entity.version,
+                    entity.tags,
                 )
 
             elif entity.type == RegistryType.DEPARTMENT:
                 # Ensure department exists in departments table
                 dept = entity
                 if isinstance(dept, DepartmentRegistryEntry):
-                    await conn.execute("""
+                    await conn.execute(
+                        """
                         INSERT INTO departments (
                             id, name, division_id, is_active
                         ) VALUES ($1, $2, $3, $4)
                         ON CONFLICT (id) DO UPDATE SET
                             name = EXCLUDED.name,
                             division_id = EXCLUDED.division_id
-                    """, dept.id, dept.name, dept.division_id, True)
+                    """,
+                        dept.id,
+                        dept.name,
+                        dept.division_id,
+                        True,
+                    )
 
                     # Store in department_registry
-                    await conn.execute("""
+                    await conn.execute(
+                        """
                         INSERT INTO department_registry (
                             id, department_id, name, status, capabilities,
                             agent_count, metadata
@@ -1016,18 +1099,21 @@ class EnhancedRegistrySystem:
                             metadata = EXCLUDED.metadata,
                             updated_at = CURRENT_TIMESTAMP
                     """,
-                    str(uuid.uuid4()), dept.id, dept.name,
-                    dept.operational_status,
-                    json.dumps(dept.capabilities),
-                    len(dept.agent_ids),
-                    json.dumps(dept.metadata)
+                        str(uuid.uuid4()),
+                        dept.id,
+                        dept.name,
+                        dept.operational_status,
+                        json.dumps(dept.capabilities),
+                        len(dept.agent_ids),
+                        json.dumps(dept.metadata),
                     )
 
             elif entity.type == RegistryType.DIVISION:
                 # Store in divisions table
                 div = entity
                 if isinstance(div, DivisionRegistryEntry):
-                    await conn.execute("""
+                    await conn.execute(
+                        """
                         INSERT INTO divisions (
                             division_key, division_name, division_description,
                             division_purpose, is_active
@@ -1037,17 +1123,23 @@ class EnhancedRegistrySystem:
                             division_description = EXCLUDED.division_description,
                             updated_at = CURRENT_TIMESTAMP
                     """,
-                    div.id, div.name,
-                    div.metadata.get('description', ''),
-                    div.division_purpose,
-                    True
+                        div.id,
+                        div.name,
+                        div.metadata.get("description", ""),
+                        div.division_purpose,
+                        True,
                     )
 
-            elif entity.type in [RegistryType.SERVER_CORE, RegistryType.SERVER_MCP, RegistryType.SERVER_BUSINESS]:
+            elif entity.type in [
+                RegistryType.SERVER_CORE,
+                RegistryType.SERVER_MCP,
+                RegistryType.SERVER_BUSINESS,
+            ]:
                 # Store in server_registry
                 server = entity
                 if isinstance(server, ServerRegistryEntry):
-                    await conn.execute("""
+                    await conn.execute(
+                        """
                         INSERT INTO server_registry (
                             id, name, server_type, status, endpoint_url,
                             health_check_url, capabilities, health_status,
@@ -1060,15 +1152,17 @@ class EnhancedRegistrySystem:
                             metadata = EXCLUDED.metadata,
                             updated_at = CURRENT_TIMESTAMP
                     """,
-                    server.id, server.name, server.server_type,
-                    server.status,
-                    f"{server.protocol}://{server.host}:{server.port}",
-                    f"{server.protocol}://{server.host}:{server.port}/health",
-                    json.dumps(server.capabilities),
-                    server.health_status,
-                    server.last_heartbeat,
-                    json.dumps(server.metadata),
-                    server.version
+                        server.id,
+                        server.name,
+                        server.server_type,
+                        server.status,
+                        f"{server.protocol}://{server.host}:{server.port}",
+                        f"{server.protocol}://{server.host}:{server.port}/health",
+                        json.dumps(server.capabilities),
+                        server.health_status,
+                        server.last_heartbeat,
+                        json.dumps(server.metadata),
+                        server.version,
                     )
 
         except Exception as e:
@@ -1079,42 +1173,69 @@ class EnhancedRegistrySystem:
         """Update entity in database"""
         try:
             if entity.type in [RegistryType.AGENT, RegistryType.LEADER]:
-                await conn.execute("""
+                await conn.execute(
+                    """
                     UPDATE agent_registry SET
                         status = $1, health_status = $2, capabilities = $3,
                         metadata = $4, updated_at = CURRENT_TIMESTAMP
                     WHERE id = $5
-                """, entity.status, entity.health_status,
+                """,
+                    entity.status,
+                    entity.health_status,
                     json.dumps(entity.capabilities),
                     json.dumps(entity.metadata),
-                    entity.id)
+                    entity.id,
+                )
 
-            elif entity.type in [RegistryType.SERVER_CORE, RegistryType.SERVER_MCP, RegistryType.SERVER_BUSINESS]:
-                await conn.execute("""
+            elif entity.type in [
+                RegistryType.SERVER_CORE,
+                RegistryType.SERVER_MCP,
+                RegistryType.SERVER_BUSINESS,
+            ]:
+                await conn.execute(
+                    """
                     UPDATE server_registry SET
                         status = $1, health_status = $2, capabilities = $3,
                         metadata = $4, updated_at = CURRENT_TIMESTAMP
                     WHERE id = $5
-                """, entity.status, entity.health_status,
+                """,
+                    entity.status,
+                    entity.health_status,
                     json.dumps(entity.capabilities),
                     json.dumps(entity.metadata),
-                    entity.id)
+                    entity.id,
+                )
 
         except Exception as e:
             logger.error(f"Failed to update entity in database: {e}")
             raise
 
-    async def _delete_entity(self, conn: asyncpg.Connection, entity_id: str, entity_type: RegistryType):
+    async def _delete_entity(
+        self, conn: asyncpg.Connection, entity_id: str, entity_type: RegistryType
+    ):
         """Delete entity from database"""
         try:
             if entity_type in [RegistryType.AGENT, RegistryType.LEADER]:
-                await conn.execute("DELETE FROM agent_registry WHERE id = $1", entity_id)
+                await conn.execute(
+                    "DELETE FROM agent_registry WHERE id = $1", entity_id
+                )
             elif entity_type == RegistryType.DEPARTMENT:
-                await conn.execute("DELETE FROM department_registry WHERE department_id = $1", entity_id)
+                await conn.execute(
+                    "DELETE FROM department_registry WHERE department_id = $1",
+                    entity_id,
+                )
             elif entity_type == RegistryType.DIVISION:
-                await conn.execute("DELETE FROM divisions WHERE division_key = $1", entity_id)
-            elif entity_type in [RegistryType.SERVER_CORE, RegistryType.SERVER_MCP, RegistryType.SERVER_BUSINESS]:
-                await conn.execute("DELETE FROM server_registry WHERE id = $1", entity_id)
+                await conn.execute(
+                    "DELETE FROM divisions WHERE division_key = $1", entity_id
+                )
+            elif entity_type in [
+                RegistryType.SERVER_CORE,
+                RegistryType.SERVER_MCP,
+                RegistryType.SERVER_BUSINESS,
+            ]:
+                await conn.execute(
+                    "DELETE FROM server_registry WHERE id = $1", entity_id
+                )
 
         except Exception as e:
             logger.error(f"Failed to delete entity from database: {e}")
@@ -1127,30 +1248,46 @@ class EnhancedRegistrySystem:
                 # Load agents and leaders
                 agents = await conn.fetch("SELECT * FROM agent_registry")
                 for row in agents:
-                    if row['agent_type'] == RegistryType.LEADER:
+                    if row["agent_type"] == RegistryType.LEADER:
                         entity = LeaderRegistryEntry(
-                            id=row['id'],
-                            name=row['name'],
-                            status=row['status'],
-                            health_status=row.get('health_status', HealthStatus.UNKNOWN),
-                            metadata=json.loads(row['metadata']) if row['metadata'] else {},
-                            capabilities=json.loads(row['capabilities']) if row['capabilities'] else [],
-                            tags=row.get('tags', []),
-                            last_heartbeat=row.get('last_heartbeat'),
-                            version=row.get('version', '1.0.0')
+                            id=row["id"],
+                            name=row["name"],
+                            status=row["status"],
+                            health_status=row.get(
+                                "health_status", HealthStatus.UNKNOWN
+                            ),
+                            metadata=(
+                                json.loads(row["metadata"]) if row["metadata"] else {}
+                            ),
+                            capabilities=(
+                                json.loads(row["capabilities"])
+                                if row["capabilities"]
+                                else []
+                            ),
+                            tags=row.get("tags", []),
+                            last_heartbeat=row.get("last_heartbeat"),
+                            version=row.get("version", "1.0.0"),
                         )
                     else:
                         entity = AgentRegistryEntry(
-                            id=row['id'],
-                            name=row['name'],
-                            status=row['status'],
-                            health_status=row.get('health_status', HealthStatus.UNKNOWN),
-                            department_id=row.get('department_id'),
-                            metadata=json.loads(row['metadata']) if row['metadata'] else {},
-                            capabilities=json.loads(row['capabilities']) if row['capabilities'] else [],
-                            tags=row.get('tags', []),
-                            last_heartbeat=row.get('last_heartbeat'),
-                            version=row.get('version', '1.0.0')
+                            id=row["id"],
+                            name=row["name"],
+                            status=row["status"],
+                            health_status=row.get(
+                                "health_status", HealthStatus.UNKNOWN
+                            ),
+                            department_id=row.get("department_id"),
+                            metadata=(
+                                json.loads(row["metadata"]) if row["metadata"] else {}
+                            ),
+                            capabilities=(
+                                json.loads(row["capabilities"])
+                                if row["capabilities"]
+                                else []
+                            ),
+                            tags=row.get("tags", []),
+                            last_heartbeat=row.get("last_heartbeat"),
+                            version=row.get("version", "1.0.0"),
                         )
                     self.cache[entity.id] = entity
 
@@ -1158,66 +1295,96 @@ class EnhancedRegistrySystem:
                 servers = await conn.fetch("SELECT * FROM server_registry")
                 for row in servers:
                     entity = ServerRegistryEntry(
-                        id=row['id'],
-                        name=row['name'],
-                        type=row['server_type'],
-                        server_type=row['server_type'],
-                        status=row['status'],
-                        health_status=row.get('health_status', HealthStatus.UNKNOWN),
-                        host=row.get('endpoint_url', 'localhost').split('://')[1].split(':')[0],
-                        port=int(row.get('endpoint_url', ':8000').split(':')[-1].split('/')[0]),
-                        protocol=row.get('endpoint_url', 'http://').split('://')[0],
-                        metadata=json.loads(row['metadata']) if row['metadata'] else {},
-                        capabilities=json.loads(row['capabilities']) if row['capabilities'] else [],
-                        last_heartbeat=row.get('last_heartbeat'),
-                        version=row.get('version', '1.0')
+                        id=row["id"],
+                        name=row["name"],
+                        type=row["server_type"],
+                        server_type=row["server_type"],
+                        status=row["status"],
+                        health_status=row.get("health_status", HealthStatus.UNKNOWN),
+                        host=row.get("endpoint_url", "localhost")
+                        .split("://")[1]
+                        .split(":")[0],
+                        port=int(
+                            row.get("endpoint_url", ":8000")
+                            .split(":")[-1]
+                            .split("/")[0]
+                        ),
+                        protocol=row.get("endpoint_url", "http://").split("://")[0],
+                        metadata=json.loads(row["metadata"]) if row["metadata"] else {},
+                        capabilities=(
+                            json.loads(row["capabilities"])
+                            if row["capabilities"]
+                            else []
+                        ),
+                        last_heartbeat=row.get("last_heartbeat"),
+                        version=row.get("version", "1.0"),
                     )
                     self.cache[entity.id] = entity
 
                 # Load departments
-                departments = await conn.fetch("""
+                departments = await conn.fetch(
+                    """
                     SELECT d.*, dr.status as reg_status, dr.capabilities, dr.metadata as reg_metadata
                     FROM departments d
                     LEFT JOIN department_registry dr ON d.id = dr.department_id
                     WHERE d.is_active = true
-                """)
+                """
+                )
                 for row in departments:
                     # Get agent assignments
-                    assignments = await conn.fetch("""
+                    assignments = await conn.fetch(
+                        """
                         SELECT agent_id FROM agent_department_assignments
                         WHERE department_id = $1 AND assignment_status = 'active'
-                    """, row['id'])
-                    agent_ids = [str(a['agent_id']) for a in assignments]
+                    """,
+                        row["id"],
+                    )
+                    agent_ids = [str(a["agent_id"]) for a in assignments]
 
                     entity = DepartmentRegistryEntry(
-                        id=str(row['id']),
-                        name=row['name'],
-                        division_id=str(row['division_id']) if row['division_id'] else "",
+                        id=str(row["id"]),
+                        name=row["name"],
+                        division_id=(
+                            str(row["division_id"]) if row["division_id"] else ""
+                        ),
                         agent_ids=agent_ids,
-                        operational_status=row.get('reg_status', 'planning'),
-                        capabilities=json.loads(row['capabilities']) if row.get('capabilities') else [],
-                        metadata=json.loads(row['reg_metadata']) if row.get('reg_metadata') else {}
+                        operational_status=row.get("reg_status", "planning"),
+                        capabilities=(
+                            json.loads(row["capabilities"])
+                            if row.get("capabilities")
+                            else []
+                        ),
+                        metadata=(
+                            json.loads(row["reg_metadata"])
+                            if row.get("reg_metadata")
+                            else {}
+                        ),
                     )
                     self.cache[entity.id] = entity
 
                 # Load divisions
-                divisions = await conn.fetch("SELECT * FROM divisions WHERE is_active = true")
+                divisions = await conn.fetch(
+                    "SELECT * FROM divisions WHERE is_active = true"
+                )
                 for row in divisions:
                     # Get departments in division
-                    depts = await conn.fetch("""
+                    depts = await conn.fetch(
+                        """
                         SELECT id FROM departments WHERE division_id = $1
-                    """, row['id'])
-                    dept_ids = [str(d['id']) for d in depts]
+                    """,
+                        row["id"],
+                    )
+                    dept_ids = [str(d["id"]) for d in depts]
 
                     entity = DivisionRegistryEntry(
-                        id=row['division_key'],
-                        name=row['division_name'],
+                        id=row["division_key"],
+                        name=row["division_name"],
                         department_ids=dept_ids,
-                        division_purpose=row.get('division_purpose'),
+                        division_purpose=row.get("division_purpose"),
                         metadata={
-                            'description': row.get('division_description', ''),
-                            'priority': row.get('priority', 5)
-                        }
+                            "description": row.get("division_description", ""),
+                            "priority": row.get("priority", 5),
+                        },
                     )
                     self.cache[entity.id] = entity
 
@@ -1235,15 +1402,11 @@ class EnhancedRegistrySystem:
             if self.redis:
                 # Publish to Redis Stream
                 event_data = json.dumps(event.dict())
-                await self.redis.xadd(
-                    "registry:events",
-                    {"event": event_data}
-                )
+                await self.redis.xadd("registry:events", {"event": event_data})
 
                 # Publish to Redis Pub/Sub for immediate notification
                 await self.redis.publish(
-                    f"registry:events:{event.entity_type}",
-                    event_data
+                    f"registry:events:{event.entity_type}", event_data
                 )
 
             # Notify WebSocket clients
@@ -1284,19 +1447,17 @@ class EnhancedRegistrySystem:
                     entity_types = data.get("entity_types", [])
                     for entity_type in entity_types:
                         self.websocket_subscriptions[websocket].add(entity_type)
-                    await websocket.send_json({
-                        "status": "subscribed",
-                        "entity_types": entity_types
-                    })
+                    await websocket.send_json(
+                        {"status": "subscribed", "entity_types": entity_types}
+                    )
 
                 elif command == "unsubscribe":
                     entity_types = data.get("entity_types", [])
                     for entity_type in entity_types:
                         self.websocket_subscriptions[websocket].discard(entity_type)
-                    await websocket.send_json({
-                        "status": "unsubscribed",
-                        "entity_types": entity_types
-                    })
+                    await websocket.send_json(
+                        {"status": "unsubscribed", "entity_types": entity_types}
+                    )
 
                 elif command == "ping":
                     await websocket.send_json({"pong": True})
@@ -1336,7 +1497,7 @@ class EnhancedRegistrySystem:
             self._health_checker(),
             self._event_processor(),
             self._cache_cleanup(),
-            self._metrics_collector()
+            self._metrics_collector(),
         ]
 
         for task in tasks:
@@ -1393,14 +1554,23 @@ class EnhancedRegistrySystem:
                 await asyncio.sleep(60)  # Check every minute
 
                 # Check servers
-                servers = [e for e in self.cache.values()
-                          if e.type in [RegistryType.SERVER_CORE, RegistryType.SERVER_MCP, RegistryType.SERVER_BUSINESS]]
+                servers = [
+                    e
+                    for e in self.cache.values()
+                    if e.type
+                    in [
+                        RegistryType.SERVER_CORE,
+                        RegistryType.SERVER_MCP,
+                        RegistryType.SERVER_BUSINESS,
+                    ]
+                ]
 
                 for server in servers:
                     if isinstance(server, ServerRegistryEntry):
                         try:
                             # Simple HTTP health check
                             import aiohttp
+
                             async with aiohttp.ClientSession() as session:
                                 url = f"{server.protocol}://{server.host}:{server.port}/health"
                                 async with session.get(url, timeout=5) as response:
@@ -1425,10 +1595,7 @@ class EnhancedRegistrySystem:
         while True:
             try:
                 # Read events from stream
-                events = await self.redis.xread(
-                    {"registry:events": "$"},
-                    block=1000
-                )
+                events = await self.redis.xread({"registry:events": "$"}, block=1000)
 
                 for stream, messages in events:
                     for message_id, data in messages:
@@ -1479,25 +1646,36 @@ class EnhancedRegistrySystem:
 
                 # Calculate success rate
                 if self.metrics.total_requests > 0:
-                    success_rate = (self.metrics.successful_requests / self.metrics.total_requests) * 100
+                    success_rate = (
+                        self.metrics.successful_requests / self.metrics.total_requests
+                    ) * 100
                     self.metrics.custom_metrics["success_rate"] = success_rate
 
                 # Store metrics in database
                 async with self.db_pool.acquire() as conn:
-                    await conn.execute("""
+                    await conn.execute(
+                        """
                         INSERT INTO system_metrics (
                             service_name, metric_name, metric_value, metadata
                         ) VALUES ($1, $2, $3, $4)
-                    """, "registry", "system_metrics", success_rate,
-                    json.dumps(asdict(self.metrics)))
+                    """,
+                        "registry",
+                        "system_metrics",
+                        success_rate,
+                        json.dumps(asdict(self.metrics)),
+                    )
 
             except Exception as e:
                 logger.error(f"Metrics collector error: {e}")
 
     # ==================== Cache Management ====================
 
-    def _generate_cache_key(self, operation: str, entity_type: Optional[RegistryType],
-                           filters: Optional[Dict[str, Any]] = None) -> str:
+    def _generate_cache_key(
+        self,
+        operation: str,
+        entity_type: Optional[RegistryType],
+        filters: Optional[Dict[str, Any]] = None,
+    ) -> str:
         """Generate cache key for operations"""
         parts = [operation]
         if entity_type:
@@ -1550,7 +1728,8 @@ class EnhancedRegistrySystem:
     async def _init_audit_log(self):
         """Initialize audit log table if not exists"""
         async with self.db_pool.acquire() as conn:
-            await conn.execute("""
+            await conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS registry_audit_log (
                     id SERIAL PRIMARY KEY,
                     timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -1562,13 +1741,16 @@ class EnhancedRegistrySystem:
                     changes JSONB,
                     metadata JSONB
                 )
-            """)
+            """
+            )
 
             # Create index for faster queries
-            await conn.execute("""
+            await conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_audit_log_entity
                 ON registry_audit_log(entity_id, timestamp DESC)
-            """)
+            """
+            )
 
     async def _audit_log(self, operation: str, entity_id: str, data: Dict[str, Any]):
         """Write audit log entry"""
@@ -1577,13 +1759,17 @@ class EnhancedRegistrySystem:
 
         try:
             async with self.db_pool.acquire() as conn:
-                await conn.execute("""
+                await conn.execute(
+                    """
                     INSERT INTO registry_audit_log (
                         operation, entity_id, entity_type, changes
                     ) VALUES ($1, $2, $3, $4)
-                """, operation, entity_id,
-                data.get("type", "unknown"),
-                json.dumps(data))
+                """,
+                    operation,
+                    entity_id,
+                    data.get("type", "unknown"),
+                    json.dumps(data),
+                )
         except Exception as e:
             logger.error(f"Failed to write audit log: {e}")
 
@@ -1607,7 +1793,9 @@ class EnhancedRegistrySystem:
             "healthy": sum(1 for e in self.cache.values() if e.health_score >= 80),
             "warning": sum(1 for e in self.cache.values() if 50 <= e.health_score < 80),
             "critical": sum(1 for e in self.cache.values() if e.health_score < 50),
-            "online": sum(1 for e in self.cache.values() if e.status == ServiceStatus.ONLINE)
+            "online": sum(
+                1 for e in self.cache.values() if e.status == ServiceStatus.ONLINE
+            ),
         }
 
         return {
@@ -1617,14 +1805,18 @@ class EnhancedRegistrySystem:
                 "database": "healthy" if db_healthy else "unhealthy",
                 "redis": "healthy" if redis_healthy else "unhealthy",
                 "cache": "enabled" if self.enable_caching else "disabled",
-                "websockets": f"{len(self.websocket_connections)} connected"
+                "websockets": f"{len(self.websocket_connections)} connected",
             },
             "entities": entity_health,
             "uptime": self.metrics.uptime_seconds,
             "metrics": {
                 "total_requests": self.metrics.total_requests,
-                "success_rate": (self.metrics.successful_requests / max(1, self.metrics.total_requests)) * 100
-            }
+                "success_rate": (
+                    self.metrics.successful_requests
+                    / max(1, self.metrics.total_requests)
+                )
+                * 100,
+            },
         }
 
     async def get_metrics(self) -> Dict[str, Any]:
@@ -1634,12 +1826,12 @@ class EnhancedRegistrySystem:
             "entities": await self.get_statistics(),
             "cache": {
                 "size": len(self.cache),
-                "hit_rate": self.metrics.custom_metrics.get("cache_hit_rate", 0.0)
+                "hit_rate": self.metrics.custom_metrics.get("cache_hit_rate", 0.0),
             },
             "performance": {
                 "average_response_time": self.metrics.average_response_time,
-                "requests_per_minute": self.metrics.custom_metrics.get("rpm", 0)
-            }
+                "requests_per_minute": self.metrics.custom_metrics.get("rpm", 0),
+            },
         }
 
     def run(self, host: str = "0.0.0.0", port: int = 8100):
@@ -1650,10 +1842,9 @@ class EnhancedRegistrySystem:
 
 # ==================== Convenience Functions ====================
 
+
 async def create_enhanced_registry(
-    db_url: Optional[str] = None,
-    redis_url: Optional[str] = None,
-    **kwargs
+    db_url: Optional[str] = None, redis_url: Optional[str] = None, **kwargs
 ) -> EnhancedRegistrySystem:
     """Create and initialize enhanced registry instance"""
     if not db_url:
@@ -1672,7 +1863,7 @@ if __name__ == "__main__":
     # Load configuration from environment
     db_url = os.getenv(
         "DATABASE_URL",
-        "postgresql://boarderframe:boarderframe@localhost:5434/boarderframeos"
+        "postgresql://boarderframe:boarderframe@localhost:5434/boarderframeos",
     )
     redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
 
@@ -1683,7 +1874,7 @@ if __name__ == "__main__":
         enable_caching=True,
         cache_ttl=300,
         enable_websockets=True,
-        enable_audit_log=True
+        enable_audit_log=True,
     )
 
     registry.run(host="0.0.0.0", port=8100)

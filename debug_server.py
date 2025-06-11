@@ -11,7 +11,7 @@ for port in [8890, 8891, 8892, 9999]:
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s.bind(('127.0.0.1', port))
+        s.bind(("127.0.0.1", port))
         s.listen(1)
         print(f"  ✅ Successfully bound to port {port}")
         s.close()
@@ -22,18 +22,21 @@ for port in [8890, 8891, 8892, 9999]:
 print("\nTest 2: Minimal Flask app")
 try:
     from flask import Flask
+
     app = Flask(__name__)
 
-    @app.route('/')
+    @app.route("/")
     def hello():
-        return 'Hello from Flask!'
+        return "Hello from Flask!"
 
     # Use werkzeug directly
     from werkzeug.serving import run_simple
+
     print("  ✅ Starting Flask on port 5555...")
-    run_simple('127.0.0.1', 5555, app, use_reloader=False, use_debugger=False)
+    run_simple("127.0.0.1", 5555, app, use_reloader=False, use_debugger=False)
 
 except Exception as e:
     print(f"  ❌ Flask error: {e}")
     import traceback
+
     traceback.print_exc()

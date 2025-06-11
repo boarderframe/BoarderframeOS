@@ -23,6 +23,7 @@ def run_command(cmd, capture_output=True):
     else:
         return subprocess.run(cmd, shell=True)
 
+
 def main():
     print("🚀 BoarderframeOS GitHub Publisher")
     print("=" * 50)
@@ -32,7 +33,7 @@ def main():
 
     # Confirm action
     response = input("\n❓ Are you sure you want to force push to GitHub? (yes/no): ")
-    if response.lower() != 'yes':
+    if response.lower() != "yes":
         print("❌ Cancelled by user")
         return
 
@@ -100,7 +101,10 @@ def main():
         print("💡 Possible issues:")
         print("   - Check your GitHub credentials")
         print("   - Ensure you have push access to the repository")
-        print("   - Try: git remote set-url origin https://github.com/boarderframe/BoarderframeOS.git")
+        print(
+            "   - Try: git remote set-url origin https://github.com/boarderframe/BoarderframeOS.git"
+        )
+
 
 if __name__ == "__main__":
     main()

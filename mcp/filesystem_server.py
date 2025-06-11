@@ -74,14 +74,14 @@ from starlette.responses import Response
 
 # Configure logging first
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
 # Enhanced imports for async I/O and integrity - optional
 try:
     import aiofiles
+
     HAS_AIOFILES = True
 except ImportError:
     HAS_AIOFILES = False
@@ -89,6 +89,7 @@ except ImportError:
 
 try:
     import xxhash
+
     HAS_XXHASH = True
 except ImportError:
     HAS_XXHASH = False
@@ -97,6 +98,7 @@ except ImportError:
 try:
     from watchdog.events import FileSystemEventHandler
     from watchdog.observers import Observer
+
     HAS_WATCHDOG = True
 except ImportError:
     HAS_WATCHDOG = False
@@ -106,13 +108,17 @@ except ImportError:
 try:
     import numpy as np
     from sklearn.metrics.pairwise import cosine_similarity
+
     HAS_NUMPY = True
 except ImportError:
     HAS_NUMPY = False
-    logger.warning("numpy/sklearn not available - advanced similarity calculations disabled")
+    logger.warning(
+        "numpy/sklearn not available - advanced similarity calculations disabled"
+    )
 
 try:
     from sentence_transformers import SentenceTransformer
+
     HAS_TRANSFORMERS = True
 except ImportError:
     HAS_TRANSFORMERS = False
@@ -120,6 +126,7 @@ except ImportError:
 
 try:
     import aiosqlite
+
     HAS_SQLITE = True
 except ImportError:
     HAS_SQLITE = False
@@ -127,6 +134,7 @@ except ImportError:
 
 try:
     import tiktoken
+
     HAS_TIKTOKEN = True
 except ImportError:
     HAS_TIKTOKEN = False
@@ -136,6 +144,7 @@ try:
     from pygments import highlight
     from pygments.formatters import TerminalFormatter
     from pygments.lexers import get_lexer_by_name, guess_lexer
+
     HAS_PYGMENTS = True
 except ImportError:
     HAS_PYGMENTS = False
@@ -143,6 +152,7 @@ except ImportError:
 
 try:
     import blake3
+
     HAS_BLAKE3 = True
 except ImportError:
     HAS_BLAKE3 = False
@@ -150,6 +160,7 @@ except ImportError:
 
 try:
     import gzip
+
     HAS_GZIP = True
 except ImportError:
     HAS_GZIP = False
@@ -161,23 +172,24 @@ LARGE_FILE_CHUNK_SIZE = 8 * 1024 * 1024  # 8MB chunks for large files
 MAX_FILE_SIZE = 1024 * 1024 * 1024  # 1GB limit (increased)
 LARGE_FILE_THRESHOLD = 100 * 1024 * 1024  # 100MB threshold for large file handling
 MAX_OPERATION_TIME = 600  # 10 minutes (increased)
-DEFAULT_EMBEDDING_MODEL = 'sentence-transformers/all-MiniLM-L6-v2'
+DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 MAX_VERSIONS_PER_FILE = 10  # Maximum versions to keep per file
 CHUNK_TARGET_TIME = 0.2  # seconds – target per-chunk duration when AUTO_CHUNK is on
 
 # Rate limiting configuration
 RATE_LIMIT_GENERAL = 100  # requests per minute for general operations
-RATE_LIMIT_FILES = 20     # requests per minute for file upload/download
-RATE_LIMIT_BATCH = 10     # requests per minute for batch operations
-RATE_LIMIT_AI = 5         # requests per minute for AI operations
-RATE_LIMIT_WINDOW = 60    # time window in seconds
+RATE_LIMIT_FILES = 20  # requests per minute for file upload/download
+RATE_LIMIT_BATCH = 10  # requests per minute for batch operations
+RATE_LIMIT_AI = 5  # requests per minute for AI operations
+RATE_LIMIT_WINDOW = 60  # time window in seconds
 
 # --------------------------------------------------------------------------
 # Feature toggles (env‑driven; default safe values)
 # --------------------------------------------------------------------------
-AUTO_CHUNK   = os.getenv("AUTO_CHUNK", "false").lower() in ("1", "true", "yes")
-HASH_ALGO    = os.getenv("HASH_ALGO", "xxhash").lower()          # xxhash | blake3 | sha256
-GZIP_CHUNK   = os.getenv("GZIP_CHUNK", "false").lower() in ("1", "true", "yes")
+AUTO_CHUNK = os.getenv("AUTO_CHUNK", "false").lower() in ("1", "true", "yes")
+HASH_ALGO = os.getenv("HASH_ALGO", "xxhash").lower()  # xxhash | blake3 | sha256
+GZIP_CHUNK = os.getenv("GZIP_CHUNK", "false").lower() in ("1", "true", "yes")
+
 
 # Data Models
 class FileMetadata(BaseModel):
@@ -190,6 +202,7 @@ class FileMetadata(BaseModel):
     encoding: Optional[str] = None
     permissions: Optional[str] = None
 
+
 class StreamProgress(BaseModel):
     operation_id: str
     bytes_processed: int
@@ -199,10 +212,12 @@ class StreamProgress(BaseModel):
     speed_mbps: Optional[float] = None
     eta_seconds: Optional[float] = None
 
+
 class BatchOperation(BaseModel):
     operations: List[Dict[str, Any]]
     parallel: bool = False
     stop_on_error: bool = True
+
 
 class ContentAnalysis(BaseModel):
     file_path: str
@@ -218,11 +233,13 @@ class ContentAnalysis(BaseModel):
     key_terms: Optional[List[str]] = None
     complexity_score: Optional[float] = None
 
+
 class SearchResult(BaseModel):
     path: str
     score: float
     snippet: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
+
 
 class EmbeddingResult(BaseModel):
     file_path: str
@@ -231,12 +248,15 @@ class EmbeddingResult(BaseModel):
     chunk_count: int
     processing_time: float
 
+
 # Rate Limiting Implementation
 class RateLimiter:
     """Advanced rate limiter with different limits for different operation types"""
 
     def __init__(self):
-        self.requests = defaultdict(list)  # client_id -> [(timestamp, operation_type), ...]
+        self.requests = defaultdict(
+            list
+        )  # client_id -> [(timestamp, operation_type), ...]
 
     def is_allowed(self, client_id: str, operation_type: str) -> bool:
         """Check if request is allowed based on rate limits"""
@@ -254,13 +274,15 @@ class RateLimiter:
 
         # Clean old requests outside the time window
         self.requests[client_id] = [
-            (timestamp, op_type) for timestamp, op_type in self.requests[client_id]
+            (timestamp, op_type)
+            for timestamp, op_type in self.requests[client_id]
             if now - timestamp < RATE_LIMIT_WINDOW
         ]
 
         # Count requests of this type in the current window
         current_count = sum(
-            1 for timestamp, op_type in self.requests[client_id]
+            1
+            for timestamp, op_type in self.requests[client_id]
             if op_type == operation_type or operation_type == "general"
         )
 
@@ -276,7 +298,8 @@ class RateLimiter:
 
         # Clean old requests
         self.requests[client_id] = [
-            (timestamp, op_type) for timestamp, op_type in self.requests[client_id]
+            (timestamp, op_type)
+            for timestamp, op_type in self.requests[client_id]
             if now - timestamp < RATE_LIMIT_WINDOW
         ]
 
@@ -292,9 +315,10 @@ class RateLimiter:
                 "general": RATE_LIMIT_GENERAL,
                 "files": RATE_LIMIT_FILES,
                 "batch": RATE_LIMIT_BATCH,
-                "ai": RATE_LIMIT_AI
-            }
+                "ai": RATE_LIMIT_AI,
+            },
         }
+
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     """Rate limiting middleware for filesystem server"""
@@ -314,13 +338,15 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if not self.rate_limiter.is_allowed(client_id, operation_type):
             stats = self.rate_limiter.get_stats(client_id)
             return Response(
-                content=json.dumps({
-                    "error": "Rate limit exceeded",
-                    "operation_type": operation_type,
-                    "client_stats": stats
-                }),
+                content=json.dumps(
+                    {
+                        "error": "Rate limit exceeded",
+                        "operation_type": operation_type,
+                        "client_stats": stats,
+                    }
+                ),
                 status_code=429,
-                headers={"Content-Type": "application/json"}
+                headers={"Content-Type": "application/json"},
             )
 
         # Process request
@@ -347,6 +373,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         # General operations
         return "general"
 
+
 class FileVersion(BaseModel):
     version_id: str
     file_path: str
@@ -356,6 +383,7 @@ class FileVersion(BaseModel):
     created_at: datetime
     created_by: str = "system"
 
+
 class VersionDiff(BaseModel):
     version1: str
     version2: str
@@ -363,6 +391,7 @@ class VersionDiff(BaseModel):
     diff_text: str
     changed_lines: int
     diff_type: str  # 'text' or 'binary'
+
 
 class VersionControlResult(BaseModel):
     success: bool
@@ -372,9 +401,11 @@ class VersionControlResult(BaseModel):
     error: Optional[str] = None
     message: Optional[str] = None
 
+
 class MCPFileEventHandler(FileSystemEventHandler):
     """Bridges watchdog events to UnifiedFilesystemServer broadcasts."""
-    def __init__(self, server: 'UnifiedFilesystemServer'):
+
+    def __init__(self, server: "UnifiedFilesystemServer"):
         super().__init__()
         self.server = server
 
@@ -382,17 +413,24 @@ class MCPFileEventHandler(FileSystemEventHandler):
         data = {
             "event_type": event.event_type,
             "is_directory": event.is_directory,
-            "src_path": os.path.relpath(event.src_path, self.server.base_path)
-                       if hasattr(event, "src_path") else None,
-            "dest_path": os.path.relpath(event.dest_path, self.server.base_path)
-                        if hasattr(event, "dest_path") else None,
-            "timestamp": time.time()
+            "src_path": (
+                os.path.relpath(event.src_path, self.server.base_path)
+                if hasattr(event, "src_path")
+                else None
+            ),
+            "dest_path": (
+                os.path.relpath(event.dest_path, self.server.base_path)
+                if hasattr(event, "dest_path")
+                else None
+            ),
+            "timestamp": time.time(),
         }
         try:
             asyncio.get_running_loop().create_task(self.server.broadcast_fs_event(data))
         except RuntimeError:
             # Called before loop starts—ignore
             pass
+
 
 class UnifiedFilesystemServer:
     """Unified MCP Filesystem Server with full feature set"""
@@ -419,7 +457,7 @@ class UnifiedFilesystemServer:
             "total_bytes_processed": 0,
             "total_operations": 0,
             "average_speed_mbps": 0.0,
-            "uptime_start": time.time()
+            "uptime_start": time.time(),
         }
 
         # Operation tracking
@@ -441,7 +479,9 @@ class UnifiedFilesystemServer:
         # Initialize AI components
         self._initialize_ai_components()
 
-        logger.info(f"Unified Filesystem Server initialized with base path: {self.base_path}")
+        logger.info(
+            f"Unified Filesystem Server initialized with base path: {self.base_path}"
+        )
 
     def _setup_middleware(self):
         """Setup FastAPI middleware"""
@@ -498,7 +538,9 @@ class UnifiedFilesystemServer:
         # Register v1‑prefixed clones
         for route in list(self.app.routes):
             # Skip FastAPI internals & already‑prefixed paths
-            if not getattr(route, "path", "").startswith("/") or route.path.startswith(self.v1_prefix):
+            if not getattr(route, "path", "").startswith("/") or route.path.startswith(
+                self.v1_prefix
+            ):
                 continue
 
             # FastAPI differentiates between websocket & http routes
@@ -526,14 +568,17 @@ class UnifiedFilesystemServer:
 
         # Note: Vector DB initialization will happen when server starts
         if HAS_SQLITE:
-            logger.info("SQLite available, vector DB will be initialized on server start")
+            logger.info(
+                "SQLite available, vector DB will be initialized on server start"
+            )
 
     async def _initialize_vector_db(self):
         """Initialize vector database for embeddings and version control"""
         try:
             async with aiosqlite.connect(self.vector_db_path) as db:
                 # Vector embeddings tables
-                await db.execute("""
+                await db.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS file_embeddings (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         file_path TEXT UNIQUE,
@@ -544,9 +589,11 @@ class UnifiedFilesystemServer:
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
-                """)
+                """
+                )
 
-                await db.execute("""
+                await db.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS content_chunks (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         file_id INTEGER,
@@ -555,10 +602,12 @@ class UnifiedFilesystemServer:
                         embedding BLOB,
                         FOREIGN KEY(file_id) REFERENCES file_embeddings(id)
                     )
-                """)
+                """
+                )
 
                 # Version control tables
-                await db.execute("""
+                await db.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS file_versions (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         file_path TEXT NOT NULL,
@@ -571,17 +620,22 @@ class UnifiedFilesystemServer:
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         created_by TEXT DEFAULT 'system'
                     )
-                """)
+                """
+                )
 
-                await db.execute("""
+                await db.execute(
+                    """
                     CREATE INDEX IF NOT EXISTS idx_file_versions_path
                     ON file_versions(file_path)
-                """)
+                """
+                )
 
-                await db.execute("""
+                await db.execute(
+                    """
                     CREATE INDEX IF NOT EXISTS idx_file_versions_created
                     ON file_versions(created_at)
-                """)
+                """
+                )
 
                 await db.commit()
                 logger.info("Vector database and version control initialized")
@@ -597,10 +651,7 @@ class UnifiedFilesystemServer:
         self._start_file_monitoring()
 
         config = uvicorn.Config(
-            app=self.app,
-            host="0.0.0.0",
-            port=port,
-            log_level="info"
+            app=self.app, host="0.0.0.0", port=port, log_level="info"
         )
         server = uvicorn.Server(config)
         await server.serve()
@@ -628,7 +679,9 @@ class UnifiedFilesystemServer:
         try:
             self.event_handler = MCPFileEventHandler(self)
             self.file_observer = Observer()
-            self.file_observer.schedule(self.event_handler, str(self.base_path), recursive=True)
+            self.file_observer.schedule(
+                self.event_handler, str(self.base_path), recursive=True
+            )
             self.file_observer.start()
             logger.info("File system monitoring started")
         except Exception as e:
@@ -642,7 +695,9 @@ class UnifiedFilesystemServer:
             "base_path": str(self.base_path),
             "ai_available": self.embedding_model is not None,
             "active_operations": len(self.active_operations),
-            "connected_clients": sum(len(clients) for clients in self.connected_clients.values()),
+            "connected_clients": sum(
+                len(clients) for clients in self.connected_clients.values()
+            ),
             "fs_watchers": len(self.fs_watchers),
             "features": {
                 "aiofiles": HAS_AIOFILES,
@@ -653,8 +708,8 @@ class UnifiedFilesystemServer:
                 "sqlite": HAS_SQLITE,
                 "tiktoken": HAS_TIKTOKEN,
                 "pygments": HAS_PYGMENTS,
-                "blake3": HAS_BLAKE3
-            }
+                "blake3": HAS_BLAKE3,
+            },
         }
 
     async def get_stats(self):
@@ -665,7 +720,7 @@ class UnifiedFilesystemServer:
             "connected_clients": {
                 name: len(clients) for name, clients in self.connected_clients.items()
             },
-            "fs_watchers": len(self.fs_watchers)
+            "fs_watchers": len(self.fs_watchers),
         }
 
     async def get_rate_limit_stats(self, request: Request):
@@ -688,17 +743,19 @@ class UnifiedFilesystemServer:
                     "general": RATE_LIMIT_GENERAL,
                     "files": RATE_LIMIT_FILES,
                     "batch": RATE_LIMIT_BATCH,
-                    "ai": RATE_LIMIT_AI
+                    "ai": RATE_LIMIT_AI,
                 },
-                "window_seconds": RATE_LIMIT_WINDOW
-            }
+                "window_seconds": RATE_LIMIT_WINDOW,
+            },
         }
 
     # =============================================================================
     # Core File Operations (Original + Enhanced)
     # =============================================================================
 
-    async def read_file_async(self, path: str, chunk_size: int = DEFAULT_CHUNK_SIZE) -> Dict[str, Any]:
+    async def read_file_async(
+        self, path: str, chunk_size: int = DEFAULT_CHUNK_SIZE
+    ) -> Dict[str, Any]:
         """Read file with async I/O and progress tracking"""
         operation_id = str(uuid.uuid4())
 
@@ -712,7 +769,10 @@ class UnifiedFilesystemServer:
 
             file_size = file_path.stat().st_size
             if file_size > MAX_FILE_SIZE:
-                return {"error": f"File too large (max {MAX_FILE_SIZE} bytes)", "path": path}
+                return {
+                    "error": f"File too large (max {MAX_FILE_SIZE} bytes)",
+                    "path": path,
+                }
 
             await self.register_operation(operation_id, "read", file_path)
 
@@ -724,7 +784,7 @@ class UnifiedFilesystemServer:
                 content_parts = []
                 hasher = self._create_hasher()
 
-                async with aiofiles.open(file_path, 'rb') as f:
+                async with aiofiles.open(file_path, "rb") as f:
                     while True:
                         chunk = await f.read(chunk_size)
                         if not chunk:
@@ -736,28 +796,37 @@ class UnifiedFilesystemServer:
                             hasher.update(chunk)
 
                         # Update progress
-                        await self.update_operation_progress(operation_id, bytes_read, file_size,
-                                                           (bytes_read / file_size) * 100)
+                        await self.update_operation_progress(
+                            operation_id,
+                            bytes_read,
+                            file_size,
+                            (bytes_read / file_size) * 100,
+                        )
 
                         if AUTO_CHUNK:
-                            elapsed = time.time() - self.active_operations[operation_id]["start_time"]
-                            chunk_size = self._auto_tune_chunk_size(bytes_read, elapsed, chunk_size)
+                            elapsed = (
+                                time.time()
+                                - self.active_operations[operation_id]["start_time"]
+                            )
+                            chunk_size = self._auto_tune_chunk_size(
+                                bytes_read, elapsed, chunk_size
+                            )
 
-                full_content = b''.join(content_parts)
+                full_content = b"".join(content_parts)
             else:
                 # Fallback to sync reading
-                with open(file_path, 'rb') as f:
+                with open(file_path, "rb") as f:
                     full_content = f.read()
                     bytes_read = len(full_content)
                 hasher = None
 
             # Try to decode as text
             try:
-                text_content = full_content.decode('utf-8')
+                text_content = full_content.decode("utf-8")
                 is_binary = False
             except UnicodeDecodeError:
                 try:
-                    text_content = full_content.decode('latin1')
+                    text_content = full_content.decode("latin1")
                     is_binary = True
                 except:
                     text_content = str(full_content)
@@ -773,7 +842,7 @@ class UnifiedFilesystemServer:
                 "size": bytes_read,
                 "is_binary": is_binary,
                 "operation_id": operation_id,
-                "elapsed_time": elapsed_time
+                "elapsed_time": elapsed_time,
             }
 
             if hasher and HAS_XXHASH:
@@ -786,9 +855,13 @@ class UnifiedFilesystemServer:
             logger.error(f"Error reading file {path}: {e}")
             return {"error": str(e), "path": path}
 
-    async def write_file_async(self, path: str, content: Union[str, bytes],
-                             chunk_size: int = DEFAULT_CHUNK_SIZE,
-                             verify_checksum: bool = True) -> Dict[str, Any]:
+    async def write_file_async(
+        self,
+        path: str,
+        content: Union[str, bytes],
+        chunk_size: int = DEFAULT_CHUNK_SIZE,
+        verify_checksum: bool = True,
+    ) -> Dict[str, Any]:
         """Write file with async I/O and integrity checking"""
         operation_id = str(uuid.uuid4())
 
@@ -800,13 +873,16 @@ class UnifiedFilesystemServer:
 
             # Convert content to bytes if needed
             if isinstance(content, str):
-                content_bytes = content.encode('utf-8')
+                content_bytes = content.encode("utf-8")
             else:
                 content_bytes = content
 
             total_size = len(content_bytes)
             if total_size > MAX_FILE_SIZE:
-                return {"error": f"Content too large (max {MAX_FILE_SIZE} bytes)", "path": path}
+                return {
+                    "error": f"Content too large (max {MAX_FILE_SIZE} bytes)",
+                    "path": path,
+                }
 
             await self.register_operation(operation_id, "write", file_path)
 
@@ -816,24 +892,33 @@ class UnifiedFilesystemServer:
 
             # Use async I/O if available
             if HAS_AIOFILES:
-                async with aiofiles.open(file_path, 'wb') as f:
+                async with aiofiles.open(file_path, "wb") as f:
                     for i in range(0, total_size, chunk_size):
-                        chunk = content_bytes[i:i + chunk_size]
+                        chunk = content_bytes[i : i + chunk_size]
                         await f.write(chunk)
                         bytes_written += len(chunk)
                         if hasher:
                             hasher.update(chunk)
 
                         # Update progress
-                        await self.update_operation_progress(operation_id, bytes_written, total_size,
-                                                           (bytes_written / total_size) * 100)
+                        await self.update_operation_progress(
+                            operation_id,
+                            bytes_written,
+                            total_size,
+                            (bytes_written / total_size) * 100,
+                        )
 
                         if AUTO_CHUNK:
-                            elapsed = time.time() - self.active_operations[operation_id]["start_time"]
-                            chunk_size = self._auto_tune_chunk_size(bytes_written, elapsed, chunk_size)
+                            elapsed = (
+                                time.time()
+                                - self.active_operations[operation_id]["start_time"]
+                            )
+                            chunk_size = self._auto_tune_chunk_size(
+                                bytes_written, elapsed, chunk_size
+                            )
             else:
                 # Fallback to sync writing
-                with open(file_path, 'wb') as f:
+                with open(file_path, "wb") as f:
                     f.write(content_bytes)
                     bytes_written = total_size
                     if hasher:
@@ -845,7 +930,9 @@ class UnifiedFilesystemServer:
             # Verify integrity if requested
             verification_result = None
             if verify_checksum and checksum:
-                verification_result = await self.verify_file_integrity(file_path, checksum)
+                verification_result = await self.verify_file_integrity(
+                    file_path, checksum
+                )
 
             await self.complete_operation(operation_id)
             await self.update_stats("write", bytes_written, elapsed_time)
@@ -855,7 +942,7 @@ class UnifiedFilesystemServer:
                 "path": path,
                 "size": bytes_written,
                 "operation_id": operation_id,
-                "elapsed_time": elapsed_time
+                "elapsed_time": elapsed_time,
             }
 
             if checksum:
@@ -891,7 +978,9 @@ class UnifiedFilesystemServer:
             logger.error(f"Error deleting {path}: {e}")
             return {"error": str(e), "path": path}
 
-    async def list_directory_async(self, path: str = "", pattern: str = None) -> Dict[str, Any]:
+    async def list_directory_async(
+        self, path: str = "", pattern: str = None
+    ) -> Dict[str, Any]:
         """List directory contents with optional pattern matching"""
         try:
             dir_path = self.validate_path(path) if path else self.base_path
@@ -914,7 +1003,7 @@ class UnifiedFilesystemServer:
                         "size": stat_info.st_size if item.is_file() else 0,
                         "modified": stat_info.st_mtime,
                         "created": stat_info.st_ctime,
-                        "permissions": oct(stat_info.st_mode)[-3:]
+                        "permissions": oct(stat_info.st_mode)[-3:],
                     }
 
                     # Apply pattern filter if specified
@@ -928,11 +1017,7 @@ class UnifiedFilesystemServer:
             # Sort by name
             items.sort(key=lambda x: (x["type"] == "file", x["name"].lower()))
 
-            return {
-                "entries": items,
-                "path": path,
-                "total": len(items)
-            }
+            return {"entries": items, "path": path, "total": len(items)}
 
         except Exception as e:
             logger.error(f"Error listing directory {path}: {e}")
@@ -950,14 +1035,22 @@ class UnifiedFilesystemServer:
             logger.error(f"Error creating directory {path}: {e}")
             return {"error": str(e), "path": path}
 
-    async def search_files_async(self, query: str, path: str = "",
-                               file_pattern: str = "*", content_search: bool = False) -> Dict[str, Any]:
+    async def search_files_async(
+        self,
+        query: str,
+        path: str = "",
+        file_pattern: str = "*",
+        content_search: bool = False,
+    ) -> Dict[str, Any]:
         """Search for files by name and optionally content"""
         try:
             search_path = self.validate_path(path) if path else self.base_path
 
             if not search_path.exists() or not search_path.is_dir():
-                return {"error": "Search path not found or not a directory", "path": path}
+                return {
+                    "error": "Search path not found or not a directory",
+                    "path": path,
+                }
 
             results = []
             query_lower = query.lower()
@@ -970,24 +1063,32 @@ class UnifiedFilesystemServer:
                     # Check filename match
                     if query_lower in file_path.name.lower():
                         score = 1.0 if query_lower == file_path.name.lower() else 0.8
-                        results.append({
-                            "path": relative_path,
-                            "name": file_path.name,
-                            "score": score,
-                            "match_type": "filename",
-                            "size": file_path.stat().st_size,
-                            "modified": file_path.stat().st_mtime
-                        })
+                        results.append(
+                            {
+                                "path": relative_path,
+                                "name": file_path.name,
+                                "score": score,
+                                "match_type": "filename",
+                                "size": file_path.stat().st_size,
+                                "modified": file_path.stat().st_mtime,
+                            }
+                        )
 
                     # Content search if requested
-                    elif content_search and file_path.stat().st_size < 10 * 1024 * 1024:  # 10MB limit
+                    elif (
+                        content_search and file_path.stat().st_size < 10 * 1024 * 1024
+                    ):  # 10MB limit
                         try:
-                            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                            with open(
+                                file_path, "r", encoding="utf-8", errors="ignore"
+                            ) as f:
                                 content = f.read()
                                 if query_lower in content.lower():
                                     # Calculate basic relevance score
                                     matches = content.lower().count(query_lower)
-                                    score = min(0.7, matches / 10)  # Cap at 0.7 for content matches
+                                    score = min(
+                                        0.7, matches / 10
+                                    )  # Cap at 0.7 for content matches
 
                                     # Find snippet around first match
                                     match_pos = content.lower().find(query_lower)
@@ -995,16 +1096,18 @@ class UnifiedFilesystemServer:
                                     end = min(len(content), match_pos + len(query) + 50)
                                     snippet = content[start:end].strip()
 
-                                    results.append({
-                                        "path": relative_path,
-                                        "name": file_path.name,
-                                        "score": score,
-                                        "match_type": "content",
-                                        "snippet": snippet,
-                                        "matches": matches,
-                                        "size": file_path.stat().st_size,
-                                        "modified": file_path.stat().st_mtime
-                                    })
+                                    results.append(
+                                        {
+                                            "path": relative_path,
+                                            "name": file_path.name,
+                                            "score": score,
+                                            "match_type": "content",
+                                            "snippet": snippet,
+                                            "matches": matches,
+                                            "size": file_path.stat().st_size,
+                                            "modified": file_path.stat().st_mtime,
+                                        }
+                                    )
                         except (UnicodeDecodeError, PermissionError):
                             continue
 
@@ -1016,7 +1119,7 @@ class UnifiedFilesystemServer:
                 "query": query,
                 "total_found": len(results),
                 "search_path": str(search_path.relative_to(self.base_path)),
-                "content_search": content_search
+                "content_search": content_search,
             }
 
         except Exception as e:
@@ -1027,7 +1130,9 @@ class UnifiedFilesystemServer:
     # AI Features (Enhanced with fallbacks)
     # =============================================================================
 
-    async def analyze_content_async(self, path: str, include_highlighting: bool = True) -> Dict[str, Any]:
+    async def analyze_content_async(
+        self, path: str, include_highlighting: bool = True
+    ) -> Dict[str, Any]:
         """Analyze file content with AI features"""
         try:
             file_path = self.validate_path(path)
@@ -1052,9 +1157,9 @@ class UnifiedFilesystemServer:
                 content_type=mimetypes.guess_type(str(file_path))[0] or "text/plain",
                 encoding="utf-8",
                 size=len(content),
-                line_count=content.count('\n') + 1,
+                line_count=content.count("\n") + 1,
                 word_count=len(content.split()),
-                char_count=len(content)
+                char_count=len(content),
             )
 
             # Language detection and syntax highlighting
@@ -1066,31 +1171,57 @@ class UnifiedFilesystemServer:
                         lexer = guess_lexer(content)
 
                     analysis.language = lexer.name
-                    analysis.syntax_highlighted = highlight(content, lexer, TerminalFormatter())
+                    analysis.syntax_highlighted = highlight(
+                        content, lexer, TerminalFormatter()
+                    )
                 except Exception as e:
                     logger.debug(f"Could not highlight {path}: {e}")
 
             # Calculate complexity score (simple heuristic)
-            if analysis.language and analysis.language.lower() in ['python', 'javascript', 'java', 'c', 'cpp']:
+            if analysis.language and analysis.language.lower() in [
+                "python",
+                "javascript",
+                "java",
+                "c",
+                "cpp",
+            ]:
                 complexity_indicators = [
-                    len(re.findall(r'\bif\b|\bfor\b|\bwhile\b|\btry\b|\bcatch\b', content, re.IGNORECASE)),
-                    len(re.findall(r'\bclass\b|\bfunction\b|\bdef\b', content, re.IGNORECASE)),
-                    content.count('{') + content.count('('),
-                    len(re.findall(r'\band\b|\bor\b|\bnot\b|\&&|\|\|', content, re.IGNORECASE))
+                    len(
+                        re.findall(
+                            r"\bif\b|\bfor\b|\bwhile\b|\btry\b|\bcatch\b",
+                            content,
+                            re.IGNORECASE,
+                        )
+                    ),
+                    len(
+                        re.findall(
+                            r"\bclass\b|\bfunction\b|\bdef\b", content, re.IGNORECASE
+                        )
+                    ),
+                    content.count("{") + content.count("("),
+                    len(
+                        re.findall(
+                            r"\band\b|\bor\b|\bnot\b|\&&|\|\|", content, re.IGNORECASE
+                        )
+                    ),
                 ]
-                analysis.complexity_score = sum(complexity_indicators) / max(analysis.line_count, 1)
+                analysis.complexity_score = sum(complexity_indicators) / max(
+                    analysis.line_count, 1
+                )
 
             # Extract key terms (simple approach)
-            words = re.findall(r'\b[a-zA-Z_][a-zA-Z0-9_]*\b', content)
+            words = re.findall(r"\b[a-zA-Z_][a-zA-Z0-9_]*\b", content)
             word_freq = {}
             for word in words:
                 if len(word) > 3:  # Filter short words
                     word_freq[word.lower()] = word_freq.get(word.lower(), 0) + 1
 
-            analysis.key_terms = sorted(word_freq.keys(), key=lambda x: word_freq[x], reverse=True)[:20]
+            analysis.key_terms = sorted(
+                word_freq.keys(), key=lambda x: word_freq[x], reverse=True
+            )[:20]
 
             # Generate summary (basic approach)
-            lines = content.split('\n')
+            lines = content.split("\n")
             non_empty_lines = [line.strip() for line in lines if line.strip()]
             if non_empty_lines:
                 analysis.summary = f"File with {len(non_empty_lines)} non-empty lines"
@@ -1103,7 +1234,9 @@ class UnifiedFilesystemServer:
             logger.error(f"Error analyzing content for {path}: {e}")
             return {"error": str(e), "path": path}
 
-    async def generate_embeddings_async(self, path: str, chunk_size: int = 1000) -> Dict[str, Any]:
+    async def generate_embeddings_async(
+        self, path: str, chunk_size: int = 1000
+    ) -> Dict[str, Any]:
         """Generate embeddings for file content"""
         if not self.embedding_model:
             return {"error": "Embedding model not available", "path": path}
@@ -1118,14 +1251,17 @@ class UnifiedFilesystemServer:
             is_binary = read_result.get("is_binary", False)
 
             if is_binary:
-                return {"error": "Cannot generate embeddings for binary file", "path": path}
+                return {
+                    "error": "Cannot generate embeddings for binary file",
+                    "path": path,
+                }
 
             start_time = time.time()
 
             # Split content into chunks
             chunks = []
             for i in range(0, len(content), chunk_size):
-                chunk = content[i:i + chunk_size].strip()
+                chunk = content[i : i + chunk_size].strip()
                 if chunk:
                     chunks.append(chunk)
 
@@ -1140,28 +1276,31 @@ class UnifiedFilesystemServer:
                 file_embedding = np.mean(embeddings, axis=0).tolist()
             else:
                 # Fallback without numpy
-                file_embedding = [sum(col)/len(col) for col in zip(*embeddings)]
+                file_embedding = [sum(col) / len(col) for col in zip(*embeddings)]
 
             processing_time = time.time() - start_time
 
             # Store in vector database if available
             if HAS_SQLITE:
-                await self._store_embeddings(path, file_embedding, chunks, embeddings.tolist())
+                await self._store_embeddings(
+                    path, file_embedding, chunks, embeddings.tolist()
+                )
 
             return EmbeddingResult(
                 file_path=path,
                 embeddings=file_embedding,
                 model=DEFAULT_EMBEDDING_MODEL,
                 chunk_count=len(chunks),
-                processing_time=processing_time
+                processing_time=processing_time,
             ).dict()
 
         except Exception as e:
             logger.error(f"Error generating embeddings for {path}: {e}")
             return {"error": str(e), "path": path}
 
-    async def semantic_search_async(self, query: str, top_k: int = 10,
-                                  similarity_threshold: float = 0.5) -> Dict[str, Any]:
+    async def semantic_search_async(
+        self, query: str, top_k: int = 10, similarity_threshold: float = 0.5
+    ) -> Dict[str, Any]:
         """Perform semantic search across indexed files"""
         if not self.embedding_model:
             return {"error": "Embedding model not available", "query": query}
@@ -1176,10 +1315,12 @@ class UnifiedFilesystemServer:
             # Search vector database
             results = []
             async with aiosqlite.connect(self.vector_db_path) as db:
-                async with db.execute("""
+                async with db.execute(
+                    """
                     SELECT file_path, embedding, content_hash FROM file_embeddings
                     ORDER BY created_at DESC
-                """) as cursor:
+                """
+                ) as cursor:
                     async for row in cursor:
                         file_path, embedding_blob, content_hash = row
 
@@ -1187,21 +1328,31 @@ class UnifiedFilesystemServer:
                             try:
                                 # Deserialize embedding
                                 if HAS_NUMPY:
-                                    file_embedding = np.frombuffer(embedding_blob, dtype=np.float32)
-                                    similarity = cosine_similarity([query_embedding], [file_embedding])[0][0]
+                                    file_embedding = np.frombuffer(
+                                        embedding_blob, dtype=np.float32
+                                    )
+                                    similarity = cosine_similarity(
+                                        [query_embedding], [file_embedding]
+                                    )[0][0]
                                 else:
                                     # Fallback similarity calculation for JSON-encoded embeddings
                                     file_embedding = json.loads(embedding_blob.decode())
-                                    similarity = self._calculate_similarity(query_embedding, file_embedding)
+                                    similarity = self._calculate_similarity(
+                                        query_embedding, file_embedding
+                                    )
 
                                 if similarity >= similarity_threshold:
-                                    results.append(SearchResult(
-                                        path=file_path,
-                                        score=float(similarity),
-                                        metadata={"content_hash": content_hash}
-                                    ))
+                                    results.append(
+                                        SearchResult(
+                                            path=file_path,
+                                            score=float(similarity),
+                                            metadata={"content_hash": content_hash},
+                                        )
+                                    )
                             except Exception as e:
-                                logger.debug(f"Error processing embedding for {file_path}: {e}")
+                                logger.debug(
+                                    f"Error processing embedding for {file_path}: {e}"
+                                )
                                 continue
 
             # Sort by similarity score and limit results
@@ -1213,15 +1364,16 @@ class UnifiedFilesystemServer:
                 "total": len(results),
                 "query": query,
                 "top_k": top_k,
-                "similarity_threshold": similarity_threshold
+                "similarity_threshold": similarity_threshold,
             }
 
         except Exception as e:
             logger.error(f"Error in semantic search: {e}")
             return {"error": str(e), "query": query}
 
-    async def find_similar_files_async(self, path: str, top_k: int = 5,
-                                     similarity_threshold: float = 0.7) -> Dict[str, Any]:
+    async def find_similar_files_async(
+        self, path: str, top_k: int = 5, similarity_threshold: float = 0.7
+    ) -> Dict[str, Any]:
         """Find files similar to the given file"""
         if not self.embedding_model:
             return {"error": "Embedding model not available", "path": path}
@@ -1240,29 +1392,41 @@ class UnifiedFilesystemServer:
             results = []
             if HAS_SQLITE:
                 async with aiosqlite.connect(self.vector_db_path) as db:
-                    async with db.execute("""
+                    async with db.execute(
+                        """
                         SELECT file_path, embedding FROM file_embeddings
                         WHERE file_path != ?
-                    """, (path,)) as cursor:
+                    """,
+                        (path,),
+                    ) as cursor:
                         async for row in cursor:
                             file_path, embedding_blob = row
 
                             if embedding_blob:
                                 try:
                                     if HAS_NUMPY:
-                                        file_embedding = np.frombuffer(embedding_blob, dtype=np.float32)
-                                        similarity = cosine_similarity([target_embedding], [file_embedding])[0][0]
+                                        file_embedding = np.frombuffer(
+                                            embedding_blob, dtype=np.float32
+                                        )
+                                        similarity = cosine_similarity(
+                                            [target_embedding], [file_embedding]
+                                        )[0][0]
                                     else:
                                         file_embedding = list(embedding_blob)
-                                        similarity = self._calculate_similarity(target_embedding, file_embedding)
+                                        similarity = self._calculate_similarity(
+                                            target_embedding, file_embedding
+                                        )
 
                                     if similarity >= similarity_threshold:
-                                        results.append(SearchResult(
-                                            path=file_path,
-                                            score=float(similarity)
-                                        ))
+                                        results.append(
+                                            SearchResult(
+                                                path=file_path, score=float(similarity)
+                                            )
+                                        )
                                 except Exception as e:
-                                    logger.debug(f"Error processing embedding for {file_path}: {e}")
+                                    logger.debug(
+                                        f"Error processing embedding for {file_path}: {e}"
+                                    )
                                     continue
 
             # Sort by similarity and limit results
@@ -1273,7 +1437,7 @@ class UnifiedFilesystemServer:
                 "target_file": path,
                 "similar_files": [result.dict() for result in results],
                 "total": len(results),
-                "similarity_threshold": similarity_threshold
+                "similarity_threshold": similarity_threshold,
             }
 
         except Exception as e:
@@ -1294,14 +1458,19 @@ class UnifiedFilesystemServer:
         except Exception:
             return 0.0
 
-    async def _store_embeddings(self, file_path: str, file_embedding: List[float],
-                              chunks: List[str], chunk_embeddings: List[List[float]]):
+    async def _store_embeddings(
+        self,
+        file_path: str,
+        file_embedding: List[float],
+        chunks: List[str],
+        chunk_embeddings: List[List[float]],
+    ):
         """Store embeddings in vector database"""
         try:
             # Calculate content hash
             hasher = self._create_hasher()
             if hasher:
-                hasher.update(''.join(chunks).encode())
+                hasher.update("".join(chunks).encode())
                 content_hash = hasher.hexdigest()
             else:
                 content_hash = "unknown"
@@ -1309,22 +1478,27 @@ class UnifiedFilesystemServer:
             async with aiosqlite.connect(self.vector_db_path) as db:
                 # Store file embedding
                 if HAS_NUMPY:
-                    embedding_blob = np.array(file_embedding, dtype=np.float32).tobytes()
+                    embedding_blob = np.array(
+                        file_embedding, dtype=np.float32
+                    ).tobytes()
                 else:
                     # Simple serialization for non-numpy case
                     embedding_blob = json.dumps(file_embedding).encode()
 
-                await db.execute("""
+                await db.execute(
+                    """
                     INSERT OR REPLACE INTO file_embeddings
                     (file_path, content_hash, embedding, model, chunk_size, updated_at)
                     VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-                """, (
-                    file_path,
-                    content_hash,
-                    embedding_blob,
-                    DEFAULT_EMBEDDING_MODEL,
-                    len(chunks)
-                ))
+                """,
+                    (
+                        file_path,
+                        content_hash,
+                        embedding_blob,
+                        DEFAULT_EMBEDDING_MODEL,
+                        len(chunks),
+                    ),
+                )
 
                 # Get file ID
                 cursor = await db.execute("SELECT last_insert_rowid()")
@@ -1337,15 +1511,13 @@ class UnifiedFilesystemServer:
                     else:
                         chunk_blob = json.dumps(embedding).encode()
 
-                    await db.execute("""
+                    await db.execute(
+                        """
                         INSERT INTO content_chunks (file_id, chunk_index, content, embedding)
                         VALUES (?, ?, ?, ?)
-                    """, (
-                        file_id,
-                        i,
-                        chunk,
-                        chunk_blob
-                    ))
+                    """,
+                        (file_id, i, chunk, chunk_blob),
+                    )
 
                 await db.commit()
 
@@ -1356,7 +1528,9 @@ class UnifiedFilesystemServer:
     # Progress and Operation Tracking
     # =============================================================================
 
-    async def register_operation(self, operation_id: str, operation_type: str, file_path: Path):
+    async def register_operation(
+        self, operation_id: str, operation_type: str, file_path: Path
+    ):
         """Register a new operation for tracking"""
         self.active_operations[operation_id] = {
             "type": operation_type,
@@ -1365,28 +1539,39 @@ class UnifiedFilesystemServer:
             "status": "starting",
             "bytes_processed": 0,
             "total_bytes": 0,
-            "percentage": 0.0
+            "percentage": 0.0,
         }
 
-    async def update_operation_progress(self, operation_id: str, bytes_processed: int,
-                                      total_bytes: int, percentage: float):
+    async def update_operation_progress(
+        self,
+        operation_id: str,
+        bytes_processed: int,
+        total_bytes: int,
+        percentage: float,
+    ):
         """Update operation progress"""
         if operation_id not in self.active_operations:
             return
 
         operation = self.active_operations[operation_id]
-        operation.update({
-            "bytes_processed": bytes_processed,
-            "total_bytes": total_bytes,
-            "percentage": percentage,
-            "status": "in_progress"
-        })
+        operation.update(
+            {
+                "bytes_processed": bytes_processed,
+                "total_bytes": total_bytes,
+                "percentage": percentage,
+                "status": "in_progress",
+            }
+        )
 
         # Calculate speed
         elapsed = time.time() - operation["start_time"]
         if elapsed > 0:
             speed_mbps = (bytes_processed / elapsed) / (1024 * 1024)
-            eta_seconds = (total_bytes - bytes_processed) / (bytes_processed / elapsed) if bytes_processed > 0 else None
+            eta_seconds = (
+                (total_bytes - bytes_processed) / (bytes_processed / elapsed)
+                if bytes_processed > 0
+                else None
+            )
         else:
             speed_mbps = 0
             eta_seconds = None
@@ -1397,7 +1582,7 @@ class UnifiedFilesystemServer:
             total_bytes=total_bytes,
             percentage=percentage,
             speed_mbps=speed_mbps,
-            eta_seconds=eta_seconds
+            eta_seconds=eta_seconds,
         )
 
         # Broadcast to WebSocket clients
@@ -1424,14 +1609,16 @@ class UnifiedFilesystemServer:
         if operation_id in self.active_operations:
             del self.active_operations[operation_id]
 
-    async def update_stats(self, operation_type: str, bytes_processed: int, elapsed_time: float):
+    async def update_stats(
+        self, operation_type: str, bytes_processed: int, elapsed_time: float
+    ):
         """Update server statistics"""
         if operation_type not in self.stats["operations"]:
             self.stats["operations"][operation_type] = {
                 "count": 0,
                 "total_bytes": 0,
                 "total_time": 0.0,
-                "average_speed_mbps": 0.0
+                "average_speed_mbps": 0.0,
             }
 
         op_stats = self.stats["operations"][operation_type]
@@ -1440,7 +1627,9 @@ class UnifiedFilesystemServer:
         op_stats["total_time"] += elapsed_time
 
         if elapsed_time > 0:
-            op_stats["average_speed_mbps"] = (op_stats["total_bytes"] / op_stats["total_time"]) / (1024 * 1024)
+            op_stats["average_speed_mbps"] = (
+                op_stats["total_bytes"] / op_stats["total_time"]
+            ) / (1024 * 1024)
 
         self.stats["total_bytes_processed"] += bytes_processed
         self.stats["total_operations"] += 1
@@ -1463,13 +1652,15 @@ class UnifiedFilesystemServer:
                 # Send current operation status if exists
                 if operation_id in self.active_operations:
                     operation = self.active_operations[operation_id]
-                    await websocket.send_json({
-                        "operation_id": operation_id,
-                        "status": operation["status"],
-                        "bytes_processed": operation["bytes_processed"],
-                        "total_bytes": operation["total_bytes"],
-                        "percentage": operation["percentage"]
-                    })
+                    await websocket.send_json(
+                        {
+                            "operation_id": operation_id,
+                            "status": operation["status"],
+                            "bytes_processed": operation["bytes_processed"],
+                            "total_bytes": operation["total_bytes"],
+                            "percentage": operation["percentage"],
+                        }
+                    )
 
                 await asyncio.sleep(1)  # Update every second
 
@@ -1479,7 +1670,9 @@ class UnifiedFilesystemServer:
             if websocket in self.connected_clients["progress"]:
                 self.connected_clients["progress"].remove(websocket)
 
-    async def broadcast_progress(self, operation_id: str, progress_data: StreamProgress):
+    async def broadcast_progress(
+        self, operation_id: str, progress_data: StreamProgress
+    ):
         """Broadcast progress to interested WebSocket clients"""
         if "progress" in self.connected_clients:
             disconnected_clients = []
@@ -1541,19 +1734,20 @@ class UnifiedFilesystemServer:
 
         try:
             # Send initial status
-            await websocket.send_json({
-                "type": "connection",
-                "status": "connected",
-                "timestamp": datetime.now().isoformat()
-            })
+            await websocket.send_json(
+                {
+                    "type": "connection",
+                    "status": "connected",
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
 
             # Keep connection alive
             while True:
                 await asyncio.sleep(30)  # Ping every 30 seconds
-                await websocket.send_json({
-                    "type": "ping",
-                    "timestamp": datetime.now().isoformat()
-                })
+                await websocket.send_json(
+                    {"type": "ping", "timestamp": datetime.now().isoformat()}
+                )
 
         except WebSocketDisconnect:
             pass
@@ -1575,7 +1769,7 @@ class UnifiedFilesystemServer:
             logger.error(f"RPC handler error: {e}")
             return {
                 "error": {"code": -32603, "message": f"Internal error: {str(e)}"},
-                "id": body.get("id", 0) if 'body' in locals() else 0
+                "id": body.get("id", 0) if "body" in locals() else 0,
             }
 
     async def handle_rpc(self, request_body: dict):
@@ -1588,22 +1782,20 @@ class UnifiedFilesystemServer:
             # Basic file operations
             if method == "fs.read":
                 result = await self.read_file_async(
-                    params.get("path"),
-                    params.get("chunk_size", DEFAULT_CHUNK_SIZE)
+                    params.get("path"), params.get("chunk_size", DEFAULT_CHUNK_SIZE)
                 )
             elif method == "fs.write":
                 result = await self.write_file_async(
                     params.get("path"),
                     params.get("content"),
                     params.get("chunk_size", DEFAULT_CHUNK_SIZE),
-                    params.get("verify_checksum", True)
+                    params.get("verify_checksum", True),
                 )
             elif method == "fs.delete":
                 result = await self.delete_file_async(params.get("path"))
             elif method == "fs.list":
                 result = await self.list_directory_async(
-                    params.get("path", ""),
-                    params.get("pattern")
+                    params.get("path", ""), params.get("pattern")
                 )
             elif method == "fs.mkdir":
                 result = await self.create_directory_async(params.get("path"))
@@ -1612,7 +1804,7 @@ class UnifiedFilesystemServer:
                     params.get("query"),
                     params.get("path", ""),
                     params.get("file_pattern", "*"),
-                    params.get("content_search", False)
+                    params.get("content_search", False),
                 )
 
             # Enhanced operations
@@ -1620,67 +1812,63 @@ class UnifiedFilesystemServer:
                 result = await self.get_file_metadata_async(params.get("path"))
             elif method == "fs.verify":
                 file_path = self.validate_path(params.get("path"))
-                result = await self.verify_file_integrity(file_path, params.get("checksum"))
+                result = await self.verify_file_integrity(
+                    file_path, params.get("checksum")
+                )
             elif method == "fs.stats":
                 result = await self.get_stats()
 
             # AI operations
             elif method == "fs.analyze":
                 result = await self.analyze_content_async(
-                    params.get("path"),
-                    params.get("include_highlighting", True)
+                    params.get("path"), params.get("include_highlighting", True)
                 )
             elif method == "fs.embed":
                 result = await self.generate_embeddings_async(
-                    params.get("path"),
-                    params.get("chunk_size", 1000)
+                    params.get("path"), params.get("chunk_size", 1000)
                 )
             elif method == "fs.search.semantic":
                 result = await self.semantic_search_async(
                     params.get("query"),
                     params.get("top_k", 10),
-                    params.get("similarity_threshold", 0.5)
+                    params.get("similarity_threshold", 0.5),
                 )
             elif method == "fs.search.similar":
                 result = await self.find_similar_files_async(
                     params.get("path"),
                     params.get("top_k", 5),
-                    params.get("similarity_threshold", 0.7)
+                    params.get("similarity_threshold", 0.7),
                 )
 
             # Version control operations
             elif method == "fs.version.snapshot":
                 result = await self.create_snapshot_async(
-                    params.get("path"),
-                    params.get("description")
+                    params.get("path"), params.get("description")
                 )
             elif method == "fs.version.list":
                 result = await self.list_versions_async(
-                    params.get("path"),
-                    params.get("limit", 10)
+                    params.get("path"), params.get("limit", 10)
                 )
             elif method == "fs.version.diff":
                 result = await self.get_diff_async(
                     params.get("path"),
                     params.get("version1"),
-                    params.get("version2", "current")
+                    params.get("version2", "current"),
                 )
             elif method == "fs.version.restore":
                 result = await self.restore_version_async(
-                    params.get("path"),
-                    params.get("version_id")
+                    params.get("path"), params.get("version_id")
                 )
             elif method == "fs.version.cleanup":
                 result = await self.cleanup_old_versions_async(
-                    params.get("path"),
-                    params.get("keep_count", 5)
+                    params.get("path"), params.get("keep_count", 5)
                 )
             elif method == "fs.batch":
                 # Execute JSON‑RPC batch operations
-                batch_ops    = params.get("operations", [])
-                parallel     = params.get("parallel", False)
-                stop_on_err  = params.get("stop_on_error", True)
-                batch_model  = BatchOperation(
+                batch_ops = params.get("operations", [])
+                parallel = params.get("parallel", False)
+                stop_on_err = params.get("stop_on_error", True)
+                batch_model = BatchOperation(
                     operations=batch_ops,
                     parallel=parallel,
                     stop_on_error=stop_on_err,
@@ -1696,7 +1884,7 @@ class UnifiedFilesystemServer:
             logger.error(f"RPC error for method {method}: {e}")
             return {
                 "error": {"code": -32603, "message": f"Internal error: {str(e)}"},
-                "id": request_id
+                "id": request_id,
             }
 
     # =============================================================================
@@ -1715,7 +1903,9 @@ class UnifiedFilesystemServer:
             # Fallback to MD5 for compatibility
             return hashlib.md5()
 
-    def _auto_tune_chunk_size(self, bytes_processed: int, elapsed: float, current_size: int) -> int:
+    def _auto_tune_chunk_size(
+        self, bytes_processed: int, elapsed: float, current_size: int
+    ) -> int:
         """Auto-tune chunk size based on performance"""
         if not AUTO_CHUNK or elapsed <= 0:
             return current_size
@@ -1736,9 +1926,9 @@ class UnifiedFilesystemServer:
                 return self.base_path
 
             # Convert to Path object
-            if path_str.startswith('/'):
+            if path_str.startswith("/"):
                 # Absolute path - make it relative to base_path
-                path_str = path_str.lstrip('/')
+                path_str = path_str.lstrip("/")
 
             path = self.base_path / path_str
 
@@ -1772,14 +1962,14 @@ class UnifiedFilesystemServer:
                 hasher = self._create_hasher()
                 if hasher:
                     if HAS_AIOFILES:
-                        async with aiofiles.open(file_path, 'rb') as f:
+                        async with aiofiles.open(file_path, "rb") as f:
                             while True:
                                 chunk = await f.read(DEFAULT_CHUNK_SIZE)
                                 if not chunk:
                                     break
                                 hasher.update(chunk)
                     else:
-                        with open(file_path, 'rb') as f:
+                        with open(file_path, "rb") as f:
                             while True:
                                 chunk = f.read(DEFAULT_CHUNK_SIZE)
                                 if not chunk:
@@ -1798,14 +1988,16 @@ class UnifiedFilesystemServer:
                 checksum=checksum,
                 content_type=content_type,
                 encoding=encoding,
-                permissions=oct(stat.st_mode)[-3:]
+                permissions=oct(stat.st_mode)[-3:],
             ).dict()
 
         except Exception as e:
             logger.error(f"Error getting metadata for {path}: {e}")
             return {"error": str(e), "path": path}
 
-    async def verify_file_integrity(self, file_path: Path, expected_checksum: str) -> Dict[str, Any]:
+    async def verify_file_integrity(
+        self, file_path: Path, expected_checksum: str
+    ) -> Dict[str, Any]:
         """Verify file integrity using checksum"""
         try:
             if not file_path.exists():
@@ -1813,17 +2005,20 @@ class UnifiedFilesystemServer:
 
             hasher = self._create_hasher()
             if not hasher:
-                return {"error": "Checksum verification not available", "path": str(file_path)}
+                return {
+                    "error": "Checksum verification not available",
+                    "path": str(file_path),
+                }
 
             if HAS_AIOFILES:
-                async with aiofiles.open(file_path, 'rb') as f:
+                async with aiofiles.open(file_path, "rb") as f:
                     while True:
                         chunk = await f.read(DEFAULT_CHUNK_SIZE)
                         if not chunk:
                             break
                         hasher.update(chunk)
             else:
-                with open(file_path, 'rb') as f:
+                with open(file_path, "rb") as f:
                     while True:
                         chunk = f.read(DEFAULT_CHUNK_SIZE)
                         if not chunk:
@@ -1837,25 +2032,29 @@ class UnifiedFilesystemServer:
                 "file_path": str(file_path),
                 "expected_checksum": expected_checksum,
                 "actual_checksum": actual_checksum,
-                "is_valid": is_valid
+                "is_valid": is_valid,
             }
 
         except Exception as e:
             logger.error(f"Error verifying integrity for {file_path}: {e}")
             return {"error": str(e), "path": str(file_path)}
+
     # =============================================================================
     # Streaming Endpoints
     # =============================================================================
 
-    async def upload_stream(self, file: UploadFile = File(...),
-                           chunk_size: int = DEFAULT_CHUNK_SIZE,
-                           verify_checksum: bool = True):
+    async def upload_stream(
+        self,
+        file: UploadFile = File(...),
+        chunk_size: int = DEFAULT_CHUNK_SIZE,
+        verify_checksum: bool = True,
+    ):
         """Streaming file upload endpoint"""
         operation_id = str(uuid.uuid4())
 
         try:
             # Generate safe filename
-            safe_filename = file.filename.replace('/', '_').replace('\\', '_')
+            safe_filename = file.filename.replace("/", "_").replace("\\", "_")
             file_path = self.temp_path / safe_filename
 
             await self.register_operation(operation_id, "upload", file_path)
@@ -1864,7 +2063,7 @@ class UnifiedFilesystemServer:
             hasher = self._create_hasher()
 
             if HAS_AIOFILES:
-                async with aiofiles.open(file_path, 'wb') as f:
+                async with aiofiles.open(file_path, "wb") as f:
                     while True:
                         chunk = await file.read(chunk_size)
                         if not chunk:
@@ -1876,10 +2075,12 @@ class UnifiedFilesystemServer:
                             hasher.update(chunk)
 
                         # Update progress (we don't know total size for uploads)
-                        await self.update_operation_progress(operation_id, bytes_written, bytes_written, 100)
+                        await self.update_operation_progress(
+                            operation_id, bytes_written, bytes_written, 100
+                        )
             else:
                 # Fallback to sync writing
-                with open(file_path, 'wb') as f:
+                with open(file_path, "wb") as f:
                     while True:
                         chunk = await file.read(chunk_size)
                         if not chunk:
@@ -1898,7 +2099,7 @@ class UnifiedFilesystemServer:
                 "operation_id": operation_id,
                 "filename": safe_filename,
                 "path": str(file_path.relative_to(self.base_path)),
-                "size": bytes_written
+                "size": bytes_written,
             }
 
             if checksum:
@@ -1918,16 +2119,19 @@ class UnifiedFilesystemServer:
                 raise HTTPException(status_code=404, detail="File not found")
 
             if HAS_AIOFILES:
+
                 async def stream_file():
-                    async with aiofiles.open(file_path, 'rb') as f:
+                    async with aiofiles.open(file_path, "rb") as f:
                         while True:
                             chunk = await f.read(chunk_size)
                             if not chunk:
                                 break
                             yield chunk
+
             else:
+
                 def stream_file():
-                    with open(file_path, 'rb') as f:
+                    with open(file_path, "rb") as f:
                         while True:
                             chunk = f.read(chunk_size)
                             if not chunk:
@@ -1936,11 +2140,11 @@ class UnifiedFilesystemServer:
 
             return StreamingResponse(
                 stream_file(),
-                media_type='application/octet-stream',
+                media_type="application/octet-stream",
                 headers={
                     "Content-Disposition": f"attachment; filename={file_path.name}",
-                    "Content-Length": str(file_path.stat().st_size)
-                }
+                    "Content-Length": str(file_path.stat().st_size),
+                },
             )
 
         except Exception as e:
@@ -1963,7 +2167,9 @@ class UnifiedFilesystemServer:
                 if method == "fs.read":
                     result = await self.read_file_async(params.get("path"))
                 elif method == "fs.write":
-                    result = await self.write_file_async(params.get("path"), params.get("content"))
+                    result = await self.write_file_async(
+                        params.get("path"), params.get("content")
+                    )
                 elif method == "fs.delete":
                     result = await self.delete_file_async(params.get("path"))
                 elif method == "fs.mkdir":
@@ -1990,23 +2196,28 @@ class UnifiedFilesystemServer:
     # VERSION CONTROL SYSTEM
     # ========================================
 
-    async def create_snapshot_async(self, path: str, description: str = None) -> Dict[str, Any]:
+    async def create_snapshot_async(
+        self, path: str, description: str = None
+    ) -> Dict[str, Any]:
         """Create a snapshot/version of a file"""
         try:
             file_path = self.validate_path(path)
 
             if not file_path.exists() or not file_path.is_file():
-                return {"error": "File not found or is not a regular file", "path": path}
+                return {
+                    "error": "File not found or is not a regular file",
+                    "path": path,
+                }
 
             # Generate unique version ID
             version_id = f"{uuid.uuid4().hex[:12]}_{int(time.time())}"
 
             # Read file content
             if HAS_AIOFILES:
-                async with aiofiles.open(file_path, 'rb') as f:
+                async with aiofiles.open(file_path, "rb") as f:
                     content = await f.read()
             else:
-                with open(file_path, 'rb') as f:
+                with open(file_path, "rb") as f:
                     content = f.read()
 
             # Calculate hash
@@ -2022,24 +2233,28 @@ class UnifiedFilesystemServer:
                 "size": stat.st_size,
                 "modified": stat.st_mtime,
                 "created": stat.st_ctime,
-                "permissions": oct(stat.st_mode)[-3:]
+                "permissions": oct(stat.st_mode)[-3:],
             }
 
             # Store version in database
             async with aiosqlite.connect(self.vector_db_path) as db:
-                await db.execute("""
+                await db.execute(
+                    """
                     INSERT INTO file_versions
                     (file_path, version_id, description, content, content_hash, metadata, size)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    str(file_path.relative_to(self.base_path)),
-                    version_id,
-                    description or f"Snapshot created at {datetime.now().isoformat()}",
-                    content,
-                    content_hash,
-                    json.dumps(metadata),
-                    stat.st_size
-                ))
+                """,
+                    (
+                        str(file_path.relative_to(self.base_path)),
+                        version_id,
+                        description
+                        or f"Snapshot created at {datetime.now().isoformat()}",
+                        content,
+                        content_hash,
+                        json.dumps(metadata),
+                        stat.st_size,
+                    ),
+                )
 
                 await db.commit()
 
@@ -2053,7 +2268,7 @@ class UnifiedFilesystemServer:
                 "path": path,
                 "content_hash": content_hash,
                 "size": stat.st_size,
-                "description": description
+                "description": description,
             }
 
         except Exception as e:
@@ -2067,39 +2282,46 @@ class UnifiedFilesystemServer:
             relative_path = str(file_path.relative_to(self.base_path))
 
             async with aiosqlite.connect(self.vector_db_path) as db:
-                cursor = await db.execute("""
+                cursor = await db.execute(
+                    """
                     SELECT version_id, description, content_hash, size, created_at, created_by
                     FROM file_versions
                     WHERE file_path = ?
                     ORDER BY created_at DESC
                     LIMIT ?
-                """, (relative_path, limit))
+                """,
+                    (relative_path, limit),
+                )
 
                 rows = await cursor.fetchall()
 
             versions = []
             for row in rows:
-                versions.append({
-                    "version_id": row[0],
-                    "description": row[1],
-                    "content_hash": row[2],
-                    "size": row[3],
-                    "created_at": row[4],
-                    "created_by": row[5]
-                })
+                versions.append(
+                    {
+                        "version_id": row[0],
+                        "description": row[1],
+                        "content_hash": row[2],
+                        "size": row[3],
+                        "created_at": row[4],
+                        "created_by": row[5],
+                    }
+                )
 
             return {
                 "success": True,
                 "path": path,
                 "versions": versions,
-                "total": len(versions)
+                "total": len(versions),
             }
 
         except Exception as e:
             logger.error(f"Error listing versions for {path}: {e}")
             return {"error": str(e), "path": path}
 
-    async def get_diff_async(self, path: str, version1: str, version2: str = "current") -> Dict[str, Any]:
+    async def get_diff_async(
+        self, path: str, version1: str, version2: str = "current"
+    ) -> Dict[str, Any]:
         """Get diff between two versions of a file"""
         try:
             file_path = self.validate_path(path)
@@ -2107,10 +2329,13 @@ class UnifiedFilesystemServer:
 
             # Get version1 content
             async with aiosqlite.connect(self.vector_db_path) as db:
-                cursor = await db.execute("""
+                cursor = await db.execute(
+                    """
                     SELECT content FROM file_versions
                     WHERE file_path = ? AND version_id = ?
-                """, (relative_path, version1))
+                """,
+                    (relative_path, version1),
+                )
 
                 row = await cursor.fetchone()
                 if not row:
@@ -2124,17 +2349,20 @@ class UnifiedFilesystemServer:
                     return {"error": "Current file not found", "path": path}
 
                 if HAS_AIOFILES:
-                    async with aiofiles.open(file_path, 'rb') as f:
+                    async with aiofiles.open(file_path, "rb") as f:
                         content2 = await f.read()
                 else:
-                    with open(file_path, 'rb') as f:
+                    with open(file_path, "rb") as f:
                         content2 = f.read()
             else:
                 async with aiosqlite.connect(self.vector_db_path) as db:
-                    cursor = await db.execute("""
+                    cursor = await db.execute(
+                        """
                         SELECT content FROM file_versions
                         WHERE file_path = ? AND version_id = ?
-                    """, (relative_path, version2))
+                    """,
+                        (relative_path, version2),
+                    )
 
                     row = await cursor.fetchone()
                     if not row:
@@ -2144,7 +2372,7 @@ class UnifiedFilesystemServer:
 
             # Check if files are binary
             def is_binary(content):
-                return b'\x00' in content[:8192]  # Check first 8KB for null bytes
+                return b"\x00" in content[:8192]  # Check first 8KB for null bytes
 
             if is_binary(content1) or is_binary(content2):
                 # Binary diff - just compare hashes
@@ -2158,6 +2386,7 @@ class UnifiedFilesystemServer:
                     hash2 = hasher2.hexdigest()
                 else:
                     import hashlib
+
                     hash1 = hashlib.md5(content1).hexdigest()
                     hash2 = hashlib.md5(content2).hexdigest()
 
@@ -2171,13 +2400,13 @@ class UnifiedFilesystemServer:
                     "size1": len(content1),
                     "size2": len(content2),
                     "hash1": hash1,
-                    "hash2": hash2
+                    "hash2": hash2,
                 }
 
             # Text diff
             try:
-                text1 = content1.decode('utf-8')
-                text2 = content2.decode('utf-8')
+                text1 = content1.decode("utf-8")
+                text2 = content2.decode("utf-8")
             except UnicodeDecodeError:
                 return {"error": "Unable to decode file content as text", "path": path}
 
@@ -2186,15 +2415,26 @@ class UnifiedFilesystemServer:
             lines2 = text2.splitlines(keepends=True)
 
             import difflib
-            diff_lines = list(difflib.unified_diff(
-                lines1, lines2,
-                fromfile=f"{path}@{version1}",
-                tofile=f"{path}@{version2}",
-                lineterm=""
-            ))
 
-            diff_text = ''.join(diff_lines)
-            changed_lines = len([line for line in diff_lines if line.startswith(('+', '-')) and not line.startswith(('+++', '---'))])
+            diff_lines = list(
+                difflib.unified_diff(
+                    lines1,
+                    lines2,
+                    fromfile=f"{path}@{version1}",
+                    tofile=f"{path}@{version2}",
+                    lineterm="",
+                )
+            )
+
+            diff_text = "".join(diff_lines)
+            changed_lines = len(
+                [
+                    line
+                    for line in diff_lines
+                    if line.startswith(("+", "-"))
+                    and not line.startswith(("+++", "---"))
+                ]
+            )
 
             return {
                 "success": True,
@@ -2205,7 +2445,7 @@ class UnifiedFilesystemServer:
                 "diff_text": diff_text,
                 "changed_lines": changed_lines,
                 "total_lines1": len(lines1),
-                "total_lines2": len(lines2)
+                "total_lines2": len(lines2),
             }
 
         except Exception as e:
@@ -2220,10 +2460,13 @@ class UnifiedFilesystemServer:
 
             # Get version content
             async with aiosqlite.connect(self.vector_db_path) as db:
-                cursor = await db.execute("""
+                cursor = await db.execute(
+                    """
                     SELECT content, content_hash, size, description FROM file_versions
                     WHERE file_path = ? AND version_id = ?
-                """, (relative_path, version_id))
+                """,
+                    (relative_path, version_id),
+                )
 
                 row = await cursor.fetchone()
                 if not row:
@@ -2233,18 +2476,22 @@ class UnifiedFilesystemServer:
 
             # Create current file backup before restore
             if file_path.exists():
-                backup_result = await self.create_snapshot_async(path, f"Backup before restoring to {version_id}")
+                backup_result = await self.create_snapshot_async(
+                    path, f"Backup before restoring to {version_id}"
+                )
                 if "error" in backup_result:
-                    logger.warning(f"Failed to create backup before restore: {backup_result['error']}")
+                    logger.warning(
+                        f"Failed to create backup before restore: {backup_result['error']}"
+                    )
 
             # Write restored content
             file_path.parent.mkdir(parents=True, exist_ok=True)
 
             if HAS_AIOFILES:
-                async with aiofiles.open(file_path, 'wb') as f:
+                async with aiofiles.open(file_path, "wb") as f:
                     await f.write(content)
             else:
-                with open(file_path, 'wb') as f:
+                with open(file_path, "wb") as f:
                     f.write(content)
 
             # Verify restoration
@@ -2257,14 +2504,16 @@ class UnifiedFilesystemServer:
                 "version_id": version_id,
                 "size": size,
                 "description": description,
-                "verification": verification_result
+                "verification": verification_result,
             }
 
         except Exception as e:
             logger.error(f"Error restoring {path} to version {version_id}: {e}")
             return {"error": str(e), "path": path}
 
-    async def cleanup_old_versions_async(self, path: str, keep_count: int = 5) -> Dict[str, Any]:
+    async def cleanup_old_versions_async(
+        self, path: str, keep_count: int = 5
+    ) -> Dict[str, Any]:
         """Clean up old versions of a file, keeping only the most recent ones"""
         try:
             file_path = self.validate_path(path)
@@ -2276,14 +2525,19 @@ class UnifiedFilesystemServer:
             logger.error(f"Error cleaning up versions for {path}: {e}")
             return {"error": str(e), "path": path}
 
-    async def _cleanup_old_versions(self, relative_path: str, keep_count: int) -> Dict[str, Any]:
+    async def _cleanup_old_versions(
+        self, relative_path: str, keep_count: int
+    ) -> Dict[str, Any]:
         """Internal method to cleanup old versions"""
         try:
             async with aiosqlite.connect(self.vector_db_path) as db:
                 # Get count of existing versions
-                cursor = await db.execute("""
+                cursor = await db.execute(
+                    """
                     SELECT COUNT(*) FROM file_versions WHERE file_path = ?
-                """, (relative_path,))
+                """,
+                    (relative_path,),
+                )
 
                 total_count = (await cursor.fetchone())[0]
 
@@ -2293,12 +2547,13 @@ class UnifiedFilesystemServer:
                         "path": relative_path,
                         "total_versions": total_count,
                         "deleted_count": 0,
-                        "message": "No cleanup needed"
+                        "message": "No cleanup needed",
                     }
 
                 # Delete old versions
                 delete_count = total_count - keep_count
-                await db.execute("""
+                await db.execute(
+                    """
                     DELETE FROM file_versions
                     WHERE file_path = ? AND id NOT IN (
                         SELECT id FROM file_versions
@@ -2306,37 +2561,43 @@ class UnifiedFilesystemServer:
                         ORDER BY created_at DESC
                         LIMIT ?
                     )
-                """, (relative_path, relative_path, keep_count))
+                """,
+                    (relative_path, relative_path, keep_count),
+                )
 
                 await db.commit()
 
-                logger.info(f"Cleaned up {delete_count} old versions for {relative_path}")
+                logger.info(
+                    f"Cleaned up {delete_count} old versions for {relative_path}"
+                )
                 return {
                     "success": True,
                     "path": relative_path,
                     "total_versions": total_count,
                     "deleted_count": delete_count,
-                    "remaining_count": keep_count
+                    "remaining_count": keep_count,
                 }
 
         except Exception as e:
             logger.error(f"Error in cleanup for {relative_path}: {e}")
             return {"error": str(e), "path": relative_path}
 
-    async def _verify_file_integrity(self, content: bytes, file_path: Path) -> Dict[str, Any]:
+    async def _verify_file_integrity(
+        self, content: bytes, file_path: Path
+    ) -> Dict[str, Any]:
         """Verify file integrity by comparing content"""
         try:
             if HAS_AIOFILES:
-                async with aiofiles.open(file_path, 'rb') as f:
+                async with aiofiles.open(file_path, "rb") as f:
                     file_content = await f.read()
             else:
-                with open(file_path, 'rb') as f:
+                with open(file_path, "rb") as f:
                     file_content = f.read()
 
             return {
                 "verified": content == file_content,
                 "expected_size": len(content),
-                "actual_size": len(file_content)
+                "actual_size": len(file_content),
             }
 
         except Exception as e:
@@ -2365,7 +2626,9 @@ class UnifiedFilesystemServer:
             raise HTTPException(status_code=500, detail=result["error"])
         return result
 
-    async def get_diff_endpoint(self, path: str, version1: str, version2: str = "current"):
+    async def get_diff_endpoint(
+        self, path: str, version1: str, version2: str = "current"
+    ):
         """HTTP endpoint for getting diffs"""
         result = await self.get_diff_async(path, version1, version2)
         if "error" in result:
@@ -2379,7 +2642,9 @@ class UnifiedFilesystemServer:
         version_id = data.get("version_id")
 
         if not path or not version_id:
-            raise HTTPException(status_code=400, detail="Path and version_id are required")
+            raise HTTPException(
+                status_code=400, detail="Path and version_id are required"
+            )
 
         result = await self.restore_version_async(path, version_id)
         if "error" in result:
@@ -2402,12 +2667,14 @@ class FilesystemEventHandler(FileSystemEventHandler):
         self.server = server
         super().__init__()
 
-    async def notify_clients(self, event_type: str, file_path: str, extra_data: dict = None):
+    async def notify_clients(
+        self, event_type: str, file_path: str, extra_data: dict = None
+    ):
         """Send event notification to WebSocket clients"""
         event_data = {
             "type": event_type,
             "path": file_path,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         if extra_data:
@@ -2430,34 +2697,29 @@ class FilesystemEventHandler(FileSystemEventHandler):
 
     def on_created(self, event):
         if not event.is_directory:
-            asyncio.create_task(
-                self.notify_clients("file_created", event.src_path)
-            )
+            asyncio.create_task(self.notify_clients("file_created", event.src_path))
 
     def on_modified(self, event):
         if not event.is_directory:
-            asyncio.create_task(
-                self.notify_clients("file_modified", event.src_path)
-            )
+            asyncio.create_task(self.notify_clients("file_modified", event.src_path))
 
     def on_deleted(self, event):
         if not event.is_directory:
-            asyncio.create_task(
-                self.notify_clients("file_deleted", event.src_path)
-            )
+            asyncio.create_task(self.notify_clients("file_deleted", event.src_path))
 
     def on_moved(self, event):
         if not event.is_directory:
             asyncio.create_task(
-                self.notify_clients("file_moved", event.dest_path, {
-                    "old_path": event.src_path
-                })
+                self.notify_clients(
+                    "file_moved", event.dest_path, {"old_path": event.src_path}
+                )
             )
 
 
 # Legacy compatibility class
 class MCPFilesystemServer(UnifiedFilesystemServer):
     """Legacy compatibility class - redirects to UnifiedFilesystemServer"""
+
     pass
 
 
@@ -2473,6 +2735,7 @@ async def main():
         logger.info("Received shutdown signal...")
         await server.stop()
         logger.info("Server stopped successfully")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

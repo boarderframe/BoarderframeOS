@@ -3,23 +3,24 @@
 Final verification of all fixes
 """
 
+
 def verify_final_fixes():
     """Check that all fixes are properly applied"""
 
-    with open('corporate_headquarters.py', 'r') as f:
+    with open("corporate_headquarters.py", "r") as f:
         content = f.read()
 
     print("=== FINAL VERIFICATION ===\n")
 
     checks = {
         "Emergency style tag": '<style id="tab-visibility-fix">',
-        "Ultra CSS rules": 'body .container .tab-content.active',
-        "Bulletproof showTab": 'Force show with extreme prejudice',
-        "Enhanced init": 'Forcing initial tab setup',
-        "Database tab content": 'Database Overview Card',
-        "RefreshDatabase function": 'refreshDatabaseMetrics',
-        "Debug button": 'Debug Tab Switch',
-        "Active class on dashboard": 'id="dashboard" class="tab-content active"'
+        "Ultra CSS rules": "body .container .tab-content.active",
+        "Bulletproof showTab": "Force show with extreme prejudice",
+        "Enhanced init": "Forcing initial tab setup",
+        "Database tab content": "Database Overview Card",
+        "RefreshDatabase function": "refreshDatabaseMetrics",
+        "Debug button": "Debug Tab Switch",
+        "Active class on dashboard": 'id="dashboard" class="tab-content active"',
     }
 
     print("Checking for required elements:\n")
@@ -49,6 +50,7 @@ def verify_final_fixes():
     else:
         print("\n⚠️  Some checks failed!")
         print("Run the fix scripts again or check manually")
+
 
 if __name__ == "__main__":
     verify_final_fixes()

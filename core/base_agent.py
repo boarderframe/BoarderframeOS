@@ -42,9 +42,11 @@ class AgentState(Enum):
     ERROR = "error"
     TERMINATED = "terminated"
 
+
 @dataclass
 class AgentConfig:
     """Configuration for an agent"""
+
     name: str
     role: str
     goals: List[str]
@@ -56,16 +58,18 @@ class AgentConfig:
     temperature: float = 0.7
     max_concurrent_tasks: int = 5
 
+
 @dataclass
 class AgentMemory:
     """Short and long-term memory storage"""
+
     short_term: List[Dict[str, Any]] = field(default_factory=list)
     long_term: List[Dict[str, Any]] = field(default_factory=list)
     max_short_term: int = 100
 
     def add(self, memory: Dict[str, Any], permanent: bool = False):
         """Add a memory"""
-        memory['timestamp'] = datetime.now().isoformat()
+        memory["timestamp"] = datetime.now().isoformat()
 
         if permanent:
             self.long_term.append(memory)
@@ -88,6 +92,7 @@ class AgentMemory:
 
         return results
 
+
 class BaseAgent(ABC):
     """Base class for all BoarderframeOS agents"""
 
@@ -109,7 +114,9 @@ class BaseAgent(ABC):
         self.cost_optimization_enabled = API_COST_SETTINGS["cost_optimization_enabled"]
 
         # LLM client for reasoning - default to Claude
-        if "claude" in config.model.lower() and ("opus" in config.model.lower() or config.model == "claude-3-opus-20240229"):
+        if "claude" in config.model.lower() and (
+            "opus" in config.model.lower() or config.model == "claude-3-opus-20240229"
+        ):
             llm_config = CLAUDE_OPUS_CONFIG
         else:
             llm_config = ANTHROPIC_CONFIG
@@ -121,12 +128,12 @@ class BaseAgent(ABC):
 
         # Performance metrics
         self.metrics = {
-            'thoughts_processed': 0,
-            'actions_taken': 0,
-            'errors': 0,
-            'start_time': datetime.now(),
-            'api_calls_made': 0,
-            'estimated_cost': 0.0
+            "thoughts_processed": 0,
+            "actions_taken": 0,
+            "errors": 0,
+            "start_time": datetime.now(),
+            "api_calls_made": 0,
+            "estimated_cost": 0.0,
         }
 
         # Initialize tools
@@ -149,7 +156,7 @@ class BaseAgent(ABC):
 
         handler = logging.FileHandler(f"logs/agents/{self.config.name}.log")
         formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
         handler.setFormatter(formatter)
         logger.addHandler(handler)
@@ -172,10 +179,7 @@ class BaseAgent(ABC):
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     "http://localhost:8001/rpc",
-                    json={
-                        "method": f"filesystem.{action}",
-                        "params": params
-                    }
+                    json={"method": f"filesystem.{action}", "params": params},
                 )
                 return response.json()
         except Exception as e:
@@ -187,10 +191,7 @@ class BaseAgent(ABC):
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     "http://localhost:8002/rpc",
-                    json={
-                        "method": f"git.{action}",
-                        "params": params
-                    }
+                    json={"method": f"git.{action}", "params": params},
                 )
                 return response.json()
         except Exception as e:
@@ -202,10 +203,7 @@ class BaseAgent(ABC):
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     "http://localhost:8003/rpc",
-                    json={
-                        "method": f"browser.{action}",
-                        "params": params
-                    }
+                    json={"method": f"browser.{action}", "params": params},
                 )
                 return response.json()
         except Exception as e:
@@ -227,15 +225,15 @@ class BaseAgent(ABC):
         messages = await message_bus.get_messages(self.config.name)
 
         context = {
-            'current_time': datetime.now().isoformat(),
-            'agent_name': self.config.name,
-            'agent_role': self.config.role,
-            'current_goals': self.config.goals,
-            'available_tools': list(self.tools.keys()),
-            'recent_memories': self.memory.short_term[-10:],
-            'message_queue_size': self.message_queue.qsize(),
-            'active_tasks': len(self.active_tasks),
-            'new_messages': messages
+            "current_time": datetime.now().isoformat(),
+            "agent_name": self.config.name,
+            "agent_role": self.config.role,
+            "current_goals": self.config.goals,
+            "available_tools": list(self.tools.keys()),
+            "recent_memories": self.memory.short_term[-10:],
+            "message_queue_size": self.message_queue.qsize(),
+            "active_tasks": len(self.active_tasks),
+            "new_messages": messages,
         }
 
         return context
@@ -249,28 +247,29 @@ class BaseAgent(ABC):
             # Initial broadcast
             await self.broadcast_status()
 
-            while self.active and self.state not in [AgentState.TERMINATED, AgentState.ERROR]:
+            while self.active and self.state not in [
+                AgentState.TERMINATED,
+                AgentState.ERROR,
+            ]:
                 # Check for new messages/tasks
                 context = await self.get_context()
-                new_messages = context.get('new_messages', [])
+                new_messages = context.get("new_messages", [])
 
                 if new_messages or self.message_queue.qsize() > 0:
                     # Only think/act when there's actual work to do
                     self.state = AgentState.THINKING
                     thought = await self.think(context)
-                    self.metrics['thoughts_processed'] += 1
+                    self.metrics["thoughts_processed"] += 1
 
                     # Act
                     self.state = AgentState.ACTING
                     result = await self.act(thought, context)
-                    self.metrics['actions_taken'] += 1
+                    self.metrics["actions_taken"] += 1
 
                     # Remember
-                    self.memory.add({
-                        'thought': thought,
-                        'action': result,
-                        'context': context
-                    })
+                    self.memory.add(
+                        {"thought": thought, "action": result, "context": context}
+                    )
 
                     # Log
                     self.log(f"Thought: {thought[:100]}...")
@@ -281,10 +280,12 @@ class BaseAgent(ABC):
                 else:
                     # No work to do - stay idle and save API costs
                     self.state = AgentState.IDLE
-                    self.log("No tasks - remaining idle to save API costs", level="debug")
+                    self.log(
+                        "No tasks - remaining idle to save API costs", level="debug"
+                    )
 
                 # Broadcast status less frequently to save resources
-                if self.metrics['thoughts_processed'] % 50 == 0:
+                if self.metrics["thoughts_processed"] % 50 == 0:
                     await self.broadcast_status()
 
                 # Longer wait time to reduce resource usage
@@ -292,7 +293,7 @@ class BaseAgent(ABC):
 
         except Exception as e:
             self.state = AgentState.ERROR
-            self.metrics['errors'] += 1
+            self.metrics["errors"] += 1
             self.log(f"Error in main loop: {e}", level="error")
             raise
 
@@ -304,13 +305,16 @@ class BaseAgent(ABC):
 
     def get_metrics(self) -> Dict[str, Any]:
         """Get agent performance metrics"""
-        uptime = (datetime.now() - self.metrics['start_time']).total_seconds()
+        uptime = (datetime.now() - self.metrics["start_time"]).total_seconds()
         return {
             **self.metrics,
-            'uptime_seconds': uptime,
-            'thoughts_per_minute': (self.metrics['thoughts_processed'] / max(uptime/60, 1)),
-            'actions_per_minute': (self.metrics['actions_taken'] / max(uptime/60, 1)),
-            'error_rate': self.metrics['errors'] / max(self.metrics['thoughts_processed'], 1)
+            "uptime_seconds": uptime,
+            "thoughts_per_minute": (
+                self.metrics["thoughts_processed"] / max(uptime / 60, 1)
+            ),
+            "actions_per_minute": (self.metrics["actions_taken"] / max(uptime / 60, 1)),
+            "error_rate": self.metrics["errors"]
+            / max(self.metrics["thoughts_processed"], 1),
         }
 
     async def _register_with_message_bus(self):
@@ -333,7 +337,9 @@ class BaseAgent(ABC):
             asyncio.create_task(self._update_registry_health())
 
         except Exception as e:
-            self.log(f"Failed to register with database registry: {e}", level=logging.WARNING)
+            self.log(
+                f"Failed to register with database registry: {e}", level=logging.WARNING
+            )
 
     async def _update_registry_health(self):
         """Periodically update health status in the registry"""
@@ -343,7 +349,9 @@ class BaseAgent(ABC):
                     registry_client = await get_registry_client()
 
                     # Calculate current load percentage
-                    load_percentage = (len(self.active_tasks) / self.config.max_concurrent_tasks) * 100
+                    load_percentage = (
+                        len(self.active_tasks) / self.config.max_concurrent_tasks
+                    ) * 100
 
                     # Determine health status based on agent state
                     health_status = "healthy"
@@ -353,9 +361,7 @@ class BaseAgent(ABC):
                         health_status = "busy"
 
                     await registry_client.update_agent_health(
-                        self.registry_id,
-                        health_status,
-                        load_percentage
+                        self.registry_id, health_status, load_percentage
                     )
 
                 await asyncio.sleep(30)  # Update every 30 seconds
@@ -373,7 +379,9 @@ class BaseAgent(ABC):
                     await self.message_handlers[message.message_type](message)
                 else:
                     # Default handling
-                    self.log(f"Received {message.message_type} from {message.from_agent}")
+                    self.log(
+                        f"Received {message.message_type} from {message.from_agent}"
+                    )
 
                     if message.requires_response:
                         # Send acknowledgment
@@ -381,17 +389,27 @@ class BaseAgent(ABC):
                             from_agent=self.config.name,
                             to_agent=message.from_agent,
                             message_type=MessageType.TASK_RESPONSE,
-                            content={"status": "received", "original_message": message.content},
-                            correlation_id=message.correlation_id
+                            content={
+                                "status": "received",
+                                "original_message": message.content,
+                            },
+                            correlation_id=message.correlation_id,
                         )
                         await message_bus.send_message(response)
 
             except Exception as e:
                 self.log(f"Error processing message: {e}", level="error")
 
-    async def send_task_to_agent(self, to_agent: str, task: Dict[str, Any], priority: MessagePriority = MessagePriority.NORMAL) -> Optional[AgentMessage]:
+    async def send_task_to_agent(
+        self,
+        to_agent: str,
+        task: Dict[str, Any],
+        priority: MessagePriority = MessagePriority.NORMAL,
+    ) -> Optional[AgentMessage]:
         """Send a task to another agent and wait for response"""
-        correlation_id = await send_task_request(self.config.name, to_agent, task, priority)
+        correlation_id = await send_task_request(
+            self.config.name, to_agent, task, priority
+        )
 
         # Wait for response
         response = await message_bus.wait_for_response(correlation_id, timeout=30.0)
@@ -403,7 +421,7 @@ class BaseAgent(ABC):
             "state": self.state.value,
             "metrics": self.get_metrics(),
             "memory_size": len(self.memory.short_term) + len(self.memory.long_term),
-            "active_tasks": len(self.active_tasks)
+            "active_tasks": len(self.active_tasks),
         }
 
         await broadcast_status(self.config.name, status)
@@ -429,12 +447,16 @@ class BaseAgent(ABC):
         memory_file = Path(f"data/agents/{self.config.name}_memory.json")
         memory_file.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(memory_file, 'w') as f:
-            json.dump({
-                'short_term': self.memory.short_term,
-                'long_term': self.memory.long_term,
-                'metrics': self.get_metrics()
-            }, f, default=str)
+        with open(memory_file, "w") as f:
+            json.dump(
+                {
+                    "short_term": self.memory.short_term,
+                    "long_term": self.memory.long_term,
+                    "metrics": self.get_metrics(),
+                },
+                f,
+                default=str,
+            )
 
         self.state = AgentState.TERMINATED
         self.log(f"{self.config.name} terminated successfully")

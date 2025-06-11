@@ -27,6 +27,7 @@ from utils.logger import setup_logging
 
 logger = logging.getLogger("startup")
 
+
 class BoarderframeOSStartup:
     def __init__(self):
         self.base_dir = Path(__file__).parent
@@ -88,7 +89,9 @@ class BoarderframeOSStartup:
 
     async def start_mcp_servers(self):
         """Start all MCP servers"""
-        for service_name, script_path, port in self.startup_sequence[:-1]:  # Exclude UI server
+        for service_name, script_path, port in self.startup_sequence[
+            :-1
+        ]:  # Exclude UI server
             try:
                 # Check if already running
                 if await self.check_port(port):
@@ -102,7 +105,7 @@ class BoarderframeOSStartup:
                     [sys.executable, str(full_path)],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
-                    cwd=str(self.base_dir)
+                    cwd=str(self.base_dir),
                 )
 
                 # Wait for service to start
@@ -132,7 +135,7 @@ class BoarderframeOSStartup:
             process = subprocess.Popen(
                 [sys.executable, str(ui_path)],
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
+                stderr=subprocess.PIPE,
             )
 
             await asyncio.sleep(3)
@@ -157,25 +160,31 @@ class BoarderframeOSStartup:
                     agent_config = self.get_agent_config(agent_name)
 
                     # Check if agent exists
-                    response = await client.post("http://localhost:8004/query", json={
-                        "sql": "SELECT id FROM agents WHERE name = ?",
-                        "params": [agent_name.capitalize()]
-                    })
+                    response = await client.post(
+                        "http://localhost:8004/query",
+                        json={
+                            "sql": "SELECT id FROM agents WHERE name = ?",
+                            "params": [agent_name.capitalize()],
+                        },
+                    )
 
                     if response.status_code == 200 and not response.json().get("data"):
                         # Create agent record
-                        await client.post("http://localhost:8004/insert", json={
-                            "table": "agents",
-                            "data": {
-                                "id": agent_name,
-                                "name": agent_name.capitalize(),
-                                "config": json.dumps(agent_config),
-                                "biome": agent_config["biome"],
-                                "status": "created",
-                                "generation": 1,
-                                "fitness_score": 0.5
-                            }
-                        })
+                        await client.post(
+                            "http://localhost:8004/insert",
+                            json={
+                                "table": "agents",
+                                "data": {
+                                    "id": agent_name,
+                                    "name": agent_name.capitalize(),
+                                    "config": json.dumps(agent_config),
+                                    "biome": agent_config["biome"],
+                                    "status": "created",
+                                    "generation": 1,
+                                    "fitness_score": 0.5,
+                                },
+                            },
+                        )
                         print(f"  ✅ Created database record for {agent_name}")
 
         except Exception as e:
@@ -189,36 +198,36 @@ class BoarderframeOSStartup:
                 "role": "Chief of Staff",
                 "biome": "council",
                 "class_name": "Solomon",
-                "module_path": "agents.solomon.solomon"
+                "module_path": "agents.solomon.solomon",
             },
             "david": {
                 "name": "David",
                 "role": "CEO",
                 "biome": "council",
                 "class_name": "David",
-                "module_path": "agents.david.david"
+                "module_path": "agents.david.david",
             },
             "adam": {
                 "name": "Adam",
                 "role": "The Builder",
                 "biome": "forge",
                 "class_name": "Adam",
-                "module_path": "agents.primordials.adam"
+                "module_path": "agents.primordials.adam",
             },
             "eve": {
                 "name": "Eve",
                 "role": "The Evolver",
                 "biome": "garden",
                 "class_name": "Eve",
-                "module_path": "agents.primordials.eve"
+                "module_path": "agents.primordials.eve",
             },
             "bezalel": {
                 "name": "Bezalel",
                 "role": "The Coder",
                 "biome": "forge",
                 "class_name": "Bezalel",
-                "module_path": "agents.primordials.bezalel"
-            }
+                "module_path": "agents.primordials.bezalel",
+            },
         }
         return configs.get(agent_name, {})
 
@@ -238,7 +247,9 @@ class BoarderframeOSStartup:
         """Check if a port is accessible"""
         try:
             async with httpx.AsyncClient() as client:
-                response = await client.get(f"http://localhost:{port}/health", timeout=2.0)
+                response = await client.get(
+                    f"http://localhost:{port}/health", timeout=2.0
+                )
                 return response.status_code == 200
         except:
             return False
@@ -249,7 +260,7 @@ class BoarderframeOSStartup:
             "timestamp": datetime.now().isoformat(),
             "services": {},
             "agents": {},
-            "overall": "healthy"
+            "overall": "healthy",
         }
 
         # Check MCP services
@@ -261,11 +272,14 @@ class BoarderframeOSStartup:
         for agent_id, agent_info in system_status.get("agents", {}).items():
             health_status["agents"][agent_id] = {
                 "state": agent_info.get("state", "unknown"),
-                "uptime": agent_info.get("uptime_minutes", 0)
+                "uptime": agent_info.get("uptime_minutes", 0),
             }
 
         # Determine overall health
-        if all(health_status["services"].values()) and len(health_status["agents"]) >= 3:
+        if (
+            all(health_status["services"].values())
+            and len(health_status["agents"]) >= 3
+        ):
             health_status["overall"] = "healthy"
         elif any(health_status["services"].values()):
             health_status["overall"] = "degraded"
@@ -313,10 +327,12 @@ class BoarderframeOSStartup:
             print("\n🛑 Shutting down BoarderframeOS...")
             # Graceful shutdown would go here
 
+
 async def main():
     """Main entry point"""
     startup = BoarderframeOSStartup()
     await startup.start_boarderframeos()
+
 
 if __name__ == "__main__":
     try:
@@ -326,4 +342,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"❌ Startup failed: {e}")
         import traceback
+
         traceback.print_exc()

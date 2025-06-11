@@ -20,16 +20,20 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler(os.path.join(os.path.dirname(__file__), "../logs/git_mcp.log")),
-        logging.StreamHandler()
-    ]
+        logging.FileHandler(
+            os.path.join(os.path.dirname(__file__), "../logs/git_mcp.log")
+        ),
+        logging.StreamHandler(),
+    ],
 )
 
 logger = logging.getLogger("git_server")
 
+
 class GitOperation(BaseModel):
     method: str
     params: dict
+
 
 class MCPGitServer:
     """BoarderframeOS Git MCP Server"""
@@ -75,7 +79,7 @@ class MCPGitServer:
         return {
             "status": "healthy",
             "service": "BoarderframeOS Git MCP",
-            "version": "1.0.0"
+            "version": "1.0.0",
         }
 
     async def handle_rpc(self, op: GitOperation):
@@ -89,36 +93,31 @@ class MCPGitServer:
                 return await self.git_status(params.get("repo_path"))
             elif method == "git.log":
                 return await self.git_log(
-                    params.get("repo_path"),
-                    params.get("max_count", 10)
+                    params.get("repo_path"), params.get("max_count", 10)
                 )
             elif method == "git.add":
                 return await self.git_add(
-                    params.get("repo_path"),
-                    params.get("files", [])
+                    params.get("repo_path"), params.get("files", [])
                 )
             elif method == "git.commit":
                 return await self.git_commit(
-                    params.get("repo_path"),
-                    params.get("message")
+                    params.get("repo_path"), params.get("message")
                 )
             elif method == "git.diff":
                 return await self.git_diff(
-                    params.get("repo_path"),
-                    params.get("target", "HEAD")
+                    params.get("repo_path"), params.get("target", "HEAD")
                 )
             elif method == "git.diff_staged":
                 return await self.git_diff_staged(params.get("repo_path"))
             elif method == "git.checkout":
                 return await self.git_checkout(
-                    params.get("repo_path"),
-                    params.get("branch_name")
+                    params.get("repo_path"), params.get("branch_name")
                 )
             elif method == "git.create_branch":
                 return await self.git_create_branch(
                     params.get("repo_path"),
                     params.get("branch_name"),
-                    params.get("base_branch")
+                    params.get("base_branch"),
                 )
             else:
                 return {"error": f"Method {method} not supported"}
@@ -162,7 +161,7 @@ class MCPGitServer:
                 cwd=path,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True
+                text=True,
             )
 
             stdout, stderr = process.communicate()
@@ -171,13 +170,13 @@ class MCPGitServer:
                 return {
                     "success": False,
                     "error": stderr.strip(),
-                    "exit_code": process.returncode
+                    "exit_code": process.returncode,
                 }
 
             return {
                 "success": True,
                 "output": stdout.strip(),
-                "exit_code": process.returncode
+                "exit_code": process.returncode,
             }
         except ValueError as e:
             return {"success": False, "error": str(e)}
@@ -208,7 +207,7 @@ class MCPGitServer:
             "success": True,
             "changes": changes,
             "clean": len(changes) == 0,
-            "count": len(changes)
+            "count": len(changes),
         }
 
     def _parse_status_code(self, code: str) -> str:
@@ -237,10 +236,11 @@ class MCPGitServer:
         result = await self.run_git_command(
             repo_path,
             [
-                "git", "log",
+                "git",
+                "log",
                 f"--max-count={max_count}",
-                "--pretty=format:%H|%an|%ae|%at|%s"
-            ]
+                "--pretty=format:%H|%an|%ae|%at|%s",
+            ],
         )
 
         if not result["success"]:
@@ -253,19 +253,17 @@ class MCPGitServer:
 
             parts = line.split("|")
             if len(parts) >= 5:
-                commits.append({
-                    "hash": parts[0],
-                    "author_name": parts[1],
-                    "author_email": parts[2],
-                    "timestamp": int(parts[3]),
-                    "message": parts[4]
-                })
+                commits.append(
+                    {
+                        "hash": parts[0],
+                        "author_name": parts[1],
+                        "author_email": parts[2],
+                        "timestamp": int(parts[3]),
+                        "message": parts[4],
+                    }
+                )
 
-        return {
-            "success": True,
-            "commits": commits,
-            "count": len(commits)
-        }
+        return {"success": True, "commits": commits, "count": len(commits)}
 
     async def git_add(self, repo_path: str, files: list) -> dict:
         """Add files to git staging area"""
@@ -281,52 +279,36 @@ class MCPGitServer:
         if not message:
             return {"success": False, "error": "Commit message is required"}
 
-        return await self.run_git_command(
-            repo_path,
-            ["git", "commit", "-m", message]
-        )
+        return await self.run_git_command(repo_path, ["git", "commit", "-m", message])
 
     async def git_diff(self, repo_path: str, target: str = "HEAD") -> dict:
         """Get git diff"""
-        result = await self.run_git_command(
-            repo_path,
-            ["git", "diff", target]
-        )
+        result = await self.run_git_command(repo_path, ["git", "diff", target])
 
         if not result["success"]:
             return result
 
-        return {
-            "success": True,
-            "diff": result["output"]
-        }
+        return {"success": True, "diff": result["output"]}
 
     async def git_diff_staged(self, repo_path: str) -> dict:
         """Get git diff for staged changes"""
-        result = await self.run_git_command(
-            repo_path,
-            ["git", "diff", "--staged"]
-        )
+        result = await self.run_git_command(repo_path, ["git", "diff", "--staged"])
 
         if not result["success"]:
             return result
 
-        return {
-            "success": True,
-            "diff": result["output"]
-        }
+        return {"success": True, "diff": result["output"]}
 
     async def git_checkout(self, repo_path: str, branch_name: str) -> dict:
         """Checkout a branch"""
         if not branch_name:
             return {"success": False, "error": "Branch name is required"}
 
-        return await self.run_git_command(
-            repo_path,
-            ["git", "checkout", branch_name]
-        )
+        return await self.run_git_command(repo_path, ["git", "checkout", branch_name])
 
-    async def git_create_branch(self, repo_path: str, branch_name: str, base_branch: str = None) -> dict:
+    async def git_create_branch(
+        self, repo_path: str, branch_name: str, base_branch: str = None
+    ) -> dict:
         """Create a new branch"""
         if not branch_name:
             return {"success": False, "error": "Branch name is required"}
@@ -349,6 +331,7 @@ async def main():
     """Run the server directly"""
     server = MCPGitServer()
     await server.start()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

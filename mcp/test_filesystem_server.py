@@ -48,7 +48,9 @@ async def test_basic_functionality():
             return False
 
         if read_result["content"] != test_content:
-            print(f"❌ Content mismatch: expected '{test_content}', got '{read_result['content']}'")
+            print(
+                f"❌ Content mismatch: expected '{test_content}', got '{read_result['content']}'"
+            )
             return False
         print("✅ File read successful")
 
@@ -59,7 +61,9 @@ async def test_basic_functionality():
             print(f"❌ List failed: {list_result['error']}")
             return False
 
-        found_file = any(item["name"] == "test_file.txt" for item in list_result["entries"])
+        found_file = any(
+            item["name"] == "test_file.txt" for item in list_result["entries"]
+        )
         if not found_file:
             print("❌ Test file not found in directory listing")
             return False
@@ -92,6 +96,7 @@ async def test_basic_functionality():
         print("🎉 All basic functionality tests passed!")
         return True
 
+
 async def test_ai_features():
     """Test AI features if available"""
     print("\n🤖 Testing AI features...")
@@ -100,7 +105,7 @@ async def test_ai_features():
         server = UnifiedFilesystemServer(base_path=temp_dir)
 
         # Initialize the vector database for AI features
-        if hasattr(server, '_initialize_vector_db'):
+        if hasattr(server, "_initialize_vector_db"):
             await server._initialize_vector_db()
 
         # Test content analysis
@@ -120,7 +125,9 @@ if __name__ == "__main__":
         print("🔍 Testing content analysis...")
         analysis_result = await server.analyze_content_async(test_path)
         if "error" in analysis_result:
-            print(f"⚠️ Content analysis failed (AI features may not be available): {analysis_result['error']}")
+            print(
+                f"⚠️ Content analysis failed (AI features may not be available): {analysis_result['error']}"
+            )
         else:
             print("✅ Content analysis successful")
 
@@ -134,6 +141,7 @@ if __name__ == "__main__":
                 print("✅ Embeddings generation successful")
         else:
             print("⚠️ Embedding model not available")
+
 
 async def main():
     """Main test function"""
@@ -162,10 +170,12 @@ async def main():
     except Exception as e:
         print(f"\n💥 Test failed with exception: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 
     return 0
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

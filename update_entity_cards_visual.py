@@ -12,7 +12,7 @@ def update_entity_cards():
     print("=" * 60)
 
     # Read hq_metrics_layer.py
-    with open('core/hq_metrics_layer.py', 'r') as f:
+    with open("core/hq_metrics_layer.py", "r") as f:
         content = f.read()
 
     # Update agent metrics to include visual metadata
@@ -44,7 +44,7 @@ def update_entity_cards():
                 metrics['individual'].append(agent)"""
 
     # Replace the agent loop
-    pattern = r'for row in cur\.fetchall\(\):\s*agent = EntityMetrics\(.*?metrics\[\'individual\'\]\.append\(agent\)'
+    pattern = r"for row in cur\.fetchall\(\):\s*agent = EntityMetrics\(.*?metrics\[\'individual\'\]\.append\(agent\)"
     content = re.sub(pattern, agent_visual_update.strip(), content, flags=re.DOTALL)
 
     # Update leader metrics to include visual metadata
@@ -70,8 +70,10 @@ def update_entity_cards():
                 metrics['individual'].append(leader)"""
 
     # Find and replace the leader loop
-    leader_pattern = r'for row in cur\.fetchall\(\):\s*leader = EntityMetrics\(.*?entity_type=\'leader\'.*?metrics\[\'individual\'\]\.append\(leader\)'
-    content = re.sub(leader_pattern, leader_visual_update.strip(), content, flags=re.DOTALL)
+    leader_pattern = r"for row in cur\.fetchall\(\):\s*leader = EntityMetrics\(.*?entity_type=\'leader\'.*?metrics\[\'individual\'\]\.append\(leader\)"
+    content = re.sub(
+        leader_pattern, leader_visual_update.strip(), content, flags=re.DOTALL
+    )
 
     # Update server metrics to use visual metadata
     server_visual_update = """
@@ -96,11 +98,13 @@ def update_entity_cards():
                 metrics['individual'].append(server)"""
 
     # Replace server loop
-    server_pattern = r'for name, port, status, response_time in servers:\s*server = EntityMetrics\(.*?metrics\[\'individual\'\]\.append\(server\)'
-    content = re.sub(server_pattern, server_visual_update.strip(), content, flags=re.DOTALL)
+    server_pattern = r"for name, port, status, response_time in servers:\s*server = EntityMetrics\(.*?metrics\[\'individual\'\]\.append\(server\)"
+    content = re.sub(
+        server_pattern, server_visual_update.strip(), content, flags=re.DOTALL
+    )
 
     # Save updated file
-    with open('core/hq_metrics_layer.py', 'w') as f:
+    with open("core/hq_metrics_layer.py", "w") as f:
         f.write(content)
 
     print("✅ Updated entity card rendering in hq_metrics_layer.py")
@@ -148,11 +152,15 @@ def update_entity_cards():
         """'''
 
     # Replace render_agent_card method
-    agent_card_pattern = r'@staticmethod\s*def render_agent_card\(agent: EntityMetrics\) -> str:.*?"""'
-    content = re.sub(agent_card_pattern, agent_card_update.strip(), content, flags=re.DOTALL)
+    agent_card_pattern = (
+        r'@staticmethod\s*def render_agent_card\(agent: EntityMetrics\) -> str:.*?"""'
+    )
+    content = re.sub(
+        agent_card_pattern, agent_card_update.strip(), content, flags=re.DOTALL
+    )
 
     # Save final updates
-    with open('core/hq_metrics_layer.py', 'w') as f:
+    with open("core/hq_metrics_layer.py", "w") as f:
         f.write(content)
 
     print("✅ Updated card renderer methods")
@@ -160,7 +168,7 @@ def update_entity_cards():
     # Update integration to use visual cache for individual metric cards
     print("\n🎨 Updating metric card generation in integration...")
 
-    with open('core/hq_metrics_integration.py', 'r') as f:
+    with open("core/hq_metrics_integration.py", "r") as f:
         integration_content = f.read()
 
     # Update agent metrics cards to use database colors
@@ -222,10 +230,10 @@ def update_entity_cards():
 
     # Replace get_agent_metrics_cards method
     integration_content = re.sub(
-        r'def get_agent_metrics_cards\(self\) -> str:.*?return cards_html',
+        r"def get_agent_metrics_cards\(self\) -> str:.*?return cards_html",
         agent_metrics_update.strip(),
         integration_content,
-        flags=re.DOTALL
+        flags=re.DOTALL,
     )
 
     # Update department metrics cards similarly
@@ -294,14 +302,14 @@ def update_entity_cards():
 
     # Replace get_department_metrics_cards method
     integration_content = re.sub(
-        r'def get_department_metrics_cards\(self\) -> str:.*?return cards_html',
+        r"def get_department_metrics_cards\(self\) -> str:.*?return cards_html",
         dept_metrics_update.strip(),
         integration_content,
-        flags=re.DOTALL
+        flags=re.DOTALL,
     )
 
     # Save updated integration file
-    with open('core/hq_metrics_integration.py', 'w') as f:
+    with open("core/hq_metrics_integration.py", "w") as f:
         f.write(integration_content)
 
     print("✅ Updated metric card generation methods")

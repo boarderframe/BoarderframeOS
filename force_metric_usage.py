@@ -13,7 +13,7 @@ def force_metric_usage():
 
     file_path = "/Users/cosburn/BoarderframeOS/corporate_headquarters.py"
 
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         content = f.read()
 
     # 1. First, let's add a property that makes metrics easily accessible
@@ -65,37 +65,43 @@ def force_metric_usage():
     # Pattern replacements with context
     replacements = [
         # Dashboard welcome - Managing X agents
-        (r'Managing <strong style="color: #10b981;">(\d+)</strong> AI agents',
-         'Managing <strong style="color: #10b981;">{self.total_agents}</strong> AI agents'),
-
+        (
+            r'Managing <strong style="color: #10b981;">(\d+)</strong> AI agents',
+            'Managing <strong style="color: #10b981;">{self.total_agents}</strong> AI agents',
+        ),
         # Hardcoded 2 agents
-        (r'Managing <strong style="color: #10b981;">2</strong> AI agents',
-         'Managing <strong style="color: #10b981;">{self.total_agents}</strong> AI agents'),
-
+        (
+            r'Managing <strong style="color: #10b981;">2</strong> AI agents',
+            'Managing <strong style="color: #10b981;">{self.total_agents}</strong> AI agents',
+        ),
         # Department count - 120+ pattern (already using {total_agents})
-        (r'\{total_agents\}', '{self.total_agents}'),
-
+        (r"\{total_agents\}", "{self.total_agents}"),
         # Any remaining 120+
-        (r'>\s*120\+\s*<', '>{self.total_agents}<'),
-
+        (r">\s*120\+\s*<", ">{self.total_agents}<"),
         # Department counts
-        (r'>\s*45\s*</div>\s*<div[^>]*>Departments',
-         '>{self.total_departments}</div><div class="metric-label">Departments'),
-
+        (
+            r">\s*45\s*</div>\s*<div[^>]*>Departments",
+            '>{self.total_departments}</div><div class="metric-label">Departments',
+        ),
         # Division counts
-        (r'>\s*9\s*</div>\s*<div[^>]*>Divisions',
-         '>{self.total_divisions}</div><div class="metric-label">Divisions'),
-
+        (
+            r">\s*9\s*</div>\s*<div[^>]*>Divisions",
+            '>{self.total_divisions}</div><div class="metric-label">Divisions',
+        ),
         # Agent status calculations
-        (r"total_agents = health_summary\['agents'\]\['total'\] or 2",
-         "total_agents = self.total_agents"),
-
-        (r"active_agents = health_summary\['agents'\]\['active'\] or 0",
-         "active_agents = self.active_agents"),
-
+        (
+            r"total_agents = health_summary\['agents'\]\['total'\] or 2",
+            "total_agents = self.total_agents",
+        ),
+        (
+            r"active_agents = health_summary\['agents'\]\['active'\] or 0",
+            "active_agents = self.active_agents",
+        ),
         # Metric calculations in HTML
-        (r"health_summary\.get\('agents', \{\}\)\.get\('total', 2\)",
-         "self.total_agents"),
+        (
+            r"health_summary\.get\('agents', \{\}\)\.get\('total', 2\)",
+            "self.total_agents",
+        ),
     ]
 
     for pattern, replacement in replacements:
@@ -137,7 +143,11 @@ def force_metric_usage():
     # 4. Update refresh methods to refresh metrics
     print("\n📝 Adding metric refresh to refresh methods...")
 
-    refresh_methods = ["refresh_all_data", "global_refresh_all_data", "_collect_health_data"]
+    refresh_methods = [
+        "refresh_all_data",
+        "global_refresh_all_data",
+        "_collect_health_data",
+    ]
 
     for method_name in refresh_methods:
         method_pattern = f"def {method_name}\\(self"
@@ -151,21 +161,25 @@ def force_metric_usage():
             method_content = content[method_pos:method_end]
             if "_last_metrics = self._get_centralized_metrics()" not in method_content:
                 # Find first line of code after docstring
-                lines = method_content.split('\n')
+                lines = method_content.split("\n")
                 for i, line in enumerate(lines[1:], 1):
-                    if line.strip() and not line.strip().startswith('"""') and not line.strip().startswith('#'):
+                    if (
+                        line.strip()
+                        and not line.strip().startswith('"""')
+                        and not line.strip().startswith("#")
+                    ):
                         insert_line = i
                         indent = " " * (len(line) - len(line.lstrip()))
                         refresh_code = f"{indent}# Refresh centralized metrics\n{indent}self._last_metrics = self._get_centralized_metrics()\n"
-                        lines.insert(insert_line, refresh_code.rstrip('\n'))
+                        lines.insert(insert_line, refresh_code.rstrip("\n"))
                         break
 
-                new_method = '\n'.join(lines)
+                new_method = "\n".join(lines)
                 content = content[:method_pos] + new_method + content[method_end:]
                 print(f"   ✅ Added metric refresh to {method_name}")
 
     # Write the updated content
-    with open(file_path, 'w') as f:
+    with open(file_path, "w") as f:
         f.write(content)
 
     print("\n✅ Forced metric usage throughout Corporate HQ!")
@@ -174,15 +188,19 @@ def force_metric_usage():
     print("\n🔍 Verification:")
 
     # Check property usage
-    property_uses = len(re.findall(r'self\.total_agents|self\.active_agents|self\.total_departments', content))
+    property_uses = len(
+        re.findall(
+            r"self\.total_agents|self\.active_agents|self\.total_departments", content
+        )
+    )
     print(f"   - Property usage: {property_uses} references")
 
     # Check if hardcoded values remain
     hardcoded_checks = [
-        ('120+', '120\\+'),
-        ('Managing 2 agents', 'Managing.*2.*agents'),
-        ('45 departments', '>\\s*45\\s*<.*Departments'),
-        ('9 divisions', '>\\s*9\\s*<.*Divisions')
+        ("120+", "120\\+"),
+        ("Managing 2 agents", "Managing.*2.*agents"),
+        ("45 departments", ">\\s*45\\s*<.*Departments"),
+        ("9 divisions", ">\\s*9\\s*<.*Divisions"),
     ]
 
     for name, pattern in hardcoded_checks:

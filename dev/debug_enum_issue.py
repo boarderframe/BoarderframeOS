@@ -16,11 +16,13 @@ sys.path.insert(0, str(Path(__file__).parent))
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("debug_enum")
 
+
 def test_basic_imports():
     """Test basic imports"""
     try:
         logger.info("Testing basic message bus import...")
         from boarderframeos.core.message_bus import MessagePriority, MessageType
+
         logger.info(f"✅ MessageType: {list(MessageType)}")
         logger.info(f"✅ MessagePriority: {list(MessagePriority)}")
 
@@ -29,6 +31,7 @@ def test_basic_imports():
             DeliveryStatus,
             RoutingStrategy,
         )
+
         logger.info(f"✅ DeliveryStatus: {list(DeliveryStatus)}")
         logger.info(f"✅ RoutingStrategy: {list(RoutingStrategy)}")
 
@@ -37,6 +40,7 @@ def test_basic_imports():
             CoordinationPattern,
             TaskState,
         )
+
         logger.info(f"✅ CoordinationPattern: {list(CoordinationPattern)}")
         logger.info(f"✅ TaskState: {list(TaskState)}")
 
@@ -45,6 +49,7 @@ def test_basic_imports():
     except Exception as e:
         logger.error(f"❌ Import error: {e}")
         return False
+
 
 def test_message_creation():
     """Test message creation"""
@@ -62,7 +67,7 @@ def test_message_creation():
             to_agent="test_receiver",
             message_type=MessageType.COORDINATION,
             content={"test": "data"},
-            priority=MessagePriority.NORMAL
+            priority=MessagePriority.NORMAL,
         )
 
         logger.info(f"✅ Created message: {message.message_type}")
@@ -78,7 +83,7 @@ def test_message_creation():
             to_agent="test_receiver",
             message_type=MessageType.COORDINATION,
             content={"test": "enhanced_data"},
-            routing_strategy=RoutingStrategy.DIRECT
+            routing_strategy=RoutingStrategy.DIRECT,
         )
 
         logger.info(f"✅ Created enhanced message: {enhanced_message.message_type}")
@@ -88,8 +93,10 @@ def test_message_creation():
     except Exception as e:
         logger.error(f"❌ Message creation error: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 async def test_agent_controller():
     """Test agent controller initialization"""
@@ -112,8 +119,10 @@ async def test_agent_controller():
     except Exception as e:
         logger.error(f"❌ Agent controller error: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 async def main():
     """Main debug function"""
@@ -138,6 +147,7 @@ async def main():
     logger.info("✅ All tests passed!")
     return 0
 
+
 if __name__ == "__main__":
     try:
         exit_code = asyncio.run(main())
@@ -145,5 +155,6 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(f"💥 Fatal error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

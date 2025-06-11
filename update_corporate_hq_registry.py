@@ -63,7 +63,6 @@ def update_registry_queries():
             a.*, d.*, div.*, s.*, db.*
         FROM agent_stats a, department_stats d, division_stats div, server_stats s, database_stats db;
         """,
-
         """
         CREATE OR REPLACE VIEW workforce_development_pipeline AS
         SELECT
@@ -85,7 +84,6 @@ def update_registry_queries():
                 WHEN 'planned' THEN 6
             END;
         """,
-
         """
         CREATE OR REPLACE VIEW department_workforce_status AS
         SELECT
@@ -102,14 +100,26 @@ def update_registry_queries():
         GROUP BY d.id, d.name, d.agent_capacity
         HAVING COUNT(DISTINCT ar.id) > 0
         ORDER BY total_agents DESC;
-        """
+        """,
     ]
 
     for view_sql in views:
-        result = subprocess.run([
-            "docker", "exec", "boarderframeos_postgres",
-            "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", view_sql
-        ], capture_output=True, text=True)
+        result = subprocess.run(
+            [
+                "docker",
+                "exec",
+                "boarderframeos_postgres",
+                "psql",
+                "-U",
+                "boarderframe",
+                "-d",
+                "boarderframeos",
+                "-c",
+                view_sql,
+            ],
+            capture_output=True,
+            text=True,
+        )
 
         if result.returncode == 0:
             print("   ✅ View created successfully")
@@ -274,7 +284,9 @@ def update_registry_queries():
 
     print("\n💡 Next Steps:")
     print("1. The database views have been created")
-    print("2. You need to update the _fetch_registry_data method in corporate_headquarters.py")
+    print(
+        "2. You need to update the _fetch_registry_data method in corporate_headquarters.py"
+    )
     print("3. Consider adding these new sections to the registry display:")
     print("   - Workforce Development Pipeline visualization")
     print("   - Department capacity and utilization chart")
@@ -286,14 +298,27 @@ def update_registry_queries():
 
     test_query = "SELECT * FROM registry_comprehensive_stats;"
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", test_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-c",
+            test_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
         print("\n📊 Current Registry Statistics:")
-        lines = result.stdout.strip().split('|')
+        lines = result.stdout.strip().split("|")
         if len(lines) >= 10:
             print(f"   Total Agents: {lines[0].strip()}")
             print(f"   Executives: {lines[1].strip()}")

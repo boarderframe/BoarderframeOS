@@ -15,11 +15,17 @@ from pathlib import Path
 
 def signal_handler(sig, frame):
     """Handle shutdown signals"""
-    print('\n🛑 Shutting down BoarderframeOS...')
-    subprocess.run(["pkill", "-f", "python.*enhanced_dashboard.py"], stderr=subprocess.DEVNULL)
-    subprocess.run(["pkill", "-f", "python.*demo_enhanced_agent_coordination.py"], stderr=subprocess.DEVNULL)
+    print("\n🛑 Shutting down BoarderframeOS...")
+    subprocess.run(
+        ["pkill", "-f", "python.*enhanced_dashboard.py"], stderr=subprocess.DEVNULL
+    )
+    subprocess.run(
+        ["pkill", "-f", "python.*demo_enhanced_agent_coordination.py"],
+        stderr=subprocess.DEVNULL,
+    )
     print("🏁 System shutdown complete")
     sys.exit(0)
+
 
 def main():
     """Start the complete system"""
@@ -31,8 +37,13 @@ def main():
 
     # Kill any existing processes
     print("🧹 Cleaning up existing processes...")
-    subprocess.run(["pkill", "-f", "python.*enhanced_dashboard.py"], stderr=subprocess.DEVNULL)
-    subprocess.run(["pkill", "-f", "python.*demo_enhanced_agent_coordination.py"], stderr=subprocess.DEVNULL)
+    subprocess.run(
+        ["pkill", "-f", "python.*enhanced_dashboard.py"], stderr=subprocess.DEVNULL
+    )
+    subprocess.run(
+        ["pkill", "-f", "python.*demo_enhanced_agent_coordination.py"],
+        stderr=subprocess.DEVNULL,
+    )
     time.sleep(2)
 
     # Start dashboard
@@ -40,13 +51,14 @@ def main():
     dashboard_process = subprocess.Popen(
         [sys.executable, "enhanced_dashboard.py"],
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
+        stderr=subprocess.PIPE,
     )
     time.sleep(3)
 
     # Test dashboard
     try:
         import requests
+
         response = requests.get("http://localhost:8888/health", timeout=2)
         if response.status_code == 200:
             print("✅ Dashboard is running at http://localhost:8888")
@@ -60,7 +72,7 @@ def main():
     demo_process = subprocess.Popen(
         [sys.executable, "demo_enhanced_agent_coordination.py"],
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
+        stderr=subprocess.PIPE,
     )
     time.sleep(5)
 
@@ -84,6 +96,7 @@ def main():
             time.sleep(1)
     except KeyboardInterrupt:
         signal_handler(signal.SIGINT, None)
+
 
 if __name__ == "__main__":
     main()

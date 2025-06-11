@@ -19,13 +19,15 @@ import psutil
 # Load environment variables from .env file
 try:
     from dotenv import load_dotenv
-    load_dotenv(Path(__file__).parent.parent / '.env')
+
+    load_dotenv(Path(__file__).parent.parent / ".env")
 except ImportError:
     pass
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
+
 
 class AgentManager:
     """Manages BoarderframeOS agents"""
@@ -39,15 +41,14 @@ class AgentManager:
                 "path": "agents/solomon/solomon.py",
                 "description": "Chief of Staff AI - Business intelligence and strategic planning",
                 "model": "claude-3-5-sonnet-latest",
-                "priority": 1
+                "priority": 1,
             },
             "david": {
                 "path": "agents/david/david.py",
                 "description": "CEO Agent - Strategic leadership and organizational management",
                 "model": "claude-3-5-sonnet-latest",
-                "priority": 2
-            }
-
+                "priority": 2,
+            },
             # Commented out agents - still available in the system but won't auto-start
             # "eve": {
             #     "path": "agents/primordials/eve.py",
@@ -72,8 +73,8 @@ class AgentManager:
     def is_agent_running(self, agent_name: str) -> bool:
         """Check if an agent process is running"""
         try:
-            for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-                cmdline = proc.info.get('cmdline', [])
+            for proc in psutil.process_iter(["pid", "name", "cmdline"]):
+                cmdline = proc.info.get("cmdline", [])
                 if cmdline and any(f"{agent_name}.py" in arg for arg in cmdline):
                     return True
         except (psutil.NoSuchProcess, psutil.AccessDenied):
@@ -83,10 +84,10 @@ class AgentManager:
     def get_agent_pid(self, agent_name: str) -> Optional[int]:
         """Get PID of running agent"""
         try:
-            for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-                cmdline = proc.info.get('cmdline', [])
+            for proc in psutil.process_iter(["pid", "name", "cmdline"]):
+                cmdline = proc.info.get("cmdline", [])
                 if cmdline and any(f"{agent_name}.py" in arg for arg in cmdline):
-                    return proc.info['pid']
+                    return proc.info["pid"]
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             pass
         return None
@@ -119,7 +120,7 @@ class AgentManager:
                 cwd=str(self.project_root),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                preexec_fn=os.setsid  # Create new process group
+                preexec_fn=os.setsid,  # Create new process group
             )
 
             # Give it a moment to start
@@ -184,8 +185,7 @@ class AgentManager:
 
         # Sort by priority
         sorted_agents = sorted(
-            self.agent_configs.items(),
-            key=lambda x: x[1]['priority']
+            self.agent_configs.items(), key=lambda x: x[1]["priority"]
         )
 
         for agent_name, config in sorted_agents:
@@ -241,19 +241,22 @@ class AgentManager:
                 "pid": pid,
                 "model": config["model"],
                 "description": config["description"],
-                "priority": config["priority"]
+                "priority": config["priority"],
             }
 
         return json.dumps(status, indent=2)
+
 
 def main():
     """Main CLI interface"""
     import argparse
 
     parser = argparse.ArgumentParser(description="BoarderframeOS Agent Manager")
-    parser.add_argument("action", choices=[
-        "start", "stop", "restart", "status", "start-all", "stop-all", "json"
-    ], help="Action to perform")
+    parser.add_argument(
+        "action",
+        choices=["start", "stop", "restart", "status", "start-all", "stop-all", "json"],
+        help="Action to perform",
+    )
     parser.add_argument("--agent", help="Specific agent name (solomon, david, eve)")
 
     args = parser.parse_args()
@@ -288,6 +291,7 @@ def main():
 
     elif args.action == "json":
         print(manager.get_status_json())
+
 
 if __name__ == "__main__":
     main()

@@ -25,16 +25,19 @@ html = """<!DOCTYPE html>
 <p>2. python setup_boarderframeos.py</p>
 <p>3. python startup.py</p></div></body></html>"""
 
+
 class Handler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
-        self.send_header('Content-type', 'text/html')
+        self.send_header("Content-type", "text/html")
         self.end_headers()
         self.wfile.write(html.encode())
 
+
 def open_browser():
     time.sleep(1)
-    webbrowser.open(f'http://localhost:{PORT}')
+    webbrowser.open(f"http://localhost:{PORT}")
+
 
 print(f"🚀 Simple UI Server starting on port {PORT}")
 print(f"📍 Dashboard: http://localhost:{PORT}")

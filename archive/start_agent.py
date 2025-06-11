@@ -23,10 +23,11 @@ async def start_agent(agent_path: str):
     spec.loader.exec_module(module)
 
     # Find and run the main function
-    if hasattr(module, 'main'):
+    if hasattr(module, "main"):
         await module.main()
     else:
         print(f"No main function found in {agent_path}")
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

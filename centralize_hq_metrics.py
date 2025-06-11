@@ -68,10 +68,22 @@ def create_centralized_metrics_system():
     FROM agent_metrics a, department_metrics d, division_metrics div, server_metrics s, running_process_metrics p;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", metrics_view
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-c",
+            metrics_view,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
         print("   ✅ Created centralized metrics view")
@@ -220,14 +232,13 @@ def create_centralized_metrics_system():
     print("\n\n📝 Patches for consistent metric display:\n")
 
     patches = {
-        "Dashboard Welcome Section": '''
+        "Dashboard Welcome Section": """
 Replace hardcoded values with:
     total_agents = self.get_metric('agents', 'total')
     active_agents = self.get_metric('agents', 'active')
     operational_agents = self.get_metric('agents', 'operational')
-''',
-
-        "Departments Tab (Line 4868)": '''
+""",
+        "Departments Tab (Line 4868)": """
 Replace:
     <div class="widget-value" style="color: #06b6d4;">
         120+
@@ -237,23 +248,21 @@ With:
     <div class="widget-value" style="color: #06b6d4;">
         {self.get_metric('agents', 'total')}
     </div>
-''',
-
-        "Agent Status Widget": '''
+""",
+        "Agent Status Widget": """
 Replace:
     total_agents = health_summary['agents']['total'] or 2
 
 With:
     total_agents = self.get_metric('agents', 'total')
-''',
-
-        "Registry Display": '''
+""",
+        "Registry Display": """
 In _fetch_registry_data(), at the end add:
     # Ensure consistency with centralized metrics
     centralized = self._get_centralized_metrics()
     registry_data['totals']['agents'] = centralized['agents']['total']
     registry_data['totals']['leaders'] = centralized['agents']['leaders']
-'''
+""",
     }
 
     for location, patch in patches.items():
@@ -266,13 +275,26 @@ In _fetch_registry_data(), at the end add:
 
     test_query = "SELECT * FROM hq_centralized_metrics;"
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", test_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-c",
+            test_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0 and result.stdout.strip():
-        parts = result.stdout.strip().split('|')
+        parts = result.stdout.strip().split("|")
         if len(parts) >= 10:
             print("\n📊 Current Centralized Metrics:")
             print(f"   Total Agents: {parts[0].strip()}")

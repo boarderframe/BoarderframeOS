@@ -28,7 +28,7 @@ async def add_sdk_features(panel):
     adk = get_adk()
 
     # Add SDK routes
-    @panel.app.route('/api/cortex/sdk/providers')
+    @panel.app.route("/api/cortex/sdk/providers")
     def get_sdk_providers():
         """Get all SDK providers with detailed info"""
         providers = {}
@@ -47,59 +47,60 @@ async def add_sdk_features(panel):
                         "cost_per_1k_input": model.cost_per_1k_input,
                         "cost_per_1k_output": model.cost_per_1k_output,
                         "quality_score": model.quality_score,
-                        "specialties": model.specialties
+                        "specialties": model.specialties,
                     }
                     for model in models
-                ]
+                ],
             }
 
         return jsonify(providers)
 
-    @panel.app.route('/api/cortex/sdk/models/<capability>')
+    @panel.app.route("/api/cortex/sdk/models/<capability>")
     def get_models_by_capability(capability):
         """Get models with specific capability"""
         try:
             cap_enum = ModelCapability(capability)
             models = sdk.registry.get_models_by_capability(cap_enum)
 
-            return jsonify([
-                {
-                    "provider": model.provider,
-                    "model": model.model_name,
-                    "quality_score": model.quality_score,
-                    "cost_per_1k": model.cost_per_1k_input,
-                    "latency_ms": model.latency_ms,
-                    "context_window": model.context_window
-                }
-                for model in models
-            ])
+            return jsonify(
+                [
+                    {
+                        "provider": model.provider,
+                        "model": model.model_name,
+                        "quality_score": model.quality_score,
+                        "cost_per_1k": model.cost_per_1k_input,
+                        "latency_ms": model.latency_ms,
+                        "context_window": model.context_window,
+                    }
+                    for model in models
+                ]
+            )
         except ValueError:
             return jsonify({"error": f"Unknown capability: {capability}"}), 400
 
-    @panel.app.route('/api/cortex/capabilities')
+    @panel.app.route("/api/cortex/capabilities")
     def get_all_capabilities():
         """Get all available model capabilities"""
         capabilities = [
-            {
-                "name": cap.value,
-                "description": _get_capability_description(cap)
-            }
+            {"name": cap.value, "description": _get_capability_description(cap)}
             for cap in ModelCapability
         ]
 
         return jsonify(capabilities)
 
-    @panel.app.route('/api/cortex/adk/templates')
+    @panel.app.route("/api/cortex/adk/templates")
     def get_agent_templates():
         """Get available agent templates"""
         templates = []
 
         for template in AgentTemplate:
             template_config = adk.factory.templates.get(template, {})
-            templates.append({
-                "name": template.value,
-                "description": f"Pre-built {template.value} agent template"
-            })
+            templates.append(
+                {
+                    "name": template.value,
+                    "description": f"Pre-built {template.value} agent template",
+                }
+            )
 
         return jsonify(templates)
 
@@ -118,7 +119,7 @@ def _get_capability_description(capability):
         ModelCapability.STREAMING: "Real-time response streaming",
         ModelCapability.LONG_CONTEXT: "Handle 100k+ token contexts",
         ModelCapability.REASONING: "Complex logical reasoning",
-        ModelCapability.CREATIVE_WRITING: "Creative content generation"
+        ModelCapability.CREATIVE_WRITING: "Creative content generation",
     }
 
     return descriptions.get(capability, capability.value)
@@ -162,5 +163,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

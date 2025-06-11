@@ -26,6 +26,7 @@ class DeliveryStatus(Enum):
     FAILED = "failed"
     EXPIRED = "expired"
 
+
 class RoutingStrategy(Enum):
     DIRECT = "direct"
     ROUND_ROBIN = "round_robin"
@@ -33,9 +34,11 @@ class RoutingStrategy(Enum):
     CAPABILITY_BASED = "capability_based"
     CONTENT_BASED = "content_based"
 
+
 @dataclass
 class MessageMetrics:
     """Metrics for message delivery and processing"""
+
     sent_time: datetime
     delivered_time: Optional[datetime] = None
     acknowledged_time: Optional[datetime] = None
@@ -43,9 +46,11 @@ class MessageMetrics:
     retry_count: int = 0
     route_taken: List[str] = field(default_factory=list)
 
+
 @dataclass
 class EnhancedAgentMessage(AgentMessage):
     """Enhanced message with additional coordination features"""
+
     message_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     conversation_id: Optional[str] = None
     workflow_id: Optional[str] = None
@@ -53,13 +58,22 @@ class EnhancedAgentMessage(AgentMessage):
     routing_strategy: RoutingStrategy = RoutingStrategy.DIRECT
     required_capabilities: List[str] = field(default_factory=list)
     max_retries: int = 3
-    metrics: MessageMetrics = field(default_factory=lambda: MessageMetrics(sent_time=datetime.now()))
+    metrics: MessageMetrics = field(
+        default_factory=lambda: MessageMetrics(sent_time=datetime.now())
+    )
     persistent: bool = False
+
 
 class WorkflowStep:
     """Represents a step in an agent workflow"""
-    def __init__(self, agent: str, action: str, input_data: Dict[str, Any],
-                 condition: Optional[Callable] = None):
+
+    def __init__(
+        self,
+        agent: str,
+        action: str,
+        input_data: Dict[str, Any],
+        condition: Optional[Callable] = None,
+    ):
         self.step_id = str(uuid.uuid4())
         self.agent = agent
         self.action = action
@@ -69,8 +83,10 @@ class WorkflowStep:
         self.result = None
         self.error = None
 
+
 class AgentWorkflow:
     """Manages multi-agent workflows"""
+
     def __init__(self, workflow_id: str, steps: List[WorkflowStep]):
         self.workflow_id = workflow_id
         self.steps = steps
@@ -79,8 +95,10 @@ class AgentWorkflow:
         self.created_at = datetime.now()
         self.completed_at = None
 
+
 class AgentCircuitBreaker:
     """Circuit breaker pattern for agent communication"""
+
     def __init__(self, failure_threshold: int = 5, timeout: int = 60):
         self.failure_threshold = failure_threshold
         self.timeout = timeout
@@ -92,7 +110,9 @@ class AgentCircuitBreaker:
         if self.state == "closed":
             return True
         elif self.state == "open":
-            if datetime.now() - self.last_failure_time > timedelta(seconds=self.timeout):
+            if datetime.now() - self.last_failure_time > timedelta(
+                seconds=self.timeout
+            ):
                 self.state = "half_open"
                 return True
             return False
@@ -109,12 +129,15 @@ class AgentCircuitBreaker:
         if self.failure_count >= self.failure_threshold:
             self.state = "open"
 
+
 class EnhancedMessageBus:
     """Enhanced message bus with advanced coordination capabilities"""
 
     def __init__(self, db_path: str = "data/message_bus.db"):
         # Core messaging
-        self.subscribers: Dict[str, Dict[str, List[Callable]]] = defaultdict(lambda: defaultdict(list))
+        self.subscribers: Dict[str, Dict[str, List[Callable]]] = defaultdict(
+            lambda: defaultdict(list)
+        )
         self.agent_queues: Dict[str, asyncio.Queue] = {}
         self.topic_subscribers: Dict[str, Set[str]] = defaultdict(set)
         self.message_history: deque = deque(maxlen=10000)
@@ -150,7 +173,8 @@ class EnhancedMessageBus:
     def _init_database(self):
         """Initialize SQLite database for message persistence"""
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS messages (
                     message_id TEXT PRIMARY KEY,
                     from_agent TEXT NOT NULL,
@@ -167,9 +191,11 @@ class EnhancedMessageBus:
                     retry_count INTEGER DEFAULT 0,
                     ttl_seconds INTEGER
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS agent_capabilities (
                     agent_name TEXT NOT NULL,
                     capability TEXT NOT NULL,
@@ -177,9 +203,11 @@ class EnhancedMessageBus:
                     updated_at TIMESTAMP NOT NULL,
                     PRIMARY KEY (agent_name, capability)
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS workflows (
                     workflow_id TEXT PRIMARY KEY,
                     status TEXT NOT NULL,
@@ -187,7 +215,8 @@ class EnhancedMessageBus:
                     completed_at TIMESTAMP,
                     steps TEXT NOT NULL
                 )
-            """)
+            """
+            )
 
     async def start(self):
         """Start the enhanced message bus"""
@@ -199,7 +228,7 @@ class EnhancedMessageBus:
             asyncio.create_task(self._monitor_performance()),
             asyncio.create_task(self._cleanup_expired_messages()),
             asyncio.create_task(self._process_workflows()),
-            asyncio.create_task(self._health_check_agents())
+            asyncio.create_task(self._health_check_agents()),
         ]
 
         self.logger.info("Enhanced MessageBus started with advanced features")
@@ -217,8 +246,13 @@ class EnhancedMessageBus:
 
         self.logger.info("Enhanced MessageBus stopped")
 
-    async def register_agent(self, agent_name: str, capabilities: List[str] = None,
-                           queue_size: int = 100, routing_strategy: RoutingStrategy = RoutingStrategy.DIRECT):
+    async def register_agent(
+        self,
+        agent_name: str,
+        capabilities: List[str] = None,
+        queue_size: int = 100,
+        routing_strategy: RoutingStrategy = RoutingStrategy.DIRECT,
+    ):
         """Register an agent with capabilities and routing preferences"""
         if agent_name not in self.agent_queues:
             self.agent_queues[agent_name] = asyncio.Queue(maxsize=queue_size)
@@ -229,19 +263,28 @@ class EnhancedMessageBus:
                 self.agent_capabilities[agent_name] = set(capabilities)
                 await self._persist_capabilities(agent_name, capabilities)
 
-            self.logger.info(f"Registered agent: {agent_name} with capabilities: {capabilities}")
+            self.logger.info(
+                f"Registered agent: {agent_name} with capabilities: {capabilities}"
+            )
 
     async def _persist_capabilities(self, agent_name: str, capabilities: List):
         """Persist agent capabilities to database"""
         with sqlite3.connect(self.db_path) as conn:
             for capability in capabilities:
                 # Convert enum to string value if needed
-                cap_str = capability.value if hasattr(capability, 'value') else str(capability)
-                conn.execute("""
+                cap_str = (
+                    capability.value
+                    if hasattr(capability, "value")
+                    else str(capability)
+                )
+                conn.execute(
+                    """
                     INSERT OR REPLACE INTO agent_capabilities
                     (agent_name, capability, updated_at)
                     VALUES (?, ?, ?)
-                """, (agent_name, cap_str, datetime.now()))
+                """,
+                    (agent_name, cap_str, datetime.now()),
+                )
 
     async def send_enhanced_message(self, message: EnhancedAgentMessage) -> bool:
         """Send an enhanced message with advanced routing"""
@@ -256,7 +299,9 @@ class EnhancedMessageBus:
         target_agents = await self._resolve_routing(message)
 
         if not target_agents:
-            self.logger.warning(f"No target agents found for message {message.message_id}")
+            self.logger.warning(
+                f"No target agents found for message {message.message_id}"
+            )
             return False
 
         success = False
@@ -266,7 +311,9 @@ class EnhancedMessageBus:
 
         # Update conversation context
         if message.conversation_id:
-            self.conversation_contexts[message.conversation_id].append(message.message_id)
+            self.conversation_contexts[message.conversation_id].append(
+                message.message_id
+            )
 
         return success
 
@@ -287,7 +334,9 @@ class EnhancedMessageBus:
         else:
             return [message.to_agent] if message.to_agent in self.agent_queues else []
 
-    def _find_agents_by_capabilities(self, required_capabilities: List[str]) -> List[str]:
+    def _find_agents_by_capabilities(
+        self, required_capabilities: List[str]
+    ) -> List[str]:
         """Find agents that have all required capabilities"""
         if not required_capabilities:
             return list(self.agent_queues.keys())
@@ -318,11 +367,15 @@ class EnhancedMessageBus:
             return []
 
         # Simple round-robin based on message count
-        total_messages = sum(len(self.conversation_contexts[conv]) for conv in self.conversation_contexts)
+        total_messages = sum(
+            len(self.conversation_contexts[conv]) for conv in self.conversation_contexts
+        )
         selected_agent = capable_agents[total_messages % len(capable_agents)]
         return [selected_agent]
 
-    async def _deliver_to_agent(self, agent_name: str, message: EnhancedAgentMessage) -> bool:
+    async def _deliver_to_agent(
+        self, agent_name: str, message: EnhancedAgentMessage
+    ) -> bool:
         """Deliver message to specific agent with circuit breaker protection"""
         if not self.circuit_breakers[agent_name].can_execute():
             self.logger.warning(f"Circuit breaker open for agent {agent_name}")
@@ -363,19 +416,31 @@ class EnhancedMessageBus:
     async def _persist_message(self, message: EnhancedAgentMessage):
         """Persist message to database"""
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT OR REPLACE INTO messages
                 (message_id, from_agent, to_agent, message_type, content, priority,
                  created_at, status, conversation_id, workflow_id, ttl_seconds)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                message.message_id, message.from_agent, message.to_agent,
-                message.message_type.value, json.dumps(message.content),
-                message.priority.value, message.timestamp, message.delivery_status.value,
-                message.conversation_id, message.workflow_id, message.ttl_seconds
-            ))
+            """,
+                (
+                    message.message_id,
+                    message.from_agent,
+                    message.to_agent,
+                    message.message_type.value,
+                    json.dumps(message.content),
+                    message.priority.value,
+                    message.timestamp,
+                    message.delivery_status.value,
+                    message.conversation_id,
+                    message.workflow_id,
+                    message.ttl_seconds,
+                ),
+            )
 
-    async def create_workflow(self, workflow_id: str, steps: List[Dict[str, Any]]) -> str:
+    async def create_workflow(
+        self, workflow_id: str, steps: List[Dict[str, Any]]
+    ) -> str:
         """Create a new agent workflow"""
         workflow_steps = []
         for step_data in steps:
@@ -383,7 +448,7 @@ class EnhancedMessageBus:
                 agent=step_data["agent"],
                 action=step_data["action"],
                 input_data=step_data.get("input_data", {}),
-                condition=step_data.get("condition")
+                condition=step_data.get("condition"),
             )
             workflow_steps.append(step)
 
@@ -392,10 +457,13 @@ class EnhancedMessageBus:
 
         # Persist workflow
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO workflows (workflow_id, status, created_at, steps)
                 VALUES (?, ?, ?, ?)
-            """, (workflow_id, "pending", datetime.now(), json.dumps(steps)))
+            """,
+                (workflow_id, "pending", datetime.now(), json.dumps(steps)),
+            )
 
         self.logger.info(f"Created workflow {workflow_id} with {len(steps)} steps")
         return workflow_id
@@ -405,7 +473,9 @@ class EnhancedMessageBus:
         while self.running:
             try:
                 for workflow_id, workflow in list(self.active_workflows.items()):
-                    if workflow.status == "pending" and workflow.current_step < len(workflow.steps):
+                    if workflow.status == "pending" and workflow.current_step < len(
+                        workflow.steps
+                    ):
                         current_step = workflow.steps[workflow.current_step]
 
                         # Execute current step
@@ -439,11 +509,11 @@ class EnhancedMessageBus:
                 content={
                     "action": step.action,
                     "input_data": step.input_data,
-                    "step_id": step.step_id
+                    "step_id": step.step_id,
                 },
                 workflow_id=workflow.workflow_id,
                 routing_strategy=RoutingStrategy.CAPABILITY_BASED,
-                required_capabilities=[step.action]
+                required_capabilities=[step.action],
             )
 
             # Send message
@@ -471,20 +541,25 @@ class EnhancedMessageBus:
                     "total_agents": len(self.agent_queues),
                     "active_workflows": len(self.active_workflows),
                     "message_queue_sizes": {
-                        agent: queue.qsize() for agent, queue in self.agent_queues.items()
+                        agent: queue.qsize()
+                        for agent, queue in self.agent_queues.items()
                     },
                     "agent_loads": dict(self.agent_load),
                     "circuit_breaker_states": {
                         agent: cb.state for agent, cb in self.circuit_breakers.items()
-                    }
+                    },
                 }
 
                 self.performance_data.append(performance_snapshot)
 
                 # Log performance summary every minute
                 if len(self.performance_data) % 60 == 0:
-                    avg_queue_size = sum(queue.qsize() for queue in self.agent_queues.values()) / len(self.agent_queues)
-                    self.logger.info(f"Performance: {len(self.agent_queues)} agents, avg queue size: {avg_queue_size:.1f}")
+                    avg_queue_size = sum(
+                        queue.qsize() for queue in self.agent_queues.values()
+                    ) / len(self.agent_queues)
+                    self.logger.info(
+                        f"Performance: {len(self.agent_queues)} agents, avg queue size: {avg_queue_size:.1f}"
+                    )
 
                 await asyncio.sleep(1)
 
@@ -538,11 +613,15 @@ class EnhancedMessageBus:
                     queue_size = self.agent_queues[agent_name].qsize()
 
                     # Update agent metrics
-                    self.agent_metrics[agent_name].update({
-                        "last_health_check": datetime.now().isoformat(),
-                        "queue_size": queue_size,
-                        "circuit_breaker_state": self.circuit_breakers[agent_name].state
-                    })
+                    self.agent_metrics[agent_name].update(
+                        {
+                            "last_health_check": datetime.now().isoformat(),
+                            "queue_size": queue_size,
+                            "circuit_breaker_state": self.circuit_breakers[
+                                agent_name
+                            ].state,
+                        }
+                    )
 
                 await asyncio.sleep(30)  # Health check every 30 seconds
 
@@ -554,7 +633,7 @@ class EnhancedMessageBus:
         # Convert enum values to strings if needed
         cap_strings = []
         for cap in capabilities:
-            if hasattr(cap, 'value'):
+            if hasattr(cap, "value"):
                 cap_strings.append(cap.value)
             else:
                 cap_strings.append(str(cap))
@@ -587,21 +666,34 @@ class EnhancedMessageBus:
             "basic_stats": {
                 "total_agents": len(self.agent_queues),
                 "active_workflows": len(self.active_workflows),
-                "total_capabilities": sum(len(caps) for caps in self.agent_capabilities.values()),
-                "message_history_size": len(self.message_history)
+                "total_capabilities": sum(
+                    len(caps) for caps in self.agent_capabilities.values()
+                ),
+                "message_history_size": len(self.message_history),
             },
             "performance_stats": {
-                "average_queue_size": sum(q.qsize() for q in self.agent_queues.values()) / len(self.agent_queues) if self.agent_queues else 0,
+                "average_queue_size": (
+                    sum(q.qsize() for q in self.agent_queues.values())
+                    / len(self.agent_queues)
+                    if self.agent_queues
+                    else 0
+                ),
                 "total_agent_load": sum(self.agent_load.values()),
-                "circuit_breakers_open": sum(1 for cb in self.circuit_breakers.values() if cb.state == "open")
+                "circuit_breakers_open": sum(
+                    1 for cb in self.circuit_breakers.values() if cb.state == "open"
+                ),
             },
             "agent_capabilities": {
                 agent: list(caps) for agent, caps in self.agent_capabilities.items()
             },
-            "recent_performance": list(self.performance_data)[-10:] if self.performance_data else []
+            "recent_performance": (
+                list(self.performance_data)[-10:] if self.performance_data else []
+            ),
         }
 
-    async def get_messages_for_agent(self, agent_name: str, limit: int = 100) -> List[Dict[str, Any]]:
+    async def get_messages_for_agent(
+        self, agent_name: str, limit: int = 100
+    ) -> List[Dict[str, Any]]:
         """Get message history for a specific agent"""
         try:
             if not self.db_path:
@@ -609,29 +701,34 @@ class EnhancedMessageBus:
 
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT message_id, from_agent, to_agent, message_type, content,
                            created_at, status, priority, conversation_id
                     FROM messages
                     WHERE from_agent = ? OR to_agent = ?
                     ORDER BY created_at DESC
                     LIMIT ?
-                """, (agent_name, agent_name, limit))
+                """,
+                    (agent_name, agent_name, limit),
+                )
 
                 messages = []
                 for row in cursor.fetchall():
-                    messages.append({
-                        'message_id': row[0],
-                        'from_agent': row[1],
-                        'to_agent': row[2],
-                        'message_type': row[3],
-                        'content': json.loads(row[4]) if row[4] else {},
-                        'timestamp': row[5],
-                        'delivery_status': row[6],
-                        'routing_strategy': 'direct',  # Default since not stored
-                        'priority': row[7],
-                        'conversation_id': row[8]
-                    })
+                    messages.append(
+                        {
+                            "message_id": row[0],
+                            "from_agent": row[1],
+                            "to_agent": row[2],
+                            "message_type": row[3],
+                            "content": json.loads(row[4]) if row[4] else {},
+                            "timestamp": row[5],
+                            "delivery_status": row[6],
+                            "routing_strategy": "direct",  # Default since not stored
+                            "priority": row[7],
+                            "conversation_id": row[8],
+                        }
+                    )
 
                 return messages
 
@@ -654,12 +751,12 @@ class EnhancedMessageBus:
 
             # Message delivery metrics
             delivery_metrics = {
-                'total_messages_sent': self.message_counter,
-                'messages_in_queues': total_queue_size,
-                'average_queue_size': avg_queue_size,
-                'active_agents': len(self.agent_queues),
-                'active_conversations': len(self.conversation_messages),
-                'active_workflows': len(self.workflow_messages)
+                "total_messages_sent": self.message_counter,
+                "messages_in_queues": total_queue_size,
+                "average_queue_size": avg_queue_size,
+                "active_agents": len(self.agent_queues),
+                "active_conversations": len(self.conversation_messages),
+                "active_workflows": len(self.workflow_messages),
             }
 
             # Database metrics if available
@@ -671,24 +768,28 @@ class EnhancedMessageBus:
 
                         # Total messages in database
                         cursor.execute("SELECT COUNT(*) FROM messages")
-                        db_metrics['total_persisted_messages'] = cursor.fetchone()[0]
+                        db_metrics["total_persisted_messages"] = cursor.fetchone()[0]
 
                         # Messages by status
-                        cursor.execute("""
+                        cursor.execute(
+                            """
                             SELECT status, COUNT(*)
                             FROM messages
                             GROUP BY status
-                        """)
+                        """
+                        )
                         status_counts = dict(cursor.fetchall())
-                        db_metrics['message_status_distribution'] = status_counts
+                        db_metrics["message_status_distribution"] = status_counts
 
                         # Recent message rate
-                        cursor.execute("""
+                        cursor.execute(
+                            """
                             SELECT COUNT(*)
                             FROM messages
                             WHERE datetime(created_at) >= datetime('now', '-1 hour')
-                        """)
-                        db_metrics['messages_last_hour'] = cursor.fetchone()[0]
+                        """
+                        )
+                        db_metrics["messages_last_hour"] = cursor.fetchone()[0]
 
                 except Exception as e:
                     self.logger.warning(f"Could not get database metrics: {e}")
@@ -699,42 +800,55 @@ class EnhancedMessageBus:
                 route_metrics[strategy.value] = self.routing_stats.get(strategy, 0)
 
             return {
-                'timestamp': datetime.now().isoformat(),
-                'delivery_metrics': delivery_metrics,
-                'queue_metrics': queue_metrics,
-                'database_metrics': db_metrics,
-                'routing_metrics': route_metrics,
-                'agent_capabilities': dict(self.agent_capabilities),
-                'topic_subscriptions': {
-                    topic: list(agents) for topic, agents in self.topic_subscribers.items()
-                }
+                "timestamp": datetime.now().isoformat(),
+                "delivery_metrics": delivery_metrics,
+                "queue_metrics": queue_metrics,
+                "database_metrics": db_metrics,
+                "routing_metrics": route_metrics,
+                "agent_capabilities": dict(self.agent_capabilities),
+                "topic_subscriptions": {
+                    topic: list(agents)
+                    for topic, agents in self.topic_subscribers.items()
+                },
             }
 
         except Exception as e:
             self.logger.error(f"Error getting performance metrics: {e}")
             return {
-                'timestamp': datetime.now().isoformat(),
-                'error': str(e),
-                'basic_metrics': {
-                    'active_agents': len(self.agent_queues),
-                    'total_queue_size': sum(q.qsize() for q in self.agent_queues.values())
-                }
+                "timestamp": datetime.now().isoformat(),
+                "error": str(e),
+                "basic_metrics": {
+                    "active_agents": len(self.agent_queues),
+                    "total_queue_size": sum(
+                        q.qsize() for q in self.agent_queues.values()
+                    ),
+                },
             }
+
 
 # Global enhanced message bus instance
 enhanced_message_bus = EnhancedMessageBus()
 
+
 # Convenience functions for enhanced messaging
-async def send_workflow_request(initiator_agent: str, workflow_steps: List[Dict[str, Any]],
-                               workflow_id: Optional[str] = None) -> str:
+async def send_workflow_request(
+    initiator_agent: str,
+    workflow_steps: List[Dict[str, Any]],
+    workflow_id: Optional[str] = None,
+) -> str:
     """Send a multi-agent workflow request"""
     if not workflow_id:
         workflow_id = f"workflow_{uuid.uuid4()}"
 
     return await enhanced_message_bus.create_workflow(workflow_id, workflow_steps)
 
-async def send_capability_request(from_agent: str, required_capabilities: List[str],
-                                task_data: Dict[str, Any], priority: MessagePriority = MessagePriority.NORMAL) -> str:
+
+async def send_capability_request(
+    from_agent: str,
+    required_capabilities: List[str],
+    task_data: Dict[str, Any],
+    priority: MessagePriority = MessagePriority.NORMAL,
+) -> str:
     """Send a task to agents with specific capabilities"""
     message = EnhancedAgentMessage(
         from_agent=from_agent,
@@ -744,14 +858,20 @@ async def send_capability_request(from_agent: str, required_capabilities: List[s
         priority=priority,
         routing_strategy=RoutingStrategy.CAPABILITY_BASED,
         required_capabilities=required_capabilities,
-        conversation_id=str(uuid.uuid4())
+        conversation_id=str(uuid.uuid4()),
     )
 
     await enhanced_message_bus.send_enhanced_message(message)
     return message.conversation_id
 
-async def broadcast_enhanced(from_agent: str, message_type: MessageType, content: Dict[str, Any],
-                           topic: Optional[str] = None, persistent: bool = False):
+
+async def broadcast_enhanced(
+    from_agent: str,
+    message_type: MessageType,
+    content: Dict[str, Any],
+    topic: Optional[str] = None,
+    persistent: bool = False,
+):
     """Enhanced broadcast with persistence option"""
     message = EnhancedAgentMessage(
         from_agent=from_agent,
@@ -759,7 +879,7 @@ async def broadcast_enhanced(from_agent: str, message_type: MessageType, content
         message_type=message_type,
         content=content,
         routing_strategy=RoutingStrategy.DIRECT,
-        persistent=persistent
+        persistent=persistent,
     )
 
     # Broadcast to all agents in topic or all agents

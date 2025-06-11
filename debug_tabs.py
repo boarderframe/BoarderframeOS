@@ -13,18 +13,18 @@ def debug_tabs():
     print("=" * 60)
 
     # Get the HTML
-    response = requests.get('http://localhost:8888')
-    soup = BeautifulSoup(response.text, 'html.parser')
+    response = requests.get("http://localhost:8888")
+    soup = BeautifulSoup(response.text, "html.parser")
 
     # Find all tabs
-    tabs = soup.find_all('div', class_='tab-content')
+    tabs = soup.find_all("div", class_="tab-content")
 
     print(f"\n📊 Found {len(tabs)} tabs total")
 
     for tab in tabs:
-        tab_id = tab.get('id', 'unknown')
-        classes = tab.get('class', [])
-        is_active = 'active' in classes
+        tab_id = tab.get("id", "unknown")
+        classes = tab.get("class", [])
+        is_active = "active" in classes
 
         # Check content length
         content = str(tab)
@@ -40,20 +40,23 @@ def debug_tabs():
         print(f"   Has Text Content: {has_content}")
 
         # For blank tabs, show first 200 chars
-        if tab_id in ['leaders', 'departments', 'divisions', 'services'] and content_length < 1000:
+        if (
+            tab_id in ["leaders", "departments", "divisions", "services"]
+            and content_length < 1000
+        ):
             print(f"   Preview: {content[:200]}...")
 
     # Check JavaScript
     print("\n🔧 Checking JavaScript:")
 
     # Find showTab function
-    if 'function showTab' in response.text:
+    if "function showTab" in response.text:
         print("   ✅ showTab function found")
     else:
         print("   ❌ showTab function NOT found")
 
     # Check for console errors
-    script_tags = soup.find_all('script')
+    script_tags = soup.find_all("script")
     print(f"   Found {len(script_tags)} script tags")
 
 

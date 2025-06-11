@@ -19,24 +19,30 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 # Load environment variables
 try:
     from dotenv import load_dotenv
-    load_dotenv(Path(__file__).parent.parent.parent / '.env')
-    print(f"Loaded environment variables. API key present: {'ANTHROPIC_API_KEY' in os.environ}")
+
+    load_dotenv(Path(__file__).parent.parent.parent / ".env")
+    print(
+        f"Loaded environment variables. API key present: {'ANTHROPIC_API_KEY' in os.environ}"
+    )
 except ImportError:
     print("python-dotenv not installed, trying to load .env manually")
-    env_file = Path(__file__).parent.parent.parent / '.env'
+    env_file = Path(__file__).parent.parent.parent / ".env"
     if env_file.exists():
         with open(env_file) as f:
             for line in f:
-                if '=' in line and not line.startswith('#'):
-                    key, value = line.strip().split('=', 1)
+                if "=" in line and not line.startswith("#"):
+                    key, value = line.strip().split("=", 1)
                     os.environ[key] = value
-        print(f"Manually loaded .env. API key present: {'ANTHROPIC_API_KEY' in os.environ}")
+        print(
+            f"Manually loaded .env. API key present: {'ANTHROPIC_API_KEY' in os.environ}"
+        )
 except Exception as e:
     print(f"Error loading environment: {e}")
 
 from core.message_bus import AgentMessage, MessagePriority, MessageType, message_bus
 
 logger = logging.getLogger("solomon_chat")
+
 
 class SolomonChatServer:
     def __init__(self, port: int = 8889):
@@ -90,7 +96,7 @@ class SolomonChatServer:
         message = {
             "type": "solomon_response",
             "content": response_text,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
         await self.broadcast_to_clients(message)
 
@@ -106,7 +112,9 @@ class SolomonChatServer:
             if "Solomon" not in message_bus.agent_queues:
                 logger.warning("Solomon not available - providing fallback response")
                 # Send a mock response back to the client
-                await self.send_solomon_response(f"Hello! I'm Solomon (offline mode). I received your message: '{user_message}'. I'm currently not fully operational due to missing API configuration, but the chat system is working! Once properly configured, I'll be able to provide full AI assistance.")
+                await self.send_solomon_response(
+                    f"Hello! I'm Solomon (offline mode). I received your message: '{user_message}'. I'm currently not fully operational due to missing API configuration, but the chat system is working! Once properly configured, I'll be able to provide full AI assistance."
+                )
                 return "Fallback response sent"
 
             # Create message for Solomon (case-sensitive)
@@ -114,8 +122,10 @@ class SolomonChatServer:
                 from_agent="web_ui",
                 to_agent="Solomon",
                 message_type=MessageType.TASK_REQUEST,
-                content={"message": user_message},  # Wrap in dict to match Solomon's expectation
-                priority=MessagePriority.NORMAL
+                content={
+                    "message": user_message
+                },  # Wrap in dict to match Solomon's expectation
+                priority=MessagePriority.NORMAL,
             )
 
             # Send via message bus
@@ -152,17 +162,21 @@ class SolomonChatServer:
                 # Extract the actual response text
                 response_text = message.content
                 if isinstance(message.content, dict):
-                    response_text = message.content.get("response", message.content.get("message", str(message.content)))
+                    response_text = message.content.get(
+                        "response", message.content.get("message", str(message.content))
+                    )
 
                 # Forward Solomon's response to all connected clients
                 response_msg = {
                     "type": "solomon_response",
                     "content": response_text,  # Use 'content' to match the JavaScript handler
                     "timestamp": datetime.now().isoformat(),
-                    "sender": "solomon"
+                    "sender": "solomon",
                 }
                 await self.broadcast_to_clients(response_msg)
-                logger.info(f"Forwarded Solomon response to {len(self.clients)} clients")
+                logger.info(
+                    f"Forwarded Solomon response to {len(self.clients)} clients"
+                )
 
         except Exception as e:
             logger.error(f"Error handling Solomon response: {e}")
@@ -181,7 +195,7 @@ class SolomonChatServer:
                     "type": "user_message",
                     "message": user_text,
                     "timestamp": datetime.now().isoformat(),
-                    "sender": "user"
+                    "sender": "user",
                 }
                 await self.broadcast_to_clients(user_msg)
 
@@ -192,24 +206,24 @@ class SolomonChatServer:
                 ack_msg = {
                     "type": "system_message",
                     "message": "Message sent to Solomon...",
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
                 }
                 await self.broadcast_to_clients(ack_msg)
 
             elif message_type == "ping":
-                await self.send_to_client(websocket, {"type": "pong", "timestamp": datetime.now().isoformat()})
+                await self.send_to_client(
+                    websocket, {"type": "pong", "timestamp": datetime.now().isoformat()}
+                )
 
         except json.JSONDecodeError:
-            await self.send_to_client(websocket, {
-                "type": "error",
-                "message": "Invalid JSON format"
-            })
+            await self.send_to_client(
+                websocket, {"type": "error", "message": "Invalid JSON format"}
+            )
         except Exception as e:
             logger.error(f"Error handling client message: {e}")
-            await self.send_to_client(websocket, {
-                "type": "error",
-                "message": f"Server error: {str(e)}"
-            })
+            await self.send_to_client(
+                websocket, {"type": "error", "message": f"Server error: {str(e)}"}
+            )
 
     async def websocket_handler(self, websocket, path: str = None):
         """Handle WebSocket connections"""
@@ -217,11 +231,14 @@ class SolomonChatServer:
 
         try:
             # Send welcome message
-            await self.send_to_client(websocket, {
-                "type": "system_message",
-                "message": "Connected to Solomon chat interface",
-                "timestamp": datetime.now().isoformat()
-            })
+            await self.send_to_client(
+                websocket,
+                {
+                    "type": "system_message",
+                    "message": "Connected to Solomon chat interface",
+                    "timestamp": datetime.now().isoformat(),
+                },
+            )
 
             async for message in websocket:
                 await self.handle_client_message(websocket, message)
@@ -234,17 +251,17 @@ class SolomonChatServer:
     async def process_request(self, path, request_headers):
         """Handle HTTP requests that aren't WebSocket upgrades"""
         # Allow CORS for preflight requests
-        origin = request_headers.get('Origin')
+        origin = request_headers.get("Origin")
         if origin:
             return (
                 200,
                 [
-                    ('Access-Control-Allow-Origin', '*'),
-                    ('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'),
-                    ('Access-Control-Allow-Headers', 'Content-Type'),
-                    ('Content-Type', 'text/plain'),
+                    ("Access-Control-Allow-Origin", "*"),
+                    ("Access-Control-Allow-Methods", "GET, POST, OPTIONS"),
+                    ("Access-Control-Allow-Headers", "Content-Type"),
+                    ("Content-Type", "text/plain"),
                 ],
-                b'WebSocket endpoint - use ws:// protocol'
+                b"WebSocket endpoint - use ws:// protocol",
             )
         return None  # Let websockets handle it normally
 
@@ -253,6 +270,7 @@ class SolomonChatServer:
         try:
             logger.info("Starting Solomon agent...")
             from agents.solomon.solomon import Solomon
+
             self.solomon_agent = Solomon()
             logger.info("Solomon agent started successfully")
 
@@ -274,19 +292,18 @@ class SolomonChatServer:
         await self.register_with_message_bus()
 
         server = await websockets.serve(
-            self.websocket_handler,
-            "localhost",  # Listen on localhost only
-            self.port
+            self.websocket_handler, "localhost", self.port  # Listen on localhost only
         )
 
         logger.info(f"Solomon chat server running on ws://localhost:{self.port}")
         await server.wait_closed()
 
+
 async def main():
     """Main entry point"""
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
     chat_server = SolomonChatServer()
@@ -297,6 +314,7 @@ async def main():
         logger.info("Shutting down Solomon chat server")
     except Exception as e:
         logger.error(f"Chat server error: {e}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

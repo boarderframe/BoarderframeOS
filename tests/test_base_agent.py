@@ -1,6 +1,7 @@
 """
 Tests for the BaseAgent framework.
 """
+
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -49,7 +50,7 @@ class TestBaseAgent:
         memory_item = {
             "type": "interaction",
             "content": "Test interaction",
-            "timestamp": "2025-06-10T10:00:00"
+            "timestamp": "2025-06-10T10:00:00",
         }
         await agent.add_memory(memory_item)
 
@@ -83,11 +84,7 @@ class TestBaseAgent:
         await agent.initialize()
         await agent.start()
 
-        message = {
-            "type": "task",
-            "content": "Test task",
-            "from": "test_sender"
-        }
+        message = {"type": "task", "content": "Test task", "from": "test_sender"}
 
         result = await agent.handle_message(message)
 

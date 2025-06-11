@@ -22,12 +22,14 @@ import psutil
 # Load environment variables from .env file
 try:
     from dotenv import load_dotenv
-    load_dotenv(Path(__file__).parent / '.env')
+
+    load_dotenv(Path(__file__).parent / ".env")
 except ImportError:
     pass
 
 # Add current directory to path
 sys.path.insert(0, str(Path(__file__).parent))
+
 
 class EnhancedSystemStartup:
     """Enhanced system startup with clean terminal output and robust error handling"""
@@ -40,16 +42,13 @@ class EnhancedSystemStartup:
             "agents": {},
             "mcp_servers": {},
             "start_time": datetime.now().isoformat(),
-            "logs": []
+            "logs": [],
         }
         self.running = False
         self.status_file = "/tmp/boarderframe_startup_status.json"
 
         # Configure clean logging
-        logging.basicConfig(
-            level=logging.WARNING,  # Reduce noise
-            format='%(message)s'
-        )
+        logging.basicConfig(level=logging.WARNING, format="%(message)s")  # Reduce noise
         self.logger = logging.getLogger("startup")
 
     def print_section(self, title: str, emoji: str = "🔧"):
@@ -79,7 +78,7 @@ class EnhancedSystemStartup:
             "timestamp": datetime.now().isoformat(),
             "component": component,
             "message": message,
-            "status": status
+            "status": status,
         }
 
         self.status_data["logs"].append(log_entry)
@@ -93,12 +92,14 @@ class EnhancedSystemStartup:
     def save_status(self):
         """Save current status to file for dashboard"""
         try:
-            with open(self.status_file, 'w') as f:
+            with open(self.status_file, "w") as f:
                 json.dump(self.status_data, f, indent=2)
         except Exception as e:
             pass  # Silent fail for status file
 
-    def update_component_status(self, component_type: str, name: str, status: str, details: Dict = None):
+    def update_component_status(
+        self, component_type: str, name: str, status: str, details: Dict = None
+    ):
         """Update status of a specific component"""
         if component_type not in self.status_data:
             self.status_data[component_type] = {}
@@ -106,7 +107,7 @@ class EnhancedSystemStartup:
         self.status_data[component_type][name] = {
             "status": status,
             "last_update": datetime.now().isoformat(),
-            "details": details or {}
+            "details": details or {},
         }
         self.save_status()
 
@@ -116,9 +117,12 @@ class EnhancedSystemStartup:
 
         try:
             # Check if Docker infrastructure is running
-            self.print_step("Checking PostgreSQL and Redis infrastructure...", "starting")
+            self.print_step(
+                "Checking PostgreSQL and Redis infrastructure...", "starting"
+            )
 
             import docker
+
             client = docker.from_env()
 
             # Check for required containers
@@ -132,18 +136,26 @@ class EnhancedSystemStartup:
                         running_containers.append(container_name)
                         self.print_step(f"✓ {container_name} is running", "success")
                     else:
-                        self.print_step(f"⚠️ {container_name} is {container.status}", "warning")
+                        self.print_step(
+                            f"⚠️ {container_name} is {container.status}", "warning"
+                        )
                 except:
                     self.print_step(f"❌ {container_name} not found", "error")
 
             if len(running_containers) < 2:
                 self.print_step("Starting Docker infrastructure...", "starting")
                 # Try to start the infrastructure
-                result = subprocess.run(["docker-compose", "up", "-d", "postgresql", "redis"],
-                                      cwd=Path(__file__).parent, capture_output=True, text=True)
+                result = subprocess.run(
+                    ["docker-compose", "up", "-d", "postgresql", "redis"],
+                    cwd=Path(__file__).parent,
+                    capture_output=True,
+                    text=True,
+                )
 
                 if result.returncode != 0:
-                    self.print_step(f"Docker startup failed: {result.stderr[:50]}", "error")
+                    self.print_step(
+                        f"Docker startup failed: {result.stderr[:50]}", "error"
+                    )
                     return False
 
                 # Wait for containers to be healthy
@@ -152,12 +164,24 @@ class EnhancedSystemStartup:
                     await asyncio.sleep(1)
                     try:
                         # Check PostgreSQL health
-                        postgres_container = client.containers.get("boarderframeos_postgres")
+                        postgres_container = client.containers.get(
+                            "boarderframeos_postgres"
+                        )
                         if postgres_container.status == "running":
                             # Check if PostgreSQL is ready
                             health_result = subprocess.run(
-                                ["docker", "exec", "boarderframeos_postgres", "pg_isready", "-U", "boarderframe", "-d", "boarderframeos"],
-                                capture_output=True, text=True
+                                [
+                                    "docker",
+                                    "exec",
+                                    "boarderframeos_postgres",
+                                    "pg_isready",
+                                    "-U",
+                                    "boarderframe",
+                                    "-d",
+                                    "boarderframeos",
+                                ],
+                                capture_output=True,
+                                text=True,
                             )
                             if health_result.returncode == 0:
                                 self.print_step("PostgreSQL is ready", "success")
@@ -172,16 +196,33 @@ class EnhancedSystemStartup:
             try:
                 # Test PostgreSQL connection
                 test_result = subprocess.run(
-                    ["docker", "exec", "boarderframeos_postgres", "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", "SELECT 1;"],
-                    capture_output=True, text=True
+                    [
+                        "docker",
+                        "exec",
+                        "boarderframeos_postgres",
+                        "psql",
+                        "-U",
+                        "boarderframe",
+                        "-d",
+                        "boarderframeos",
+                        "-c",
+                        "SELECT 1;",
+                    ],
+                    capture_output=True,
+                    text=True,
                 )
                 if test_result.returncode == 0:
                     self.print_step("Database connectivity confirmed", "success")
                 else:
-                    self.print_step(f"Database connection failed: {test_result.stderr[:50]}", "error")
+                    self.print_step(
+                        f"Database connection failed: {test_result.stderr[:50]}",
+                        "error",
+                    )
                     return False
             except Exception as e:
-                self.print_step(f"Database connection test failed: {str(e)[:50]}", "error")
+                self.print_step(
+                    f"Database connection test failed: {str(e)[:50]}", "error"
+                )
                 return False
 
             # Initialize registry client
@@ -189,28 +230,37 @@ class EnhancedSystemStartup:
             # Import locally to avoid circular imports
             import os
             import sys
+
             sys.path.insert(0, os.path.dirname(__file__))
             try:
                 from core.registry_integration import get_registry_client
+
                 registry_client = await get_registry_client()
                 self.print_step("Registry client initialized", "success")
             except Exception as e:
-                self.print_step(f"Registry client init failed: {str(e)[:50]}", "warning")
+                self.print_step(
+                    f"Registry client init failed: {str(e)[:50]}", "warning"
+                )
                 # Continue without registry client
 
             self.print_step("Registry system initialized successfully", "success")
-            self.update_component_status("services", "registry_system", "running", {
-                "component": "service_discovery",
-                "database_status": "connected",
-                "redis_status": "connected"
-            })
+            self.update_component_status(
+                "services",
+                "registry_system",
+                "running",
+                {
+                    "component": "service_discovery",
+                    "database_status": "connected",
+                    "redis_status": "connected",
+                },
+            )
             return True
 
         except Exception as e:
             self.print_step(f"Registry system failed: {str(e)[:50]}", "error")
-            self.update_component_status("services", "registry_system", "failed", {
-                "error": str(e)[:100]
-            })
+            self.update_component_status(
+                "services", "registry_system", "failed", {"error": str(e)[:100]}
+            )
             # Don't fail startup completely if registry fails
             return True  # Allow system to continue without registry
 
@@ -219,24 +269,29 @@ class EnhancedSystemStartup:
         self.print_section("Message Bus", "📡")
 
         try:
-            self.print_step("Starting message bus for agent communication...", "starting")
+            self.print_step(
+                "Starting message bus for agent communication...", "starting"
+            )
 
             # Import and start message bus
             from core.message_bus import message_bus
+
             await message_bus.start()
 
             self.print_step("Message bus started successfully", "success")
-            self.update_component_status("services", "message_bus", "running", {
-                "component": "core_communication",
-                "agents_connected": 0
-            })
+            self.update_component_status(
+                "services",
+                "message_bus",
+                "running",
+                {"component": "core_communication", "agents_connected": 0},
+            )
             return True
 
         except Exception as e:
             self.print_step(f"Message bus failed: {str(e)[:50]}", "error")
-            self.update_component_status("services", "message_bus", "failed", {
-                "error": str(e)[:100]
-            })
+            self.update_component_status(
+                "services", "message_bus", "failed", {"error": str(e)[:100]}
+            )
             return False
 
     async def start_agent_cortex_system(self):
@@ -244,10 +299,14 @@ class EnhancedSystemStartup:
         self.print_section("Agent Cortex", "🧠")
 
         try:
-            self.print_step("Initializing Agent Cortex for intelligent model orchestration...", "starting")
+            self.print_step(
+                "Initializing Agent Cortex for intelligent model orchestration...",
+                "starting",
+            )
 
             # Import and initialize Agent Cortex
             from core.agent_cortex import get_agent_cortex_instance
+
             cortex = await get_agent_cortex_instance()
 
             # Verify Cortex is operational
@@ -255,23 +314,32 @@ class EnhancedSystemStartup:
 
             self.print_step("Agent Cortex initialized successfully", "success")
             self.print_step(f"Strategy: {cortex.current_strategy.value}", "info")
-            self.print_step(f"Active providers: {len(cortex.multi_provider.providers)}", "info")
+            self.print_step(
+                f"Active providers: {len(cortex.multi_provider.providers)}", "info"
+            )
 
-            self.update_component_status("services", "agent_cortex", "running", {
-                "component": "intelligent_orchestration",
-                "strategy": cortex.current_strategy.value,
-                "providers": len(cortex.multi_provider.providers),
-                "status": status
-            })
+            self.update_component_status(
+                "services",
+                "agent_cortex",
+                "running",
+                {
+                    "component": "intelligent_orchestration",
+                    "strategy": cortex.current_strategy.value,
+                    "providers": len(cortex.multi_provider.providers),
+                    "status": status,
+                },
+            )
 
             # Start Agent Cortex Management UI
-            self.print_step("Starting Agent Cortex Management UI on port 8889...", "starting")
+            self.print_step(
+                "Starting Agent Cortex Management UI on port 8889...", "starting"
+            )
             cortex_ui_process = subprocess.Popen(
                 [sys.executable, "ui/agent_cortex_management.py"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 cwd=str(Path(__file__).parent),
-                env={**os.environ, "PYTHONPATH": str(Path(__file__).parent)}
+                env={**os.environ, "PYTHONPATH": str(Path(__file__).parent)},
             )
 
             self.processes["cortex_ui"] = cortex_ui_process
@@ -281,16 +349,22 @@ class EnhancedSystemStartup:
                 await asyncio.sleep(0.5)
                 try:
                     import socket
+
                     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     sock.settimeout(1)
-                    result = sock.connect_ex(('localhost', 8889))
+                    result = sock.connect_ex(("localhost", 8889))
                     sock.close()
                     if result == 0:
-                        self.print_step("Agent Cortex Management UI started on http://localhost:8889", "success")
-                        self.update_component_status("services", "cortex_ui", "running", {
-                            "port": 8889,
-                            "url": "http://localhost:8889"
-                        })
+                        self.print_step(
+                            "Agent Cortex Management UI started on http://localhost:8889",
+                            "success",
+                        )
+                        self.update_component_status(
+                            "services",
+                            "cortex_ui",
+                            "running",
+                            {"port": 8889, "url": "http://localhost:8889"},
+                        )
                         break
                 except:
                     pass
@@ -299,9 +373,9 @@ class EnhancedSystemStartup:
 
         except Exception as e:
             self.print_step(f"Agent Cortex failed: {str(e)[:50]}", "error")
-            self.update_component_status("services", "agent_cortex", "failed", {
-                "error": str(e)[:100]
-            })
+            self.update_component_status(
+                "services", "agent_cortex", "failed", {"error": str(e)[:100]}
+            )
             return False
 
     async def start_agent_orchestrator(self):
@@ -309,15 +383,18 @@ class EnhancedSystemStartup:
         self.print_section("Agent Orchestrator", "🎭")
 
         try:
-            self.print_step("Initializing Agent Orchestrator for production agent management...", "starting")
+            self.print_step(
+                "Initializing Agent Orchestrator for production agent management...",
+                "starting",
+            )
 
             # Import and initialize Agent Orchestrator
             from core.agent_orchestrator import OrchestrationMode, orchestrator
 
             # Set orchestration mode based on environment
-            if os.getenv('BOARDERFRAME_ENV') == 'production':
+            if os.getenv("BOARDERFRAME_ENV") == "production":
                 orchestrator.mode = OrchestrationMode.PRODUCTION
-            elif os.getenv('BOARDERFRAME_ENV') == 'testing':
+            elif os.getenv("BOARDERFRAME_ENV") == "testing":
                 orchestrator.mode = OrchestrationMode.TESTING
             else:
                 orchestrator.mode = OrchestrationMode.DEVELOPMENT
@@ -327,15 +404,24 @@ class EnhancedSystemStartup:
 
             self.print_step("Agent Orchestrator initialized successfully", "success")
             self.print_step(f"Mode: {orchestrator.mode.value}", "info")
-            self.print_step(f"Registry agents: {len(orchestrator.agent_registry)}", "info")
+            self.print_step(
+                f"Registry agents: {len(orchestrator.agent_registry)}", "info"
+            )
 
-            self.update_component_status("services", "agent_orchestrator", "running", {
-                "component": "agent_lifecycle_management",
-                "mode": orchestrator.mode.value,
-                "max_agents": orchestrator.agent_limits[orchestrator.mode]["max_agents"],
-                "registry_size": len(orchestrator.agent_registry),
-                "mesh_networks": len(orchestrator.mesh_networks)
-            })
+            self.update_component_status(
+                "services",
+                "agent_orchestrator",
+                "running",
+                {
+                    "component": "agent_lifecycle_management",
+                    "mode": orchestrator.mode.value,
+                    "max_agents": orchestrator.agent_limits[orchestrator.mode][
+                        "max_agents"
+                    ],
+                    "registry_size": len(orchestrator.agent_registry),
+                    "mesh_networks": len(orchestrator.mesh_networks),
+                },
+            )
 
             # Store orchestrator reference for later use in agent startup
             self.orchestrator = orchestrator
@@ -344,9 +430,9 @@ class EnhancedSystemStartup:
 
         except Exception as e:
             self.print_step(f"Agent Orchestrator failed: {str(e)[:50]}", "error")
-            self.update_component_status("services", "agent_orchestrator", "failed", {
-                "error": str(e)[:100]
-            })
+            self.update_component_status(
+                "services", "agent_orchestrator", "failed", {"error": str(e)[:100]}
+            )
             return False
 
     async def run_database_migrations(self):
@@ -354,7 +440,9 @@ class EnhancedSystemStartup:
         self.print_section("Database Migrations", "🏗️")
 
         try:
-            self.print_step("Checking database schema and running migrations...", "starting")
+            self.print_step(
+                "Checking database schema and running migrations...", "starting"
+            )
 
             # Check if migrations directory exists
             migrations_dir = Path(__file__).parent / "migrations"
@@ -365,8 +453,13 @@ class EnhancedSystemStartup:
             # First, ensure base schema exists by running SQL migrations via Docker
             migration_files = sorted(migrations_dir.glob("*.sql"))
             if migration_files:
-                self.print_step(f"Found {len(migration_files)} SQL migration files", "info")
-                self.print_step("SQL migrations are handled automatically by Docker init scripts", "info")
+                self.print_step(
+                    f"Found {len(migration_files)} SQL migration files", "info"
+                )
+                self.print_step(
+                    "SQL migrations are handled automatically by Docker init scripts",
+                    "info",
+                )
 
             # Wait a bit to ensure any Docker init scripts have completed
             await asyncio.sleep(2)
@@ -375,18 +468,35 @@ class EnhancedSystemStartup:
             self.print_step("Verifying database connectivity...", "starting")
             try:
                 test_result = subprocess.run(
-                    ["docker", "exec", "boarderframeos_postgres", "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", "SELECT version();"],
-                    capture_output=True, text=True, timeout=10
+                    [
+                        "docker",
+                        "exec",
+                        "boarderframeos_postgres",
+                        "psql",
+                        "-U",
+                        "boarderframe",
+                        "-d",
+                        "boarderframeos",
+                        "-c",
+                        "SELECT version();",
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
                 )
                 if test_result.returncode != 0:
-                    self.print_step(f"Database not ready: {test_result.stderr[:100]}", "error")
+                    self.print_step(
+                        f"Database not ready: {test_result.stderr[:100]}", "error"
+                    )
                     return False
                 self.print_step("Database connectivity verified", "success")
             except subprocess.TimeoutExpired:
                 self.print_step("Database connection timeout", "error")
                 return False
             except Exception as e:
-                self.print_step(f"Database connection test failed: {str(e)[:50]}", "error")
+                self.print_step(
+                    f"Database connection test failed: {str(e)[:50]}", "error"
+                )
                 return False
 
             # Run Python migration scripts if they exist (but skip problematic ones for now)
@@ -398,54 +508,75 @@ class EnhancedSystemStartup:
             skip_migrations = [
                 "migrate_departments.py",
                 "migrate_sqlite_to_postgres.py",
-                "populate_divisions_departments.py"  # Skip this one too due to unique constraint issues
+                "populate_divisions_departments.py",  # Skip this one too due to unique constraint issues
             ]
 
             for migration_file in python_migrations:
                 if migration_file.name in skip_migrations:
-                    self.print_step(f"Skipping {migration_file.name} (requires manual setup)", "info")
+                    self.print_step(
+                        f"Skipping {migration_file.name} (requires manual setup)",
+                        "info",
+                    )
                     skipped_migrations.append(migration_file.name)
                     continue
 
-                if migration_file.name.startswith("migrate_") or migration_file.name.startswith("populate_"):
+                if migration_file.name.startswith(
+                    "migrate_"
+                ) or migration_file.name.startswith("populate_"):
                     self.print_step(f"Running {migration_file.name}...", "starting")
                     try:
                         # Import and run migration
                         import importlib.util
-                        spec = importlib.util.spec_from_file_location("migration", migration_file)
+
+                        spec = importlib.util.spec_from_file_location(
+                            "migration", migration_file
+                        )
                         migration_module = importlib.util.module_from_spec(spec)
                         spec.loader.exec_module(migration_module)
 
                         # Check if it has a main function and run it
-                        if hasattr(migration_module, 'main'):
+                        if hasattr(migration_module, "main"):
                             if asyncio.iscoroutinefunction(migration_module.main):
                                 await migration_module.main()
                             else:
                                 migration_module.main()
 
-                        self.print_step(f"Migration {migration_file.name} completed", "success")
+                        self.print_step(
+                            f"Migration {migration_file.name} completed", "success"
+                        )
                         successful_migrations += 1
                     except Exception as e:
-                        self.print_step(f"Migration {migration_file.name} failed: {str(e)[:50]}", "warning")
+                        self.print_step(
+                            f"Migration {migration_file.name} failed: {str(e)[:50]}",
+                            "warning",
+                        )
                         # Continue with other migrations
 
             if skipped_migrations:
-                self.print_step(f"Skipped {len(skipped_migrations)} migrations requiring manual setup", "info")
+                self.print_step(
+                    f"Skipped {len(skipped_migrations)} migrations requiring manual setup",
+                    "info",
+                )
 
             self.print_step("Database migrations completed", "success")
-            self.update_component_status("services", "database_migrations", "completed", {
-                "sql_files": len(migration_files),
-                "python_files": len(python_migrations),
-                "successful_python_migrations": successful_migrations,
-                "skipped_migrations": len(skipped_migrations)
-            })
+            self.update_component_status(
+                "services",
+                "database_migrations",
+                "completed",
+                {
+                    "sql_files": len(migration_files),
+                    "python_files": len(python_migrations),
+                    "successful_python_migrations": successful_migrations,
+                    "skipped_migrations": len(skipped_migrations),
+                },
+            )
             return True
 
         except Exception as e:
             self.print_step(f"Database migrations failed: {str(e)[:50]}", "error")
-            self.update_component_status("services", "database_migrations", "failed", {
-                "error": str(e)[:100]
-            })
+            self.update_component_status(
+                "services", "database_migrations", "failed", {"error": str(e)[:100]}
+            )
             # Don't fail startup completely - basic schema should work
             return True
 
@@ -454,7 +585,10 @@ class EnhancedSystemStartup:
         self.print_section("HQ Metrics Layer", "📊")
 
         try:
-            self.print_step("Initializing HQ Metrics Layer for comprehensive system tracking...", "starting")
+            self.print_step(
+                "Initializing HQ Metrics Layer for comprehensive system tracking...",
+                "starting",
+            )
 
             # Import HQ Metrics components
             from core.hq_metrics_integration import HQMetricsIntegration
@@ -464,56 +598,77 @@ class EnhancedSystemStartup:
             self.hq_metrics = HQMetricsIntegration()
 
             # Set the server status from our current MCP server status
-            if hasattr(self.hq_metrics, 'metrics_calculator') and self.hq_metrics.metrics_calculator:
+            if (
+                hasattr(self.hq_metrics, "metrics_calculator")
+                and self.hq_metrics.metrics_calculator
+            ):
                 # Gather current server status
                 server_status = {}
 
                 # Add MCP servers
-                print(f"DEBUG: Available status_data keys: {list(self.status_data.keys())}")
+                print(
+                    f"DEBUG: Available status_data keys: {list(self.status_data.keys())}"
+                )
                 if "mcp_servers" in self.status_data:
-                    print(f"DEBUG: Found {len(self.status_data['mcp_servers'])} MCP servers in status_data")
-                    for server_name, server_info in self.status_data["mcp_servers"].items():
+                    print(
+                        f"DEBUG: Found {len(self.status_data['mcp_servers'])} MCP servers in status_data"
+                    )
+                    for server_name, server_info in self.status_data[
+                        "mcp_servers"
+                    ].items():
                         if server_info.get("status") == "running":
                             server_status[server_name] = {
                                 "status": "healthy",
                                 "port": server_info.get("port", 0),
                                 "name": server_name.replace("_", " ").title(),
-                                "category": "MCP Servers"
+                                "category": "MCP Servers",
                             }
                 else:
                     print("DEBUG: No mcp_servers key in status_data!")
 
                 # Note: Corporate Headquarters will be added later when it starts
                 # Set the server status
-                print(f"DEBUG: Setting server status with {len(server_status)} servers: {list(server_status.keys())}")
+                print(
+                    f"DEBUG: Setting server status with {len(server_status)} servers: {list(server_status.keys())}"
+                )
                 self.hq_metrics.metrics_calculator.set_server_status(server_status)
 
             # Warm up metrics cache with initial calculation
             self.print_step("Warming up metrics cache...", "starting")
             try:
                 initial_metrics = self.hq_metrics.get_all_metrics(force_refresh=True)
-                agent_count = initial_metrics.get('agents', {}).get('total', 0)
-                server_count = initial_metrics.get('servers', {}).get('total', 0)
+                agent_count = initial_metrics.get("agents", {}).get("total", 0)
+                server_count = initial_metrics.get("servers", {}).get("total", 0)
 
-                self.print_step(f"Metrics cache warmed - {agent_count} agents, {server_count} servers tracked", "success")
+                self.print_step(
+                    f"Metrics cache warmed - {agent_count} agents, {server_count} servers tracked",
+                    "success",
+                )
             except Exception as cache_error:
-                self.print_step(f"Metrics cache warming failed: {str(cache_error)[:50]}", "warning")
+                self.print_step(
+                    f"Metrics cache warming failed: {str(cache_error)[:50]}", "warning"
+                )
                 # Continue without failing - metrics will work but slower initially
 
             self.print_step("HQ Metrics Layer initialized successfully", "success")
-            self.update_component_status("services", "hq_metrics_layer", "running", {
-                "component": "metrics_calculation",
-                "cache_warmed": True,
-                "integration_active": True
-            })
+            self.update_component_status(
+                "services",
+                "hq_metrics_layer",
+                "running",
+                {
+                    "component": "metrics_calculation",
+                    "cache_warmed": True,
+                    "integration_active": True,
+                },
+            )
 
             return True
 
         except Exception as e:
             self.print_step(f"HQ Metrics Layer failed: {str(e)[:50]}", "error")
-            self.update_component_status("services", "hq_metrics_layer", "failed", {
-                "error": str(e)[:100]
-            })
+            self.update_component_status(
+                "services", "hq_metrics_layer", "failed", {"error": str(e)[:100]}
+            )
             return False
 
     async def initialize_cost_management(self):
@@ -521,7 +676,9 @@ class EnhancedSystemStartup:
         self.print_section("Cost Management", "💰")
 
         try:
-            self.print_step("Initializing cost management and optimization systems...", "starting")
+            self.print_step(
+                "Initializing cost management and optimization systems...", "starting"
+            )
 
             # Import cost management configuration
             from core.cost_management import (
@@ -546,24 +703,33 @@ class EnhancedSystemStartup:
             if API_COST_SETTINGS.get("smart_batching", {}).get("enabled"):
                 enabled_features.append("smart_batching")
 
-            self.print_step(f"Cost features enabled: {', '.join(enabled_features)}", "info")
+            self.print_step(
+                f"Cost features enabled: {', '.join(enabled_features)}", "info"
+            )
             self.print_step(f"Tracking {len(MODEL_COSTS)} LLM models", "info")
 
             self.print_step("Cost Management initialized successfully", "success")
-            self.update_component_status("services", "cost_management", "running", {
-                "component": "cost_optimization",
-                "models_tracked": len(MODEL_COSTS),
-                "optimization_active": API_COST_SETTINGS.get("cost_optimization_enabled", False),
-                "features_enabled": enabled_features
-            })
+            self.update_component_status(
+                "services",
+                "cost_management",
+                "running",
+                {
+                    "component": "cost_optimization",
+                    "models_tracked": len(MODEL_COSTS),
+                    "optimization_active": API_COST_SETTINGS.get(
+                        "cost_optimization_enabled", False
+                    ),
+                    "features_enabled": enabled_features,
+                },
+            )
 
             return True
 
         except Exception as e:
             self.print_step(f"Cost Management failed: {str(e)[:50]}", "error")
-            self.update_component_status("services", "cost_management", "failed", {
-                "error": str(e)[:100]
-            })
+            self.update_component_status(
+                "services", "cost_management", "failed", {"error": str(e)[:100]}
+            )
             return False
 
     def check_dependencies(self):
@@ -583,11 +749,15 @@ class EnhancedSystemStartup:
                 self.print_step("Environment setup completed", "success")
 
                 # Ensure database is ready
-                self.print_step("Ensuring database infrastructure is ready...", "starting")
+                self.print_step(
+                    "Ensuring database infrastructure is ready...", "starting"
+                )
                 if ensure_database_setup():
                     self.print_step("Database infrastructure ready", "success")
                 else:
-                    self.print_step("Database setup had issues, continuing...", "warning")
+                    self.print_step(
+                        "Database setup had issues, continuing...", "warning"
+                    )
 
             except Exception as e:
                 self.print_step(f"Environment setup error: {str(e)[:50]}", "warning")
@@ -602,7 +772,7 @@ class EnhancedSystemStartup:
                 ("psutil", "psutil"),
                 ("httpx", "httpx"),
                 ("docker", "docker"),
-                ("flask", "Flask")
+                ("flask", "Flask"),
             ]
 
             missing_packages = []
@@ -613,11 +783,17 @@ class EnhancedSystemStartup:
                     missing_packages.append(package_name)
 
             if missing_packages:
-                self.print_step(f"Installing missing packages: {', '.join(missing_packages)}", "starting")
+                self.print_step(
+                    f"Installing missing packages: {', '.join(missing_packages)}",
+                    "starting",
+                )
                 for package in missing_packages:
                     try:
-                        subprocess.run([sys.executable, "-m", "pip", "install", package],
-                                     check=True, capture_output=True)
+                        subprocess.run(
+                            [sys.executable, "-m", "pip", "install", package],
+                            check=True,
+                            capture_output=True,
+                        )
                     except subprocess.CalledProcessError:
                         self.print_step(f"Failed to install {package}", "warning")
 
@@ -639,20 +815,22 @@ class EnhancedSystemStartup:
             print(f"    ⏳ {name.ljust(12)} ", end="", flush=True)
 
             # Update status to starting
-            self.update_component_status("mcp_servers", name, "starting", {
-                "port": port,
-                "script": script
-            })
+            self.update_component_status(
+                "mcp_servers", name, "starting", {"port": port, "script": script}
+            )
 
             # Check if port is already in use
             try:
                 import socket
+
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                result = sock.connect_ex(('localhost', port))
+                result = sock.connect_ex(("localhost", port))
                 sock.close()
                 if result == 0:
                     print("✅ (already running)")
-                    self.update_component_status("mcp_servers", name, "running", {"port": port})
+                    self.update_component_status(
+                        "mcp_servers", name, "running", {"port": port}
+                    )
                     return True
             except:
                 pass
@@ -663,9 +841,12 @@ class EnhancedSystemStartup:
 
             if not script_path.exists():
                 print("❌ (script not found)")
-                self.update_component_status("mcp_servers", name, "not_found", {
-                    "expected_path": str(script_path)
-                })
+                self.update_component_status(
+                    "mcp_servers",
+                    name,
+                    "not_found",
+                    {"expected_path": str(script_path)},
+                )
                 return False
 
             # Start process with current Python
@@ -679,40 +860,47 @@ class EnhancedSystemStartup:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 cwd=str(Path(__file__).parent),
-                env={**os.environ, "PYTHONPATH": str(Path(__file__).parent)}
+                env={**os.environ, "PYTHONPATH": str(Path(__file__).parent)},
             )
 
             self.processes[f"mcp_{name}"] = process
 
             # Wait for startup with timeout (longer for filesystem server)
-            timeout_iterations = 30 if name == "filesystem" else 15  # 15s for filesystem, 7.5s for others
+            timeout_iterations = (
+                30 if name == "filesystem" else 15
+            )  # 15s for filesystem, 7.5s for others
             for i in range(timeout_iterations):
                 await asyncio.sleep(0.5)
                 if process.poll() is not None:
                     # Process died
                     stdout, stderr = process.communicate()
                     print("❌ (process died)")
-                    self.update_component_status("mcp_servers", name, "failed", {
-                        "error": stderr.decode()[:200]
-                    })
+                    self.update_component_status(
+                        "mcp_servers", name, "failed", {"error": stderr.decode()[:200]}
+                    )
                     return False
 
                 # Check if port is responding
                 try:
                     import socket
+
                     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     sock.settimeout(1)
-                    result = sock.connect_ex(('localhost', port))
+                    result = sock.connect_ex(("localhost", port))
                     sock.close()
                     if result == 0:
                         print("✅")
-                        self.update_component_status("mcp_servers", name, "running", {
-                            "port": port,
-                            "pid": process.pid
-                        })
+                        self.update_component_status(
+                            "mcp_servers",
+                            name,
+                            "running",
+                            {"port": port, "pid": process.pid},
+                        )
 
                         # Register with database registry
-                        await self.register_mcp_server_with_registry(name, port, server_info)
+                        await self.register_mcp_server_with_registry(
+                            name, port, server_info
+                        )
 
                         return True
                 except:
@@ -725,30 +913,52 @@ class EnhancedSystemStartup:
 
         except Exception as e:
             print("❌ (error)")
-            self.update_component_status("mcp_servers", name, "error", {"error": str(e)})
+            self.update_component_status(
+                "mcp_servers", name, "error", {"error": str(e)}
+            )
             return False
 
-    async def register_mcp_server_with_registry(self, name: str, port: int, server_info: Dict):
+    async def register_mcp_server_with_registry(
+        self, name: str, port: int, server_info: Dict
+    ):
         """Register an MCP server with the database registry"""
         try:
             # Import locally to avoid circular imports
             import os
             import sys
+
             sys.path.insert(0, os.path.dirname(__file__))
             from core.registry_integration import register_server_with_database
 
             # Map server capabilities based on name
             capabilities = []
             if "filesystem" in name:
-                capabilities = ["file_operations", "directory_management", "search", "monitoring"]
+                capabilities = [
+                    "file_operations",
+                    "directory_management",
+                    "search",
+                    "monitoring",
+                ]
             elif "database" in name:
-                capabilities = ["database_operations", "vector_search", "data_analytics"]
+                capabilities = [
+                    "database_operations",
+                    "vector_search",
+                    "data_analytics",
+                ]
             elif "git" in name:
-                capabilities = ["version_control", "repository_management", "code_tracking"]
+                capabilities = [
+                    "version_control",
+                    "repository_management",
+                    "code_tracking",
+                ]
             elif "browser" in name:
                 capabilities = ["web_browsing", "content_extraction", "automation"]
             elif "registry" in name:
-                capabilities = ["service_discovery", "health_monitoring", "registration"]
+                capabilities = [
+                    "service_discovery",
+                    "health_monitoring",
+                    "registration",
+                ]
             else:
                 capabilities = ["general_purpose"]
 
@@ -756,13 +966,15 @@ class EnhancedSystemStartup:
                 server_name=f"BoarderframeOS {name.title()} Server",
                 server_type="mcp",
                 endpoint_url=f"http://localhost:{port}",
-                capabilities=capabilities
+                capabilities=capabilities,
             )
 
             self.print_step(f"Registered {name} server in database registry", "success")
 
         except Exception as e:
-            self.print_step(f"Registry registration failed for {name}: {str(e)[:40]}", "warning")
+            self.print_step(
+                f"Registry registration failed for {name}: {str(e)[:40]}", "warning"
+            )
             # Don't fail server startup if registry registration fails
 
     async def register_corporate_headquarters_with_registry(self):
@@ -771,26 +983,37 @@ class EnhancedSystemStartup:
             # Import locally to avoid circular imports
             import os
             import sys
+
             sys.path.insert(0, os.path.dirname(__file__))
             from core.registry_integration import register_server_with_database
 
             headquarters_capabilities = [
-                "dashboard", "system_monitoring", "agent_management",
-                "service_status", "chat_interface", "screenshot_api",
-                "department_analytics", "registry_overview"
+                "dashboard",
+                "system_monitoring",
+                "agent_management",
+                "service_status",
+                "chat_interface",
+                "screenshot_api",
+                "department_analytics",
+                "registry_overview",
             ]
 
             server_id = await register_server_with_database(
                 server_name="BoarderframeOS Corporate Headquarters",
                 server_type="web_ui",
                 endpoint_url="http://localhost:8888",
-                capabilities=headquarters_capabilities
+                capabilities=headquarters_capabilities,
             )
 
-            self.print_step("Corporate Headquarters registered in database registry", "success")
+            self.print_step(
+                "Corporate Headquarters registered in database registry", "success"
+            )
 
         except Exception as e:
-            self.print_step(f"Corporate Headquarters registry registration failed: {str(e)[:40]}", "warning")
+            self.print_step(
+                f"Corporate Headquarters registry registration failed: {str(e)[:40]}",
+                "warning",
+            )
             # Don't fail Corporate Headquarters startup if registry registration fails
 
     async def start_mcp_servers(self):
@@ -800,16 +1023,46 @@ class EnhancedSystemStartup:
 
         # Group servers by categories for better organization
         core_servers = [
-            {"name": "registry", "port": 8000, "script": "registry_server.py", "category": "Core"},  # Fixed port conflict
-            {"name": "filesystem", "port": 8001, "script": "filesystem_server.py", "category": "Core"},
-            {"name": "database_postgres", "port": 8010, "script": "database_server_postgres.py", "category": "Core"},  # Using PostgreSQL instead of SQLite
+            {
+                "name": "registry",
+                "port": 8000,
+                "script": "registry_server.py",
+                "category": "Core",
+            },  # Fixed port conflict
+            {
+                "name": "filesystem",
+                "port": 8001,
+                "script": "filesystem_server.py",
+                "category": "Core",
+            },
+            {
+                "name": "database_postgres",
+                "port": 8010,
+                "script": "database_server_postgres.py",
+                "category": "Core",
+            },  # Using PostgreSQL instead of SQLite
         ]
 
         service_servers = [
             # Removed LLM server - replaced by Agent Cortex
-            {"name": "payment", "port": 8006, "script": "payment_server.py", "category": "Services"},
-            {"name": "analytics", "port": 8007, "script": "analytics_server.py", "category": "Services"},
-            {"name": "customer", "port": 8008, "script": "customer_server.py", "category": "Services"},
+            {
+                "name": "payment",
+                "port": 8006,
+                "script": "payment_server.py",
+                "category": "Services",
+            },
+            {
+                "name": "analytics",
+                "port": 8007,
+                "script": "analytics_server.py",
+                "category": "Services",
+            },
+            {
+                "name": "customer",
+                "port": 8008,
+                "script": "customer_server.py",
+                "category": "Services",
+            },
         ]
 
         # Note: Corporate Headquarters is started separately
@@ -870,7 +1123,10 @@ class EnhancedSystemStartup:
         self.status_data["startup_phase"] = "starting_corporate_headquarters"
 
         try:
-            self.print_step("Starting BoarderframeOS Corporate Headquarters on port 8888", "starting")
+            self.print_step(
+                "Starting BoarderframeOS Corporate Headquarters on port 8888",
+                "starting",
+            )
 
             # Start the BoarderframeOS Corporate Headquarters
             corporate_headquarters_process = subprocess.Popen(
@@ -878,7 +1134,7 @@ class EnhancedSystemStartup:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,  # Combine stderr with stdout
                 cwd=str(Path(__file__).parent),
-                env={**os.environ, "PYTHONPATH": str(Path(__file__).parent)}
+                env={**os.environ, "PYTHONPATH": str(Path(__file__).parent)},
             )
 
             self.processes["corporate_headquarters"] = corporate_headquarters_process
@@ -890,46 +1146,72 @@ class EnhancedSystemStartup:
                 # Check if process died
                 if corporate_headquarters_process.poll() is not None:
                     try:
-                        stdout, _ = corporate_headquarters_process.communicate(timeout=1)
-                        error_msg = stdout.decode() if stdout else "Process exited without output"
+                        stdout, _ = corporate_headquarters_process.communicate(
+                            timeout=1
+                        )
+                        error_msg = (
+                            stdout.decode()
+                            if stdout
+                            else "Process exited without output"
+                        )
                     except subprocess.TimeoutExpired:
                         error_msg = "Process communication timeout"
                     except Exception as e:
                         error_msg = f"Communication error: {str(e)}"
 
-                    self.print_step(f"Corporate Headquarters failed: {error_msg[:100]}", "error")
-                    self.update_component_status("services", "corporate_headquarters", "failed", {
-                        "error": error_msg[:200]
-                    })
+                    self.print_step(
+                        f"Corporate Headquarters failed: {error_msg[:100]}", "error"
+                    )
+                    self.update_component_status(
+                        "services",
+                        "corporate_headquarters",
+                        "failed",
+                        {"error": error_msg[:200]},
+                    )
                     return False
 
                 # Check if port 8888 is responding
                 try:
                     import socket
+
                     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     sock.settimeout(1)
-                    result = sock.connect_ex(('localhost', 8888))
+                    result = sock.connect_ex(("localhost", 8888))
                     sock.close()
                     if result == 0:
-                        self.print_step("BoarderframeOS Corporate Headquarters started successfully", "success")
-                        self.update_component_status("services", "corporate_headquarters", "running", {
-                            "port": 8888,
-                            "pid": corporate_headquarters_process.pid,
-                            "url": "http://localhost:8888"
-                        })
+                        self.print_step(
+                            "BoarderframeOS Corporate Headquarters started successfully",
+                            "success",
+                        )
+                        self.update_component_status(
+                            "services",
+                            "corporate_headquarters",
+                            "running",
+                            {
+                                "port": 8888,
+                                "pid": corporate_headquarters_process.pid,
+                                "url": "http://localhost:8888",
+                            },
+                        )
 
                         # Update metrics layer with corporate headquarters status
-                        if hasattr(self, 'hq_metrics') and hasattr(self.hq_metrics, 'metrics_calculator'):
+                        if hasattr(self, "hq_metrics") and hasattr(
+                            self.hq_metrics, "metrics_calculator"
+                        ):
                             # Get current server status and add corporate headquarters
                             server_status = {}
                             if "mcp_servers" in self.status_data:
-                                for server_name, server_info in self.status_data["mcp_servers"].items():
+                                for server_name, server_info in self.status_data[
+                                    "mcp_servers"
+                                ].items():
                                     if server_info.get("status") == "running":
                                         server_status[server_name] = {
                                             "status": "healthy",
                                             "port": server_info.get("port", 0),
-                                            "name": server_name.replace("_", " ").title(),
-                                            "category": "MCP Servers"
+                                            "name": server_name.replace(
+                                                "_", " "
+                                            ).title(),
+                                            "category": "MCP Servers",
                                         }
 
                             # Add corporate headquarters
@@ -937,11 +1219,13 @@ class EnhancedSystemStartup:
                                 "status": "healthy",
                                 "port": 8888,
                                 "name": "Corporate Headquarters",
-                                "category": "Core Services"
+                                "category": "Core Services",
                             }
 
                             # Update the metrics layer
-                            self.hq_metrics.metrics_calculator.set_server_status(server_status)
+                            self.hq_metrics.metrics_calculator.set_server_status(
+                                server_status
+                            )
 
                         # Register Corporate Headquarters with database registry
                         await self.register_corporate_headquarters_with_registry()
@@ -957,7 +1241,9 @@ class EnhancedSystemStartup:
 
         except Exception as e:
             self.print_step(f"Corporate Headquarters error: {str(e)[:100]}", "error")
-            self.update_component_status("services", "corporate_headquarters", "error", {"error": str(e)})
+            self.update_component_status(
+                "services", "corporate_headquarters", "error", {"error": str(e)}
+            )
             return False
 
     async def start_agents(self):
@@ -966,18 +1252,27 @@ class EnhancedSystemStartup:
         self.status_data["startup_phase"] = "starting_agents"
         try:
             # Use orchestrator if available, fallback to agent manager
-            if hasattr(self, 'orchestrator') and self.orchestrator:
-                self.print_step("Using Agent Orchestrator for sophisticated agent management", "starting")
+            if hasattr(self, "orchestrator") and self.orchestrator:
+                self.print_step(
+                    "Using Agent Orchestrator for sophisticated agent management",
+                    "starting",
+                )
 
                 # Try to load registry now that database should be ready
                 try:
                     await self.orchestrator.ensure_registry_loaded()
                 except Exception as e:
-                    self.print_step(f"Failed to load orchestrator registry: {str(e)[:50]}", "warning")
+                    self.print_step(
+                        f"Failed to load orchestrator registry: {str(e)[:50]}",
+                        "warning",
+                    )
 
                 # Check if orchestrator has any agents in registry
                 if len(self.orchestrator.agent_registry) == 0:
-                    self.print_step("No agents found in orchestrator registry, falling back to agent manager", "warning")
+                    self.print_step(
+                        "No agents found in orchestrator registry, falling back to agent manager",
+                        "warning",
+                    )
                     use_orchestrator = False
                 else:
                     use_orchestrator = True
@@ -991,20 +1286,37 @@ class EnhancedSystemStartup:
 
                     for agent_name, success in core_results.items():
                         if success:
-                            self.print_step(f"{agent_name.title()} agent - started via orchestrator", "success")
-                            self.update_component_status("agents", agent_name, "running", {
-                                "managed_by": "orchestrator",
-                                "lifecycle_management": "advanced",
-                                "startup_method": "orchestrated"
-                            })
+                            self.print_step(
+                                f"{agent_name.title()} agent - started via orchestrator",
+                                "success",
+                            )
+                            self.update_component_status(
+                                "agents",
+                                agent_name,
+                                "running",
+                                {
+                                    "managed_by": "orchestrator",
+                                    "lifecycle_management": "advanced",
+                                    "startup_method": "orchestrated",
+                                },
+                            )
                         else:
-                            self.print_step(f"{agent_name.title()} agent - failed to start", "error")
-                            self.update_component_status("agents", agent_name, "failed", {
-                                "error": "Orchestrator startup failed",
-                                "managed_by": "orchestrator"
-                            })
+                            self.print_step(
+                                f"{agent_name.title()} agent - failed to start", "error"
+                            )
+                            self.update_component_status(
+                                "agents",
+                                agent_name,
+                                "failed",
+                                {
+                                    "error": "Orchestrator startup failed",
+                                    "managed_by": "orchestrator",
+                                },
+                            )
 
-                    print(f"\n  ✅ {running_count}/{total_count} agents started via orchestrator")
+                    print(
+                        f"\n  ✅ {running_count}/{total_count} agents started via orchestrator"
+                    )
                 else:
                     # Fall through to agent manager
                     use_orchestrator = False
@@ -1013,7 +1325,10 @@ class EnhancedSystemStartup:
 
             if not use_orchestrator:
                 # Fallback to enhanced agent manager
-                self.print_step("Using enhanced agent manager (orchestrator not available)", "starting")
+                self.print_step(
+                    "Using enhanced agent manager (orchestrator not available)",
+                    "starting",
+                )
 
                 # Import and use the enhanced agent manager
                 from scripts.start_agents import AgentManager
@@ -1022,8 +1337,7 @@ class EnhancedSystemStartup:
 
                 # Get available agents in priority order
                 agents_by_priority = sorted(
-                    agent_manager.agent_configs.items(),
-                    key=lambda x: x[1]['priority']
+                    agent_manager.agent_configs.items(), key=lambda x: x[1]["priority"]
                 )
 
                 results = []
@@ -1034,18 +1348,28 @@ class EnhancedSystemStartup:
                     # Check if agent is already running
                     if agent_manager.is_agent_running(agent_name):
                         pid = agent_manager.get_agent_pid(agent_name)
-                        self.print_step(f"{agent_name.title()} (PID {pid}) - already running", "success")
-                        self.update_component_status("agents", agent_name, "running", {
-                            "pid": pid,
-                            "model": config["model"],
-                            "description": config["description"],
-                            "priority": config["priority"],
-                            "managed_by": "agent_manager"
-                        })
+                        self.print_step(
+                            f"{agent_name.title()} (PID {pid}) - already running",
+                            "success",
+                        )
+                        self.update_component_status(
+                            "agents",
+                            agent_name,
+                            "running",
+                            {
+                                "pid": pid,
+                                "model": config["model"],
+                                "description": config["description"],
+                                "priority": config["priority"],
+                                "managed_by": "agent_manager",
+                            },
+                        )
                         results.append(True)
                     else:
                         # Start the agent
-                        self.print_step(f"Starting {agent_name.title()} agent...", "starting")
+                        self.print_step(
+                            f"Starting {agent_name.title()} agent...", "starting"
+                        )
                         success = agent_manager.start_agent(agent_name)
 
                         if success:
@@ -1053,34 +1377,58 @@ class EnhancedSystemStartup:
                             await asyncio.sleep(2)
                             if agent_manager.is_agent_running(agent_name):
                                 pid = agent_manager.get_agent_pid(agent_name)
-                                self.print_step(f"{agent_name.title()} (PID {pid}) - started", "success")
-                                self.update_component_status("agents", agent_name, "running", {
-                                    "pid": pid,
-                                    "model": config["model"],
-                                    "description": config["description"],
-                                    "priority": config["priority"],
-                                    "managed_by": "agent_manager"
-                                })
+                                self.print_step(
+                                    f"{agent_name.title()} (PID {pid}) - started",
+                                    "success",
+                                )
+                                self.update_component_status(
+                                    "agents",
+                                    agent_name,
+                                    "running",
+                                    {
+                                        "pid": pid,
+                                        "model": config["model"],
+                                        "description": config["description"],
+                                        "priority": config["priority"],
+                                        "managed_by": "agent_manager",
+                                    },
+                                )
                                 results.append(True)
                             else:
-                                self.print_step(f"{agent_name.title()} - failed to start", "error")
-                                self.update_component_status("agents", agent_name, "failed", {
-                                    "error": "Process died after startup",
-                                    "model": config["model"],
-                                    "description": config["description"]
-                                })
+                                self.print_step(
+                                    f"{agent_name.title()} - failed to start", "error"
+                                )
+                                self.update_component_status(
+                                    "agents",
+                                    agent_name,
+                                    "failed",
+                                    {
+                                        "error": "Process died after startup",
+                                        "model": config["model"],
+                                        "description": config["description"],
+                                    },
+                                )
                                 results.append(False)
                         else:
-                            self.print_step(f"{agent_name.title()} - failed to start", "error")
-                            self.update_component_status("agents", agent_name, "failed", {
-                                "error": "Failed to start process",
-                                "model": config["model"],
-                                "description": config["description"]
-                            })
+                            self.print_step(
+                                f"{agent_name.title()} - failed to start", "error"
+                            )
+                            self.update_component_status(
+                                "agents",
+                                agent_name,
+                                "failed",
+                                {
+                                    "error": "Failed to start process",
+                                    "model": config["model"],
+                                    "description": config["description"],
+                                },
+                            )
                             results.append(False)
 
                     # Small delay between agent starts
-                    if agent_name != list(agents_by_priority)[-1][0]:  # Not the last agent
+                    if (
+                        agent_name != list(agents_by_priority)[-1][0]
+                    ):  # Not the last agent
                         await asyncio.sleep(1)
 
                 # Simple agent summary
@@ -1094,7 +1442,6 @@ class EnhancedSystemStartup:
             self.print_step(f"Agent system error: {str(e)[:100]}", "error")
             self.log_status(f"Agent startup error: {str(e)}", "agents", "error")
             return True
-
 
     async def run_startup(self):
         """Run the complete enhanced system startup with all components"""
@@ -1197,6 +1544,7 @@ class EnhancedSystemStartup:
             # Launch control center in browser
             try:
                 import webbrowser
+
                 webbrowser.open("http://localhost:8888")
                 print("🌐 Browser opened automatically")
             except Exception:
@@ -1218,6 +1566,7 @@ class EnhancedSystemStartup:
 
     def setup_signal_handlers(self):
         """Setup clean shutdown handlers"""
+
         def signal_handler(signum, frame):
             print(f"\n🛑 Received shutdown signal...")
             self.cleanup()
@@ -1239,6 +1588,7 @@ class EnhancedSystemStartup:
                     process.kill()
                 except:
                     pass
+
 
 async def main():
     """Main startup function with improved handling"""
@@ -1279,6 +1629,7 @@ async def main():
         print("\n✅ BoarderframeOS shutdown complete.")
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(asyncio.run(main()))

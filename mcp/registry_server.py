@@ -27,13 +27,16 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.FileHandler(Path(__file__).parent / "registry.log"),
-        logging.StreamHandler()
-    ]
+        logging.StreamHandler(),
+    ],
 )
 logger = logging.getLogger("registry_server")
 
 # Configuration
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://boarderframe:boarderframe_secure_2025@localhost:5434/boarderframeos")
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://boarderframe:boarderframe_secure_2025@localhost:5434/boarderframeos",
+)
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 REGISTRY_PORT = int(os.getenv("REGISTRY_PORT", "8000"))
 
@@ -45,12 +48,14 @@ redis_client: Optional[redis.Redis] = None
 # PYDANTIC MODELS
 # ============================================================================
 
+
 class RegistryResponse(BaseModel):
     success: bool
     data: Any = None
     error: Optional[str] = None
     timestamp: str
     count: Optional[int] = None
+
 
 # Agent Registry Models
 class AgentRegistration(BaseModel):
@@ -69,6 +74,7 @@ class AgentRegistration(BaseModel):
     tags: List[str] = []
     metadata: Dict[str, Any] = {}
 
+
 class AgentHeartbeat(BaseModel):
     agent_id: str
     status: str = "online"
@@ -76,6 +82,7 @@ class AgentHeartbeat(BaseModel):
     current_tasks: int = 0
     response_time_ms: Optional[int] = None
     health_status: str = "healthy"
+
 
 # Server Registry Models
 class ServerRegistration(BaseModel):
@@ -95,9 +102,11 @@ class ServerRegistration(BaseModel):
     tags: List[str] = []
     metadata: Dict[str, Any] = {}
 
+
 # ============================================================================
 # REGISTRY MANAGER
 # ============================================================================
+
 
 class RegistryManager:
     """Centralized registry management for all BoarderframeOS components"""
@@ -115,10 +124,7 @@ class RegistryManager:
         try:
             # Initialize PostgreSQL connection pool
             self.pool = await asyncpg.create_pool(
-                DATABASE_URL,
-                min_size=5,
-                max_size=15,
-                command_timeout=60
+                DATABASE_URL, min_size=5, max_size=15, command_timeout=60
             )
 
             # Initialize Redis connection
@@ -156,7 +162,8 @@ class RegistryManager:
 
             async with self.pool.acquire() as conn:
                 # Insert or update agent registry
-                await conn.execute("""
+                await conn.execute(
+                    """
                     INSERT INTO agent_registry (
                         agent_id, name, department_id, agent_type, capabilities,
                         supported_tools, communication_endpoints, api_endpoints,
@@ -194,34 +201,37 @@ class RegistryManager:
                     registration.version,
                     registration.tags,
                     json.dumps(registration.metadata),
-                    "online"
+                    "online",
                 )
 
                 # Publish registration event
-                await self._publish_registry_event("agent_registered", {
-                    "agent_id": registration.agent_id,
-                    "name": registration.name,
-                    "agent_type": registration.agent_type
-                })
+                await self._publish_registry_event(
+                    "agent_registered",
+                    {
+                        "agent_id": registration.agent_id,
+                        "name": registration.name,
+                        "agent_type": registration.agent_type,
+                    },
+                )
 
                 return RegistryResponse(
                     success=True,
                     data={"agent_id": registration.agent_id, "status": "registered"},
-                    timestamp=datetime.utcnow().isoformat()
+                    timestamp=datetime.utcnow().isoformat(),
                 )
 
         except Exception as e:
             logger.error(f"Agent registration failed: {e}")
             return RegistryResponse(
-                success=False,
-                error=str(e),
-                timestamp=datetime.utcnow().isoformat()
+                success=False, error=str(e), timestamp=datetime.utcnow().isoformat()
             )
 
-    async def discover_agents(self,
-                            agent_type: Optional[str] = None,
-                            department_id: Optional[str] = None,
-                            status: Optional[str] = None) -> RegistryResponse:
+    async def discover_agents(
+        self,
+        agent_type: Optional[str] = None,
+        department_id: Optional[str] = None,
+        status: Optional[str] = None,
+    ) -> RegistryResponse:
         """Discover agents based on filters"""
         try:
             await self.initialize()
@@ -265,28 +275,29 @@ class RegistryManager:
                     success=True,
                     data=agents,
                     count=len(agents),
-                    timestamp=datetime.utcnow().isoformat()
+                    timestamp=datetime.utcnow().isoformat(),
                 )
 
         except Exception as e:
             logger.error(f"Agent discovery failed: {e}")
             return RegistryResponse(
-                success=False,
-                error=str(e),
-                timestamp=datetime.utcnow().isoformat()
+                success=False, error=str(e), timestamp=datetime.utcnow().isoformat()
             )
 
     # ========================================================================
     # SERVER REGISTRY METHODS
     # ========================================================================
 
-    async def register_server(self, registration: ServerRegistration) -> RegistryResponse:
+    async def register_server(
+        self, registration: ServerRegistration
+    ) -> RegistryResponse:
         """Register a new server or update existing registration"""
         try:
             await self.initialize()
 
             async with self.pool.acquire() as conn:
-                server_id = await conn.fetchval("""
+                server_id = await conn.fetchval(
+                    """
                     INSERT INTO server_registry (
                         name, server_type, endpoint_url, internal_url, health_check_url,
                         capabilities, supported_protocols, api_version, max_connections,
@@ -326,21 +337,19 @@ class RegistryManager:
                     registration.version,
                     registration.tags,
                     json.dumps(registration.metadata),
-                    "online"
+                    "online",
                 )
 
                 return RegistryResponse(
                     success=True,
                     data={"server_id": str(server_id), "status": "registered"},
-                    timestamp=datetime.utcnow().isoformat()
+                    timestamp=datetime.utcnow().isoformat(),
                 )
 
         except Exception as e:
             logger.error(f"Server registration failed: {e}")
             return RegistryResponse(
-                success=False,
-                error=str(e),
-                timestamp=datetime.utcnow().isoformat()
+                success=False, error=str(e), timestamp=datetime.utcnow().isoformat()
             )
 
     # ========================================================================
@@ -354,7 +363,7 @@ class RegistryManager:
                 event = {
                     "event_type": event_type,
                     "timestamp": datetime.utcnow().isoformat(),
-                    "data": json.dumps(data, default=str)
+                    "data": json.dumps(data, default=str),
                 }
                 await self.redis.xadd("registry_events", event)
         except Exception as e:
@@ -367,36 +376,40 @@ class RegistryManager:
 
             async with self.pool.acquire() as conn:
                 # Get agent counts
-                agent_stats = await conn.fetchrow("""
+                agent_stats = await conn.fetchrow(
+                    """
                     SELECT
                         COUNT(*) as total,
                         COUNT(*) FILTER (WHERE status = 'online') as online,
                         COUNT(*) FILTER (WHERE health_status = 'healthy') as healthy
                     FROM agent_registry
-                """)
+                """
+                )
 
                 # Get server counts
-                server_stats = await conn.fetchrow("""
+                server_stats = await conn.fetchrow(
+                    """
                     SELECT
                         COUNT(*) as total,
                         COUNT(*) FILTER (WHERE status = 'online') as online,
                         COUNT(*) FILTER (WHERE health_status = 'healthy') as healthy
                     FROM server_registry
-                """)
+                """
+                )
 
                 return {
                     "status": "healthy",
                     "agents": {
                         "total": agent_stats["total"] if agent_stats else 0,
                         "online": agent_stats["online"] if agent_stats else 0,
-                        "healthy": agent_stats["healthy"] if agent_stats else 0
+                        "healthy": agent_stats["healthy"] if agent_stats else 0,
                     },
                     "servers": {
                         "total": server_stats["total"] if server_stats else 0,
                         "online": server_stats["online"] if server_stats else 0,
-                        "healthy": server_stats["healthy"] if server_stats else 0
+                        "healthy": server_stats["healthy"] if server_stats else 0,
                     },
-                    "timestamp": datetime.utcnow().isoformat()
+                    "timestamp": datetime.utcnow().isoformat(),
                 }
 
         except Exception as e:
@@ -404,8 +417,9 @@ class RegistryManager:
             return {
                 "status": "unhealthy",
                 "error": str(e),
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
             }
+
 
 # ============================================================================
 # FASTAPI APPLICATION
@@ -414,7 +428,7 @@ class RegistryManager:
 app = FastAPI(
     title="BoarderframeOS Registry Server",
     version="1.0.0",
-    description="Centralized registry for agents, servers, departments, tools, and workflows"
+    description="Centralized registry for agents, servers, departments, tools, and workflows",
 )
 
 # CORS middleware
@@ -429,14 +443,17 @@ app.add_middleware(
 # Global registry manager
 registry_manager = RegistryManager()
 
+
 async def get_registry_manager():
     """Dependency for registry manager"""
     await registry_manager.initialize()
     return registry_manager
 
+
 # ============================================================================
 # API ENDPOINTS
 # ============================================================================
+
 
 @app.get("/health")
 async def health_check():
@@ -454,37 +471,49 @@ async def health_check():
             "port": REGISTRY_PORT,
             "database_status": "unavailable",
             "redis_status": "unknown",
-            "error": str(e)[:100]
+            "error": str(e)[:100],
         }
+
 
 # Agent Registry Endpoints
 @app.post("/agents/register", response_model=RegistryResponse)
-async def register_agent(registration: AgentRegistration, registry: RegistryManager = Depends(get_registry_manager)):
+async def register_agent(
+    registration: AgentRegistration,
+    registry: RegistryManager = Depends(get_registry_manager),
+):
     """Register a new agent"""
     return await registry.register_agent(registration)
+
 
 @app.get("/agents/discover", response_model=RegistryResponse)
 async def discover_agents(
     agent_type: Optional[str] = Query(None),
     department_id: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
-    registry: RegistryManager = Depends(get_registry_manager)
+    registry: RegistryManager = Depends(get_registry_manager),
 ):
     """Discover agents based on filters"""
     return await registry.discover_agents(agent_type, department_id, status)
 
+
 # Server Registry Endpoints
 @app.post("/servers/register", response_model=RegistryResponse)
-async def register_server(registration: ServerRegistration, registry: RegistryManager = Depends(get_registry_manager)):
+async def register_server(
+    registration: ServerRegistration,
+    registry: RegistryManager = Depends(get_registry_manager),
+):
     """Register a new server"""
     return await registry.register_server(registration)
+
 
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="BoarderframeOS Registry Server")
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind to")
-    parser.add_argument("--port", type=int, default=REGISTRY_PORT, help="Port to bind to")
+    parser.add_argument(
+        "--port", type=int, default=REGISTRY_PORT, help="Port to bind to"
+    )
     parser.add_argument("--reload", action="store_true", help="Enable auto-reload")
 
     args = parser.parse_args()
@@ -498,5 +527,5 @@ if __name__ == "__main__":
         host=args.host,
         port=args.port,
         reload=args.reload,
-        log_level="info"
+        log_level="info",
     )

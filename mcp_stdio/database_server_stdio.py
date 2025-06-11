@@ -25,10 +25,10 @@ original_path = sys.path.copy()
 # Remove current and parent directories to avoid local mcp module conflicts
 current_dir = str(Path(__file__).parent)
 parent_dir = str(Path(__file__).parent.parent)
-sys.path = [p for p in sys.path if p not in (current_dir, parent_dir, '')]
+sys.path = [p for p in sys.path if p not in (current_dir, parent_dir, "")]
 
 # Clear any cached local mcp modules
-local_mcp_modules = [name for name in sys.modules.keys() if name.startswith('mcp')]
+local_mcp_modules = [name for name in sys.modules.keys() if name.startswith("mcp")]
 for module_name in local_mcp_modules:
     del sys.modules[module_name]
 
@@ -47,7 +47,7 @@ log_file = Path(__file__).parent / "database_stdio.log"
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler(log_file)]
+    handlers=[logging.FileHandler(log_file)],
 )
 logger = logging.getLogger("database_stdio")
 
@@ -57,6 +57,7 @@ DB_PATH = BASE_PATH / "data" / "boarderframe.db"
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 server = Server("database")
+
 
 @server.list_tools()
 async def handle_list_tools() -> List[types.Tool]:
@@ -68,23 +69,20 @@ async def handle_list_tools() -> List[types.Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "sql": {
-                        "type": "string",
-                        "description": "SQL query to execute"
-                    },
+                    "sql": {"type": "string", "description": "SQL query to execute"},
                     "params": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "Query parameters (optional)"
+                        "description": "Query parameters (optional)",
                     },
                     "fetch_all": {
                         "type": "boolean",
                         "description": "Fetch all results or just one",
-                        "default": True
-                    }
+                        "default": True,
+                    },
                 },
-                "required": ["sql"]
-            }
+                "required": ["sql"],
+            },
         ),
         types.Tool(
             name="insert_data",
@@ -92,22 +90,19 @@ async def handle_list_tools() -> List[types.Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "table": {
-                        "type": "string",
-                        "description": "Table name"
-                    },
+                    "table": {"type": "string", "description": "Table name"},
                     "data": {
                         "type": "object",
-                        "description": "Data to insert as key-value pairs"
+                        "description": "Data to insert as key-value pairs",
                     },
                     "on_conflict": {
                         "type": "string",
                         "description": "Conflict resolution: IGNORE, REPLACE",
-                        "default": "IGNORE"
-                    }
+                        "default": "IGNORE",
+                    },
                 },
-                "required": ["table", "data"]
-            }
+                "required": ["table", "data"],
+            },
         ),
         types.Tool(
             name="update_data",
@@ -115,21 +110,18 @@ async def handle_list_tools() -> List[types.Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "table": {
-                        "type": "string",
-                        "description": "Table name"
-                    },
+                    "table": {"type": "string", "description": "Table name"},
                     "data": {
                         "type": "object",
-                        "description": "Data to update as key-value pairs"
+                        "description": "Data to update as key-value pairs",
                     },
                     "where": {
                         "type": "object",
-                        "description": "WHERE conditions as key-value pairs"
-                    }
+                        "description": "WHERE conditions as key-value pairs",
+                    },
                 },
-                "required": ["table", "data", "where"]
-            }
+                "required": ["table", "data", "where"],
+            },
         ),
         types.Tool(
             name="delete_data",
@@ -137,25 +129,19 @@ async def handle_list_tools() -> List[types.Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "table": {
-                        "type": "string",
-                        "description": "Table name"
-                    },
+                    "table": {"type": "string", "description": "Table name"},
                     "where": {
                         "type": "object",
-                        "description": "WHERE conditions as key-value pairs"
-                    }
+                        "description": "WHERE conditions as key-value pairs",
+                    },
                 },
-                "required": ["table", "where"]
-            }
+                "required": ["table", "where"],
+            },
         ),
         types.Tool(
             name="list_tables",
             description="List all tables in the database",
-            inputSchema={
-                "type": "object",
-                "properties": {}
-            }
+            inputSchema={"type": "object", "properties": {}},
         ),
         types.Tool(
             name="get_table_schema",
@@ -163,18 +149,18 @@ async def handle_list_tools() -> List[types.Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "table": {
-                        "type": "string",
-                        "description": "Table name"
-                    }
+                    "table": {"type": "string", "description": "Table name"}
                 },
-                "required": ["table"]
-            }
-        )
+                "required": ["table"],
+            },
+        ),
     ]
 
+
 @server.call_tool()
-async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_call_tool(
+    name: str, arguments: Dict[str, Any]
+) -> List[types.TextContent]:
     """Handle tool calls."""
     try:
         if name == "execute_query":
@@ -195,6 +181,7 @@ async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[types.T
         logger.error(f"Tool {name} failed: {e}")
         return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
+
 async def execute_query(args: Dict[str, Any]) -> List[types.TextContent]:
     """Execute raw SQL query."""
     try:
@@ -206,13 +193,13 @@ async def execute_query(args: Dict[str, Any]) -> List[types.TextContent]:
             db.row_factory = aiosqlite.Row
             cursor = await db.execute(sql, params)
 
-            if sql.strip().upper().startswith(('INSERT', 'UPDATE', 'DELETE')):
+            if sql.strip().upper().startswith(("INSERT", "UPDATE", "DELETE")):
                 rows_affected = cursor.rowcount
                 await db.commit()
                 result = {
                     "success": True,
                     "rows_affected": rows_affected,
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
                 }
             else:
                 if fetch_all:
@@ -225,14 +212,17 @@ async def execute_query(args: Dict[str, Any]) -> List[types.TextContent]:
                 result = {
                     "success": True,
                     "data": data,
-                    "count": len(data) if isinstance(data, list) else (1 if data else 0),
-                    "timestamp": datetime.now().isoformat()
+                    "count": (
+                        len(data) if isinstance(data, list) else (1 if data else 0)
+                    ),
+                    "timestamp": datetime.now().isoformat(),
                 }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error executing query: {str(e)}")]
+
 
 async def insert_data(args: Dict[str, Any]) -> List[types.TextContent]:
     """Insert data into table."""
@@ -242,7 +232,7 @@ async def insert_data(args: Dict[str, Any]) -> List[types.TextContent]:
         on_conflict = args.get("on_conflict", "IGNORE")
 
         columns = list(data.keys())
-        placeholders = ['?' for _ in columns]
+        placeholders = ["?" for _ in columns]
         values = [data[col] for col in columns]
 
         sql = f"""
@@ -259,13 +249,14 @@ async def insert_data(args: Dict[str, Any]) -> List[types.TextContent]:
                 "success": True,
                 "table": table,
                 "rows_affected": cursor.rowcount,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error inserting data: {str(e)}")]
+
 
 async def update_data(args: Dict[str, Any]) -> List[types.TextContent]:
     """Update data in table."""
@@ -294,13 +285,14 @@ async def update_data(args: Dict[str, Any]) -> List[types.TextContent]:
                 "success": True,
                 "table": table,
                 "rows_affected": cursor.rowcount,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error updating data: {str(e)}")]
+
 
 async def delete_data(args: Dict[str, Any]) -> List[types.TextContent]:
     """Delete data from table."""
@@ -324,7 +316,7 @@ async def delete_data(args: Dict[str, Any]) -> List[types.TextContent]:
                 "success": True,
                 "table": table,
                 "rows_affected": cursor.rowcount,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
@@ -332,11 +324,14 @@ async def delete_data(args: Dict[str, Any]) -> List[types.TextContent]:
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error deleting data: {str(e)}")]
 
+
 async def list_tables() -> List[types.TextContent]:
     """List all tables in database."""
     try:
         async with aiosqlite.connect(DB_PATH) as db:
-            cursor = await db.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+            cursor = await db.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+            )
             rows = await cursor.fetchall()
             tables = [row[0] for row in rows]
 
@@ -344,13 +339,14 @@ async def list_tables() -> List[types.TextContent]:
                 "success": True,
                 "tables": tables,
                 "count": len(tables),
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error listing tables: {str(e)}")]
+
 
 async def get_table_schema(table: str) -> List[types.TextContent]:
     """Get schema for specific table."""
@@ -361,25 +357,30 @@ async def get_table_schema(table: str) -> List[types.TextContent]:
 
             schema = []
             for row in rows:
-                schema.append({
-                    "column": row[1],
-                    "type": row[2],
-                    "not_null": bool(row[3]),
-                    "default_value": row[4],
-                    "primary_key": bool(row[5])
-                })
+                schema.append(
+                    {
+                        "column": row[1],
+                        "type": row[2],
+                        "not_null": bool(row[3]),
+                        "default_value": row[4],
+                        "primary_key": bool(row[5]),
+                    }
+                )
 
             result = {
                 "success": True,
                 "table": table,
                 "schema": schema,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error getting table schema: {str(e)}")]
+        return [
+            types.TextContent(type="text", text=f"Error getting table schema: {str(e)}")
+        ]
+
 
 async def main():
     """Main entry point."""
@@ -396,6 +397,7 @@ async def main():
                 ),
             ),
         )
+
 
 if __name__ == "__main__":
     asyncio.run(main())

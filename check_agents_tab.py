@@ -29,7 +29,7 @@ def check_agents_tab():
             print("❌ Could not find Agents tab")
             return
 
-        agents_end = html.find('</div>\n\n        <!-- Leaders Tab -->', agents_start)
+        agents_end = html.find("</div>\n\n        <!-- Leaders Tab -->", agents_start)
         if agents_end == -1:
             agents_end = html.find('<div id="leaders"', agents_start)
 
@@ -38,9 +38,21 @@ def check_agents_tab():
         print("\n📊 Agents Tab Metrics:")
 
         # Check for metric widgets
-        active_match = re.search(r'<span>Active</span>.*?widget-value.*?>(\d+|{[^}]+})<', agents_section, re.DOTALL)
-        inactive_match = re.search(r'<span>Inactive</span>.*?widget-value.*?>(\d+|{[^}]+})<', agents_section, re.DOTALL)
-        total_match = re.search(r'<span>Total</span>.*?widget-value.*?>(\d+|{[^}]+})<', agents_section, re.DOTALL)
+        active_match = re.search(
+            r"<span>Active</span>.*?widget-value.*?>(\d+|{[^}]+})<",
+            agents_section,
+            re.DOTALL,
+        )
+        inactive_match = re.search(
+            r"<span>Inactive</span>.*?widget-value.*?>(\d+|{[^}]+})<",
+            agents_section,
+            re.DOTALL,
+        )
+        total_match = re.search(
+            r"<span>Total</span>.*?widget-value.*?>(\d+|{[^}]+})<",
+            agents_section,
+            re.DOTALL,
+        )
 
         if active_match:
             print(f"   ✅ Active metric found: {active_match.group(1)}")
@@ -58,7 +70,9 @@ def check_agents_tab():
             print("   ❌ Total metric not found")
 
         # Check grid layout
-        grid_match = re.search(r'grid-template-columns:\s*repeat\((\d+),', agents_section)
+        grid_match = re.search(
+            r"grid-template-columns:\s*repeat\((\d+),", agents_section
+        )
         if grid_match:
             columns = grid_match.group(1)
             print(f"\n📐 Grid Layout: {columns} columns")
@@ -69,21 +83,28 @@ def check_agents_tab():
 
         # Check for old metrics that should be removed
         print("\n🔍 Checking for removed metrics:")
-        old_metrics = ['Productive', 'Healthy', 'Idle']
+        old_metrics = ["Productive", "Healthy", "Idle"]
         for metric in old_metrics:
-            if f'<span>{metric}</span>' in agents_section:
+            if f"<span>{metric}</span>" in agents_section:
                 print(f"   ❌ Old metric '{metric}' still present")
             else:
                 print(f"   ✅ Old metric '{metric}' removed")
 
         # Check Overall Status
-        overall_status = re.search(r'Overall Status.*?<div[^>]*>([^<]+)</div>', agents_section, re.DOTALL)
+        overall_status = re.search(
+            r"Overall Status.*?<div[^>]*>([^<]+)</div>", agents_section, re.DOTALL
+        )
         if overall_status:
             print(f"\n📊 Overall Status: {overall_status.group(1).strip()}")
 
         # Show a snippet of the grid
         print("\n📄 Agents Metrics Grid HTML snippet:")
-        grid_snippet = agents_section[agents_section.find("<!-- Agent Metrics Grid -->"):agents_section.find("<!-- Agent Metrics Grid -->") + 500]
+        grid_snippet = agents_section[
+            agents_section.find("<!-- Agent Metrics Grid -->") : agents_section.find(
+                "<!-- Agent Metrics Grid -->"
+            )
+            + 500
+        ]
         print(grid_snippet[:500] + "...")
 
     except Exception as e:

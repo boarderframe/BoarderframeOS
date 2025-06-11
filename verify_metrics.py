@@ -22,12 +22,12 @@ def verify_metrics():
             return
 
         html = response.text
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = BeautifulSoup(html, "html.parser")
 
         print("\n📊 Checking displayed metrics...")
 
         # Check for "Managing X AI agents"
-        managing_pattern = r'Managing\s*<strong[^>]*>(\d+)</strong>\s*AI agents'
+        managing_pattern = r"Managing\s*<strong[^>]*>(\d+)</strong>\s*AI agents"
         managing_match = re.search(managing_pattern, html)
         if managing_match:
             agent_count = managing_match.group(1)
@@ -57,8 +57,8 @@ def verify_metrics():
                 print(f"   ⚠️  Not using centralized value")
 
         # Check for agent status metrics
-        total_pattern = r'Total:\s*(\d+)'
-        active_pattern = r'Active:\s*(\d+)'
+        total_pattern = r"Total:\s*(\d+)"
+        active_pattern = r"Active:\s*(\d+)"
 
         total_matches = re.findall(total_pattern, html)
         active_matches = re.findall(active_pattern, html)
@@ -69,8 +69,8 @@ def verify_metrics():
             print(f"📊 Found 'Active' values: {active_matches}")
 
         # Check department and division counts
-        dept_pattern = r'>\s*(\d+)\s*</[^>]+>\s*<[^>]+>Departments'
-        div_pattern = r'>\s*(\d+)\s*</[^>]+>\s*<[^>]+>Divisions'
+        dept_pattern = r">\s*(\d+)\s*</[^>]+>\s*<[^>]+>Departments"
+        div_pattern = r">\s*(\d+)\s*</[^>]+>\s*<[^>]+>Divisions"
 
         dept_match = re.search(dept_pattern, html)
         div_match = re.search(div_pattern, html)
@@ -92,9 +92,10 @@ def verify_metrics():
         # Check if any old values remain
         old_values = {
             "120+": "120+" in html,
-            "Managing 2 agents": "Managing <strong" in html and ">2</strong> AI agents" in html,
+            "Managing 2 agents": "Managing <strong" in html
+            and ">2</strong> AI agents" in html,
             "Hardcoded 45": False,  # Harder to detect without context
-            "Hardcoded 9": False    # Harder to detect without context
+            "Hardcoded 9": False,  # Harder to detect without context
         }
 
         issues = [k for k, v in old_values.items() if v]

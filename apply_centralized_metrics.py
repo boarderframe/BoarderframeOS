@@ -16,12 +16,12 @@ def apply_centralized_metrics():
     file_path = "/Users/cosburn/BoarderframeOS/corporate_headquarters.py"
 
     # Read the current file
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         content = f.read()
 
     # Backup
     backup_path = f"{file_path}.metrics_backup"
-    with open(backup_path, 'w') as f:
+    with open(backup_path, "w") as f:
         f.write(content)
     print(f"✅ Created backup at {backup_path}")
 
@@ -163,7 +163,9 @@ def apply_centralized_metrics():
     init_end = content.find("def _initialize")
     if init_end > 0:
         # Insert the methods before _initialize
-        content = content[:init_end] + centralized_methods + "\n\n    " + content[init_end:]
+        content = (
+            content[:init_end] + centralized_methods + "\n\n    " + content[init_end:]
+        )
         print("✅ Added centralized metrics methods")
 
     # 2. Add call to _get_centralized_metrics in __init__
@@ -174,7 +176,7 @@ def apply_centralized_metrics():
     # 3. Fix the hardcoded "120+" in departments tab
     content = content.replace(
         '<div class="widget-value" style="color: #06b6d4;">\n                            120+',
-        '<div class="widget-value" style="color: #06b6d4;">\n                            {self.get_metric(\'agents\', \'total\')}'
+        "<div class=\"widget-value\" style=\"color: #06b6d4;\">\n                            {self.get_metric('agents', 'total')}",
     )
 
     # 4. Fix agent count in dashboard welcome section
@@ -199,7 +201,7 @@ def apply_centralized_metrics():
     content = re.sub(refresh_pattern, refresh_replacement, content, flags=re.DOTALL)
 
     # Write the updated content
-    with open(file_path, 'w') as f:
+    with open(file_path, "w") as f:
         f.write(content)
 
     print("\n✅ Applied all centralized metrics patches:")

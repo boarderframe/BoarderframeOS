@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 # Add boarderframeos to path
-sys.path.insert(0, '/Users/cosburn/BoarderframeOS/boarderframeos')
+sys.path.insert(0, "/Users/cosburn/BoarderframeOS/boarderframeos")
 
 from core.message_bus import message_bus
 
@@ -27,6 +27,7 @@ async def check_message_bus():
     # Try lowercase
     messages_lower = await message_bus.get_messages("solomon")
     print(f"Messages for solomon: {len(messages_lower)}")
+
 
 if __name__ == "__main__":
     asyncio.run(check_message_bus())

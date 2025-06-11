@@ -25,6 +25,7 @@ try:
     from langgraph.graph import END, StateGraph
     from langgraph.prebuilt import ToolNode
     from typing_extensions import TypedDict
+
     LANGCHAIN_AVAILABLE = True
 except ImportError:
     LANGCHAIN_AVAILABLE = False
@@ -45,6 +46,7 @@ from core.message_bus import MessageBus, MessagePriority
 
 class AgentTemplate(Enum):
     """Pre-built agent templates"""
+
     EXECUTIVE = "executive"
     DEPARTMENT_HEAD = "department_head"
     SPECIALIST = "specialist"
@@ -60,6 +62,7 @@ class AgentTemplate(Enum):
 @dataclass
 class AgentBlueprint:
     """Blueprint for creating new agents"""
+
     name: str
     role: str
     template: AgentTemplate
@@ -93,76 +96,73 @@ class AgentFactory:
                 "capabilities": [
                     ModelCapability.REASONING,
                     ModelCapability.LONG_CONTEXT,
-                    ModelCapability.FUNCTION_CALLING
+                    ModelCapability.FUNCTION_CALLING,
                 ],
                 "personality_traits": {
                     "leadership": 0.9,
                     "strategic_thinking": 0.95,
                     "decision_making": 0.9,
-                    "communication": 0.85
+                    "communication": 0.85,
                 },
                 "autonomy_level": 0.9,
                 "system_prompt": """You are an executive AI agent responsible for high-level strategy and decision-making.
 You think strategically, consider long-term implications, and make decisive choices.
-You delegate tasks to appropriate team members and monitor overall progress."""
+You delegate tasks to appropriate team members and monitor overall progress.""",
             },
-
             AgentTemplate.CODER: {
                 "tier": ModelTier.SPECIALIST,
                 "capabilities": [
                     ModelCapability.CODE_GENERATION,
-                    ModelCapability.FUNCTION_CALLING
+                    ModelCapability.FUNCTION_CALLING,
                 ],
                 "personality_traits": {
                     "analytical": 0.9,
                     "detail_oriented": 0.95,
                     "problem_solving": 0.9,
-                    "creativity": 0.7
+                    "creativity": 0.7,
                 },
                 "autonomy_level": 0.8,
                 "system_prompt": """You are a specialist coding AI agent focused on software development.
 You write clean, efficient, and well-documented code following best practices.
-You can debug issues, optimize performance, and implement complex algorithms."""
+You can debug issues, optimize performance, and implement complex algorithms.""",
             },
-
             AgentTemplate.RESEARCHER: {
                 "tier": ModelTier.SPECIALIST,
                 "capabilities": [
                     ModelCapability.LONG_CONTEXT,
-                    ModelCapability.REASONING
+                    ModelCapability.REASONING,
                 ],
                 "personality_traits": {
                     "curiosity": 0.95,
                     "analytical": 0.9,
                     "thoroughness": 0.9,
-                    "objectivity": 0.85
+                    "objectivity": 0.85,
                 },
                 "autonomy_level": 0.75,
                 "system_prompt": """You are a research AI agent dedicated to gathering and analyzing information.
 You conduct thorough research, verify sources, and present findings objectively.
-You identify patterns, draw insights, and provide evidence-based recommendations."""
+You identify patterns, draw insights, and provide evidence-based recommendations.""",
             },
-
             AgentTemplate.COORDINATOR: {
                 "tier": ModelTier.DEPARTMENT,
                 "capabilities": [
                     ModelCapability.FUNCTION_CALLING,
-                    ModelCapability.CHAT
+                    ModelCapability.CHAT,
                 ],
                 "personality_traits": {
                     "organization": 0.9,
                     "communication": 0.95,
                     "delegation": 0.85,
-                    "monitoring": 0.8
+                    "monitoring": 0.8,
                 },
                 "autonomy_level": 0.8,
                 "system_prompt": """You are a coordination AI agent responsible for managing workflows and team collaboration.
 You assign tasks, track progress, and ensure smooth communication between team members.
-You identify bottlenecks and optimize resource allocation."""
-            }
+You identify bottlenecks and optimize resource allocation.""",
+            },
         }
 
-    async def create_agent(self, blueprint: AgentBlueprint) -> 'EnhancedAgent':
+    async def create_agent(self, blueprint: AgentBlueprint) -> "EnhancedAgent":
         """Create a new agent from blueprint"""
 
         # Get template defaults
@@ -174,8 +174,8 @@ You identify bottlenecks and optimize resource allocation."""
             required_capabilities=blueprint.capabilities,
             constraints={
                 "tier": blueprint.tier,
-                "quality_weight": 0.6 if blueprint.tier == ModelTier.EXECUTIVE else 0.4
-            }
+                "quality_weight": 0.6 if blueprint.tier == ModelTier.EXECUTIVE else 0.4,
+            },
         )
 
         # Build agent configuration
@@ -187,7 +187,7 @@ You identify bottlenecks and optimize resource allocation."""
             zone=blueprint.department,
             model="",  # Will be set by LLM SDK
             temperature=0.7,
-            max_concurrent_tasks=5 if blueprint.tier == ModelTier.WORKER else 3
+            max_concurrent_tasks=5 if blueprint.tier == ModelTier.WORKER else 3,
         )
 
         # Create enhanced agent
@@ -195,18 +195,21 @@ You identify bottlenecks and optimize resource allocation."""
             config=config,
             blueprint=blueprint,
             llm_model=llm_model,
-            system_prompt=template_config.get("system_prompt", "")
+            system_prompt=template_config.get("system_prompt", ""),
         )
 
         await agent.initialize()
 
-        self.logger.info(f"Created agent {blueprint.name} with template {blueprint.template}")
+        self.logger.info(
+            f"Created agent {blueprint.name} with template {blueprint.template}"
+        )
 
         return agent
 
 
 class AgentState(TypedDict):
     """State for LangGraph agent workflows"""
+
     messages: List[BaseMessage]
     context: Dict[str, Any]
     current_task: Optional[str]
@@ -217,11 +220,13 @@ class AgentState(TypedDict):
 class EnhancedAgent(BaseAgent):
     """Enhanced agent with LangChain/LangGraph integration"""
 
-    def __init__(self,
-                 config: AgentConfig,
-                 blueprint: AgentBlueprint,
-                 llm_model: Optional[Any] = None,
-                 system_prompt: str = ""):
+    def __init__(
+        self,
+        config: AgentConfig,
+        blueprint: AgentBlueprint,
+        llm_model: Optional[Any] = None,
+        system_prompt: str = "",
+    ):
         super().__init__(config)
         self.blueprint = blueprint
         self.llm_model = llm_model
@@ -240,7 +245,7 @@ class EnhancedAgent(BaseAgent):
             "tasks_completed": 0,
             "success_rate": 0.0,
             "avg_response_time": 0.0,
-            "collaboration_score": 0.0
+            "collaboration_score": 0.0,
         }
 
     async def initialize(self):
@@ -250,8 +255,7 @@ class EnhancedAgent(BaseAgent):
         if LANGCHAIN_AVAILABLE and self.llm_model:
             # Initialize memory
             self.memory = ConversationBufferMemory(
-                return_messages=True,
-                memory_key="chat_history"
+                return_messages=True, memory_key="chat_history"
             )
 
             # Build tools
@@ -273,7 +277,7 @@ class EnhancedAgent(BaseAgent):
                         name="filesystem",
                         description="Access and modify files in the system",
                         func=self._filesystem_tool,
-                        coroutine=self._filesystem_tool_async
+                        coroutine=self._filesystem_tool_async,
                     )
                 )
             elif tool_name == "mcp_database":
@@ -282,7 +286,7 @@ class EnhancedAgent(BaseAgent):
                         name="database",
                         description="Query and update database",
                         func=self._database_tool,
-                        coroutine=self._database_tool_async
+                        coroutine=self._database_tool_async,
                     )
                 )
             # Add more tool conversions as needed
@@ -308,11 +312,7 @@ class EnhancedAgent(BaseAgent):
         workflow.add_conditional_edges(
             "process",
             self._should_use_tools,
-            {
-                "tools": "tools",
-                "collaborate": "collaborate",
-                "complete": "complete"
-            }
+            {"tools": "tools", "collaborate": "collaborate", "complete": "complete"},
         )
 
         workflow.add_edge("tools", "process")
@@ -328,20 +328,24 @@ class EnhancedAgent(BaseAgent):
             return state
 
         # Build prompt
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", self.system_prompt),
-            MessagesPlaceholder(variable_name="chat_history"),
-            ("human", "{input}")
-        ])
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", self.system_prompt),
+                MessagesPlaceholder(variable_name="chat_history"),
+                ("human", "{input}"),
+            ]
+        )
 
         # Create chain
         chain = prompt | self.llm_model
 
         # Process
-        response = await chain.ainvoke({
-            "chat_history": state.get("messages", []),
-            "input": state.get("current_task", "")
-        })
+        response = await chain.ainvoke(
+            {
+                "chat_history": state.get("messages", []),
+                "input": state.get("current_task", ""),
+            }
+        )
 
         state["messages"].append(response)
 
@@ -358,9 +362,13 @@ class EnhancedAgent(BaseAgent):
         # Simple logic - enhance based on needs
         content = str(last_message.content).lower()
 
-        if any(tool_word in content for tool_word in ["search", "find", "look", "check"]):
+        if any(
+            tool_word in content for tool_word in ["search", "find", "look", "check"]
+        ):
             return "tools"
-        elif any(collab_word in content for collab_word in ["ask", "delegate", "assign"]):
+        elif any(
+            collab_word in content for collab_word in ["ask", "delegate", "assign"]
+        ):
             return "collaborate"
         else:
             return "complete"
@@ -381,9 +389,9 @@ class EnhancedAgent(BaseAgent):
                 task={
                     "type": "collaboration",
                     "content": state.get("current_task", ""),
-                    "context": state.get("context", {})
+                    "context": state.get("context", {}),
                 },
-                priority=MessagePriority.NORMAL
+                priority=MessagePriority.NORMAL,
             )
 
             state["results"]["collaboration_id"] = correlation_id
@@ -446,7 +454,7 @@ class EnhancedAgent(BaseAgent):
                 context=self.current_context,
                 current_task="What should I do next?",
                 next_agent=None,
-                results={}
+                results={},
             )
 
             result = await self.workflow.ainvoke(state)
@@ -471,10 +479,9 @@ class AgentSwarmOrchestrator:
         self.agents[agent.name] = agent
         self.logger.info(f"Registered agent {agent.name} in swarm")
 
-    async def create_swarm_pattern(self,
-                                  pattern_name: str,
-                                  agents: List[str],
-                                  workflow_type: str = "sequential"):
+    async def create_swarm_pattern(
+        self, pattern_name: str, agents: List[str], workflow_type: str = "sequential"
+    ):
         """Create a swarm collaboration pattern"""
 
         if workflow_type == "sequential":
@@ -482,30 +489,30 @@ class AgentSwarmOrchestrator:
             pattern = {
                 "type": "sequential",
                 "agents": agents,
-                "flow": [(agents[i], agents[i+1]) for i in range(len(agents)-1)]
+                "flow": [(agents[i], agents[i + 1]) for i in range(len(agents) - 1)],
             }
         elif workflow_type == "parallel":
             # Agents work in parallel
             pattern = {
                 "type": "parallel",
                 "agents": agents,
-                "coordinator": agents[0] if agents else None
+                "coordinator": agents[0] if agents else None,
             }
         elif workflow_type == "hierarchical":
             # Tree structure with delegation
             pattern = {
                 "type": "hierarchical",
                 "root": agents[0] if agents else None,
-                "children": {agents[0]: agents[1:]} if len(agents) > 1 else {}
+                "children": {agents[0]: agents[1:]} if len(agents) > 1 else {},
             }
         else:
             raise ValueError(f"Unknown workflow type: {workflow_type}")
 
         self.swarm_patterns[pattern_name] = pattern
 
-    async def execute_swarm_task(self,
-                               pattern_name: str,
-                               task: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute_swarm_task(
+        self, pattern_name: str, task: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute task using swarm pattern"""
 
         pattern = self.swarm_patterns.get(pattern_name)
@@ -546,10 +553,9 @@ class AgentSwarmOrchestrator:
 
         return results
 
-    async def _execute_hierarchical(self,
-                                  agent: EnhancedAgent,
-                                  children: Dict[str, List[str]],
-                                  task: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_hierarchical(
+        self, agent: EnhancedAgent, children: Dict[str, List[str]], task: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute hierarchical pattern"""
 
         # Root processes first
@@ -564,11 +570,7 @@ class AgentSwarmOrchestrator:
                 child_agent = self.agents.get(child_name)
                 if child_agent:
                     child_tasks.append(
-                        self._execute_hierarchical(
-                            child_agent,
-                            children,
-                            root_output
-                        )
+                        self._execute_hierarchical(child_agent, children, root_output)
                     )
 
             child_results = await asyncio.gather(*child_tasks)
@@ -587,11 +589,9 @@ class AgentDevelopmentKit:
         self.templates = {}
         self.logger = logging.getLogger("adk")
 
-    async def create_agent_from_template(self,
-                                       name: str,
-                                       template: AgentTemplate,
-                                       department: str,
-                                       **kwargs) -> EnhancedAgent:
+    async def create_agent_from_template(
+        self, name: str, template: AgentTemplate, department: str, **kwargs
+    ) -> EnhancedAgent:
         """Create agent from pre-defined template"""
 
         blueprint = AgentBlueprint(
@@ -602,7 +602,7 @@ class AgentDevelopmentKit:
             tier=kwargs.get("tier", ModelTier.SPECIALIST),
             goals=kwargs.get("goals", []),
             tools=kwargs.get("tools", ["mcp_filesystem"]),
-            capabilities=kwargs.get("capabilities", [ModelCapability.CHAT])
+            capabilities=kwargs.get("capabilities", [ModelCapability.CHAT]),
         )
 
         agent = await self.factory.create_agent(blueprint)
@@ -618,19 +618,18 @@ class AgentDevelopmentKit:
 
         return agent
 
-    def create_swarm(self,
-                    name: str,
-                    agents: List[str],
-                    pattern: str = "sequential") -> None:
+    def create_swarm(
+        self, name: str, agents: List[str], pattern: str = "sequential"
+    ) -> None:
         """Create agent swarm"""
 
         asyncio.create_task(
             self.orchestrator.create_swarm_pattern(name, agents, pattern)
         )
 
-    async def execute_swarm_task(self,
-                               swarm_name: str,
-                               task: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute_swarm_task(
+        self, swarm_name: str, task: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute task with agent swarm"""
 
         return await self.orchestrator.execute_swarm_task(swarm_name, task)
@@ -650,18 +649,18 @@ class AgentDevelopmentKit:
                 "tier": agent.blueprint.tier.value,
                 "goals": agent.blueprint.goals,
                 "tools": agent.blueprint.tools,
-                "capabilities": [cap.value for cap in agent.blueprint.capabilities]
+                "capabilities": [cap.value for cap in agent.blueprint.capabilities],
             },
-            "performance": agent.performance_metrics
+            "performance": agent.performance_metrics,
         }
 
-        with open(path, 'w') as f:
+        with open(path, "w") as f:
             yaml.dump(config, f, default_flow_style=False)
 
     def import_agent_config(self, path: str) -> AgentBlueprint:
         """Import agent configuration"""
 
-        with open(path, 'r') as f:
+        with open(path, "r") as f:
             config = yaml.safe_load(f)
 
         blueprint_data = config["blueprint"]
@@ -674,12 +673,15 @@ class AgentDevelopmentKit:
             tier=ModelTier(blueprint_data["tier"]),
             goals=blueprint_data["goals"],
             tools=blueprint_data["tools"],
-            capabilities=[ModelCapability(cap) for cap in blueprint_data["capabilities"]]
+            capabilities=[
+                ModelCapability(cap) for cap in blueprint_data["capabilities"]
+            ],
         )
 
 
 # Singleton instance
 _adk_instance = None
+
 
 def get_adk() -> AgentDevelopmentKit:
     """Get singleton ADK instance"""
@@ -701,7 +703,7 @@ async def example_adk_usage():
         template=AgentTemplate.RESEARCHER,
         department="Strategy",
         goals=["Research market trends", "Analyze competitors"],
-        tier=ModelTier.SPECIALIST
+        tier=ModelTier.SPECIALIST,
     )
 
     # Create a coder agent
@@ -710,7 +712,7 @@ async def example_adk_usage():
         template=AgentTemplate.CODER,
         department="Engineering",
         goals=["Implement features", "Fix bugs", "Optimize performance"],
-        tier=ModelTier.SPECIALIST
+        tier=ModelTier.SPECIALIST,
     )
 
     # Create a coordinator
@@ -719,14 +721,14 @@ async def example_adk_usage():
         template=AgentTemplate.COORDINATOR,
         department="Management",
         goals=["Coordinate tasks", "Track progress", "Report status"],
-        tier=ModelTier.DEPARTMENT
+        tier=ModelTier.DEPARTMENT,
     )
 
     # Create a swarm for project execution
     adk.create_swarm(
         "project_swarm",
         ["project_manager", "market_researcher", "backend_developer"],
-        pattern="hierarchical"
+        pattern="hierarchical",
     )
 
     # Execute a project task
@@ -735,8 +737,8 @@ async def example_adk_usage():
         {
             "task": "Develop new feature based on market research",
             "deadline": "2 weeks",
-            "requirements": ["User feedback integration", "Performance optimization"]
-        }
+            "requirements": ["User feedback integration", "Performance optimization"],
+        },
     )
 
     print(f"Project result: {result}")

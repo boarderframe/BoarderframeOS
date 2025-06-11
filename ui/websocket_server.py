@@ -18,9 +18,11 @@ from ..core.message_bus import AgentMessage, MessageType, message_bus
 
 logger = logging.getLogger("websocket_server")
 
+
 @dataclass
 class UIEvent:
     """Event to be sent to UI clients"""
+
     event_type: str
     data: Dict
     timestamp: str = None
@@ -34,6 +36,7 @@ class UIEvent:
 
     def to_json(self) -> str:
         return json.dumps(asdict(self))
+
 
 class WebSocketServer:
     """WebSocket server for real-time UI updates"""
@@ -84,9 +87,11 @@ class WebSocketServer:
             event_type="initial_state",
             data={
                 "agent_states": self.agent_states,
-                "solomon_conversations": self.solomon_conversations[-50:],  # Last 50 messages
-                "system_metrics": self.system_metrics
-            }
+                "solomon_conversations": self.solomon_conversations[
+                    -50:
+                ],  # Last 50 messages
+                "system_metrics": self.system_metrics,
+            },
         )
         await websocket.send(initial_event.to_json())
 
@@ -124,28 +129,29 @@ class WebSocketServer:
                 "task_type": "conversation",
                 "message": content,
                 "channel": "web_ui",
-                "session_id": str(websocket.remote_address)
-            }
+                "session_id": str(websocket.remote_address),
+            },
         )
 
         # Send via message bus
         await message_bus.send_direct(solomon_message)
 
         # Add to conversation history
-        self.solomon_conversations.append({
-            "role": "user",
-            "content": content,
-            "timestamp": datetime.now().isoformat()
-        })
+        self.solomon_conversations.append(
+            {
+                "role": "user",
+                "content": content,
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
 
         # Broadcast update
-        await self.broadcast_event(UIEvent(
-            event_type="solomon_conversation",
-            data={
-                "role": "user",
-                "content": content
-            }
-        ))
+        await self.broadcast_event(
+            UIEvent(
+                event_type="solomon_conversation",
+                data={"role": "user", "content": content},
+            )
+        )
 
     async def _handle_control_command(self, data: Dict, websocket):
         """Handle agent control commands from UI"""
@@ -159,8 +165,8 @@ class WebSocketServer:
             data={
                 "command": command,
                 "agent_id": agent_id,
-                "params": data.get("params", {})
-            }
+                "params": data.get("params", {}),
+            },
         )
 
         await message_bus.send_direct(control_message)
@@ -173,7 +179,10 @@ class WebSocketServer:
                 await self._handle_agent_status_update(message)
 
             # Solomon responses
-            elif message.from_agent == "solomon" and message.message_type == MessageType.TASK_RESPONSE:
+            elif (
+                message.from_agent == "solomon"
+                and message.message_type == MessageType.TASK_RESPONSE
+            ):
                 await self._handle_solomon_response(message)
 
             # Agent lifecycle events
@@ -195,41 +204,43 @@ class WebSocketServer:
         if agent_id not in self.agent_states:
             self.agent_states[agent_id] = {}
 
-        self.agent_states[agent_id].update({
-            "status": status_data.get("status", "unknown"),
-            "state": status_data.get("state", AgentState.IDLE.value),
-            "last_update": datetime.now().isoformat(),
-            "metrics": status_data.get("metrics", {})
-        })
+        self.agent_states[agent_id].update(
+            {
+                "status": status_data.get("status", "unknown"),
+                "state": status_data.get("state", AgentState.IDLE.value),
+                "last_update": datetime.now().isoformat(),
+                "metrics": status_data.get("metrics", {}),
+            }
+        )
 
         # Broadcast update
-        await self.broadcast_event(UIEvent(
-            event_type="agent_status_update",
-            data={
-                "agent_id": agent_id,
-                "status": self.agent_states[agent_id]
-            }
-        ))
+        await self.broadcast_event(
+            UIEvent(
+                event_type="agent_status_update",
+                data={"agent_id": agent_id, "status": self.agent_states[agent_id]},
+            )
+        )
 
     async def _handle_solomon_response(self, message: AgentMessage):
         """Handle Solomon's responses"""
         response_content = message.data.get("response", "")
 
         # Add to conversation history
-        self.solomon_conversations.append({
-            "role": "solomon",
-            "content": response_content,
-            "timestamp": datetime.now().isoformat()
-        })
+        self.solomon_conversations.append(
+            {
+                "role": "solomon",
+                "content": response_content,
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
 
         # Broadcast to UI
-        await self.broadcast_event(UIEvent(
-            event_type="solomon_conversation",
-            data={
-                "role": "solomon",
-                "content": response_content
-            }
-        ))
+        await self.broadcast_event(
+            UIEvent(
+                event_type="solomon_conversation",
+                data={"role": "solomon", "content": response_content},
+            )
+        )
 
     async def _handle_lifecycle_event(self, message: AgentMessage):
         """Handle agent lifecycle events (birth, evolution, death)"""
@@ -240,25 +251,19 @@ class WebSocketServer:
             "agent_created": "agent_birth",
             "agent_evolved": "agent_evolution",
             "agent_terminated": "agent_death",
-            "agent_started": "agent_awakening"
+            "agent_started": "agent_awakening",
         }
 
         ui_event_type = event_mapping.get(lifecycle_type, "agent_lifecycle")
 
-        await self.broadcast_event(UIEvent(
-            event_type=ui_event_type,
-            data=event_data
-        ))
+        await self.broadcast_event(UIEvent(event_type=ui_event_type, data=event_data))
 
     async def _handle_metrics_update(self, message: AgentMessage):
         """Handle system metrics updates"""
         metrics = message.data
         self.system_metrics.update(metrics)
 
-        await self.broadcast_event(UIEvent(
-            event_type="metrics_update",
-            data=metrics
-        ))
+        await self.broadcast_event(UIEvent(event_type="metrics_update", data=metrics))
 
     async def broadcast_event(self, event: UIEvent):
         """Broadcast event to all connected clients"""
@@ -266,17 +271,19 @@ class WebSocketServer:
             message = event.to_json()
             await asyncio.gather(
                 *[client.send(message) for client in self.clients],
-                return_exceptions=True
+                return_exceptions=True,
             )
 
     async def _broadcast_heartbeat(self):
         """Send periodic heartbeat to keep connections alive"""
         while True:
             try:
-                await self.broadcast_event(UIEvent(
-                    event_type="heartbeat",
-                    data={"server_time": datetime.now().isoformat()}
-                ))
+                await self.broadcast_event(
+                    UIEvent(
+                        event_type="heartbeat",
+                        data={"server_time": datetime.now().isoformat()},
+                    )
+                )
                 await asyncio.sleep(30)  # Every 30 seconds
             except Exception as e:
                 logger.error(f"Heartbeat error: {e}")
@@ -291,7 +298,7 @@ class WebSocketServer:
                     from_agent=self.server_id,
                     to_agent="orchestrator",
                     message_type=MessageType.INFO_REQUEST,
-                    data={"request": "system_status"}
+                    data={"request": "system_status"},
                 )
                 await message_bus.send_direct(metrics_request)
 
@@ -299,6 +306,7 @@ class WebSocketServer:
             except Exception as e:
                 logger.error(f"Metrics collection error: {e}")
                 await asyncio.sleep(10)
+
 
 # Global WebSocket server instance
 ws_server = WebSocketServer()

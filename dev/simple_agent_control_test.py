@@ -42,7 +42,7 @@ async def test_agent_control_system():
             capabilities=[AgentCapability.COORDINATION, AgentCapability.PLANNING],
             state=AgentState.IDLE,
             zone="primary",
-            model="claude-3.5-sonnet"
+            model="claude-3.5-sonnet",
         )
 
         david_info = AgentDiscoveryInfo(
@@ -52,7 +52,7 @@ async def test_agent_control_system():
             capabilities=[AgentCapability.DEVELOPMENT, AgentCapability.ANALYSIS],
             state=AgentState.IDLE,
             zone="development",
-            model="claude-3.5-sonnet"
+            model="claude-3.5-sonnet",
         )
 
         # Register agents
@@ -63,8 +63,12 @@ async def test_agent_control_system():
         print(f"   ✅ Registered David: {david_info.agent_id}")
 
         # Test discovery
-        coordination_agents = agent_registry.find_agents_by_capability(AgentCapability.COORDINATION)
-        development_agents = agent_registry.find_agents_by_capability(AgentCapability.DEVELOPMENT)
+        coordination_agents = agent_registry.find_agents_by_capability(
+            AgentCapability.COORDINATION
+        )
+        development_agents = agent_registry.find_agents_by_capability(
+            AgentCapability.DEVELOPMENT
+        )
 
         print(f"   🔍 Found {len(coordination_agents)} coordination agents")
         print(f"   🔍 Found {len(development_agents)} development agents")
@@ -80,7 +84,9 @@ async def test_agent_control_system():
         await resource_manager.start()
 
         # Set resource limits
-        solomon_limits = ResourceLimit(cpu_percent=80.0, memory_mb=4096.0, gpu_percent=50.0)
+        solomon_limits = ResourceLimit(
+            cpu_percent=80.0, memory_mb=4096.0, gpu_percent=50.0
+        )
         resource_manager.set_agent_limits("solomon-001", solomon_limits)
         print(f"   ⚙️  Set resource limits for Solomon")
 
@@ -115,7 +121,7 @@ async def test_agent_control_system():
             agent_id="solomon-001",
             task_type="analysis",
             data={"content": "Test analysis task for Solomon"},
-            priority=TaskPriority.NORMAL
+            priority=TaskPriority.NORMAL,
         )
         print(f"   📋 Assigned task to Solomon: {task_id}")
 
@@ -141,7 +147,7 @@ async def test_agent_control_system():
             to_agent="solomon-001",
             message_type=MessageType.TASK_REQUEST,
             content={"task": "test", "data": "hello"},
-            priority=MessagePriority.NORMAL
+            priority=MessagePriority.NORMAL,
         )
 
         await message_bus.send_message(test_message)
@@ -166,7 +172,7 @@ async def test_agent_control_system():
         print(f"   ⚙️  Agent configurations: {config_count}")
 
         # Message bus status
-        topic_count = len(message_bus.topics) if hasattr(message_bus, 'topics') else 0
+        topic_count = len(message_bus.topics) if hasattr(message_bus, "topics") else 0
         print(f"   📡 Message bus topics: {topic_count}")
 
         print("\n✅ Agent Control System Test Completed Successfully!")
@@ -176,10 +182,12 @@ async def test_agent_control_system():
     except Exception as e:
         print(f"\n❌ Test failed with error: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
     return True
+
 
 if __name__ == "__main__":
     # Run the test

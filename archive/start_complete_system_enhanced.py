@@ -20,7 +20,8 @@ from typing import Dict, List, Optional
 import psutil
 
 # Add boarderframeos to path
-sys.path.insert(0, str(Path(__file__).parent / 'boarderframeos'))
+sys.path.insert(0, str(Path(__file__).parent / "boarderframeos"))
+
 
 class SystemStartupManager:
     """Manages the complete BoarderframeOS system startup with real-time monitoring"""
@@ -33,7 +34,7 @@ class SystemStartupManager:
             "agents": {},
             "mcp_servers": {},
             "start_time": datetime.now().isoformat(),
-            "logs": []
+            "logs": [],
         }
         self.running = False
         self.status_file = "/tmp/boarderframe_startup_status.json"
@@ -41,7 +42,7 @@ class SystemStartupManager:
         # Configure logging
         logging.basicConfig(
             level=logging.INFO,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         )
         self.logger = logging.getLogger("system_startup")
 
@@ -53,7 +54,7 @@ class SystemStartupManager:
             "timestamp": datetime.now().isoformat(),
             "component": component,
             "message": message,
-            "status": status
+            "status": status,
         }
 
         self.status_data["logs"].append(log_entry)
@@ -67,12 +68,14 @@ class SystemStartupManager:
     def save_status(self):
         """Save current status to file for dashboard"""
         try:
-            with open(self.status_file, 'w') as f:
+            with open(self.status_file, "w") as f:
                 json.dump(self.status_data, f, indent=2)
         except Exception as e:
             self.logger.error(f"Failed to save status: {e}")
 
-    def update_component_status(self, component_type: str, name: str, status: str, details: Dict = None):
+    def update_component_status(
+        self, component_type: str, name: str, status: str, details: Dict = None
+    ):
         """Update status of a specific component"""
         if component_type not in self.status_data:
             self.status_data[component_type] = {}
@@ -80,7 +83,7 @@ class SystemStartupManager:
         self.status_data[component_type][name] = {
             "status": status,
             "last_update": datetime.now().isoformat(),
-            "details": details or {}
+            "details": details or {},
         }
         self.save_status()
 
@@ -98,22 +101,30 @@ class SystemStartupManager:
 
         for server in mcp_servers:
             try:
-                self.log_status(f"Starting {server['name']} server on port {server['port']}...", "mcp", "starting")
+                self.log_status(
+                    f"Starting {server['name']} server on port {server['port']}...",
+                    "mcp",
+                    "starting",
+                )
 
                 # Update status to starting
-                self.update_component_status("mcp_servers", server['name'], "starting", {
-                    "port": server['port'],
-                    "script": server['script']
-                })
+                self.update_component_status(
+                    "mcp_servers",
+                    server["name"],
+                    "starting",
+                    {"port": server["port"], "script": server["script"]},
+                )
 
                 # Start the server
-                script_path = Path(__file__).parent / "boarderframeos" / "mcp" / server['script']
+                script_path = (
+                    Path(__file__).parent / "boarderframeos" / "mcp" / server["script"]
+                )
                 if script_path.exists():
                     process = subprocess.Popen(
                         [sys.executable, str(script_path)],
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
-                        cwd=str(Path(__file__).parent)
+                        cwd=str(Path(__file__).parent),
                     )
 
                     self.processes[f"mcp_{server['name']}"] = process
@@ -123,27 +134,47 @@ class SystemStartupManager:
 
                     # Check if process is still running
                     if process.poll() is None:
-                        self.log_status(f"✅ {server['name']} server started successfully", "mcp", "success")
-                        self.update_component_status("mcp_servers", server['name'], "running", {
-                            "port": server['port'],
-                            "pid": process.pid
-                        })
+                        self.log_status(
+                            f"✅ {server['name']} server started successfully",
+                            "mcp",
+                            "success",
+                        )
+                        self.update_component_status(
+                            "mcp_servers",
+                            server["name"],
+                            "running",
+                            {"port": server["port"], "pid": process.pid},
+                        )
                     else:
-                        self.log_status(f"❌ {server['name']} server failed to start", "mcp", "error")
-                        self.update_component_status("mcp_servers", server['name'], "failed", {
-                            "port": server['port']
-                        })
+                        self.log_status(
+                            f"❌ {server['name']} server failed to start",
+                            "mcp",
+                            "error",
+                        )
+                        self.update_component_status(
+                            "mcp_servers",
+                            server["name"],
+                            "failed",
+                            {"port": server["port"]},
+                        )
                 else:
-                    self.log_status(f"⚠️ {server['name']} server script not found", "mcp", "warning")
-                    self.update_component_status("mcp_servers", server['name'], "not_found", {
-                        "expected_path": str(script_path)
-                    })
+                    self.log_status(
+                        f"⚠️ {server['name']} server script not found", "mcp", "warning"
+                    )
+                    self.update_component_status(
+                        "mcp_servers",
+                        server["name"],
+                        "not_found",
+                        {"expected_path": str(script_path)},
+                    )
 
             except Exception as e:
-                self.log_status(f"❌ Failed to start {server['name']} server: {e}", "mcp", "error")
-                self.update_component_status("mcp_servers", server['name'], "error", {
-                    "error": str(e)
-                })
+                self.log_status(
+                    f"❌ Failed to start {server['name']} server: {e}", "mcp", "error"
+                )
+                self.update_component_status(
+                    "mcp_servers", server["name"], "error", {"error": str(e)}
+                )
 
     async def start_dashboard(self):
         """Start the enhanced dashboard"""
@@ -152,7 +183,10 @@ class SystemStartupManager:
 
         try:
             # Kill any existing dashboard
-            subprocess.run(["pkill", "-f", "python.*enhanced_dashboard.py"], stderr=subprocess.DEVNULL)
+            subprocess.run(
+                ["pkill", "-f", "python.*enhanced_dashboard.py"],
+                stderr=subprocess.DEVNULL,
+            )
             await asyncio.sleep(2)
 
             # Start new dashboard
@@ -160,7 +194,7 @@ class SystemStartupManager:
                 [sys.executable, "enhanced_dashboard.py"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                cwd=str(Path(__file__).parent)
+                cwd=str(Path(__file__).parent),
             )
 
             self.processes["dashboard"] = dashboard_process
@@ -170,19 +204,30 @@ class SystemStartupManager:
 
             # Verify dashboard is running
             if dashboard_process.poll() is None:
-                self.log_status("✅ Dashboard started successfully on port 8888", "dashboard", "success")
-                self.update_component_status("services", "dashboard", "running", {
-                    "port": 8888,
-                    "pid": dashboard_process.pid,
-                    "url": "http://localhost:8888"
-                })
+                self.log_status(
+                    "✅ Dashboard started successfully on port 8888",
+                    "dashboard",
+                    "success",
+                )
+                self.update_component_status(
+                    "services",
+                    "dashboard",
+                    "running",
+                    {
+                        "port": 8888,
+                        "pid": dashboard_process.pid,
+                        "url": "http://localhost:8888",
+                    },
+                )
             else:
                 self.log_status("❌ Dashboard failed to start", "dashboard", "error")
                 self.update_component_status("services", "dashboard", "failed", {})
 
         except Exception as e:
             self.log_status(f"❌ Dashboard startup error: {e}", "dashboard", "error")
-            self.update_component_status("services", "dashboard", "error", {"error": str(e)})
+            self.update_component_status(
+                "services", "dashboard", "error", {"error": str(e)}
+            )
 
     async def start_agents(self):
         """Start agent coordination system"""
@@ -202,19 +247,24 @@ class SystemStartupManager:
                 # Check if agent process exists
                 agent_running = False
                 try:
-                    for process in psutil.process_iter(['pid', 'cmdline']):
-                        cmdline = ' '.join(process.info['cmdline'] or [])
+                    for process in psutil.process_iter(["pid", "cmdline"]):
+                        cmdline = " ".join(process.info["cmdline"] or [])
                         if f"{agent_name}.py" in cmdline:
                             agent_running = True
-                            self.update_component_status("agents", agent_name, "running", {
-                                "pid": process.info['pid']
-                            })
+                            self.update_component_status(
+                                "agents",
+                                agent_name,
+                                "running",
+                                {"pid": process.info["pid"]},
+                            )
                             break
                 except:
                     pass
 
                 if not agent_running:
-                    self.update_component_status("agents", agent_name, "not_running", {})
+                    self.update_component_status(
+                        "agents", agent_name, "not_running", {}
+                    )
 
             self.log_status("✅ Agent coordination system started", "agents", "success")
 
@@ -225,7 +275,9 @@ class SystemStartupManager:
     async def start_system(self):
         """Start the complete system"""
         self.running = True
-        self.log_status("🚀 Starting Complete BoarderframeOS System...", "system", "starting")
+        self.log_status(
+            "🚀 Starting Complete BoarderframeOS System...", "system", "starting"
+        )
 
         try:
             # Phase 1: Start MCP servers
@@ -246,6 +298,7 @@ class SystemStartupManager:
             # Open browser to dashboard
             try:
                 import webbrowser
+
                 webbrowser.open("http://localhost:8888")
                 self.log_status("🌐 Dashboard opened in browser", "system", "info")
             except:
@@ -269,7 +322,7 @@ class SystemStartupManager:
         self.status_data["startup_phase"] = "shutting_down"
 
         # Stop agents
-        if hasattr(self, 'demo') and self.demo and self.demo.controller:
+        if hasattr(self, "demo") and self.demo and self.demo.controller:
             try:
                 await self.demo.controller.stop()
                 self.log_status("✅ Agents stopped", "agents", "stopped")
@@ -292,6 +345,7 @@ class SystemStartupManager:
         self.log_status("🏁 System shutdown complete", "system", "stopped")
         sys.exit(0)
 
+
 async def main():
     """Main entry point"""
     manager = SystemStartupManager()
@@ -312,6 +366,7 @@ async def main():
     else:
         print("❌ System startup failed")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -16,12 +16,15 @@ import numpy as np
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("db_server_test")
 
+
 class DatabaseServerTester:
     """Test both database servers for functionality and performance"""
 
     def __init__(self):
         self.sqlite_url = "http://localhost:8004"
-        self.postgres_url = "http://localhost:8005"  # We'll run postgres server on different port
+        self.postgres_url = (
+            "http://localhost:8005"  # We'll run postgres server on different port
+        )
         self.test_results = {}
 
     async def run_comparison_tests(self):
@@ -47,7 +50,7 @@ class DatabaseServerTester:
 
             self.test_results[test_name] = {
                 "sqlite": sqlite_result,
-                "postgres": postgres_result
+                "postgres": postgres_result,
             }
 
             self._compare_results(test_name, sqlite_result, postgres_result)
@@ -64,16 +67,14 @@ class DatabaseServerTester:
             return {
                 "status": "PASSED",
                 "duration": round(duration, 3),
-                "result": result
+                "result": result,
             }
         except Exception as e:
-            return {
-                "status": "FAILED",
-                "error": str(e),
-                "duration": 0
-            }
+            return {"status": "FAILED", "error": str(e), "duration": 0}
 
-    def _compare_results(self, test_name: str, sqlite_result: Dict, postgres_result: Dict):
+    def _compare_results(
+        self, test_name: str, sqlite_result: Dict, postgres_result: Dict
+    ):
         """Compare and log test results"""
         sqlite_status = sqlite_result.get("status", "FAILED")
         postgres_status = postgres_result.get("status", "FAILED")
@@ -84,11 +85,15 @@ class DatabaseServerTester:
 
             if postgres_time > 0:
                 speedup = sqlite_time / postgres_time
-                logger.info(f"✅ {test_name}: Both passed. PostgreSQL {speedup:.2f}x {'faster' if speedup > 1 else 'slower'}")
+                logger.info(
+                    f"✅ {test_name}: Both passed. PostgreSQL {speedup:.2f}x {'faster' if speedup > 1 else 'slower'}"
+                )
             else:
                 logger.info(f"✅ {test_name}: Both passed")
         elif postgres_status == "PASSED":
-            logger.info(f"🆕 {test_name}: PostgreSQL passed, SQLite failed (new feature)")
+            logger.info(
+                f"🆕 {test_name}: PostgreSQL passed, SQLite failed (new feature)"
+            )
         elif sqlite_status == "PASSED":
             logger.warning(f"⚠️  {test_name}: SQLite passed, PostgreSQL failed")
         else:
@@ -120,12 +125,12 @@ class DatabaseServerTester:
         if server_type == "postgres":
             query_data = {
                 "sql": "SELECT 1 as test_value, NOW() as current_time",
-                "fetch_all": False
+                "fetch_all": False,
             }
         else:
             query_data = {
                 "sql": "SELECT 1 as test_value, datetime('now') as current_time",
-                "fetch_all": False
+                "fetch_all": False,
             }
 
         async with aiohttp.ClientSession() as session:
@@ -146,12 +151,14 @@ class DatabaseServerTester:
                 "schema": {
                     "id": "TEXT PRIMARY KEY",
                     "name": "TEXT NOT NULL",
-                    "data": "TEXT"
-                }
+                    "data": "TEXT",
+                },
             }
 
             async with aiohttp.ClientSession() as session:
-                async with session.post(f"{url}/create-table", json=create_table_data) as response:
+                async with session.post(
+                    f"{url}/create-table", json=create_table_data
+                ) as response:
                     pass  # Ignore if table already exists
 
         # Test insert
@@ -160,8 +167,8 @@ class DatabaseServerTester:
             "data": {
                 "name": f"test_agent_{server_type}",
                 "department": "test_department",
-                "status": "active"
-            }
+                "status": "active",
+            },
         }
 
         async with aiohttp.ClientSession() as session:
@@ -177,7 +184,7 @@ class DatabaseServerTester:
         update_data = {
             "table": "agents" if server_type == "postgres" else "test_agents",
             "data": {"status": "updated"},
-            "where": {"name": f"test_agent_{server_type}"}
+            "where": {"name": f"test_agent_{server_type}"},
         }
 
         async with aiohttp.ClientSession() as session:
@@ -192,7 +199,7 @@ class DatabaseServerTester:
 
         delete_data = {
             "table": "agents" if server_type == "postgres" else "test_agents",
-            "where": {"name": f"test_agent_{server_type}"}
+            "where": {"name": f"test_agent_{server_type}"},
         }
 
         async with aiohttp.ClientSession() as session:
@@ -212,11 +219,13 @@ class DatabaseServerTester:
         search_data = {
             "embedding": np.random.random(1536).tolist(),
             "similarity_threshold": 0.5,
-            "limit": 5
+            "limit": 5,
         }
 
         async with aiohttp.ClientSession() as session:
-            async with session.post(f"{url}/vector-search", json=search_data) as response:
+            async with session.post(
+                f"{url}/vector-search", json=search_data
+            ) as response:
                 data = await response.json()
                 assert data["success"] is True
                 return data
@@ -231,7 +240,7 @@ class DatabaseServerTester:
         # Run multiple queries
         query_data = {
             "sql": "SELECT 1" if server_type == "postgres" else "SELECT 1",
-            "fetch_all": False
+            "fetch_all": False,
         }
 
         async with aiohttp.ClientSession() as session:
@@ -262,8 +271,8 @@ class DatabaseServerTester:
             "data": {
                 "name": "memory_test_agent",
                 "department": "test",
-                "status": "active"
-            }
+                "status": "active",
+            },
         }
 
         async with aiohttp.ClientSession() as session:
@@ -281,7 +290,7 @@ class DatabaseServerTester:
                 "content": "This is a test memory for vector search",
                 "memory_type": "test",
                 "importance": 0.8,
-                "metadata": {"test": True}
+                "metadata": {"test": True},
             }
 
             async with session.post(f"{url}/memory", json=memory_data) as response:
@@ -298,13 +307,14 @@ class DatabaseServerTester:
         """Get URL for specific server type"""
         return self.postgres_url if server_type == "postgres" else self.sqlite_url
 
+
 async def main():
     """Main testing function"""
     print("🔄 Database MCP Server Comparison Test")
-    print("="*60)
+    print("=" * 60)
     print("SQLite Server: http://localhost:8004")
     print("PostgreSQL Server: http://localhost:8005")
-    print("="*60)
+    print("=" * 60)
 
     tester = DatabaseServerTester()
 
@@ -313,7 +323,7 @@ async def main():
 
         # Print summary
         print("\n📊 COMPARISON SUMMARY")
-        print("="*60)
+        print("=" * 60)
 
         postgres_passed = 0
         sqlite_passed = 0
@@ -339,10 +349,14 @@ async def main():
                 both_failed += 1
                 status_icon = "❌"
 
-            print(f"{status_icon} {test_name:<20} | PostgreSQL: {postgres_status:<6} | SQLite: {sqlite_status:<6}")
+            print(
+                f"{status_icon} {test_name:<20} | PostgreSQL: {postgres_status:<6} | SQLite: {sqlite_status:<6}"
+            )
 
-        print("="*60)
-        print(f"PostgreSQL: {postgres_passed} passed, {postgres_only} exclusive features")
+        print("=" * 60)
+        print(
+            f"PostgreSQL: {postgres_passed} passed, {postgres_only} exclusive features"
+        )
         print(f"SQLite: {sqlite_passed} passed")
         print(f"Both failed: {both_failed}")
 
@@ -357,7 +371,9 @@ async def main():
 
     return 0
 
+
 if __name__ == "__main__":
     import sys
+
     exit_code = asyncio.run(main())
     sys.exit(exit_code)

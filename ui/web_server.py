@@ -45,56 +45,59 @@ templates_dir.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 templates = Jinja2Templates(directory=str(templates_dir))
 
+
 # Request models
 class SolomonMessage(BaseModel):
     message: str
     session_id: Optional[str] = None
+
 
 class AgentCommand(BaseModel):
     command: str
     agent_id: str
     params: Optional[Dict] = {}
 
+
 # Routes
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
     """Main dashboard page"""
-    return templates.TemplateResponse("dashboard.html", {
-        "request": request,
-        "title": "BoarderframeOS Dashboard"
-    })
+    return templates.TemplateResponse(
+        "dashboard.html", {"request": request, "title": "BoarderframeOS Dashboard"}
+    )
+
 
 @app.get("/solomon", response_class=HTMLResponse)
 async def solomon_interface(request: Request):
     """Solomon communication interface"""
-    return templates.TemplateResponse("solomon.html", {
-        "request": request,
-        "title": "Solomon - Chief of Staff"
-    })
+    return templates.TemplateResponse(
+        "solomon.html", {"request": request, "title": "Solomon - Chief of Staff"}
+    )
+
 
 @app.get("/agents", response_class=HTMLResponse)
 async def agents_monitor(request: Request):
     """Agent monitoring page"""
-    return templates.TemplateResponse("agents.html", {
-        "request": request,
-        "title": "Agent Monitor"
-    })
+    return templates.TemplateResponse(
+        "agents.html", {"request": request, "title": "Agent Monitor"}
+    )
+
 
 @app.get("/orchestration", response_class=HTMLResponse)
 async def orchestration_view(request: Request):
     """Orchestration visualization page"""
-    return templates.TemplateResponse("orchestration.html", {
-        "request": request,
-        "title": "Orchestration Control"
-    })
+    return templates.TemplateResponse(
+        "orchestration.html", {"request": request, "title": "Orchestration Control"}
+    )
+
 
 @app.get("/llm", response_class=HTMLResponse)
 async def llm_monitor(request: Request):
     """LLM activity monitor page"""
-    return templates.TemplateResponse("llm.html", {
-        "request": request,
-        "title": "LLM Activity Monitor"
-    })
+    return templates.TemplateResponse(
+        "llm.html", {"request": request, "title": "LLM Activity Monitor"}
+    )
+
 
 # API Routes
 @app.get("/api/status")
@@ -106,14 +109,18 @@ async def get_system_status():
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+
 @app.get("/api/agents")
 async def get_agents():
     """Get all agent information"""
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.post("http://localhost:8004/query", json={
-                "sql": "SELECT id, name, biome, status, config FROM agents ORDER BY created_at DESC"
-            })
+            response = await client.post(
+                "http://localhost:8004/query",
+                json={
+                    "sql": "SELECT id, name, biome, status, config FROM agents ORDER BY created_at DESC"
+                },
+            )
 
             if response.status_code == 200 and response.json().get("success"):
                 agents = response.json().get("data", [])
@@ -124,16 +131,17 @@ async def get_agents():
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+
 @app.get("/api/agents/{agent_id}")
 async def get_agent_details(agent_id: str):
     """Get detailed agent information"""
     try:
         async with httpx.AsyncClient() as client:
             # Get agent basic info
-            agent_response = await client.post("http://localhost:8004/query", json={
-                "sql": "SELECT * FROM agents WHERE id = ?",
-                "params": [agent_id]
-            })
+            agent_response = await client.post(
+                "http://localhost:8004/query",
+                json={"sql": "SELECT * FROM agents WHERE id = ?", "params": [agent_id]},
+            )
 
             if not agent_response.json().get("success"):
                 raise HTTPException(status_code=404, detail="Agent not found")
@@ -141,30 +149,36 @@ async def get_agent_details(agent_id: str):
             agent_data = agent_response.json()["data"][0]
 
             # Get agent metrics
-            metrics_response = await client.post("http://localhost:8004/query", json={
-                "sql": """
+            metrics_response = await client.post(
+                "http://localhost:8004/query",
+                json={
+                    "sql": """
                     SELECT metric_name, metric_value, recorded_at
                     FROM metrics
                     WHERE agent_id = ?
                     ORDER BY recorded_at DESC LIMIT 100
                 """,
-                "params": [agent_id]
-            })
+                    "params": [agent_id],
+                },
+            )
 
             metrics = []
             if metrics_response.json().get("success"):
                 metrics = metrics_response.json().get("data", [])
 
             # Get recent interactions
-            interactions_response = await client.post("http://localhost:8004/query", json={
-                "sql": """
+            interactions_response = await client.post(
+                "http://localhost:8004/query",
+                json={
+                    "sql": """
                     SELECT interaction_type, data, created_at
                     FROM agent_interactions
                     WHERE source_agent = ? OR target_agent = ?
                     ORDER BY created_at DESC LIMIT 50
                 """,
-                "params": [agent_id, agent_id]
-            })
+                    "params": [agent_id, agent_id],
+                },
+            )
 
             interactions = []
             if interactions_response.json().get("success"):
@@ -174,13 +188,14 @@ async def get_agent_details(agent_id: str):
                 "success": True,
                 "agent": agent_data,
                 "metrics": metrics,
-                "interactions": interactions
+                "interactions": interactions,
             }
 
     except HTTPException:
         raise
     except Exception as e:
         return {"success": False, "error": str(e)}
+
 
 @app.post("/api/solomon/message")
 async def send_solomon_message(message: SolomonMessage):
@@ -189,10 +204,7 @@ async def send_solomon_message(message: SolomonMessage):
         # Forward to WebSocket server for handling
         event = UIEvent(
             event_type="solomon_user_message",
-            data={
-                "message": message.message,
-                "session_id": message.session_id
-            }
+            data={"message": message.message, "session_id": message.session_id},
         )
         await ws_server.broadcast_event(event)
 
@@ -200,6 +212,7 @@ async def send_solomon_message(message: SolomonMessage):
 
     except Exception as e:
         return {"success": False, "error": str(e)}
+
 
 @app.post("/api/agents/command")
 async def send_agent_command(command: AgentCommand):
@@ -221,6 +234,7 @@ async def send_agent_command(command: AgentCommand):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+
 @app.get("/api/mcp/servers")
 async def get_mcp_servers():
     """Get MCP server status"""
@@ -235,6 +249,7 @@ async def get_mcp_servers():
 
     except Exception as e:
         return {"success": False, "error": str(e)}
+
 
 @app.get("/api/llm/activity")
 async def get_llm_activity():
@@ -251,6 +266,7 @@ async def get_llm_activity():
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+
 @app.get("/api/biomes")
 async def get_biome_status():
     """Get biome health and population"""
@@ -260,27 +276,33 @@ async def get_biome_status():
 
         async with httpx.AsyncClient() as client:
             for biome in biomes:
-                response = await client.post("http://localhost:8004/query", json={
-                    "sql": """
+                response = await client.post(
+                    "http://localhost:8004/query",
+                    json={
+                        "sql": """
                         SELECT COUNT(*) as count, AVG(fitness_score) as avg_fitness
                         FROM agents
                         WHERE biome = ? AND status = 'active'
                     """,
-                    "params": [biome]
-                })
+                        "params": [biome],
+                    },
+                )
 
                 if response.json().get("success"):
                     data = response.json()["data"][0]
                     biome_data[biome] = {
                         "population": data["count"],
                         "avg_fitness": data["avg_fitness"] or 0.0,
-                        "health": min(1.0, (data["count"] / 10) * (data["avg_fitness"] or 0.5))
+                        "health": min(
+                            1.0, (data["count"] / 10) * (data["avg_fitness"] or 0.5)
+                        ),
                     }
 
         return {"success": True, "biomes": biome_data}
 
     except Exception as e:
         return {"success": False, "error": str(e)}
+
 
 # WebSocket endpoint
 @app.websocket("/ws")
@@ -306,6 +328,7 @@ async def websocket_endpoint(websocket: WebSocket):
         logger.error(f"WebSocket error: {e}")
         ws_server.clients.discard(websocket)
 
+
 # Startup event
 @app.on_event("startup")
 async def startup_event():
@@ -316,6 +339,7 @@ async def startup_event():
     await ws_server.start()
 
     logger.info("Web Server initialized successfully")
+
 
 if __name__ == "__main__":
     import argparse
@@ -330,9 +354,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     logger.info(f"Starting BoarderframeOS Web Server on {args.host}:{args.port}")
-    uvicorn.run(
-        "web_server:app",
-        host=args.host,
-        port=args.port,
-        reload=args.reload
-    )
+    uvicorn.run("web_server:app", host=args.host, port=args.port, reload=args.reload)

@@ -14,32 +14,36 @@ def align_pages_with_metrics():
 
     file_path = "/Users/cosburn/BoarderframeOS/corporate_headquarters.py"
 
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         content = f.read()
 
     # 1. Update Agents Page
     print("\n1️⃣ Updating Agents Page...")
 
     # Replace the agent metrics grid with metrics layer cards
-    agent_metrics_pattern = r'<!-- Agent Metrics Grid -->[\s\S]*?</div>\s*</div>\s*</div>\s*</div>\s*</div>'
+    agent_metrics_pattern = (
+        r"<!-- Agent Metrics Grid -->[\s\S]*?</div>\s*</div>\s*</div>\s*</div>\s*</div>"
+    )
 
-    agent_metrics_replacement = '''<!-- Agent Metrics from Metrics Layer -->
-                {self.metrics_layer.get_agent_metrics_cards() if self.metrics_layer else self._generate_agent_metrics_fallback()}'''
+    agent_metrics_replacement = """<!-- Agent Metrics from Metrics Layer -->
+                {self.metrics_layer.get_agent_metrics_cards() if self.metrics_layer else self._generate_agent_metrics_fallback()}"""
 
-    content = re.sub(agent_metrics_pattern, agent_metrics_replacement, content, flags=re.DOTALL)
+    content = re.sub(
+        agent_metrics_pattern, agent_metrics_replacement, content, flags=re.DOTALL
+    )
 
     # Update the agent grid to always use metrics layer
     agent_grid_pattern = r'<div id="agentGrid"[^>]*>[\s\S]*?</div>'
-    agent_grid_replacement = '''<div id="agentGrid" style="margin-top: 1rem;">
+    agent_grid_replacement = """<div id="agentGrid" style="margin-top: 1rem;">
                     {self.metrics_layer.get_agent_cards_html() if self.metrics_layer else self._generate_enhanced_agents_html()}
-                </div>'''
+                </div>"""
 
     # Apply the replacement more carefully
-    agents_section = content[content.find('id="agents"'):content.find('id="leaders"')]
+    agents_section = content[content.find('id="agents"') : content.find('id="leaders"')]
     if 'id="agentGrid"' in agents_section:
         # Find exact position
         grid_start = content.find('<div id="agentGrid"')
-        grid_end = content.find('</div>', grid_start) + 6
+        grid_end = content.find("</div>", grid_start) + 6
         content = content[:grid_start] + agent_grid_replacement + content[grid_end:]
 
     print("   ✅ Agents page aligned with metrics layer")
@@ -51,9 +55,9 @@ def align_pages_with_metrics():
     # Let's update it to use metrics layer if available
     leaders_pattern = r'<div id="leaders" class="tab-content">[\s\S]*?{self\._generate_leaders_html\(\)}[\s\S]*?</div>'
 
-    leaders_replacement = '''<div id="leaders" class="tab-content">
+    leaders_replacement = """<div id="leaders" class="tab-content">
             {self.metrics_layer.get_leaders_page_html() if self.metrics_layer and hasattr(self.metrics_layer, 'get_leaders_page_html') else self._generate_leaders_html()}
-        </div>'''
+        </div>"""
 
     content = re.sub(leaders_pattern, leaders_replacement, content, flags=re.DOTALL)
     print("   ✅ Leaders page prepared for metrics layer")
@@ -64,20 +68,25 @@ def align_pages_with_metrics():
     # Replace department metrics grid with metrics layer
     dept_metrics_pattern = r'<!-- Department Metrics Grid -->[\s\S]*?<div style="display: flex; justify-content: space-around;[^>]*>'
 
-    dept_metrics_replacement = '''<!-- Department Metrics from Metrics Layer -->
+    dept_metrics_replacement = """<!-- Department Metrics from Metrics Layer -->
                 {self.metrics_layer.get_department_metrics_cards() if self.metrics_layer and hasattr(self.metrics_layer, 'get_department_metrics_cards') else ""}
-                <div style="display: none;">'''
+                <div style="display: none;">"""
 
-    content = re.sub(dept_metrics_pattern, dept_metrics_replacement, content, flags=re.DOTALL)
+    content = re.sub(
+        dept_metrics_pattern, dept_metrics_replacement, content, flags=re.DOTALL
+    )
 
     # Ensure departments content uses metrics layer
     dept_content_pattern = r'<div style="grid-column: span 12;">[\s\S]*?{self\.metrics_layer\.get_department_cards_html\(\)[^}]*}'
 
     # Check if it's already updated
-    if "get_department_cards_html()" not in content[content.find('id="departments"'):content.find('id="services"')]:
+    if (
+        "get_department_cards_html()"
+        not in content[content.find('id="departments"') : content.find('id="services"')]
+    ):
         # Need to update the divisions call
-        divisions_call_pattern = r'{self\._generate_divisions_html\(\)}'
-        divisions_replacement = '{self.metrics_layer.get_department_cards_html() if self.metrics_layer else self._generate_divisions_html()}'
+        divisions_call_pattern = r"{self\._generate_divisions_html\(\)}"
+        divisions_replacement = "{self.metrics_layer.get_department_cards_html() if self.metrics_layer else self._generate_divisions_html()}"
 
         # Find in departments section only
         dept_start = content.find('id="departments"')
@@ -85,7 +94,9 @@ def align_pages_with_metrics():
         dept_section = content[dept_start:dept_end]
 
         if divisions_call_pattern in dept_section:
-            dept_section = dept_section.replace(divisions_call_pattern, divisions_replacement)
+            dept_section = dept_section.replace(
+                divisions_call_pattern, divisions_replacement
+            )
             content = content[:dept_start] + dept_section + content[dept_end:]
 
     print("   ✅ Departments page aligned with metrics layer")
@@ -97,9 +108,9 @@ def align_pages_with_metrics():
     # Let's give it its own metrics layer method
     divisions_pattern = r'<div id="divisions" class="tab-content">[\s\S]*?{self\._generate_divisions_html\(\)}[\s\S]*?</div>'
 
-    divisions_replacement = '''<div id="divisions" class="tab-content">
+    divisions_replacement = """<div id="divisions" class="tab-content">
             {self.metrics_layer.get_divisions_page_html() if self.metrics_layer and hasattr(self.metrics_layer, 'get_divisions_page_html') else self._generate_divisions_html()}
-        </div>'''
+        </div>"""
 
     content = re.sub(divisions_pattern, divisions_replacement, content, flags=re.DOTALL)
     print("   ✅ Divisions page prepared for metrics layer")
@@ -158,11 +169,13 @@ def align_pages_with_metrics():
         """
 
     '''
-        content = content[:method_location] + fallback_method + content[method_location:]
+        content = (
+            content[:method_location] + fallback_method + content[method_location:]
+        )
         print("   ✅ Added agent metrics fallback method")
 
     # Write the updated content
-    with open(file_path, 'w') as f:
+    with open(file_path, "w") as f:
         f.write(content)
 
     print("\n✅ All pages aligned with metrics layer!")

@@ -22,6 +22,7 @@ logger = logging.getLogger("simple_chat_dashboard")
 chat_messages = []
 message_id_counter = 0
 
+
 class SimpleChatHandler(SimpleHTTPRequestHandler):
     """HTTP handler for simple chat dashboard"""
 
@@ -49,8 +50,8 @@ class SimpleChatHandler(SimpleHTTPRequestHandler):
         html_content = self.generate_dashboard_html()
 
         self.send_response(200)
-        self.send_header('Content-type', 'text/html')
-        self.send_header('Content-length', len(html_content))
+        self.send_header("Content-type", "text/html")
+        self.send_header("Content-length", len(html_content))
         self.end_headers()
         self.wfile.write(html_content.encode())
 
@@ -58,8 +59,8 @@ class SimpleChatHandler(SimpleHTTPRequestHandler):
         """Send current messages as JSON"""
         response = json.dumps(chat_messages)
         self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        self.send_header('Content-length', len(response))
+        self.send_header("Content-type", "application/json")
+        self.send_header("Content-length", len(response))
         self.end_headers()
         self.wfile.write(response.encode())
 
@@ -68,12 +69,12 @@ class SimpleChatHandler(SimpleHTTPRequestHandler):
         status = {
             "timestamp": datetime.now().isoformat(),
             "solomon_status": "active",
-            "message_count": len(chat_messages)
+            "message_count": len(chat_messages),
         }
         response = json.dumps(status)
         self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        self.send_header('Content-length', len(response))
+        self.send_header("Content-type", "application/json")
+        self.send_header("Content-length", len(response))
         self.end_headers()
         self.wfile.write(response.encode())
 
@@ -82,11 +83,11 @@ class SimpleChatHandler(SimpleHTTPRequestHandler):
         global message_id_counter
 
         try:
-            content_length = int(self.headers['Content-Length'])
+            content_length = int(self.headers["Content-Length"])
             post_data = self.rfile.read(content_length)
-            data = json.loads(post_data.decode('utf-8'))
+            data = json.loads(post_data.decode("utf-8"))
 
-            user_message = data.get('message', '')
+            user_message = data.get("message", "")
             if user_message:
                 # Add user message
                 message_id_counter += 1
@@ -94,7 +95,7 @@ class SimpleChatHandler(SimpleHTTPRequestHandler):
                     "id": message_id_counter,
                     "type": "user",
                     "content": user_message,
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
                 }
                 chat_messages.append(user_msg)
 
@@ -105,7 +106,7 @@ class SimpleChatHandler(SimpleHTTPRequestHandler):
                     "id": message_id_counter,
                     "type": "solomon",
                     "content": solomon_response,
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
                 }
                 chat_messages.append(solomon_msg)
 
@@ -114,14 +115,14 @@ class SimpleChatHandler(SimpleHTTPRequestHandler):
                     chat_messages[:] = chat_messages[-50:]
 
             self.send_response(200)
-            self.send_header('Content-type', 'application/json')
+            self.send_header("Content-type", "application/json")
             self.end_headers()
             self.wfile.write(b'{"status": "ok"}')
 
         except Exception as e:
             logger.error(f"Error handling message: {e}")
             self.send_response(500)
-            self.send_header('Content-type', 'application/json')
+            self.send_header("Content-type", "application/json")
             self.end_headers()
             self.wfile.write(json.dumps({"error": str(e)}).encode())
 
@@ -134,7 +135,7 @@ class SimpleChatHandler(SimpleHTTPRequestHandler):
             "I understand your request. How may I assist you further?",
             "I'm here to help coordinate BoarderframeOS operations for you.",
             "Your message has been received. I'm processing your request.",
-            "As your Chief of Staff, I'm ready to help with whatever you need."
+            "As your Chief of Staff, I'm ready to help with whatever you need.",
         ]
 
         # Simple response selection based on message content
@@ -409,16 +410,18 @@ class SimpleChatHandler(SimpleHTTPRequestHandler):
 </body>
 </html>"""
 
+
 def start_simple_dashboard(port: int = 8890):
     """Start the simple chat dashboard"""
-    server = HTTPServer(('localhost', port), SimpleChatHandler)
+    server = HTTPServer(("localhost", port), SimpleChatHandler)
     logger.info(f"Starting simple chat dashboard on http://localhost:{port}")
     server.serve_forever()
+
 
 if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
     try:

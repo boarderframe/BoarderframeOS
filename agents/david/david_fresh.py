@@ -14,11 +14,12 @@ from typing import Any, Dict, List, Optional
 # Load environment variables
 try:
     from dotenv import load_dotenv
-    load_dotenv(Path(__file__).parent.parent.parent / '.env')
+
+    load_dotenv(Path(__file__).parent.parent.parent / ".env")
 except ImportError:
     pass
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from langgraph.graph import END, START, StateGraph
 
@@ -48,12 +49,12 @@ class FreshDavid(EnhancedBaseAgent):
                 "business_growth",
                 "operational_excellence",
                 "stakeholder_management",
-                "competitive_positioning"
+                "competitive_positioning",
             ],
             tools=["analytics", "customer", "registry", "payment"],
             model="claude-3-opus-20240229",  # Will be optimized by Brain
             temperature=0.1,  # Very low temperature for consistent executive decisions
-            max_concurrent_tasks=20
+            max_concurrent_tasks=20,
         )
 
         super().__init__(config)
@@ -66,22 +67,22 @@ class FreshDavid(EnhancedBaseAgent):
                 "stakeholder_value_creation",
                 "long_term_vision",
                 "operational_excellence",
-                "innovation_leadership"
+                "innovation_leadership",
             ],
             "business_objectives": {
                 "revenue_target": 15000,  # Monthly
                 "growth_rate_target": 0.25,  # 25% monthly growth
                 "market_share_goal": 0.15,  # 15% of AI agent market
                 "profitability_target": 0.35,  # 35% profit margin
-                "customer_satisfaction_target": 0.95
+                "customer_satisfaction_target": 0.95,
             },
             "decision_matrix": {
                 "strategic_impact": ["high", "medium", "low"],
                 "revenue_impact": ["direct", "indirect", "neutral"],
                 "risk_level": ["low", "medium", "high"],
                 "urgency": ["immediate", "short_term", "long_term"],
-                "resource_requirement": ["minimal", "moderate", "significant"]
-            }
+                "resource_requirement": ["minimal", "moderate", "significant"],
+            },
         }
 
         # Business Performance Tracking
@@ -91,22 +92,22 @@ class FreshDavid(EnhancedBaseAgent):
                 "revenue_growth_rate": 0.0,
                 "cost_per_acquisition": 0.0,
                 "lifetime_value": 0.0,
-                "profit_margin": 0.0
+                "profit_margin": 0.0,
             },
             "operational_metrics": {
                 "agent_utilization": 0.78,
                 "system_uptime": 0.995,
                 "response_time": 2.1,
                 "customer_satisfaction": 0.82,
-                "employee_satisfaction": 0.85
+                "employee_satisfaction": 0.85,
             },
             "strategic_metrics": {
                 "market_position": "emerging_leader",
                 "competitive_advantage_score": 0.75,
                 "innovation_index": 0.80,
                 "brand_recognition": 0.35,
-                "partnership_strength": 0.60
-            }
+                "partnership_strength": 0.60,
+            },
         }
 
         # Executive Context
@@ -116,20 +117,20 @@ class FreshDavid(EnhancedBaseAgent):
                 "brain_langgraph_deployment",
                 "agent_factory_completion",
                 "revenue_optimization",
-                "market_expansion"
+                "market_expansion",
             ],
             "board_priorities": [
                 "achieve_15k_monthly_revenue",
                 "scale_to_120_agents",
                 "establish_market_leadership",
-                "build_sustainable_growth"
+                "build_sustainable_growth",
             ],
             "stakeholder_commitments": {
                 "investors": "25% monthly growth",
                 "customers": "99.9% uptime",
                 "employees": "clear growth path",
-                "partners": "mutual value creation"
-            }
+                "partners": "mutual value creation",
+            },
         }
 
     async def _add_specialized_nodes(self, graph: StateGraph):
@@ -159,11 +160,11 @@ class FreshDavid(EnhancedBaseAgent):
             context={
                 "user_request": state.get("user_request", ""),
                 "business_performance": self.business_performance,
-                "executive_context": self.executive_context
+                "executive_context": self.executive_context,
             },
             complexity=8,
             quality_requirements=0.93,
-            conversation_id=state.get("conversation_id")
+            conversation_id=state.get("conversation_id"),
         )
 
         brain_response = await self.brain.process_agent_request(brain_request)
@@ -199,17 +200,15 @@ class FreshDavid(EnhancedBaseAgent):
             situation_assessment = await brain_response.llm.generate(assessment_prompt)
 
             await self._report_brain_performance(
-                brain_response.tracking_id,
-                situation_assessment,
-                success=True
+                brain_response.tracking_id, situation_assessment, success=True
             )
 
         except Exception as e:
-            situation_assessment = f"Situation assessment encountered an issue: {str(e)}"
+            situation_assessment = (
+                f"Situation assessment encountered an issue: {str(e)}"
+            )
             await self._report_brain_performance(
-                brain_response.tracking_id,
-                situation_assessment,
-                success=False
+                brain_response.tracking_id, situation_assessment, success=False
             )
 
         state["situation_assessment"] = situation_assessment
@@ -227,11 +226,11 @@ class FreshDavid(EnhancedBaseAgent):
             context={
                 "situation_assessment": state.get("situation_assessment", ""),
                 "executive_framework": self.executive_framework,
-                "user_request": state.get("user_request", "")
+                "user_request": state.get("user_request", ""),
             },
             complexity=9,  # Highest complexity for executive analysis
             quality_requirements=0.95,
-            conversation_id=state.get("conversation_id")
+            conversation_id=state.get("conversation_id"),
         )
 
         brain_response = await self.brain.process_agent_request(brain_request)
@@ -285,17 +284,13 @@ class FreshDavid(EnhancedBaseAgent):
             executive_analysis = await brain_response.llm.generate(analysis_prompt)
 
             await self._report_brain_performance(
-                brain_response.tracking_id,
-                executive_analysis,
-                success=True
+                brain_response.tracking_id, executive_analysis, success=True
             )
 
         except Exception as e:
             executive_analysis = f"Executive analysis encountered an issue: {str(e)}"
             await self._report_brain_performance(
-                brain_response.tracking_id,
-                executive_analysis,
-                success=False
+                brain_response.tracking_id, executive_analysis, success=False
             )
 
         state["executive_analysis"] = executive_analysis
@@ -315,10 +310,10 @@ class FreshDavid(EnhancedBaseAgent):
             context={
                 "executive_analysis": state.get("executive_analysis", ""),
                 "decision_factors": decision_factors,
-                "decision_matrix": self.executive_framework["decision_matrix"]
+                "decision_matrix": self.executive_framework["decision_matrix"],
             },
             complexity=8,
-            quality_requirements=0.94
+            quality_requirements=0.94,
         )
 
         brain_response = await self.brain.process_agent_request(brain_request)
@@ -352,17 +347,15 @@ class FreshDavid(EnhancedBaseAgent):
             decision_framework = await brain_response.llm.generate(framework_prompt)
 
             await self._report_brain_performance(
-                brain_response.tracking_id,
-                decision_framework,
-                success=True
+                brain_response.tracking_id, decision_framework, success=True
             )
 
         except Exception as e:
-            decision_framework = f"Decision framework application encountered an issue: {str(e)}"
+            decision_framework = (
+                f"Decision framework application encountered an issue: {str(e)}"
+            )
             await self._report_brain_performance(
-                brain_response.tracking_id,
-                decision_framework,
-                success=False
+                brain_response.tracking_id, decision_framework, success=False
             )
 
         state["decision_framework"] = decision_framework
@@ -391,10 +384,10 @@ class FreshDavid(EnhancedBaseAgent):
                 "executive_analysis": state.get("executive_analysis", ""),
                 "decision_framework": state.get("decision_framework", ""),
                 "stakeholder_impact": state.get("stakeholder_impact", {}),
-                "user_request": state.get("user_request", "")
+                "user_request": state.get("user_request", ""),
             },
             complexity=9,
-            quality_requirements=0.96
+            quality_requirements=0.96,
         )
 
         brain_response = await self.brain.process_agent_request(brain_request)
@@ -444,17 +437,15 @@ class FreshDavid(EnhancedBaseAgent):
             executive_decision = await brain_response.llm.generate(decision_prompt)
 
             await self._report_brain_performance(
-                brain_response.tracking_id,
-                executive_decision,
-                success=True
+                brain_response.tracking_id, executive_decision, success=True
             )
 
         except Exception as e:
-            executive_decision = f"Executive decision making encountered an issue: {str(e)}"
+            executive_decision = (
+                f"Executive decision making encountered an issue: {str(e)}"
+            )
             await self._report_brain_performance(
-                brain_response.tracking_id,
-                executive_decision,
-                success=False
+                brain_response.tracking_id, executive_decision, success=False
             )
 
         state["executive_decision"] = executive_decision
@@ -477,7 +468,7 @@ class FreshDavid(EnhancedBaseAgent):
             task_type="executive_thinking",
             context=context,
             complexity=urgency_assessment["complexity"],
-            quality_requirements=0.95
+            quality_requirements=0.95,
         )
 
         brain_response = await self.brain.process_agent_request(brain_request)
@@ -506,11 +497,15 @@ class FreshDavid(EnhancedBaseAgent):
 
         try:
             thoughts = await brain_response.llm.generate(thinking_prompt)
-            await self._report_brain_performance(brain_response.tracking_id, thoughts, True)
+            await self._report_brain_performance(
+                brain_response.tracking_id, thoughts, True
+            )
             return thoughts
         except Exception as e:
             error_thoughts = f"Executive thinking encountered an issue: {str(e)}"
-            await self._report_brain_performance(brain_response.tracking_id, error_thoughts, False)
+            await self._report_brain_performance(
+                brain_response.tracking_id, error_thoughts, False
+            )
             return error_thoughts
 
     async def act(self, action: Dict[str, Any]) -> Dict[str, Any]:
@@ -529,7 +524,9 @@ class FreshDavid(EnhancedBaseAgent):
         else:
             return await self._execute_executive_directive(action)
 
-    async def handle_user_chat(self, message: str, conversation_id: Optional[str] = None) -> str:
+    async def handle_user_chat(
+        self, message: str, conversation_id: Optional[str] = None
+    ) -> str:
         """Handle user chat with executive authority"""
 
         self.logger.info(f"David processing executive request: {message[:100]}...")
@@ -537,7 +534,9 @@ class FreshDavid(EnhancedBaseAgent):
         try:
             # Check if this requires board-level orchestration
             if await self._requires_board_level_coordination(message):
-                result = await self.orchestrator.process_user_request(message, conversation_id)
+                result = await self.orchestrator.process_user_request(
+                    message, conversation_id
+                )
                 return self._enhance_with_executive_context(result["response"], message)
             else:
                 # Handle directly with CEO-level authority
@@ -548,17 +547,32 @@ class FreshDavid(EnhancedBaseAgent):
             return await self._executive_fallback_response(message)
 
     # Helper methods
-    async def _assess_executive_urgency(self, context: Dict[str, Any]) -> Dict[str, Any]:
+    async def _assess_executive_urgency(
+        self, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Assess if situation requires CEO attention"""
 
-        new_messages = context.get('new_messages', [])
-        user_input = context.get('user_input', '')
+        new_messages = context.get("new_messages", [])
+        user_input = context.get("user_input", "")
 
         # Executive urgency keywords
         executive_keywords = [
-            'ceo', 'executive', 'decision', 'strategic', 'urgent', 'critical',
-            'revenue', 'business', 'growth', 'competition', 'crisis',
-            'board', 'investor', 'partnership', 'acquisition', 'leadership'
+            "ceo",
+            "executive",
+            "decision",
+            "strategic",
+            "urgent",
+            "critical",
+            "revenue",
+            "business",
+            "growth",
+            "competition",
+            "crisis",
+            "board",
+            "investor",
+            "partnership",
+            "acquisition",
+            "leadership",
         ]
 
         # Check for executive content
@@ -569,15 +583,20 @@ class FreshDavid(EnhancedBaseAgent):
 
         # Complexity calculation
         complexity = 6  # Higher base for CEO
-        if has_executive_content: complexity += 3
-        if len(new_messages) > 1: complexity += 1
-        if any(word in user_input.lower() for word in ['strategic', 'revenue', 'growth']): complexity += 2
+        if has_executive_content:
+            complexity += 3
+        if len(new_messages) > 1:
+            complexity += 1
+        if any(
+            word in user_input.lower() for word in ["strategic", "revenue", "growth"]
+        ):
+            complexity += 2
 
         return {
             "requires_ceo_attention": has_executive_content or len(new_messages) > 0,
             "urgency_level": 10 if has_executive_content else 7,
             "complexity": min(complexity, 10),
-            "executive_priority": has_executive_content
+            "executive_priority": has_executive_content,
         }
 
     async def _extract_decision_factors(self, state: Dict[str, Any]) -> Dict[str, Any]:
@@ -587,39 +606,51 @@ class FreshDavid(EnhancedBaseAgent):
 
         # Simple factor extraction (would be enhanced with NLP in production)
         factors = {
-            "strategic_impact": "high" if "strategic" in executive_analysis.lower() else "medium",
-            "revenue_impact": "direct" if "revenue" in executive_analysis.lower() else "indirect",
+            "strategic_impact": (
+                "high" if "strategic" in executive_analysis.lower() else "medium"
+            ),
+            "revenue_impact": (
+                "direct" if "revenue" in executive_analysis.lower() else "indirect"
+            ),
             "risk_level": "high" if "risk" in executive_analysis.lower() else "medium",
-            "urgency": "immediate" if "urgent" in executive_analysis.lower() else "short_term",
-            "resource_requirement": "significant" if "significant" in executive_analysis.lower() else "moderate"
+            "urgency": (
+                "immediate" if "urgent" in executive_analysis.lower() else "short_term"
+            ),
+            "resource_requirement": (
+                "significant"
+                if "significant" in executive_analysis.lower()
+                else "moderate"
+            ),
         }
 
         return factors
 
-    async def _analyze_stakeholder_impact(self, state: Dict[str, Any]) -> Dict[str, Any]:
+    async def _analyze_stakeholder_impact(
+        self, state: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Analyze impact on key stakeholders"""
 
         stakeholder_analysis = {
             "investors": {
                 "impact": "positive",
                 "concerns": ["roi", "timeline"],
-                "engagement_strategy": "regular_updates"
+                "engagement_strategy": "regular_updates",
             },
             "customers": {
                 "impact": "positive",
                 "concerns": ["service_quality", "pricing"],
-                "engagement_strategy": "transparent_communication"
+                "engagement_strategy": "transparent_communication",
             },
             "employees": {
                 "impact": "positive",
                 "concerns": ["workload", "career_growth"],
-                "engagement_strategy": "change_management"
+                "engagement_strategy": "change_management",
             },
             "partners": {
                 "impact": "neutral",
                 "concerns": ["partnership_terms", "integration"],
-                "engagement_strategy": "collaborative_planning"
-            }
+                "engagement_strategy": "collaborative_planning",
+            },
         }
 
         return stakeholder_analysis
@@ -628,14 +659,24 @@ class FreshDavid(EnhancedBaseAgent):
         """Determine if message requires board-level coordination"""
 
         board_level_keywords = [
-            "board", "investor", "acquisition", "partnership", "major decision",
-            "strategic change", "significant investment", "restructuring",
-            "policy change", "compliance", "regulatory"
+            "board",
+            "investor",
+            "acquisition",
+            "partnership",
+            "major decision",
+            "strategic change",
+            "significant investment",
+            "restructuring",
+            "policy change",
+            "compliance",
+            "regulatory",
         ]
 
         return any(keyword in message.lower() for keyword in board_level_keywords)
 
-    def _enhance_with_executive_context(self, response: str, original_request: str) -> str:
+    def _enhance_with_executive_context(
+        self, response: str, original_request: str
+    ) -> str:
         """Enhance response with David's executive context"""
 
         executive_enhancement = f"""
@@ -667,7 +708,9 @@ class FreshDavid(EnhancedBaseAgent):
         """
 
     # Action execution methods
-    async def _execute_executive_decision(self, action: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_executive_decision(
+        self, action: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute executive decision"""
 
         decision_summary = action.get("decision", "Executive decision made")
@@ -675,12 +718,16 @@ class FreshDavid(EnhancedBaseAgent):
         return {
             "action_type": "executive_decision",
             "result": f"CEO Decision: {decision_summary}",
-            "executive_directive": action.get("directive", "Execute with immediate priority"),
+            "executive_directive": action.get(
+                "directive", "Execute with immediate priority"
+            ),
             "stakeholder_impact": self.executive_context["stakeholder_commitments"],
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
-    async def _execute_strategic_directive(self, action: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_strategic_directive(
+        self, action: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute strategic directive"""
 
         return {
@@ -688,10 +735,12 @@ class FreshDavid(EnhancedBaseAgent):
             "result": "Strategic directive issued by CEO",
             "directive": action.get("directive", "Strategic implementation required"),
             "business_context": self.executive_context,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
-    async def _execute_resource_allocation(self, action: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_resource_allocation(
+        self, action: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute resource allocation decision"""
 
         allocation_plan = action.get("allocation_plan", {})
@@ -701,10 +750,12 @@ class FreshDavid(EnhancedBaseAgent):
             "result": "Resource allocation approved by CEO",
             "allocation": allocation_plan,
             "business_objectives": self.executive_framework["business_objectives"],
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
-    async def _execute_stakeholder_communication(self, action: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_stakeholder_communication(
+        self, action: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute stakeholder communication"""
 
         communication_plan = action.get("communication_plan", {})
@@ -714,10 +765,12 @@ class FreshDavid(EnhancedBaseAgent):
             "result": "Stakeholder communication initiated by CEO",
             "plan": communication_plan,
             "commitments": self.executive_context["stakeholder_commitments"],
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
-    async def _execute_executive_directive(self, action: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_executive_directive(
+        self, action: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute general executive directive"""
 
         return {
@@ -725,7 +778,7 @@ class FreshDavid(EnhancedBaseAgent):
             "result": f"CEO Directive: {action.get('description', 'executive leadership provided')}",
             "authority": "ceo_level",
             "context": self.executive_context,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
 

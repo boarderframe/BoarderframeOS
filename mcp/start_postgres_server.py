@@ -17,13 +17,16 @@ sys.path.insert(0, str(project_root))
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("postgres_server_launcher")
 
+
 def main():
     """Launch PostgreSQL database MCP server"""
 
     # Check if environment is set up
     if not os.getenv("DATABASE_URL"):
         logger.warning("DATABASE_URL not set, using default")
-        os.environ["DATABASE_URL"] = "postgresql://boarderframe:boarderframe_secure_2025@localhost:5434/boarderframeos"
+        os.environ["DATABASE_URL"] = (
+            "postgresql://boarderframe:boarderframe_secure_2025@localhost:5434/boarderframeos"
+        )
 
     if not os.getenv("REDIS_URL"):
         logger.warning("REDIS_URL not set, using default")
@@ -39,12 +42,18 @@ def main():
 
     try:
         # Run with different port to avoid conflict with SQLite server
-        subprocess.run([
-            sys.executable, str(server_script),
-            "--host", "127.0.0.1",
-            "--port", "8000",
-            "--reload"
-        ], check=True)
+        subprocess.run(
+            [
+                sys.executable,
+                str(server_script),
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "8000",
+                "--reload",
+            ],
+            check=True,
+        )
     except KeyboardInterrupt:
         logger.info("Server stopped by user")
     except subprocess.CalledProcessError as e:
@@ -52,6 +61,7 @@ def main():
         return 1
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -14,11 +14,12 @@ from typing import Any, Dict, List, Optional
 # Load environment variables from .env file
 try:
     from dotenv import load_dotenv
-    load_dotenv(Path(__file__).parent.parent.parent / '.env')
+
+    load_dotenv(Path(__file__).parent.parent.parent / ".env")
 except ImportError:
     pass
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from core.base_agent import AgentConfig, BaseAgent
 from core.llm_client import LLMClient
@@ -38,16 +39,12 @@ class David(BaseAgent):
         self.priorities = {
             "high": ["revenue_generation", "cost_optimization"],
             "medium": ["agent_development", "market_expansion"],
-            "low": ["experimental_features", "community_engagement"]
+            "low": ["experimental_features", "community_engagement"],
         }
         self.performance_metrics = {
-            "revenue_targets": {
-                "monthly": 15000,
-                "quarterly": 45000,
-                "annual": 180000
-            },
+            "revenue_targets": {"monthly": 15000, "quarterly": 45000, "annual": 180000},
             "agent_efficiency": {},
-            "customer_satisfaction": 0
+            "customer_satisfaction": 0,
         }
 
     def _initialize_strategic_plan(self) -> Dict[str, Any]:
@@ -55,30 +52,49 @@ class David(BaseAgent):
         return {
             "vision": "Create an autonomous AI ecosystem generating sustainable revenue",
             "goals": {
-                "short_term": ["Achieve $15K monthly revenue", "Optimize agent performance"],
-                "mid_term": ["Develop specialized revenue agents", "Improve system autonomy"],
-                "long_term": ["Establish multiple revenue streams", "Scale system capabilities"]
+                "short_term": [
+                    "Achieve $15K monthly revenue",
+                    "Optimize agent performance",
+                ],
+                "mid_term": [
+                    "Develop specialized revenue agents",
+                    "Improve system autonomy",
+                ],
+                "long_term": [
+                    "Establish multiple revenue streams",
+                    "Scale system capabilities",
+                ],
             },
             "strategies": [
                 "Focus on high-margin services",
                 "Optimize resource allocation for profitability",
                 "Implement agent specialization for efficiency",
-                "Develop automated customer acquisition systems"
-            ]
+                "Develop automated customer acquisition systems",
+            ],
         }
 
     async def think(self, context: Dict[str, Any]) -> str:
         """CEO-level strategic reasoning process - Cost-optimized"""
 
         # Check if there are new messages or urgent tasks
-        new_messages = context.get('new_messages', [])
+        new_messages = context.get("new_messages", [])
 
         # If no new messages, don't make expensive LLM calls
         if not new_messages:
             return "No new strategic issues - remaining idle to conserve API usage"
 
         # Check for strategic keywords in messages
-        strategic_keywords = ['strategic', 'urgent', 'critical', 'revenue', 'budget', 'decision', 'priority', 'ceo', 'executive']
+        strategic_keywords = [
+            "strategic",
+            "urgent",
+            "critical",
+            "revenue",
+            "budget",
+            "decision",
+            "priority",
+            "ceo",
+            "executive",
+        ]
         has_strategic_content = any(
             any(keyword in str(msg.content).lower() for keyword in strategic_keywords)
             for msg in new_messages
@@ -121,12 +137,12 @@ Be concise to minimize API costs.
         """Execute actions with CEO capabilities - Cost-optimized"""
 
         # Check for chat messages from Control Center
-        new_messages = context.get('new_messages', [])
+        new_messages = context.get("new_messages", [])
         for message in new_messages:
-            if hasattr(message, 'content') and isinstance(message.content, dict):
-                if message.content.get('type') == 'user_chat':
+            if hasattr(message, "content") and isinstance(message.content, dict):
+                if message.content.get("type") == "user_chat":
                     # Handle chat message from user
-                    user_message = message.content.get('message', '')
+                    user_message = message.content.get("message", "")
                     response = await self.handle_user_chat(user_message)
 
                     # Send response back
@@ -135,28 +151,31 @@ Be concise to minimize API costs.
                         MessagePriority,
                         MessageType,
                     )
+
                     response_msg = AgentMessage(
                         from_agent=self.config.name,
                         to_agent=message.from_agent,
                         message_type=MessageType.TASK_RESPONSE,
                         content={"response": response},
-                        correlation_id=message.correlation_id
+                        correlation_id=message.correlation_id,
                     )
                     await message_bus.send_message(response_msg)
 
                     return {
                         "action": "chat_response",
                         "message": user_message,
-                        "response": response
+                        "response": response,
                     }
 
         # Check if there's actually strategic work to do
-        if not new_messages and not any(keyword in thought.lower()
-                                       for keyword in ['urgent', 'critical', 'strategic', 'revenue', 'priority']):
+        if not new_messages and not any(
+            keyword in thought.lower()
+            for keyword in ["urgent", "critical", "strategic", "revenue", "priority"]
+        ):
             return {
                 "action": "idle",
                 "reason": "No strategic issues requiring executive attention - conserving API usage",
-                "status": "monitoring_operations"
+                "status": "monitoring_operations",
             }
 
         # Enhanced action framework with executive functions
@@ -226,15 +245,15 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                 "allocation": {
                     "compute": 40 if allocation_target == "revenue" else 30,
                     "memory": 50 if allocation_target == "development" else 40,
-                    "priority": "high" if allocation_target == "revenue" else "medium"
+                    "priority": "high" if allocation_target == "revenue" else "medium",
                 },
-                "justification": f"Strategic focus on {allocation_target} to meet business objectives"
+                "justification": f"Strategic focus on {allocation_target} to meet business objectives",
             }
         except Exception as e:
             return {
                 "action": "error",
                 "error": str(e),
-                "context": "resource_allocation"
+                "context": "resource_allocation",
             }
 
     async def prioritize_tasks(self, thought: str) -> Dict[str, Any]:
@@ -249,34 +268,34 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                     "description": "Optimize customer acquisition funnel",
                     "priority": "high",
                     "assigned_to": "MarketingAgent",
-                    "expected_impact": "Increase new customers by 15%"
+                    "expected_impact": "Increase new customers by 15%",
                 },
                 {
                     "id": "task-002",
                     "description": "Enhance subscription management",
                     "priority": "high",
                     "assigned_to": "SupportAgent",
-                    "expected_impact": "Reduce churn by 5%"
+                    "expected_impact": "Reduce churn by 5%",
                 },
                 {
                     "id": "task-003",
                     "description": "Develop automated trading strategy",
                     "priority": "medium",
                     "assigned_to": "TradingAgent",
-                    "expected_impact": "Generate $2K additional monthly revenue"
-                }
+                    "expected_impact": "Generate $2K additional monthly revenue",
+                },
             ]
 
             return {
                 "action": "task_prioritization",
                 "prioritized_tasks": prioritized_tasks,
-                "rationale": "Tasks prioritized based on revenue impact and strategic alignment"
+                "rationale": "Tasks prioritized based on revenue impact and strategic alignment",
             }
         except Exception as e:
             return {
                 "action": "error",
                 "error": str(e),
-                "context": "task_prioritization"
+                "context": "task_prioritization",
             }
 
     async def review_performance(self) -> Dict[str, Any]:
@@ -288,37 +307,37 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                     "TradingAgent": {
                         "revenue_generated": 5000,
                         "tasks_completed": 24,
-                        "efficiency_score": 0.85
+                        "efficiency_score": 0.85,
                     },
                     "MarketingAgent": {
                         "revenue_generated": 3000,
                         "tasks_completed": 31,
-                        "efficiency_score": 0.76
+                        "efficiency_score": 0.76,
                     },
                     "SupportAgent": {
                         "revenue_generated": 2000,
                         "tasks_completed": 47,
-                        "efficiency_score": 0.92
-                    }
+                        "efficiency_score": 0.92,
+                    },
                 },
                 "system": {
                     "uptime": 99.8,
                     "response_time": 1.2,
                     "error_rate": 0.3,
-                    "customer_satisfaction": 4.7
+                    "customer_satisfaction": 4.7,
                 },
                 "financials": {
                     "monthly_revenue": 10000,
                     "monthly_costs": 4000,
                     "profit_margin": 60,
-                    "revenue_growth": 12.5
-                }
+                    "revenue_growth": 12.5,
+                },
             }
 
             # Calculate top performer
             top_performer = max(
                 performance_data["agents"].items(),
-                key=lambda x: x[1]["revenue_generated"]
+                key=lambda x: x[1]["revenue_generated"],
             )[0]
 
             return {
@@ -327,20 +346,16 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                 "top_performer": top_performer,
                 "areas_for_improvement": [
                     "Increase MarketingAgent efficiency",
-                    "Boost monthly revenue to meet $15K target"
+                    "Boost monthly revenue to meet $15K target",
                 ],
                 "recommendations": [
                     "Allocate more resources to top performer",
                     "Review and optimize MarketingAgent workflows",
-                    "Implement revenue growth initiatives"
-                ]
+                    "Implement revenue growth initiatives",
+                ],
             }
         except Exception as e:
-            return {
-                "action": "error",
-                "error": str(e),
-                "context": "performance_review"
-            }
+            return {"action": "error", "error": str(e), "context": "performance_review"}
 
     async def update_strategic_plan(self, thought: str) -> Dict[str, Any]:
         """Update the strategic plan based on performance and market conditions"""
@@ -352,9 +367,13 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
 
             # Extract focus area from thought
             if "revenue" in thought.lower():
-                updated_plan["goals"]["short_term"].append("Implement new revenue streams")
+                updated_plan["goals"]["short_term"].append(
+                    "Implement new revenue streams"
+                )
             elif "efficiency" in thought.lower():
-                updated_plan["goals"]["short_term"].append("Optimize agent resource utilization")
+                updated_plan["goals"]["short_term"].append(
+                    "Optimize agent resource utilization"
+                )
             elif "customer" in thought.lower():
                 updated_plan["goals"]["short_term"].append("Improve customer retention")
 
@@ -364,14 +383,14 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                 "updated_plan": updated_plan,
                 "changes": [
                     "Added new short-term goal based on current priorities",
-                    "Adjusted strategies to focus on profitability"
-                ]
+                    "Adjusted strategies to focus on profitability",
+                ],
             }
         except Exception as e:
             return {
                 "action": "error",
                 "error": str(e),
-                "context": "strategic_plan_update"
+                "context": "strategic_plan_update",
             }
 
     async def coordinate_biomes(self) -> Dict[str, Any]:
@@ -382,18 +401,18 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                 "council": {
                     "agents": 2,
                     "status": "operational",
-                    "focus": "strategic direction"
+                    "focus": "strategic direction",
                 },
                 "creation": {
                     "agents": 5,
                     "status": "active",
-                    "focus": "agent development"
+                    "focus": "agent development",
                 },
                 "revenue": {
                     "agents": 3,
                     "status": "active",
-                    "focus": "income generation"
-                }
+                    "focus": "income generation",
+                },
                 # Other biomes would be included here
             }
 
@@ -401,31 +420,27 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                 {
                     "action": "increase_creation_resources",
                     "reason": "Need more specialized agents for revenue generation",
-                    "priority": "high"
+                    "priority": "high",
                 },
                 {
                     "action": "optimize_revenue_biome",
                     "reason": "Below target income performance",
-                    "priority": "high"
+                    "priority": "high",
                 },
                 {
                     "action": "establish_support_biome",
                     "reason": "Improve customer retention",
-                    "priority": "medium"
-                }
+                    "priority": "medium",
+                },
             ]
 
             return {
                 "action": "biome_coordination",
                 "biome_status": biome_data,
-                "coordination_actions": coordination_actions
+                "coordination_actions": coordination_actions,
             }
         except Exception as e:
-            return {
-                "action": "error",
-                "error": str(e),
-                "context": "biome_coordination"
-            }
+            return {"action": "error", "error": str(e), "context": "biome_coordination"}
 
     async def assign_agent_tasks(self, thought: str) -> Dict[str, Any]:
         """Assign and prioritize tasks for agents based on business goals"""
@@ -447,36 +462,32 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                     "task": "Implement new trading strategy",
                     "priority": "high" if focus_area == "revenue" else "medium",
                     "deadline": "2 days",
-                    "expected_outcome": "2% increase in trading profits"
+                    "expected_outcome": "2% increase in trading profits",
                 },
                 {
                     "agent": "MarketingAgent",
                     "task": "Optimize customer acquisition funnel",
                     "priority": "high" if focus_area == "customer" else "medium",
                     "deadline": "3 days",
-                    "expected_outcome": "10% increase in conversion rate"
+                    "expected_outcome": "10% increase in conversion rate",
                 },
                 {
                     "agent": "SupportAgent",
                     "task": "Implement improved onboarding flow",
                     "priority": "medium",
                     "deadline": "4 days",
-                    "expected_outcome": "15% reduction in onboarding questions"
-                }
+                    "expected_outcome": "15% reduction in onboarding questions",
+                },
             ]
 
             return {
                 "action": "task_assignment",
                 "assignments": task_assignments,
                 "focus_area": focus_area,
-                "business_alignment": "Tasks aligned with strategic goals and revenue targets"
+                "business_alignment": "Tasks aligned with strategic goals and revenue targets",
             }
         except Exception as e:
-            return {
-                "action": "error",
-                "error": str(e),
-                "context": "task_assignment"
-            }
+            return {"action": "error", "error": str(e), "context": "task_assignment"}
 
     async def analyze_market(self) -> Dict[str, Any]:
         """Analyze market conditions and opportunities"""
@@ -489,35 +500,35 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                         "name": "Increased demand for AI agents",
                         "impact": "positive",
                         "opportunity": "Expand agent marketplace offerings",
-                        "threat": "Increased competition"
+                        "threat": "Increased competition",
                     },
                     {
                         "name": "Growing API economy",
                         "impact": "positive",
                         "opportunity": "Develop API products",
-                        "threat": "Price pressure"
-                    }
+                        "threat": "Price pressure",
+                    },
                 ],
                 "customer_segments": [
                     {
                         "name": "Independent developers",
                         "size": "large",
                         "growth": "fast",
-                        "value": "medium"
+                        "value": "medium",
                     },
                     {
                         "name": "Small businesses",
                         "size": "medium",
                         "growth": "moderate",
-                        "value": "high"
+                        "value": "high",
                     },
                     {
                         "name": "Enterprise",
                         "size": "small",
                         "growth": "slow",
-                        "value": "very high"
-                    }
-                ]
+                        "value": "very high",
+                    },
+                ],
             }
 
             return {
@@ -526,16 +537,12 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                 "opportunities": [
                     "Focus on small business segment for highest ROI",
                     "Develop specialized agents for API economy",
-                    "Create enterprise-focused offering for higher value"
+                    "Create enterprise-focused offering for higher value",
                 ],
-                "recommended_focus": "small business segment"
+                "recommended_focus": "small business segment",
             }
         except Exception as e:
-            return {
-                "action": "error",
-                "error": str(e),
-                "context": "market_analysis"
-            }
+            return {"action": "error", "error": str(e), "context": "market_analysis"}
 
     async def review_financials(self) -> Dict[str, Any]:
         """Review financial performance and projections"""
@@ -547,30 +554,32 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                     "current_month": 10000,
                     "previous_month": 8500,
                     "growth": 17.6,
-                    "projected_next_month": 12000
+                    "projected_next_month": 12000,
                 },
                 "costs": {
                     "current_month": 4000,
                     "previous_month": 3800,
                     "growth": 5.3,
-                    "projected_next_month": 4200
+                    "projected_next_month": 4200,
                 },
                 "profit": {
                     "current_month": 6000,
                     "previous_month": 4700,
                     "growth": 27.7,
-                    "projected_next_month": 7800
+                    "projected_next_month": 7800,
                 },
                 "by_product": {
                     "agent_services": 5000,
                     "api_usage": 3000,
-                    "subscriptions": 2000
-                }
+                    "subscriptions": 2000,
+                },
             }
 
             # Calculate if we're on track for target
             monthly_target = self.performance_metrics["revenue_targets"]["monthly"]
-            on_track = financial_data["revenue"]["projected_next_month"] >= monthly_target
+            on_track = (
+                financial_data["revenue"]["projected_next_month"] >= monthly_target
+            )
 
             return {
                 "action": "financial_review",
@@ -580,15 +589,12 @@ Respond as David would - be executive, strategic, and demonstrate your leadershi
                 "recommendations": [
                     "Increase focus on agent services (highest margin)",
                     "Monitor cost growth to maintain profitability",
-                    "Expand subscription offerings for recurring revenue"
-                ]
+                    "Expand subscription offerings for recurring revenue",
+                ],
             }
         except Exception as e:
-            return {
-                "action": "error",
-                "error": str(e),
-                "context": "financial_review"
-            }
+            return {"action": "error", "error": str(e), "context": "financial_review"}
+
 
 async def main():
     """Main entry point"""
@@ -596,25 +602,26 @@ async def main():
         name="david",
         role="CEO",
         goals=[
-            'Strategic leadership and decision making',
-            'Resource allocation based on profitability',
-            'Agent orchestration for revenue optimization',
-            'P&L management and financial oversight',
-            'System-wide coordination and executive function'
+            "Strategic leadership and decision making",
+            "Resource allocation based on profitability",
+            "Agent orchestration for revenue optimization",
+            "P&L management and financial oversight",
+            "System-wide coordination and executive function",
         ],
         tools=[
-            'mcp_filesystem',
-            'mcp_database',
-            'mcp_payment',
-            'mcp_analytics',
-            'mcp_customer'
+            "mcp_filesystem",
+            "mcp_database",
+            "mcp_payment",
+            "mcp_analytics",
+            "mcp_customer",
         ],
         zone="council",
-        model="claude-3-5-sonnet-latest"
+        model="claude-3-5-sonnet-latest",
     )
 
     agent = David(config)
     await agent.run()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

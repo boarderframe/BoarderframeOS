@@ -17,12 +17,13 @@ import httpx
 
 # Color codes for terminal output
 class Colors:
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    BLUE = '\033[94m'
-    BOLD = '\033[1m'
-    END = '\033[0m'
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    RED = "\033[91m"
+    BLUE = "\033[94m"
+    BOLD = "\033[1m"
+    END = "\033[0m"
+
 
 class HealthChecker:
     def __init__(self):
@@ -39,7 +40,7 @@ class HealthChecker:
             "agents": {},
             "communication": {},
             "database": {},
-            "overall": "unknown"
+            "overall": "unknown",
         }
 
     async def run_full_health_check(self):
@@ -82,22 +83,26 @@ class HealthChecker:
                         self.test_results["services"][service_name] = {
                             "status": "healthy",
                             "response_time_ms": round(response_time, 2),
-                            "port": port
+                            "port": port,
                         }
-                        print(f"  {Colors.GREEN}✓{Colors.END} {service_name}: Online ({response_time:.0f}ms)")
+                        print(
+                            f"  {Colors.GREEN}✓{Colors.END} {service_name}: Online ({response_time:.0f}ms)"
+                        )
                     else:
                         self.test_results["services"][service_name] = {
                             "status": "unhealthy",
                             "error": f"HTTP {response.status_code}",
-                            "port": port
+                            "port": port,
                         }
-                        print(f"  {Colors.RED}✗{Colors.END} {service_name}: Unhealthy (HTTP {response.status_code})")
+                        print(
+                            f"  {Colors.RED}✗{Colors.END} {service_name}: Unhealthy (HTTP {response.status_code})"
+                        )
 
                 except Exception as e:
                     self.test_results["services"][service_name] = {
                         "status": "offline",
                         "error": str(e),
-                        "port": port
+                        "port": port,
                     }
                     print(f"  {Colors.RED}✗{Colors.END} {service_name}: Offline")
 
@@ -108,22 +113,32 @@ class HealthChecker:
         try:
             async with httpx.AsyncClient() as client:
                 # Test query
-                response = await client.post("http://localhost:8004/query", json={
-                    "sql": "SELECT COUNT(*) as count FROM agents",
-                    "fetch_all": True
-                })
+                response = await client.post(
+                    "http://localhost:8004/query",
+                    json={
+                        "sql": "SELECT COUNT(*) as count FROM agents",
+                        "fetch_all": True,
+                    },
+                )
 
                 if response.status_code == 200:
                     data = response.json()
                     if data.get("success"):
-                        agent_count = data["data"][0]["count"] if data.get("data") else 0
+                        agent_count = (
+                            data["data"][0]["count"] if data.get("data") else 0
+                        )
                         self.test_results["database"] = {
                             "status": "healthy",
-                            "agent_count": agent_count
+                            "agent_count": agent_count,
                         }
-                        print(f"  {Colors.GREEN}✓{Colors.END} Database: Connected ({agent_count} agents)")
+                        print(
+                            f"  {Colors.GREEN}✓{Colors.END} Database: Connected ({agent_count} agents)"
+                        )
                     else:
-                        self.test_results["database"] = {"status": "error", "error": "Query failed"}
+                        self.test_results["database"] = {
+                            "status": "error",
+                            "error": "Query failed",
+                        }
                         print(f"  {Colors.RED}✗{Colors.END} Database: Query failed")
                 else:
                     self.test_results["database"] = {"status": "offline"}
@@ -140,10 +155,13 @@ class HealthChecker:
         try:
             # Get agent status from database
             async with httpx.AsyncClient() as client:
-                response = await client.post("http://localhost:8004/query", json={
-                    "sql": "SELECT id, name, status, biome FROM agents WHERE status = 'active'",
-                    "fetch_all": True
-                })
+                response = await client.post(
+                    "http://localhost:8004/query",
+                    json={
+                        "sql": "SELECT id, name, status, biome FROM agents WHERE status = 'active'",
+                        "fetch_all": True,
+                    },
+                )
 
                 if response.status_code == 200 and response.json().get("success"):
                     agents = response.json().get("data", [])
@@ -156,13 +174,19 @@ class HealthChecker:
                         self.test_results["agents"][agent_id] = {
                             "name": agent_name,
                             "status": status,
-                            "biome": agent["biome"]
+                            "biome": agent["biome"],
                         }
 
-                        status_icon = Colors.GREEN + "✓" + Colors.END if status == "active" else Colors.YELLOW + "⚠" + Colors.END
+                        status_icon = (
+                            Colors.GREEN + "✓" + Colors.END
+                            if status == "active"
+                            else Colors.YELLOW + "⚠" + Colors.END
+                        )
                         print(f"  {status_icon} {agent_name}: {status}")
                 else:
-                    print(f"  {Colors.YELLOW}⚠{Colors.END} Could not retrieve agent status")
+                    print(
+                        f"  {Colors.YELLOW}⚠{Colors.END} Could not retrieve agent status"
+                    )
 
         except Exception as e:
             print(f"  {Colors.RED}✗{Colors.END} Agent test failed: {e}")
@@ -184,45 +208,52 @@ class HealthChecker:
                 # Send test message to Solomon
                 test_message = "System health check - please respond"
 
-                response = await client.post("http://localhost:8080/api/solomon/message", json={
-                    "message": test_message,
-                    "session_id": "health_check"
-                })
+                response = await client.post(
+                    "http://localhost:8080/api/solomon/message",
+                    json={"message": test_message, "session_id": "health_check"},
+                )
 
                 if response.status_code == 200:
                     self.test_results["communication"]["solomon_chat"] = {
                         "status": "functional",
-                        "test": "passed"
+                        "test": "passed",
                     }
                     print(f"  {Colors.GREEN}✓{Colors.END} Solomon Chat: Functional")
                 else:
                     self.test_results["communication"]["solomon_chat"] = {
                         "status": "error",
-                        "test": "failed"
+                        "test": "failed",
                     }
                     print(f"  {Colors.RED}✗{Colors.END} Solomon Chat: Not responding")
 
         except Exception as e:
             self.test_results["communication"]["solomon_chat"] = {
                 "status": "offline",
-                "error": str(e)
+                "error": str(e),
             }
-            print(f"  {Colors.YELLOW}⚠{Colors.END} Solomon Chat: Offline (normal if agents not started)")
+            print(
+                f"  {Colors.YELLOW}⚠{Colors.END} Solomon Chat: Offline (normal if agents not started)"
+            )
 
     async def test_message_bus(self):
         """Test message bus functionality"""
         # This would test the actual message bus if it's running
-        print(f"  {Colors.YELLOW}⚠{Colors.END} Message Bus: Test pending (requires running agents)")
+        print(
+            f"  {Colors.YELLOW}⚠{Colors.END} Message Bus: Test pending (requires running agents)"
+        )
         self.test_results["communication"]["message_bus"] = {
             "status": "pending",
-            "note": "Requires active agents"
+            "note": "Requires active agents",
         }
 
     def calculate_overall_health(self):
         """Calculate overall system health"""
         # Count healthy services
-        healthy_services = sum(1 for s in self.test_results["services"].values()
-                             if s.get("status") == "healthy")
+        healthy_services = sum(
+            1
+            for s in self.test_results["services"].values()
+            if s.get("status") == "healthy"
+        )
         total_services = len(self.test_results["services"])
 
         # Check critical services
@@ -246,16 +277,22 @@ class HealthChecker:
         print("=" * 60)
 
         # Service summary
-        healthy = sum(1 for s in self.test_results["services"].values()
-                     if s.get("status") == "healthy")
+        healthy = sum(
+            1
+            for s in self.test_results["services"].values()
+            if s.get("status") == "healthy"
+        )
         total = len(self.test_results["services"])
 
         print(f"\nServices: {healthy}/{total} healthy")
 
         # Agent summary
         if self.test_results["agents"]:
-            active_agents = sum(1 for a in self.test_results["agents"].values()
-                              if a.get("status") == "active")
+            active_agents = sum(
+                1
+                for a in self.test_results["agents"].values()
+                if a.get("status") == "active"
+            )
             print(f"Agents: {active_agents} active")
         else:
             print("Agents: Not deployed")
@@ -275,8 +312,11 @@ class HealthChecker:
         if overall != "healthy":
             print(f"\n{Colors.YELLOW}Recommendations:{Colors.END}")
 
-            offline_services = [name for name, status in self.test_results["services"].items()
-                              if status.get("status") == "offline"]
+            offline_services = [
+                name
+                for name, status in self.test_results["services"].items()
+                if status.get("status") == "offline"
+            ]
 
             if offline_services:
                 print(f"  • Start offline services: {', '.join(offline_services)}")
@@ -286,7 +326,9 @@ class HealthChecker:
 
     async def continuous_monitoring(self, interval: int = 30):
         """Run continuous health monitoring"""
-        print(f"\n{Colors.BOLD}🔄 Starting continuous monitoring (every {interval}s){Colors.END}")
+        print(
+            f"\n{Colors.BOLD}🔄 Starting continuous monitoring (every {interval}s){Colors.END}"
+        )
         print("Press Ctrl+C to stop\n")
 
         try:
@@ -306,23 +348,34 @@ class HealthChecker:
         """Write health status to file for dashboard"""
         try:
             status_file = Path("/tmp/boarderframe_health.json")
-            with open(status_file, 'w') as f:
-                json.dump({
-                    "timestamp": datetime.now().isoformat(),
-                    "results": self.test_results
-                }, f, indent=2)
+            with open(status_file, "w") as f:
+                json.dump(
+                    {
+                        "timestamp": datetime.now().isoformat(),
+                        "results": self.test_results,
+                    },
+                    f,
+                    indent=2,
+                )
         except Exception as e:
             print(f"Could not write health status file: {e}")
+
 
 async def main():
     """Main entry point"""
     import argparse
 
     parser = argparse.ArgumentParser(description="BoarderframeOS Health Check")
-    parser.add_argument("--continuous", "-c", action="store_true",
-                       help="Run continuous monitoring")
-    parser.add_argument("--interval", "-i", type=int, default=30,
-                       help="Monitoring interval in seconds (default: 30)")
+    parser.add_argument(
+        "--continuous", "-c", action="store_true", help="Run continuous monitoring"
+    )
+    parser.add_argument(
+        "--interval",
+        "-i",
+        type=int,
+        default=30,
+        help="Monitoring interval in seconds (default: 30)",
+    )
 
     args = parser.parse_args()
 
@@ -333,6 +386,7 @@ async def main():
     else:
         await checker.run_full_health_check()
 
+
 if __name__ == "__main__":
     try:
         asyncio.run(main())
@@ -341,4 +395,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"❌ Health check failed: {e}")
         import traceback
+
         traceback.print_exc()

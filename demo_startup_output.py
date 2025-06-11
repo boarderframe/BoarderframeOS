@@ -103,9 +103,11 @@ class StartupDemo:
 
         await self.demo_final_summary()
 
+
 async def main():
     demo = StartupDemo()
     await demo.run_demo()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

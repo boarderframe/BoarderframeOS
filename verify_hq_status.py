@@ -26,6 +26,7 @@ def check_corporate_hq_status():
         print(f"❌ Error checking status: {e}")
         return False
 
+
 if __name__ == "__main__":
     print("🔍 Verifying Corporate HQ Status Display...")
     print("=" * 60)

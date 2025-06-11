@@ -17,7 +17,7 @@ def launch_corporate_headquarters():
     print("🔄 Corporate Headquarters will auto-refresh every 30 seconds")
     print("💬 Chat with Solomon, David, and Adam agents")
     print("\n⚠️  If you encounter errors, check the terminal output below:")
-    print("="*60)
+    print("=" * 60)
 
     try:
         # Launch Corporate Headquarters
@@ -26,6 +26,7 @@ def launch_corporate_headquarters():
         print("\n👋 BoarderframeOS Corporate Headquarters shutdown requested by user")
     except Exception as e:
         print(f"\n❌ Error launching BoarderframeOS Corporate Headquarters: {e}")
+
 
 if __name__ == "__main__":
     launch_corporate_headquarters()

@@ -62,15 +62,28 @@ def view_organization():
     JOIN departments dept ON a.department = dept.name;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", summary_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-c",
+            summary_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 2:
                     metric = parts[0].strip()
                     value = parts[1].strip() or "0"
@@ -96,19 +109,39 @@ def view_organization():
     ORDER BY d.priority;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", division_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-A",
+            "-F",
+            "|",
+            "-c",
+            division_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
-        print(f"{'Division':<35} {'Depts':>6} {'Leaders':>8} {'Agents':>8} {'Active':>8} {'Capacity':>10}")
+        print(
+            f"{'Division':<35} {'Depts':>6} {'Leaders':>8} {'Agents':>8} {'Active':>8} {'Capacity':>10}"
+        )
         print("-" * 85)
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 6:
-                    print(f"{parts[0]:<35} {parts[1]:>6} {parts[2]:>8} {parts[3]:>8} {parts[4]:>8} {parts[5]:>10}")
+                    print(
+                        f"{parts[0]:<35} {parts[1]:>6} {parts[2]:>8} {parts[3]:>8} {parts[4]:>8} {parts[5]:>10}"
+                    )
 
     # Department Status by Phase
     print("\n\n📈 DEPARTMENT STATUS BY PHASE")
@@ -128,19 +161,39 @@ def view_organization():
     ORDER BY d.phase;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", phase_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-A",
+            "-F",
+            "|",
+            "-c",
+            phase_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
-        print(f"{'Phase':>7} {'Departments':>12} {'Total Agents':>13} {'Operational':>12} {'Training':>10} {'Planned':>9}")
+        print(
+            f"{'Phase':>7} {'Departments':>12} {'Total Agents':>13} {'Operational':>12} {'Training':>10} {'Planned':>9}"
+        )
         print("-" * 70)
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 6:
-                    print(f"{parts[0]:>7} {parts[1]:>12} {parts[2]:>13} {parts[3]:>12} {parts[4]:>10} {parts[5]:>9}")
+                    print(
+                        f"{parts[0]:>7} {parts[1]:>12} {parts[2]:>13} {parts[3]:>12} {parts[4]:>10} {parts[5]:>9}"
+                    )
 
     # Top Departments by Agent Count
     print("\n\n🏆 TOP DEPARTMENTS BY WORKFORCE")
@@ -163,20 +216,40 @@ def view_organization():
     LIMIT 15;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", top_dept_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-A",
+            "-F",
+            "|",
+            "-c",
+            top_dept_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
-        print(f"{'Department':<35} {'Total':>6} {'Leaders':>8} {'Workers':>8} {'Active':>7} {'Cap':>5} {'Util%':>6}")
+        print(
+            f"{'Department':<35} {'Total':>6} {'Leaders':>8} {'Workers':>8} {'Active':>7} {'Cap':>5} {'Util%':>6}"
+        )
         print("-" * 85)
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 7:
                     dept_name = parts[0][:34]  # Truncate long names
-                    print(f"{dept_name:<35} {parts[1]:>6} {parts[2]:>8} {parts[3]:>8} {parts[4]:>7} {parts[5]:>5} {parts[6]:>6}%")
+                    print(
+                        f"{dept_name:<35} {parts[1]:>6} {parts[2]:>8} {parts[3]:>8} {parts[4]:>7} {parts[5]:>5} {parts[6]:>6}%"
+                    )
 
     # Agent Development Pipeline
     print("\n\n🔄 AGENT DEVELOPMENT PIPELINE")
@@ -201,17 +274,35 @@ def view_organization():
         END;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", pipeline_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-A",
+            "-F",
+            "|",
+            "-c",
+            pipeline_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
-        print(f"{'Development Status':<20} {'Operational Status':<20} {'Count':>8} {'Agent Types':<30}")
+        print(
+            f"{'Development Status':<20} {'Operational Status':<20} {'Count':>8} {'Agent Types':<30}"
+        )
         print("-" * 80)
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 4:
                     print(f"{parts[0]:<20} {parts[1]:<20} {parts[2]:>8} {parts[3]:<30}")
 
@@ -247,15 +338,28 @@ def view_organization():
     WHERE NOT EXISTS (SELECT 1 FROM department_registry dr WHERE dr.department_id = d.id);
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", sync_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-c",
+            sync_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 2:
                     location = parts[0].strip()
                     count = parts[1].strip()

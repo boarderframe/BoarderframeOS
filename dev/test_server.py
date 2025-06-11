@@ -4,13 +4,17 @@ import socketserver
 
 PORT = 8888
 
+
 class TestHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         print(f"Received request: {self.path}")
         self.send_response(200)
-        self.send_header('Content-type', 'text/html')
+        self.send_header("Content-type", "text/html")
         self.end_headers()
-        self.wfile.write(b"<h1>BoarderframeOS Test Server</h1><p>Server is working!</p>")
+        self.wfile.write(
+            b"<h1>BoarderframeOS Test Server</h1><p>Server is working!</p>"
+        )
+
 
 try:
     print(f"Starting test server on port {PORT}...")
@@ -22,4 +26,5 @@ try:
 except Exception as e:
     print(f"Error: {e}")
     import traceback
+
     traceback.print_exc()

@@ -20,35 +20,38 @@ from filesystem_server import UnifiedFilesystemServer
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Start the Unified MCP Filesystem Server")
+    parser = argparse.ArgumentParser(
+        description="Start the Unified MCP Filesystem Server"
+    )
     parser.add_argument(
-        "--port", "-p",
+        "--port",
+        "-p",
         type=int,
         default=8001,
-        help="Port to run the server on (default: 8001)"
+        help="Port to run the server on (default: 8001)",
     )
     parser.add_argument(
-        "--base-path", "-b",
+        "--base-path",
+        "-b",
         type=str,
         default=None,
-        help="Base directory for file operations (default: current directory)"
+        help="Base directory for file operations (default: current directory)",
     )
     parser.add_argument(
-        "--verbose", "-v",
-        action="store_true",
-        help="Enable verbose logging"
+        "--verbose", "-v", action="store_true", help="Enable verbose logging"
     )
     parser.add_argument(
         "--no-ai",
         action="store_true",
-        help="Disable AI features (embeddings, content analysis)"
+        help="Disable AI features (embeddings, content analysis)",
     )
     parser.add_argument(
         "--health-check",
         action="store_true",
-        help="Perform health check on running server and exit"
+        help="Perform health check on running server and exit",
     )
     return parser.parse_args()
+
 
 async def perform_health_check(port):
     """Perform comprehensive health check on the filesystem server"""
@@ -57,7 +60,9 @@ async def perform_health_check(port):
     try:
         async with httpx.AsyncClient() as client:
             # Basic health check
-            health_response = await client.get(f"http://localhost:{port}/health", timeout=5.0)
+            health_response = await client.get(
+                f"http://localhost:{port}/health", timeout=5.0
+            )
             health_data = health_response.json()
 
             print(f"✅ Server Status: {health_data.get('status', 'unknown')}")
@@ -68,7 +73,7 @@ async def perform_health_check(port):
             print(f"👥 Connected Clients: {health_data.get('connected_clients', 0)}")
 
             # Feature availability
-            features = health_data.get('features', {})
+            features = health_data.get("features", {})
             print("\n🔧 Available Features:")
             for feature, available in features.items():
                 status = "✅" if available else "❌"
@@ -80,12 +85,10 @@ async def perform_health_check(port):
                 "jsonrpc": "2.0",
                 "method": "list_directory",
                 "params": {"path": ""},
-                "id": 1
+                "id": 1,
             }
             rpc_response = await client.post(
-                f"http://localhost:{port}/rpc",
-                json=rpc_payload,
-                timeout=5.0
+                f"http://localhost:{port}/rpc", json=rpc_payload, timeout=5.0
             )
 
             if rpc_response.status_code == 200:
@@ -103,6 +106,7 @@ async def perform_health_check(port):
         print(f"❌ Health check failed: {e}")
         return False
 
+
 async def main():
     args = parse_args()
 
@@ -114,6 +118,7 @@ async def main():
     # Set logging level
     if args.verbose:
         import logging
+
         logging.getLogger().setLevel(logging.DEBUG)
 
     # Set environment variables for feature toggles
@@ -155,6 +160,7 @@ async def main():
     except Exception as e:
         print(f"❌ Failed to start server: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

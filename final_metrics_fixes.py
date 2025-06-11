@@ -13,7 +13,7 @@ def final_metrics_fixes():
 
     file_path = "/Users/cosburn/BoarderframeOS/corporate_headquarters.py"
 
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         content = f.read()
 
     fixes_applied = []
@@ -23,14 +23,16 @@ def final_metrics_fixes():
         print("📝 Adding dashboard summary cards...")
 
         # Find the System Status section in overview
-        overview_pattern = r'(<h3>System Status</h3>)([\s\S]*?)(<div class="widget-grid">)'
+        overview_pattern = (
+            r'(<h3>System Status</h3>)([\s\S]*?)(<div class="widget-grid">)'
+        )
 
         if re.search(overview_pattern, content):
-            replacement = r'''\1\2
+            replacement = r"""\1\2
                 <!-- Metrics from centralized layer -->
                 {self.metrics_layer.get_dashboard_summary_cards() if self.metrics_layer else ""}
 
-                \3'''
+                \3"""
 
             content = re.sub(overview_pattern, replacement, content, flags=re.DOTALL)
             fixes_applied.append("Dashboard summary cards")
@@ -43,14 +45,14 @@ def final_metrics_fixes():
         monitoring_pattern = r"(def _monitoring_thread\(self\):[\s\S]*?while True:)"
 
         if re.search(monitoring_pattern, content):
-            addition = r'''\1
+            addition = r"""\1
                     try:
                         # Refresh metrics layer cache periodically
                         if hasattr(self, 'metrics_layer') and self.metrics_layer:
                             self.metrics_layer.get_all_metrics(force_refresh=True)
                     except Exception:
                         pass
-                    '''
+                    """
 
             content = re.sub(monitoring_pattern, addition, content, flags=re.DOTALL)
             fixes_applied.append("Monitoring refresh")
@@ -70,21 +72,27 @@ def final_metrics_fixes():
         fixes_applied.append("Active agents calculation")
 
     # 4. Ensure departments tab uses metrics
-    dept_section = content[content.find('id="departments"'):content.find('id="leaders"') if content.find('id="leaders"') > 0 else len(content)]
+    dept_section = content[
+        content.find('id="departments"') : (
+            content.find('id="leaders"')
+            if content.find('id="leaders"') > 0
+            else len(content)
+        )
+    ]
 
     if "metrics_layer" not in dept_section:
         print("📝 Updating departments section...")
 
         # Find where division HTML is called
-        div_pattern = r'({self\._generate_divisions_html\(\)})'
+        div_pattern = r"({self\._generate_divisions_html\(\)})"
 
         if div_pattern in content:
             replacement = '{self.metrics_layer.get_department_cards_html() if self.metrics_layer and hasattr(self.metrics_layer, "get_department_cards_html") else self._generate_divisions_html()}'
-            content = content.replace('{self._generate_divisions_html()}', replacement)
+            content = content.replace("{self._generate_divisions_html()}", replacement)
             fixes_applied.append("Departments tab integration")
 
     # Write the updated content
-    with open(file_path, 'w') as f:
+    with open(file_path, "w") as f:
         f.write(content)
 
     print(f"\n✅ Applied {len(fixes_applied)} fixes:")

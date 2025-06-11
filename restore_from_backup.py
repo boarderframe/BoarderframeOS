@@ -14,11 +14,11 @@ def restore_from_backup():
 
     try:
         # Make a copy of the corrupted file just in case
-        shutil.copy('corporate_headquarters.py', 'corporate_headquarters.py.corrupted')
+        shutil.copy("corporate_headquarters.py", "corporate_headquarters.py.corrupted")
         print("✓ Saved corrupted file as corporate_headquarters.py.corrupted")
 
         # Restore from backup
-        shutil.copy('corporate_headquarters.py.backup', 'corporate_headquarters.py')
+        shutil.copy("corporate_headquarters.py.backup", "corporate_headquarters.py")
         print("✓ Restored from corporate_headquarters.py.backup")
 
         print("\nThe file has been restored to its backup state.")
@@ -33,6 +33,7 @@ def restore_from_backup():
     except Exception as e:
         print(f"Error: {e}")
         return False
+
 
 if __name__ == "__main__":
     restore_from_backup()

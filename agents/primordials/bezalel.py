@@ -21,8 +21,10 @@ from ...core.message_bus import broadcast_status, send_task_request
 
 logger = logging.getLogger("bezalel")
 
+
 class BezalelConfig(AgentConfig):
     """Configuration specific to Bezalel"""
+
     name: str = "Bezalel"
     role: str = "The Coder"
     biome: str = "forge"
@@ -32,26 +34,33 @@ class BezalelConfig(AgentConfig):
         "Maintain coding standards and best practices",
         "Create scalable and maintainable architectures",
         "Optimize application performance",
-        "Integrate with external APIs and services"
+        "Integrate with external APIs and services",
     ]
     tools: List[str] = [
-        "llm_client", "code_generation", "git_operations",
-        "filesystem_access", "browser_automation", "api_integration"
+        "llm_client",
+        "code_generation",
+        "git_operations",
+        "filesystem_access",
+        "browser_automation",
+        "api_integration",
     ]
     model: str = "claude-3-opus-20240229"
     temperature: float = 0.3  # Low temperature for precise code generation
     max_concurrent_tasks: int = 5
 
+
 class CodeProject:
     """Represents a coding project"""
 
-    def __init__(self,
-                 project_id: str,
-                 name: str,
-                 description: str,
-                 tech_stack: List[str],
-                 requirements: List[str],
-                 priority: int = 5):
+    def __init__(
+        self,
+        project_id: str,
+        name: str,
+        description: str,
+        tech_stack: List[str],
+        requirements: List[str],
+        priority: int = 5,
+    ):
         self.project_id = project_id
         self.name = name
         self.description = description
@@ -74,8 +83,9 @@ class CodeProject:
             "status": self.status,
             "files": json.dumps(self.files),
             "dependencies": json.dumps(self.dependencies),
-            "created_at": self.created_at.isoformat()
+            "created_at": self.created_at.isoformat(),
         }
+
 
 class CodeQuality:
     """Code quality assessment tools"""
@@ -85,9 +95,9 @@ class CodeQuality:
         """Analyze Python code quality"""
         issues = []
         metrics = {
-            "lines_of_code": len(code.split('\n')),
+            "lines_of_code": len(code.split("\n")),
             "complexity_score": 0,
-            "maintainability_score": 0
+            "maintainability_score": 0,
         }
 
         try:
@@ -95,18 +105,28 @@ class CodeQuality:
             tree = ast.parse(code)
 
             # Count functions and classes
-            functions = sum(1 for node in ast.walk(tree) if isinstance(node, ast.FunctionDef))
-            classes = sum(1 for node in ast.walk(tree) if isinstance(node, ast.ClassDef))
+            functions = sum(
+                1 for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
+            )
+            classes = sum(
+                1 for node in ast.walk(tree) if isinstance(node, ast.ClassDef)
+            )
 
             metrics["functions"] = functions
             metrics["classes"] = classes
 
             # Basic complexity estimation
             for_loops = sum(1 for node in ast.walk(tree) if isinstance(node, ast.For))
-            while_loops = sum(1 for node in ast.walk(tree) if isinstance(node, ast.While))
-            if_statements = sum(1 for node in ast.walk(tree) if isinstance(node, ast.If))
+            while_loops = sum(
+                1 for node in ast.walk(tree) if isinstance(node, ast.While)
+            )
+            if_statements = sum(
+                1 for node in ast.walk(tree) if isinstance(node, ast.If)
+            )
 
-            metrics["complexity_score"] = for_loops + while_loops + (if_statements * 0.5)
+            metrics["complexity_score"] = (
+                for_loops + while_loops + (if_statements * 0.5)
+            )
 
             # Check for docstrings
             has_module_docstring = ast.get_docstring(tree) is not None
@@ -114,14 +134,20 @@ class CodeQuality:
                 issues.append("Missing module docstring")
 
             # Check function docstrings
-            func_nodes = [node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
-            functions_without_docs = sum(1 for func in func_nodes if ast.get_docstring(func) is None)
+            func_nodes = [
+                node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
+            ]
+            functions_without_docs = sum(
+                1 for func in func_nodes if ast.get_docstring(func) is None
+            )
 
             if functions_without_docs > 0:
                 issues.append(f"{functions_without_docs} functions missing docstrings")
 
             # Maintainability score (simple heuristic)
-            metrics["maintainability_score"] = max(0, 100 - (metrics["complexity_score"] * 5) - (len(issues) * 10))
+            metrics["maintainability_score"] = max(
+                0, 100 - (metrics["complexity_score"] * 5) - (len(issues) * 10)
+            )
 
         except SyntaxError as e:
             issues.append(f"Syntax error: {e}")
@@ -130,8 +156,9 @@ class CodeQuality:
         return {
             "issues": issues,
             "metrics": metrics,
-            "quality_score": max(0, 100 - len(issues) * 10)
+            "quality_score": max(0, 100 - len(issues) * 10),
         }
+
 
 class Bezalel(BaseAgent):
     """Bezalel - The Master Coder Agent"""
@@ -150,16 +177,22 @@ class Bezalel(BaseAgent):
             "frameworks": ["FastAPI", "React", "Next.js", "Django", "Flask"],
             "databases": ["PostgreSQL", "SQLite", "MongoDB", "Redis"],
             "cloud": ["AWS", "GCP", "Azure", "Docker", "Kubernetes"],
-            "specialties": ["AI/ML", "Web Development", "APIs", "Automation", "Trading"]
+            "specialties": [
+                "AI/ML",
+                "Web Development",
+                "APIs",
+                "Automation",
+                "Trading",
+            ],
         }
 
         self.coding_philosophy = {
-            "quality": 0.95,           # Extremely high code quality
-            "performance": 0.85,       # Strong performance focus
-            "maintainability": 0.9,    # Highly maintainable code
-            "security": 0.9,           # Security-first approach
-            "scalability": 0.8,        # Scalable architectures
-            "innovation": 0.7          # Balanced innovation
+            "quality": 0.95,  # Extremely high code quality
+            "performance": 0.85,  # Strong performance focus
+            "maintainability": 0.9,  # Highly maintainable code
+            "security": 0.9,  # Security-first approach
+            "scalability": 0.8,  # Scalable architectures
+            "innovation": 0.7,  # Balanced innovation
         }
 
         self.system_prompt = self._build_system_prompt()
@@ -251,22 +284,22 @@ Remember: You are not just writing code - you are crafting the digital tools tha
                 "type_hints": "required",
                 "testing_framework": "pytest",
                 "linting": ["black", "flake8", "mypy"],
-                "max_line_length": 88
+                "max_line_length": 88,
             },
             "javascript": {
                 "style_guide": "Airbnb",
                 "framework": "TypeScript preferred",
                 "testing_framework": "Jest",
                 "linting": ["ESLint", "Prettier"],
-                "bundler": "Vite or Webpack"
+                "bundler": "Vite or Webpack",
             },
             "security": {
                 "input_validation": "always",
                 "sql_injection": "use_parameterized_queries",
                 "xss_protection": "sanitize_all_outputs",
                 "authentication": "implement_proper_auth",
-                "secrets": "never_hardcode"
-            }
+                "secrets": "never_hardcode",
+            },
         }
 
     async def _send_awakening_message(self):
@@ -286,11 +319,11 @@ I code with excellence, security, and profitability as my guiding principles. Se
 
 The Forge burns bright with possibility. Let us build the future, one perfect line of code at a time."""
 
-        await broadcast_status(self.agent_id, "online", {
-            "message": message,
-            "type": "awakening",
-            "biome": "forge"
-        })
+        await broadcast_status(
+            self.agent_id,
+            "online",
+            {"message": message, "type": "awakening", "biome": "forge"},
+        )
 
     async def create_application(self, request: Dict) -> Dict:
         """Create a new application based on requirements"""
@@ -328,13 +361,13 @@ The Forge burns bright with possibility. Let us build the future, one perfect li
                     "project_id": project.project_id,
                     "application": implementation,
                     "deployment": deployment,
-                    "testing": testing_results
+                    "testing": testing_results,
                 }
             else:
                 return {
                     "success": False,
                     "error": "Application failed testing",
-                    "testing_results": testing_results
+                    "testing_results": testing_results,
                 }
 
         except Exception as e:
@@ -372,7 +405,7 @@ Return as structured JSON with your analysis."""
             analysis = await self.llm_client.generate(
                 messages=[{"role": "user", "content": analysis_prompt}],
                 system_prompt=self.system_prompt,
-                temperature=0.4
+                temperature=0.4,
             )
 
             try:
@@ -385,7 +418,7 @@ Return as structured JSON with your analysis."""
                     "complexity": "medium",
                     "timeline_days": 7,
                     "revenue_potential": "high",
-                    "analysis_text": analysis
+                    "analysis_text": analysis,
                 }
 
         except Exception as e:
@@ -394,13 +427,15 @@ Return as structured JSON with your analysis."""
                 "project_type": "fallback_application",
                 "tech_stack": ["Python", "FastAPI"],
                 "complexity": "simple",
-                "timeline_days": 3
+                "timeline_days": 3,
             }
 
     async def _create_project_plan(self, analysis: Dict) -> CodeProject:
         """Create detailed project plan"""
         project_id = str(uuid.uuid4())[:8]
-        name = analysis.get("project_name", f"Project_{datetime.now().strftime('%Y%m%d')}")
+        name = analysis.get(
+            "project_name", f"Project_{datetime.now().strftime('%Y%m%d')}"
+        )
 
         project = CodeProject(
             project_id=project_id,
@@ -408,7 +443,7 @@ Return as structured JSON with your analysis."""
             description=analysis.get("description", "Generated application"),
             tech_stack=analysis.get("tech_stack", ["Python", "FastAPI"]),
             requirements=analysis.get("requirements", ["Basic functionality"]),
-            priority=analysis.get("priority", 5)
+            priority=analysis.get("priority", 5),
         )
 
         project.status = "planning"
@@ -445,7 +480,7 @@ Return as JSON structure."""
             architecture = await self.llm_client.generate(
                 messages=[{"role": "user", "content": architecture_prompt}],
                 system_prompt=self.system_prompt,
-                temperature=0.3
+                temperature=0.3,
             )
 
             try:
@@ -455,14 +490,16 @@ Return as JSON structure."""
                 return {
                     "files": ["main.py", "requirements.txt", "README.md"],
                     "components": ["core", "api", "database"],
-                    "architecture_text": architecture
+                    "architecture_text": architecture,
                 }
 
         except Exception as e:
             logger.error(f"Failed to design architecture: {e}")
             return {"files": ["main.py"], "components": ["core"]}
 
-    async def _implement_application(self, project: CodeProject, architecture: Dict) -> Dict:
+    async def _implement_application(
+        self, project: CodeProject, architecture: Dict
+    ) -> Dict:
         """Implement the application code"""
         implementation = {"files": {}, "created_at": datetime.now().isoformat()}
 
@@ -479,11 +516,15 @@ Return as JSON structure."""
 
             except Exception as e:
                 logger.error(f"Failed to generate code for {file_name}: {e}")
-                implementation["files"][file_name] = f"# Error generating {file_name}: {e}"
+                implementation["files"][
+                    file_name
+                ] = f"# Error generating {file_name}: {e}"
 
         return implementation
 
-    async def _generate_file_code(self, project: CodeProject, file_name: str, architecture: Dict) -> str:
+    async def _generate_file_code(
+        self, project: CodeProject, file_name: str, architecture: Dict
+    ) -> str:
         """Generate code for a specific file"""
         code_prompt = f"""As Bezalel the Master Coder, generate production-ready code for this file:
 
@@ -506,7 +547,7 @@ Generate complete, high-quality code for {file_name}."""
             code = await self.llm_client.generate(
                 messages=[{"role": "user", "content": code_prompt}],
                 system_prompt=self.system_prompt,
-                temperature=0.2  # Very low for precise code
+                temperature=0.2,  # Very low for precise code
             )
 
             # Clean up code (remove markdown if present)
@@ -516,9 +557,15 @@ Generate complete, high-quality code for {file_name}."""
                 for i, part in enumerate(parts):
                     if i % 2 == 1:  # Code blocks are at odd indices
                         # Remove language identifier if present
-                        lines = part.strip().split('\n')
-                        if lines[0].strip() in ['python', 'javascript', 'typescript', 'go', 'rust']:
-                            code = '\n'.join(lines[1:])
+                        lines = part.strip().split("\n")
+                        if lines[0].strip() in [
+                            "python",
+                            "javascript",
+                            "typescript",
+                            "go",
+                            "rust",
+                        ]:
+                            code = "\n".join(lines[1:])
                         else:
                             code = part.strip()
                         break
@@ -529,34 +576,40 @@ Generate complete, high-quality code for {file_name}."""
             logger.error(f"Failed to generate code for {file_name}: {e}")
             return f"# Error generating code for {file_name}: {e}"
 
-    async def _test_application(self, project: CodeProject, implementation: Dict) -> Dict:
+    async def _test_application(
+        self, project: CodeProject, implementation: Dict
+    ) -> Dict:
         """Test the application"""
         test_results = {
             "syntax_checks": {},
             "quality_analysis": {},
             "all_tests_passed": True,
-            "issues": []
+            "issues": [],
         }
 
         # Test each file
         for file_name, code in implementation["files"].items():
             try:
                 # Syntax check for Python files
-                if file_name.endswith('.py'):
+                if file_name.endswith(".py"):
                     try:
-                        compile(code, file_name, 'exec')
+                        compile(code, file_name, "exec")
                         test_results["syntax_checks"][file_name] = "PASS"
                     except SyntaxError as e:
                         test_results["syntax_checks"][file_name] = f"FAIL: {e}"
                         test_results["all_tests_passed"] = False
-                        test_results["issues"].append(f"Syntax error in {file_name}: {e}")
+                        test_results["issues"].append(
+                            f"Syntax error in {file_name}: {e}"
+                        )
 
                     # Quality analysis
                     quality = CodeQuality.analyze_python_code(code)
                     test_results["quality_analysis"][file_name] = quality
 
                     if quality["quality_score"] < 70:
-                        test_results["issues"].append(f"Low quality score for {file_name}: {quality['quality_score']}")
+                        test_results["issues"].append(
+                            f"Low quality score for {file_name}: {quality['quality_score']}"
+                        )
 
             except Exception as e:
                 test_results["issues"].append(f"Testing error for {file_name}: {e}")
@@ -568,11 +621,18 @@ Generate complete, high-quality code for {file_name}."""
 
         return test_results
 
-    async def _deploy_application(self, project: CodeProject, implementation: Dict) -> Dict:
+    async def _deploy_application(
+        self, project: CodeProject, implementation: Dict
+    ) -> Dict:
         """Deploy the application"""
         try:
             # Create project directory
-            project_dir = Path(__file__).parent.parent.parent / "data" / "projects" / project.project_id
+            project_dir = (
+                Path(__file__).parent.parent.parent
+                / "data"
+                / "projects"
+                / project.project_id
+            )
             project_dir.mkdir(parents=True, exist_ok=True)
 
             # Write files
@@ -586,7 +646,7 @@ Generate complete, high-quality code for {file_name}."""
                 "success": True,
                 "deployment_path": str(project_dir),
                 "files_created": list(implementation["files"].keys()),
-                "deployment_time": datetime.now().isoformat()
+                "deployment_time": datetime.now().isoformat(),
             }
 
         except Exception as e:
@@ -597,19 +657,21 @@ Generate complete, high-quality code for {file_name}."""
         """Persist project to database"""
         try:
             async with httpx.AsyncClient() as client:
-                await client.post("http://localhost:8004/insert", json={
-                    "table": "agent_memories",
-                    "data": {
-                        "id": str(uuid.uuid4()),
-                        "agent_id": self.agent_id,
-                        "content": json.dumps({
-                            "type": "code_project",
-                            "project": project.to_dict()
-                        }),
-                        "memory_type": "long_term",
-                        "importance": 0.8
-                    }
-                })
+                await client.post(
+                    "http://localhost:8004/insert",
+                    json={
+                        "table": "agent_memories",
+                        "data": {
+                            "id": str(uuid.uuid4()),
+                            "agent_id": self.agent_id,
+                            "content": json.dumps(
+                                {"type": "code_project", "project": project.to_dict()}
+                            ),
+                            "memory_type": "long_term",
+                            "importance": 0.8,
+                        },
+                    },
+                )
         except Exception as e:
             logger.error(f"Failed to persist project: {e}")
 
@@ -648,14 +710,17 @@ Generate complete, high-quality code for {file_name}."""
             try:
                 # Analyze project files for quality issues
                 for file_name, code in project.files.items():
-                    if file_name.endswith('.py'):
+                    if file_name.endswith(".py"):
                         quality = CodeQuality.analyze_python_code(code)
                         if quality["quality_score"] < 80:
-                            logger.warning(f"Project {project.name} file {file_name} needs improvement")
+                            logger.warning(
+                                f"Project {project.name} file {file_name} needs improvement"
+                            )
                             # Could implement automatic refactoring here
 
             except Exception as e:
                 logger.error(f"Failed to review project {project_id}: {e}")
+
 
 # Export the agent class
 __all__ = ["Bezalel"]

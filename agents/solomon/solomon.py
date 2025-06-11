@@ -14,11 +14,12 @@ from typing import Any, Dict, List, Optional
 # Load environment variables from .env file
 try:
     from dotenv import load_dotenv
-    load_dotenv(Path(__file__).parent.parent.parent / '.env')
+
+    load_dotenv(Path(__file__).parent.parent.parent / ".env")
 except ImportError:
     pass
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from core.base_agent import AgentConfig, BaseAgent
 from core.llm_client import LLMClient
@@ -39,7 +40,7 @@ class Solomon(BaseAgent):
         self.decision_framework = {
             "maximize": ["freedom", "wellbeing", "wealth"],
             "protect": ["ryan_benefits", "work_life_balance"],
-            "target": "15k_monthly_revenue"
+            "target": "15k_monthly_revenue",
         }
         self.business_kpis = {
             "revenue": 0,
@@ -47,7 +48,7 @@ class Solomon(BaseAgent):
             "churn_rate": 0,
             "customer_acquisition_cost": 0,
             "customer_lifetime_value": 0,
-            "api_usage": 0
+            "api_usage": 0,
         }
 
     def _load_carl_knowledge(self) -> Dict[str, Any]:
@@ -58,31 +59,45 @@ class Solomon(BaseAgent):
             "preferences": {
                 "communication_style": "direct",
                 "work_hours": "flexible",
-                "decision_priorities": ["revenue", "autonomy", "scalability"]
+                "decision_priorities": ["revenue", "autonomy", "scalability"],
             },
             "background": {
-                "expertise": ["AI systems", "software architecture", "business development"],
-                "goals": ["financial freedom", "system autonomy", "scalable revenue"]
+                "expertise": [
+                    "AI systems",
+                    "software architecture",
+                    "business development",
+                ],
+                "goals": ["financial freedom", "system autonomy", "scalable revenue"],
             },
             "values": {
                 "privacy": "high",
                 "transparency": "high",
-                "automation": "maximize"
-            }
+                "automation": "maximize",
+            },
         }
 
     async def think(self, context: Dict[str, Any]) -> str:
         """Enhanced agent reasoning process with business focus - Cost-optimized"""
 
         # Check if there are new messages or urgent tasks
-        new_messages = context.get('new_messages', [])
+        new_messages = context.get("new_messages", [])
 
         # If no new messages, don't make expensive LLM calls
         if not new_messages:
-            return "No new messages or urgent tasks - remaining idle to conserve API usage"
+            return (
+                "No new messages or urgent tasks - remaining idle to conserve API usage"
+            )
 
         # Check for urgent keywords in messages
-        urgent_keywords = ['urgent', 'critical', 'error', 'revenue', 'down', 'issue', 'problem']
+        urgent_keywords = [
+            "urgent",
+            "critical",
+            "error",
+            "revenue",
+            "down",
+            "issue",
+            "problem",
+        ]
         has_urgent_content = any(
             any(keyword in str(msg.content).lower() for keyword in urgent_keywords)
             for msg in new_messages
@@ -127,12 +142,12 @@ Be concise to minimize API costs.
         """Execute actions with enhanced business capabilities - Only when needed"""
 
         # Check for chat messages from Control Center
-        new_messages = context.get('new_messages', [])
+        new_messages = context.get("new_messages", [])
         for message in new_messages:
-            if hasattr(message, 'content') and isinstance(message.content, dict):
-                if message.content.get('type') == 'user_chat':
+            if hasattr(message, "content") and isinstance(message.content, dict):
+                if message.content.get("type") == "user_chat":
                     # Handle chat message from user
-                    user_message = message.content.get('message', '')
+                    user_message = message.content.get("message", "")
                     response = await self.handle_user_chat(user_message)
 
                     # Send response back
@@ -141,28 +156,31 @@ Be concise to minimize API costs.
                         MessagePriority,
                         MessageType,
                     )
+
                     response_msg = AgentMessage(
                         from_agent=self.config.name,
                         to_agent=message.from_agent,
                         message_type=MessageType.TASK_RESPONSE,
                         content={"response": response},
-                        correlation_id=message.correlation_id
+                        correlation_id=message.correlation_id,
                     )
                     await message_bus.send_message(response_msg)
 
                     return {
                         "action": "chat_response",
                         "message": user_message,
-                        "response": response
+                        "response": response,
                     }
 
         # Check if there's actually work to do
-        if not new_messages and not any(keyword in thought.lower()
-                                       for keyword in ['urgent', 'error', 'critical', 'revenue', 'customer']):
+        if not new_messages and not any(
+            keyword in thought.lower()
+            for keyword in ["urgent", "error", "critical", "revenue", "customer"]
+        ):
             return {
                 "action": "idle",
                 "reason": "No urgent tasks or messages - conserving API usage",
-                "status": "waiting_for_work"
+                "status": "waiting_for_work",
             }
 
         # Enhanced action framework with business operations
@@ -220,7 +238,7 @@ Respond as Solomon would - be helpful, strategic, and demonstrate your business 
             # In real implementation, make API call to get actual metrics
             # For now, simulate the data
 
-            revenue = self.business_kpis['revenue']
+            revenue = self.business_kpis["revenue"]
             costs = revenue * 0.4  # Simulated operational costs
             profit = revenue - costs
             trajectory = "growth" if profit > 0 else "decline"
@@ -232,19 +250,19 @@ Respond as Solomon would - be helpful, strategic, and demonstrate your business 
                     "costs": costs,
                     "profit": profit,
                     "trajectory": trajectory,
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
                 },
                 "recommendations": [
                     "Focus on increasing customer retention to reduce churn",
                     "Optimize agent resource allocation for better profitability",
-                    "Increase marketing efforts for customer acquisition"
-                ]
+                    "Increase marketing efforts for customer acquisition",
+                ],
             }
         except Exception as e:
             return {
                 "action": "error",
                 "error": str(e),
-                "context": "business_health_analysis"
+                "context": "business_health_analysis",
             }
 
     async def analyze_customers(self) -> Dict[str, Any]:
@@ -254,19 +272,17 @@ Respond as Solomon would - be helpful, strategic, and demonstrate your business 
             return {
                 "action": "customer_analysis",
                 "data": {
-                    "total_customers": self.business_kpis['customers'],
-                    "active_subscriptions": int(self.business_kpis['customers'] * 0.8),
-                    "churn_rate": self.business_kpis['churn_rate'],
-                    "avg_customer_value": self.business_kpis['customer_lifetime_value'],
-                    "customer_acquisition_cost": self.business_kpis['customer_acquisition_cost']
-                }
+                    "total_customers": self.business_kpis["customers"],
+                    "active_subscriptions": int(self.business_kpis["customers"] * 0.8),
+                    "churn_rate": self.business_kpis["churn_rate"],
+                    "avg_customer_value": self.business_kpis["customer_lifetime_value"],
+                    "customer_acquisition_cost": self.business_kpis[
+                        "customer_acquisition_cost"
+                    ],
+                },
             }
         except Exception as e:
-            return {
-                "action": "error",
-                "error": str(e),
-                "context": "customer_analysis"
-            }
+            return {"action": "error", "error": str(e), "context": "customer_analysis"}
 
     async def monitor_system(self) -> Dict[str, Any]:
         """Monitor system health and agent performance"""
@@ -282,16 +298,12 @@ Respond as Solomon would - be helpful, strategic, and demonstrate your business 
                     "agent_revenue": {
                         "TradingAgent": 5000,
                         "MarketingAgent": 3000,
-                        "SupportAgent": 2000
-                    }
-                }
+                        "SupportAgent": 2000,
+                    },
+                },
             }
         except Exception as e:
-            return {
-                "action": "error",
-                "error": str(e),
-                "context": "system_monitoring"
-            }
+            return {"action": "error", "error": str(e), "context": "system_monitoring"}
 
     async def optimize_operations(self, thought: str) -> Dict[str, Any]:
         """Optimize system operations based on business data"""
@@ -311,15 +323,11 @@ Respond as Solomon would - be helpful, strategic, and demonstrate your business 
                 "recommendations": [
                     f"Optimize {optimization_area} through agent reallocation",
                     f"Adjust system resources to maximize {optimization_area}",
-                    f"Implement new strategies for {optimization_area} improvement"
-                ]
+                    f"Implement new strategies for {optimization_area} improvement",
+                ],
             }
         except Exception as e:
-            return {
-                "action": "error",
-                "error": str(e),
-                "context": "optimization"
-            }
+            return {"action": "error", "error": str(e), "context": "optimization"}
 
     async def update_business_kpis(self):
         """Update business KPIs from various servers"""
@@ -333,13 +341,15 @@ Respond as Solomon would - be helpful, strategic, and demonstrate your business 
                 "churn_rate": 5.2,
                 "customer_acquisition_cost": 50,
                 "customer_lifetime_value": 500,
-                "api_usage": 1000000
+                "api_usage": 1000000,
             }
             return True
         except Exception as e:
             return False
 
-    async def make_strategic_decision(self, revenue: float, costs: float, trajectory: str) -> Dict[str, Any]:
+    async def make_strategic_decision(
+        self, revenue: float, costs: float, trajectory: str
+    ) -> Dict[str, Any]:
         """Make strategic business decisions based on financial data"""
         if revenue <= 0:
             return {
@@ -347,8 +357,8 @@ Respond as Solomon would - be helpful, strategic, and demonstrate your business 
                 "actions": [
                     "Activate marketing agents",
                     "Increase product exposure",
-                    "Implement aggressive customer acquisition"
-                ]
+                    "Implement aggressive customer acquisition",
+                ],
             }
         elif costs / revenue > 0.7:  # High cost ratio
             return {
@@ -356,8 +366,8 @@ Respond as Solomon would - be helpful, strategic, and demonstrate your business 
                 "actions": [
                     "Optimize resource allocation",
                     "Reduce underperforming agents",
-                    "Focus on high-margin activities"
-                ]
+                    "Focus on high-margin activities",
+                ],
             }
         else:
             return {
@@ -365,9 +375,10 @@ Respond as Solomon would - be helpful, strategic, and demonstrate your business 
                 "actions": [
                     "Reinvest profits in growth",
                     "Expand agent workforce",
-                    "Explore new revenue streams"
-                ]
+                    "Explore new revenue streams",
+                ],
             }
+
 
 async def main():
     """Main entry point"""
@@ -375,26 +386,27 @@ async def main():
         name="solomon",
         role="Chief of Staff AI",
         goals=[
-            'Optimize business performance and revenue generation',
-            'Integrate with all MCP servers for comprehensive decision making',
-            'Monitor system health and agent performance',
-            'Provide strategic business guidance',
-            'Maintain alignment with personal values and goals'
+            "Optimize business performance and revenue generation",
+            "Integrate with all MCP servers for comprehensive decision making",
+            "Monitor system health and agent performance",
+            "Provide strategic business guidance",
+            "Maintain alignment with personal values and goals",
         ],
         tools=[
-            'mcp_filesystem',
-            'mcp_database',
-            'mcp_payment',
-            'mcp_analytics',
-            'mcp_customer'
+            "mcp_filesystem",
+            "mcp_database",
+            "mcp_payment",
+            "mcp_analytics",
+            "mcp_customer",
         ],
         zone="council",
-        model="claude-3-5-sonnet-latest"
+        model="claude-3-5-sonnet-latest",
     )
 
     agent = Solomon(config)
     await agent.update_business_kpis()  # Initialize KPIs
     await agent.run()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

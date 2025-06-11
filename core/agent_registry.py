@@ -19,8 +19,10 @@ from .message_bus import AgentMessage, MessagePriority, MessageType, message_bus
 
 logger = logging.getLogger("agent_registry")
 
+
 class AgentCapability(Enum):
     """Agent capabilities"""
+
     RESEARCH = "research"
     DEVELOPMENT = "development"
     ANALYSIS = "analysis"
@@ -30,9 +32,11 @@ class AgentCapability(Enum):
     COORDINATION = "coordination"
     PLANNING = "planning"
 
+
 @dataclass
 class AgentDiscoveryInfo:
     """Agent discovery and metadata information"""
+
     agent_id: str
     name: str
     role: str
@@ -68,13 +72,16 @@ class AgentDiscoveryInfo:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization"""
         data = asdict(self)
-        data['capabilities'] = [cap.value for cap in self.capabilities]
-        data['state'] = self.state.value if isinstance(self.state, AgentState) else self.state
+        data["capabilities"] = [cap.value for cap in self.capabilities]
+        data["state"] = (
+            self.state.value if isinstance(self.state, AgentState) else self.state
+        )
         if self.started_at:
-            data['started_at'] = self.started_at.isoformat()
+            data["started_at"] = self.started_at.isoformat()
         if self.last_heartbeat:
-            data['last_heartbeat'] = self.last_heartbeat.isoformat()
+            data["last_heartbeat"] = self.last_heartbeat.isoformat()
         return data
+
 
 class AgentRegistry:
     """Centralized registry for agent discovery and tracking"""
@@ -133,7 +140,9 @@ class AgentRegistry:
             for capability in agent_info.capabilities:
                 self.capability_index[capability].add(agent_id)
 
-            logger.info(f"Registered agent: {agent_id} ({agent_info.name}) in zone {zone}")
+            logger.info(
+                f"Registered agent: {agent_id} ({agent_info.name}) in zone {zone}"
+            )
 
             # Notify discovery callbacks
             for callback in self.discovery_callbacks:
@@ -143,16 +152,19 @@ class AgentRegistry:
                     logger.error(f"Discovery callback error: {e}")
 
             # Broadcast agent registration
-            await message_bus.broadcast(AgentMessage(
-                from_agent="registry",
-                to_agent="system",
-                message_type=MessageType.STATUS_UPDATE,
-                content={
-                    "event": "agent_registered",
-                    "agent_id": agent_id,
-                    "agent_info": agent_info.to_dict()
-                }
-            ), topic="system_events")
+            await message_bus.broadcast(
+                AgentMessage(
+                    from_agent="registry",
+                    to_agent="system",
+                    message_type=MessageType.STATUS_UPDATE,
+                    content={
+                        "event": "agent_registered",
+                        "agent_id": agent_id,
+                        "agent_info": agent_info.to_dict(),
+                    },
+                ),
+                topic="system_events",
+            )
 
             return True
 
@@ -192,15 +204,15 @@ class AgentRegistry:
                     logger.error(f"Discovery callback error: {e}")
 
             # Broadcast agent unregistration
-            await message_bus.broadcast(AgentMessage(
-                from_agent="registry",
-                to_agent="system",
-                message_type=MessageType.STATUS_UPDATE,
-                content={
-                    "event": "agent_unregistered",
-                    "agent_id": agent_id
-                }
-            ), topic="system_events")
+            await message_bus.broadcast(
+                AgentMessage(
+                    from_agent="registry",
+                    to_agent="system",
+                    message_type=MessageType.STATUS_UPDATE,
+                    content={"event": "agent_unregistered", "agent_id": agent_id},
+                ),
+                topic="system_events",
+            )
 
             return True
 
@@ -208,7 +220,9 @@ class AgentRegistry:
             logger.error(f"Failed to unregister agent {agent_id}: {e}")
             return False
 
-    async def update_agent_heartbeat(self, agent_id: str, metrics: Optional[Dict[str, Any]] = None):
+    async def update_agent_heartbeat(
+        self, agent_id: str, metrics: Optional[Dict[str, Any]] = None
+    ):
         """Update agent heartbeat and metrics"""
         if agent_id in self.agents:
             agent_info = self.agents[agent_id]
@@ -217,15 +231,23 @@ class AgentRegistry:
 
             # Update metrics if provided
             if metrics:
-                agent_info.cpu_usage = metrics.get('cpu_usage', agent_info.cpu_usage)
-                agent_info.memory_usage_mb = metrics.get('memory_usage_mb', agent_info.memory_usage_mb)
-                agent_info.gpu_usage = metrics.get('gpu_usage', agent_info.gpu_usage)
-                agent_info.tasks_completed = metrics.get('tasks_completed', agent_info.tasks_completed)
-                agent_info.uptime_seconds = metrics.get('uptime_seconds', agent_info.uptime_seconds)
-                agent_info.message_queue_size = metrics.get('message_queue_size', agent_info.message_queue_size)
+                agent_info.cpu_usage = metrics.get("cpu_usage", agent_info.cpu_usage)
+                agent_info.memory_usage_mb = metrics.get(
+                    "memory_usage_mb", agent_info.memory_usage_mb
+                )
+                agent_info.gpu_usage = metrics.get("gpu_usage", agent_info.gpu_usage)
+                agent_info.tasks_completed = metrics.get(
+                    "tasks_completed", agent_info.tasks_completed
+                )
+                agent_info.uptime_seconds = metrics.get(
+                    "uptime_seconds", agent_info.uptime_seconds
+                )
+                agent_info.message_queue_size = metrics.get(
+                    "message_queue_size", agent_info.message_queue_size
+                )
 
-                if 'state' in metrics:
-                    agent_info.state = AgentState(metrics['state'])
+                if "state" in metrics:
+                    agent_info.state = AgentState(metrics["state"])
 
             logger.debug(f"Updated heartbeat for agent: {agent_id}")
 
@@ -233,8 +255,12 @@ class AgentRegistry:
         """Get agent information by ID"""
         return self.agents.get(agent_id)
 
-    def list_agents(self, zone: Optional[str] = None, state: Optional[AgentState] = None,
-                   capability: Optional[AgentCapability] = None) -> List[AgentDiscoveryInfo]:
+    def list_agents(
+        self,
+        zone: Optional[str] = None,
+        state: Optional[AgentState] = None,
+        capability: Optional[AgentCapability] = None,
+    ) -> List[AgentDiscoveryInfo]:
         """List agents with optional filters"""
         agents = list(self.agents.values())
 
@@ -249,7 +275,9 @@ class AgentRegistry:
 
         return agents
 
-    def find_agents_by_capability(self, capability: AgentCapability) -> List[AgentDiscoveryInfo]:
+    def find_agents_by_capability(
+        self, capability: AgentCapability
+    ) -> List[AgentDiscoveryInfo]:
         """Find agents with a specific capability"""
         agent_ids = self.capability_index.get(capability, set())
         return [self.agents[aid] for aid in agent_ids if aid in self.agents]
@@ -270,7 +298,11 @@ class AgentRegistry:
 
         states = {}
         for agent in self.agents.values():
-            state = agent.state.value if isinstance(agent.state, AgentState) else agent.state
+            state = (
+                agent.state.value
+                if isinstance(agent.state, AgentState)
+                else agent.state
+            )
             states[state] = states.get(state, 0) + 1
 
         zones = {}
@@ -300,10 +332,10 @@ class AgentRegistry:
                 "total_memory_mb": total_memory,
                 "average_memory_mb": total_memory / max(total_agents, 1),
                 "total_gpu_usage": total_gpu,
-                "average_gpu_usage": total_gpu / max(total_agents, 1)
+                "average_gpu_usage": total_gpu / max(total_agents, 1),
             },
             "total_tasks_completed": total_tasks,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     def add_discovery_callback(self, callback: callable):
@@ -320,26 +352,36 @@ class AgentRegistry:
         while self.running:
             try:
                 current_time = datetime.now()
-                timeout_threshold = current_time - timedelta(seconds=self.heartbeat_timeout)
+                timeout_threshold = current_time - timedelta(
+                    seconds=self.heartbeat_timeout
+                )
 
                 for agent_id, agent_info in self.agents.items():
-                    if agent_info.last_heartbeat and agent_info.last_heartbeat < timeout_threshold:
+                    if (
+                        agent_info.last_heartbeat
+                        and agent_info.last_heartbeat < timeout_threshold
+                    ):
                         if agent_info.is_healthy:
                             agent_info.is_healthy = False
                             agent_info.last_error = "Heartbeat timeout"
-                            logger.warning(f"Agent {agent_id} marked as unhealthy (heartbeat timeout)")
+                            logger.warning(
+                                f"Agent {agent_id} marked as unhealthy (heartbeat timeout)"
+                            )
 
                             # Broadcast health change
-                            await message_bus.broadcast(AgentMessage(
-                                from_agent="registry",
-                                to_agent="system",
-                                message_type=MessageType.ALERT,
-                                content={
-                                    "event": "agent_unhealthy",
-                                    "agent_id": agent_id,
-                                    "reason": "heartbeat_timeout"
-                                }
-                            ), topic="system_events")
+                            await message_bus.broadcast(
+                                AgentMessage(
+                                    from_agent="registry",
+                                    to_agent="system",
+                                    message_type=MessageType.ALERT,
+                                    content={
+                                        "event": "agent_unhealthy",
+                                        "agent_id": agent_id,
+                                        "reason": "heartbeat_timeout",
+                                    },
+                                ),
+                                topic="system_events",
+                            )
 
                 await asyncio.sleep(60)  # Check every minute
 
@@ -366,20 +408,23 @@ class AgentRegistry:
                 for agent_id, agent_info in self.agents.items():
                     if agent_info.is_healthy:
                         # Send health check message
-                        await message_bus.send_message(AgentMessage(
-                            from_agent="registry",
-                            to_agent=agent_id,
-                            message_type=MessageType.STATUS_UPDATE,
-                            content={"command": "health_check"},
-                            priority=MessagePriority.LOW,
-                            requires_response=False
-                        ))
+                        await message_bus.send_message(
+                            AgentMessage(
+                                from_agent="registry",
+                                to_agent=agent_id,
+                                message_type=MessageType.STATUS_UPDATE,
+                                content={"command": "health_check"},
+                                priority=MessagePriority.LOW,
+                                requires_response=False,
+                            )
+                        )
 
                 await asyncio.sleep(120)  # Health check every 2 minutes
 
             except Exception as e:
                 logger.error(f"Health checker error: {e}")
                 await asyncio.sleep(120)
+
 
 # Global registry instance
 agent_registry = AgentRegistry()

@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 logger = logging.getLogger("chat_dashboard")
 
+
 class ChatDashboardHandler(SimpleHTTPRequestHandler):
     """HTTP handler for the chat dashboard"""
 
@@ -33,11 +34,11 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
     def send_chat_dashboard(self):
         """Send the main chat dashboard HTML"""
         html_content = self.generate_dashboard_html()
-        html_bytes = html_content.encode('utf-8')
+        html_bytes = html_content.encode("utf-8")
 
         self.send_response(200)
-        self.send_header('Content-type', 'text/html; charset=utf-8')
-        self.send_header('Connection', 'close')
+        self.send_header("Content-type", "text/html; charset=utf-8")
+        self.send_header("Connection", "close")
         self.end_headers()
         self.wfile.write(html_bytes)
 
@@ -48,26 +49,26 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
                 "timestamp": datetime.now().isoformat(),
                 "solomon_chat": {
                     "websocket_url": "ws://localhost:8889",
-                    "status": "available"
+                    "status": "available",
                 },
                 "services": {
                     "dashboard": {"status": "online", "port": 8888},
-                    "chat_server": {"status": "online", "port": 8889}
-                }
+                    "chat_server": {"status": "online", "port": 8889},
+                },
             }
 
             response = json.dumps(status_data, indent=2)
             self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.send_header('Content-length', len(response))
+            self.send_header("Content-type", "application/json")
+            self.send_header("Content-length", len(response))
             self.end_headers()
             self.wfile.write(response.encode())
 
         except Exception as e:
             error_response = json.dumps({"error": str(e)})
             self.send_response(500)
-            self.send_header('Content-type', 'application/json')
-            self.send_header('Content-length', len(error_response))
+            self.send_header("Content-type", "application/json")
+            self.send_header("Content-length", len(error_response))
             self.end_headers()
             self.wfile.write(error_response.encode())
 
@@ -556,16 +557,18 @@ class ChatDashboardHandler(SimpleHTTPRequestHandler):
 </body>
 </html>"""
 
+
 def start_dashboard_server(port: int = 8888):
     """Start the dashboard HTTP server"""
-    server = HTTPServer(('localhost', port), ChatDashboardHandler)
+    server = HTTPServer(("localhost", port), ChatDashboardHandler)
     logger.info(f"Starting chat dashboard on http://localhost:{port}")
     server.serve_forever()
+
 
 if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
     try:

@@ -29,26 +29,46 @@ def register_departments():
     ORDER BY d.phase, d.priority;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", get_depts_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-A",
+            "-F",
+            "|",
+            "-c",
+            get_depts_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0 and result.stdout:
         departments = []
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 8:
-                    departments.append({
-                        "id": parts[0],
-                        "name": parts[1],
-                        "phase": parts[2] or "1",
-                        "priority": parts[3] or "5",
-                        "category": parts[4] or "operational",
-                        "description": parts[5] or parts[6] or "Department operations",
-                        "leader_count": parts[7]
-                    })
+                    departments.append(
+                        {
+                            "id": parts[0],
+                            "name": parts[1],
+                            "phase": parts[2] or "1",
+                            "priority": parts[3] or "5",
+                            "category": parts[4] or "operational",
+                            "description": parts[5]
+                            or parts[6]
+                            or "Department operations",
+                            "leader_count": parts[7],
+                        }
+                    )
 
         print(f"\n📝 Found {len(departments)} departments to register...")
 
@@ -81,18 +101,34 @@ def register_departments():
                 updated_at = CURRENT_TIMESTAMP;
             """
 
-            reg_result = subprocess.run([
-                "docker", "exec", "boarderframeos_postgres",
-                "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", register_query
-            ], capture_output=True, text=True)
+            reg_result = subprocess.run(
+                [
+                    "docker",
+                    "exec",
+                    "boarderframeos_postgres",
+                    "psql",
+                    "-U",
+                    "boarderframe",
+                    "-d",
+                    "boarderframeos",
+                    "-c",
+                    register_query,
+                ],
+                capture_output=True,
+                text=True,
+            )
 
             if reg_result.returncode == 0:
                 success_count += 1
-                print(f"   ✅ {dept['name']} (Phase {dept['phase']}, Priority {dept['priority']})")
+                print(
+                    f"   ✅ {dept['name']} (Phase {dept['phase']}, Priority {dept['priority']})"
+                )
             else:
                 print(f"   ❌ {dept['name']}: {reg_result.stderr[:50]}")
 
-        print(f"\n✅ Successfully registered {success_count}/{len(departments)} departments")
+        print(
+            f"\n✅ Successfully registered {success_count}/{len(departments)} departments"
+        )
 
     # Update department leaders in registry
     print("\n📝 Updating department leaders...")
@@ -115,10 +151,22 @@ def register_departments():
     );
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", leaders_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-c",
+            leaders_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
         print("   ✅ Updated department leaders information")
@@ -150,16 +198,29 @@ def register_departments():
     WHERE status = 'active';
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", summary_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-c",
+            summary_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
         print("\nDepartment Metrics:")
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 2:
                     metric = parts[0].strip()
                     value = parts[1].strip()

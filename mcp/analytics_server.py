@@ -24,6 +24,7 @@ from pydantic import BaseModel, validator
 
 try:
     import aiosqlite
+
     HAS_SQLITE = True
 except ImportError:
     HAS_SQLITE = False
@@ -31,6 +32,7 @@ except ImportError:
 
 try:
     import asyncpg
+
     HAS_ASYNCPG = True
 except ImportError:
     HAS_ASYNCPG = False
@@ -38,13 +40,14 @@ except ImportError:
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger("mcp_analytics")
 
+
 class EventData(BaseModel):
     """Event data model for tracking metrics"""
+
     event_type: str
     agent_id: Optional[str] = None
     customer_id: Optional[str] = None
@@ -58,15 +61,21 @@ BATCH_TIMEOUT = 5.0  # Process partial batches after timeout
 MAX_QUEUE_SIZE = 10000  # Maximum events in queue
 
 # PostgreSQL Configuration
-POSTGRES_URL = os.getenv("DATABASE_URL", "postgresql://boarderframe:boarderframe_secure_2025@localhost:5434/boarderframeos")
+POSTGRES_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://boarderframe:boarderframe_secure_2025@localhost:5434/boarderframeos",
+)
 POSTGRES_POOL_MIN = int(os.getenv("ANALYTICS_POOL_MIN", "5"))
 POSTGRES_POOL_MAX = int(os.getenv("ANALYTICS_POOL_MAX", "15"))
 
+
 class KpiRequest(BaseModel):
     """Request for KPI calculation"""
+
     metric: str
     timeframe: str = "day"  # day, week, month
     filters: Optional[Dict[str, Any]] = None
+
 
 class EventProcessor:
     """Background event processor with batching and PostgreSQL persistence"""
@@ -84,12 +93,12 @@ class EventProcessor:
 
         # Performance tracking
         self.stats = {
-            'events_processed': 0,
-            'batches_processed': 0,
-            'avg_batch_size': 0,
-            'processing_errors': 0,
-            'queue_full_drops': 0,
-            'database_type': 'postgresql' if self.use_postgres else 'sqlite'
+            "events_processed": 0,
+            "batches_processed": 0,
+            "avg_batch_size": 0,
+            "processing_errors": 0,
+            "queue_full_drops": 0,
+            "database_type": "postgresql" if self.use_postgres else "sqlite",
         }
 
     async def initialize(self):
@@ -104,7 +113,8 @@ class EventProcessor:
         """Initialize SQLite database for analytics"""
         async with aiosqlite.connect(self.db_path) as db:
             # Create events table
-            await db.execute("""
+            await db.execute(
+                """
                 CREATE TABLE IF NOT EXISTS analytics_events (
                     id TEXT PRIMARY KEY,
                     event_type TEXT NOT NULL,
@@ -115,12 +125,19 @@ class EventProcessor:
                     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
+            """
+            )
 
             # Create indexes for performance
-            await db.execute("CREATE INDEX IF NOT EXISTS idx_events_type ON analytics_events(event_type)")
-            await db.execute("CREATE INDEX IF NOT EXISTS idx_events_agent ON analytics_events(agent_id)")
-            await db.execute("CREATE INDEX IF NOT EXISTS idx_events_timestamp ON analytics_events(timestamp)")
+            await db.execute(
+                "CREATE INDEX IF NOT EXISTS idx_events_type ON analytics_events(event_type)"
+            )
+            await db.execute(
+                "CREATE INDEX IF NOT EXISTS idx_events_agent ON analytics_events(agent_id)"
+            )
+            await db.execute(
+                "CREATE INDEX IF NOT EXISTS idx_events_timestamp ON analytics_events(timestamp)"
+            )
 
             await db.commit()
             logger.info("Analytics database initialized")
@@ -133,13 +150,14 @@ class EventProcessor:
                 POSTGRES_URL,
                 min_size=POSTGRES_POOL_MIN,
                 max_size=POSTGRES_POOL_MAX,
-                command_timeout=60
+                command_timeout=60,
             )
 
             # Create analytics tables if they don't exist
             async with self.pg_pool.acquire() as conn:
                 # Create events table
-                await conn.execute("""
+                await conn.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS analytics_events (
                         id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
                         event_type TEXT NOT NULL,
@@ -150,10 +168,12 @@ class EventProcessor:
                         timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                         processed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
                     )
-                """)
+                """
+                )
 
                 # Create metrics table for aggregated data
-                await conn.execute("""
+                await conn.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS analytics_metrics (
                         id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
                         metric_name TEXT NOT NULL,
@@ -162,19 +182,36 @@ class EventProcessor:
                         dimensions JSONB,
                         timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
                     )
-                """)
+                """
+                )
 
                 # Create indexes for performance
-                await conn.execute("CREATE INDEX IF NOT EXISTS idx_analytics_events_type ON analytics_events(event_type)")
-                await conn.execute("CREATE INDEX IF NOT EXISTS idx_analytics_events_agent ON analytics_events(agent_id)")
-                await conn.execute("CREATE INDEX IF NOT EXISTS idx_analytics_events_customer ON analytics_events(customer_id)")
-                await conn.execute("CREATE INDEX IF NOT EXISTS idx_analytics_events_timestamp ON analytics_events(timestamp)")
-                await conn.execute("CREATE INDEX IF NOT EXISTS idx_analytics_metrics_name ON analytics_metrics(metric_name)")
-                await conn.execute("CREATE INDEX IF NOT EXISTS idx_analytics_metrics_timestamp ON analytics_metrics(timestamp)")
+                await conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_analytics_events_type ON analytics_events(event_type)"
+                )
+                await conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_analytics_events_agent ON analytics_events(agent_id)"
+                )
+                await conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_analytics_events_customer ON analytics_events(customer_id)"
+                )
+                await conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_analytics_events_timestamp ON analytics_events(timestamp)"
+                )
+                await conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_analytics_metrics_name ON analytics_metrics(metric_name)"
+                )
+                await conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_analytics_metrics_timestamp ON analytics_metrics(timestamp)"
+                )
 
                 # Create GIN index for JSONB data
-                await conn.execute("CREATE INDEX IF NOT EXISTS idx_analytics_events_data ON analytics_events USING GIN(data)")
-                await conn.execute("CREATE INDEX IF NOT EXISTS idx_analytics_metrics_dimensions ON analytics_metrics USING GIN(dimensions)")
+                await conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_analytics_events_data ON analytics_events USING GIN(data)"
+                )
+                await conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_analytics_metrics_dimensions ON analytics_metrics USING GIN(dimensions)"
+                )
 
             logger.info("Analytics PostgreSQL database initialized")
 
@@ -188,7 +225,7 @@ class EventProcessor:
             self.event_queue.put_nowait(event_data)
             return True
         except asyncio.QueueFull:
-            self.stats['queue_full_drops'] += 1
+            self.stats["queue_full_drops"] += 1
             logger.warning("Event queue full, dropping event")
             return False
 
@@ -201,8 +238,7 @@ class EventProcessor:
                 # Wait for event with timeout
                 try:
                     event = await asyncio.wait_for(
-                        self.event_queue.get(),
-                        timeout=BATCH_TIMEOUT
+                        self.event_queue.get(), timeout=BATCH_TIMEOUT
                     )
                     batch.append(event)
                 except asyncio.TimeoutError:
@@ -214,8 +250,10 @@ class EventProcessor:
 
                 # Process batch if full or timeout reached
                 current_time = time.time()
-                if (len(batch) >= BATCH_SIZE or
-                    current_time - self.last_batch_time >= BATCH_TIMEOUT):
+                if (
+                    len(batch) >= BATCH_SIZE
+                    or current_time - self.last_batch_time >= BATCH_TIMEOUT
+                ):
 
                     await self._process_batch(batch)
                     batch = []
@@ -223,7 +261,7 @@ class EventProcessor:
 
             except Exception as e:
                 logger.error(f"Event processing error: {e}")
-                self.stats['processing_errors'] += 1
+                self.stats["processing_errors"] += 1
                 await asyncio.sleep(1)  # Brief pause on error
 
     async def _process_batch(self, events: List[Dict[str, Any]]):
@@ -233,16 +271,16 @@ class EventProcessor:
 
         try:
             # Update stats
-            self.stats['events_processed'] += len(events)
-            self.stats['batches_processed'] += 1
-            self.stats['avg_batch_size'] = (
-                self.stats['events_processed'] / self.stats['batches_processed']
+            self.stats["events_processed"] += len(events)
+            self.stats["batches_processed"] += 1
+            self.stats["avg_batch_size"] = (
+                self.stats["events_processed"] / self.stats["batches_processed"]
             )
 
             # Group events by type for efficient processing
             events_by_type = defaultdict(list)
             for event in events:
-                events_by_type[event['event_type']].append(event)
+                events_by_type[event["event_type"]].append(event)
 
             # Process each type efficiently
             for event_type, type_events in events_by_type.items():
@@ -256,29 +294,33 @@ class EventProcessor:
 
         except Exception as e:
             logger.error(f"Batch processing error: {e}")
-            self.stats['processing_errors'] += 1
+            self.stats["processing_errors"] += 1
 
-    async def _process_events_by_type(self, event_type: str, events: List[Dict[str, Any]]):
+    async def _process_events_by_type(
+        self, event_type: str, events: List[Dict[str, Any]]
+    ):
         """Process events of the same type efficiently"""
         if event_type == "revenue":
-            total_revenue = sum(event['data'].get('amount', 0) for event in events)
-            self.metrics_cache['total_revenue'] += total_revenue
+            total_revenue = sum(event["data"].get("amount", 0) for event in events)
+            self.metrics_cache["total_revenue"] += total_revenue
 
             # Update per-agent revenue
             for event in events:
-                if event.get('agent_id'):
-                    self.metrics_cache[f"revenue_per_agent_{event['agent_id']}"] += event['data'].get('amount', 0)
+                if event.get("agent_id"):
+                    self.metrics_cache[
+                        f"revenue_per_agent_{event['agent_id']}"
+                    ] += event["data"].get("amount", 0)
 
         elif event_type == "new_customer":
-            self.metrics_cache['customers_acquired'] += len(events)
+            self.metrics_cache["customers_acquired"] += len(events)
 
         elif event_type == "churn":
-            self.metrics_cache['churn_count'] += len(events)
+            self.metrics_cache["churn_count"] += len(events)
 
         elif event_type == "api_usage":
             for event in events:
-                endpoint = event['data'].get('endpoint', 'unknown')
-                tokens = event['data'].get('tokens', 0)
+                endpoint = event["data"].get("endpoint", "unknown")
+                tokens = event["data"].get("tokens", 0)
                 self.metrics_cache[f"api_usage_{endpoint}"] += tokens
 
     async def _store_events_batch(self, events: List[Dict[str, Any]]):
@@ -292,16 +334,16 @@ class EventProcessor:
                 """,
                 [
                     (
-                        event['id'],
-                        event['event_type'],
-                        event.get('agent_id'),
-                        event.get('customer_id'),
-                        json.dumps(event['data']),
-                        json.dumps(event.get('metadata', {})),
-                        event['timestamp']
+                        event["id"],
+                        event["event_type"],
+                        event.get("agent_id"),
+                        event.get("customer_id"),
+                        json.dumps(event["data"]),
+                        json.dumps(event.get("metadata", {})),
+                        event["timestamp"],
                     )
                     for event in events
-                ]
+                ],
             )
             await db.commit()
 
@@ -316,16 +358,16 @@ class EventProcessor:
                 """,
                 [
                     (
-                        event['id'],
-                        event['event_type'],
-                        event.get('agent_id'),
-                        event.get('customer_id'),
-                        json.dumps(event['data']),
-                        json.dumps(event.get('metadata', {})),
-                        event['timestamp']
+                        event["id"],
+                        event["event_type"],
+                        event.get("agent_id"),
+                        event.get("customer_id"),
+                        json.dumps(event["data"]),
+                        json.dumps(event.get("metadata", {})),
+                        event["timestamp"],
                     )
                     for event in events
-                ]
+                ],
             )
 
     def get_cached_metrics(self) -> Dict[str, float]:
@@ -335,14 +377,11 @@ class EventProcessor:
     def get_processing_stats(self) -> Dict[str, Any]:
         """Get processing statistics"""
         return {
-            'queue_size': self.event_queue.qsize(),
-            'max_queue_size': MAX_QUEUE_SIZE,
-            'database_type': self.stats['database_type'],
-            'processing_stats': self.stats,
-            'batch_config': {
-                'batch_size': BATCH_SIZE,
-                'batch_timeout': BATCH_TIMEOUT
-            }
+            "queue_size": self.event_queue.qsize(),
+            "max_queue_size": MAX_QUEUE_SIZE,
+            "database_type": self.stats["database_type"],
+            "processing_stats": self.stats,
+            "batch_config": {"batch_size": BATCH_SIZE, "batch_timeout": BATCH_TIMEOUT},
         }
 
 
@@ -380,7 +419,9 @@ class MCPAnalyticsServer:
         # Add routes
         self.app.get("/health")(self.health_check)
         self.app.post("/track")(self.track_event)
-        self.app.get("/metrics/customer-acquisition")(self.get_customer_acquisition_cost)
+        self.app.get("/metrics/customer-acquisition")(
+            self.get_customer_acquisition_cost
+        )
         self.app.get("/metrics/lifetime-value")(self.get_customer_lifetime_value)
         self.app.get("/metrics/churn")(self.get_churn_rate)
         self.app.get("/metrics/revenue-per-agent")(self.get_revenue_per_agent)
@@ -422,13 +463,17 @@ class MCPAnalyticsServer:
             "metrics_count": len(self.metrics),
             "server": "mcp_analytics",
             "background_processing": {
-                "queue_size": processor_stats['queue_size'],
-                "events_processed": processor_stats['processing_stats']['events_processed'],
-                "batches_processed": processor_stats['processing_stats']['batches_processed']
+                "queue_size": processor_stats["queue_size"],
+                "events_processed": processor_stats["processing_stats"][
+                    "events_processed"
+                ],
+                "batches_processed": processor_stats["processing_stats"][
+                    "batches_processed"
+                ],
             },
             "database_available": HAS_ASYNCPG or HAS_SQLITE,
             "postgresql_available": HAS_ASYNCPG,
-            "sqlite_available": HAS_SQLITE
+            "sqlite_available": HAS_SQLITE,
         }
 
     async def track_event(self, event: EventData):
@@ -445,7 +490,7 @@ class MCPAnalyticsServer:
                 "customer_id": event.customer_id,
                 "data": event.data,
                 "metadata": event.metadata or {},
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
             # Queue event for background processing
@@ -458,12 +503,14 @@ class MCPAnalyticsServer:
             return {
                 "event_id": event_id,
                 "status": "queued" if queued else "queued_failed_stored_memory",
-                "background_processing": queued
+                "background_processing": queued,
             }
 
         except Exception as e:
             logger.error(f"Event tracking error: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Event tracking error: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Event tracking error: {str(e)}"
+            )
 
     async def update_metrics(self, event_data: Dict[str, Any]):
         """Update metrics based on new event"""
@@ -472,19 +519,25 @@ class MCPAnalyticsServer:
         # Update different metrics based on event type
         if event_type == "new_customer":
             # Update customer acquisition metrics
-            self.metrics["customers_acquired"] = self.metrics.get("customers_acquired", 0) + 1
+            self.metrics["customers_acquired"] = (
+                self.metrics.get("customers_acquired", 0) + 1
+            )
 
         elif event_type == "revenue":
             # Update revenue metrics
             amount = event_data["data"].get("amount", 0)
-            self.metrics["total_revenue"] = self.metrics.get("total_revenue", 0) + amount
+            self.metrics["total_revenue"] = (
+                self.metrics.get("total_revenue", 0) + amount
+            )
 
             # Track revenue per agent if agent_id is provided
             if event_data["agent_id"]:
                 agent_id = event_data["agent_id"]
                 if "revenue_per_agent" not in self.metrics:
                     self.metrics["revenue_per_agent"] = {}
-                self.metrics["revenue_per_agent"][agent_id] = self.metrics["revenue_per_agent"].get(agent_id, 0) + amount
+                self.metrics["revenue_per_agent"][agent_id] = (
+                    self.metrics["revenue_per_agent"].get(agent_id, 0) + amount
+                )
 
         elif event_type == "churn":
             # Update churn metrics
@@ -520,7 +573,7 @@ class MCPAnalyticsServer:
             "currency": "usd",
             "timeframe": timeframe,
             "customers_acquired": customers_acquired,
-            "marketing_spend": marketing_spend
+            "marketing_spend": marketing_spend,
         }
 
     async def get_customer_lifetime_value(self, timeframe: str = "month"):
@@ -538,7 +591,7 @@ class MCPAnalyticsServer:
             "currency": "usd",
             "timeframe": timeframe,
             "avg_revenue_per_customer": avg_revenue_per_customer,
-            "avg_customer_lifespan": avg_customer_lifespan
+            "avg_customer_lifespan": avg_customer_lifespan,
         }
 
     async def get_churn_rate(self, timeframe: str = "month"):
@@ -560,7 +613,7 @@ class MCPAnalyticsServer:
             "unit": "percentage",
             "timeframe": timeframe,
             "total_customers_start": total_customers_start,
-            "churned_customers": churned_customers
+            "churned_customers": churned_customers,
         }
 
     async def get_revenue_per_agent(self):
@@ -569,9 +622,7 @@ class MCPAnalyticsServer:
 
         # Sort agents by revenue (highest first)
         sorted_agents = sorted(
-            revenue_per_agent.items(),
-            key=lambda x: x[1],
-            reverse=True
+            revenue_per_agent.items(), key=lambda x: x[1], reverse=True
         )
 
         results = [
@@ -583,7 +634,7 @@ class MCPAnalyticsServer:
             "metric": "revenue_per_agent",
             "data": results,
             "currency": "usd",
-            "total_agents": len(results)
+            "total_agents": len(results),
         }
 
     async def get_api_usage_metrics(self):
@@ -593,11 +644,7 @@ class MCPAnalyticsServer:
         total_tokens = sum(api_usage.values())
 
         # Sort endpoints by usage (highest first)
-        sorted_usage = sorted(
-            api_usage.items(),
-            key=lambda x: x[1],
-            reverse=True
-        )
+        sorted_usage = sorted(api_usage.items(), key=lambda x: x[1], reverse=True)
 
         results = [
             {"endpoint": endpoint, "tokens": tokens}
@@ -608,7 +655,7 @@ class MCPAnalyticsServer:
             "metric": "api_usage",
             "data": results,
             "total_tokens": total_tokens,
-            "endpoints_count": len(results)
+            "endpoints_count": len(results),
         }
 
     async def calculate_kpi(self, request: KpiRequest):
@@ -647,10 +694,10 @@ class MCPAnalyticsServer:
                 "total_revenue": self.metrics.get("total_revenue", 0),
                 "customers_acquired": self.metrics.get("customers_acquired", 0),
                 "churn_rate": churn["value"],
-                "clv_cac_ratio": clv_cac_ratio
+                "clv_cac_ratio": clv_cac_ratio,
             },
             "revenue_per_agent": revenue_per_agent["data"],
-            "api_usage": api_usage["data"]
+            "api_usage": api_usage["data"],
         }
 
     async def get_performance_stats(self):
@@ -664,7 +711,7 @@ class MCPAnalyticsServer:
             "memory_metrics_count": len(self.metrics),
             "memory_events_count": len(self.events),
             "database_available": HAS_SQLITE,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     async def get_cached_metrics(self):
@@ -674,16 +721,16 @@ class MCPAnalyticsServer:
         # Convert to more readable format
         formatted_metrics = {}
         for key, value in cached_metrics.items():
-            if key.startswith('revenue_per_agent_'):
-                agent_id = key.replace('revenue_per_agent_', '')
-                if 'revenue_per_agent' not in formatted_metrics:
-                    formatted_metrics['revenue_per_agent'] = {}
-                formatted_metrics['revenue_per_agent'][agent_id] = value
-            elif key.startswith('api_usage_'):
-                endpoint = key.replace('api_usage_', '')
-                if 'api_usage' not in formatted_metrics:
-                    formatted_metrics['api_usage'] = {}
-                formatted_metrics['api_usage'][endpoint] = value
+            if key.startswith("revenue_per_agent_"):
+                agent_id = key.replace("revenue_per_agent_", "")
+                if "revenue_per_agent" not in formatted_metrics:
+                    formatted_metrics["revenue_per_agent"] = {}
+                formatted_metrics["revenue_per_agent"][agent_id] = value
+            elif key.startswith("api_usage_"):
+                endpoint = key.replace("api_usage_", "")
+                if "api_usage" not in formatted_metrics:
+                    formatted_metrics["api_usage"] = {}
+                formatted_metrics["api_usage"][endpoint] = value
             else:
                 formatted_metrics[key] = value
 
@@ -691,8 +738,9 @@ class MCPAnalyticsServer:
             "cached_metrics": formatted_metrics,
             "cache_count": len(cached_metrics),
             "data_source": "background_processor",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
+
 
 async def main():
     """Run the server directly"""
@@ -711,6 +759,7 @@ async def main():
     # Create and start the server
     server = MCPAnalyticsServer()
     await server.start(port)
+
 
 if __name__ == "__main__":
     try:

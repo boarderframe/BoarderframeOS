@@ -13,20 +13,23 @@ def verify_integration():
 
     file_path = "/Users/cosburn/BoarderframeOS/corporate_headquarters.py"
 
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         content = f.read()
 
     checks = {
-        "Imports": "from core.hq_metrics_integration import HQMetricsIntegration" in content,
+        "Imports": "from core.hq_metrics_integration import HQMetricsIntegration"
+        in content,
         "Initialization": "self.metrics_layer = HQMetricsIntegration()" in content,
         "Dashboard Metrics": "self.metrics_layer.get_all_metrics()" in content,
         "Agent Page Metrics": "self.metrics_layer.get_agents_page_metrics()" in content,
         "Agent Cards": "self.metrics_layer.get_agent_cards_html()" in content,
         "Department Cards": "self.metrics_layer.get_department_cards_html()" in content,
-        "Dashboard Summary": "self.metrics_layer.get_dashboard_summary_cards()" in content,
+        "Dashboard Summary": "self.metrics_layer.get_dashboard_summary_cards()"
+        in content,
         "Metrics CSS": "/* Metrics Grid */" in content,
-        "Monitoring Refresh": "metrics_layer.get_all_metrics(force_refresh=True)" in content,
-        "Registry Integration": "self.metrics_layer.get_metric_value" in content
+        "Monitoring Refresh": "metrics_layer.get_all_metrics(force_refresh=True)"
+        in content,
+        "Registry Integration": "self.metrics_layer.get_metric_value" in content,
     }
 
     print("\n📋 Integration Checklist:")
@@ -38,7 +41,7 @@ def verify_integration():
             all_good = False
 
     # Count total references
-    metrics_count = len(re.findall(r'metrics_layer', content))
+    metrics_count = len(re.findall(r"metrics_layer", content))
     print(f"\n📊 Total metrics_layer references: {metrics_count}")
 
     # Check for specific integrations
@@ -51,7 +54,16 @@ def verify_integration():
         print("   ❌ Active agents count not using metrics layer")
 
     # Check if departments use metrics
-    if "metrics_layer" in content[content.find('id="departments"'):content.find('id="leaders"') if content.find('id="leaders"') > 0 else len(content)]:
+    if (
+        "metrics_layer"
+        in content[
+            content.find('id="departments"') : (
+                content.find('id="leaders"')
+                if content.find('id="leaders"') > 0
+                else len(content)
+            )
+        ]
+    ):
         print("   ✅ Departments tab integrated")
     else:
         print("   ❌ Departments tab not integrated")

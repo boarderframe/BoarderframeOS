@@ -3,6 +3,7 @@
 Restore the missing tabs (Leaders, Departments, Divisions)
 """
 
+
 def restore_tabs():
     """Add back the missing tab content divs"""
     print("🔧 Restoring Missing Tabs")
@@ -10,17 +11,17 @@ def restore_tabs():
 
     file_path = "/Users/cosburn/BoarderframeOS/corporate_headquarters.py"
 
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         content = f.read()
 
     # Find where to insert the tabs (after agents tab closes)
-    agents_tab_end = content.find('        </div>\n\n        <!-- System Tab -->')
+    agents_tab_end = content.find("        </div>\n\n        <!-- System Tab -->")
 
     if agents_tab_end > 0:
         print("✅ Found insertion point after agents tab")
 
         # The missing tabs content
-        missing_tabs = '''
+        missing_tabs = """
         <!-- Leaders Tab -->
         <div id="leaders" class="tab-content">
             {self.metrics_layer.get_leaders_page_html() if self.metrics_layer and hasattr(self.metrics_layer, 'get_leaders_page_html') else self._generate_leaders_html()}
@@ -69,13 +70,15 @@ def restore_tabs():
         <!-- Divisions Tab -->
         <div id="divisions" class="tab-content">
             {self.metrics_layer.get_divisions_page_html() if self.metrics_layer and hasattr(self.metrics_layer, 'get_divisions_page_html') else self._generate_divisions_html()}
-        </div>'''
+        </div>"""
 
         # Insert the missing tabs
-        content = content[:agents_tab_end + 8] + missing_tabs + content[agents_tab_end + 8:]
+        content = (
+            content[: agents_tab_end + 8] + missing_tabs + content[agents_tab_end + 8 :]
+        )
 
         # Write back
-        with open(file_path, 'w') as f:
+        with open(file_path, "w") as f:
             f.write(content)
 
         print("✅ Restored all missing tabs:")

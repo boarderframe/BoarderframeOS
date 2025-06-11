@@ -17,8 +17,10 @@ import httpx
 
 PORT = 8888
 
+
 class DashboardData:
     """Manages dashboard data updates"""
+
     def __init__(self):
         self.services_status = {}
         self.agents_status = {}
@@ -70,7 +72,7 @@ class DashboardData:
             ("Filesystem Server", 8001),
             ("Database Server", 8004),
             ("LLM Server", 8005),
-            ("UI Dashboard", 8888)
+            ("UI Dashboard", 8888),
         ]
 
         for service_name, port in services:
@@ -78,21 +80,21 @@ class DashboardData:
                 response = await client.get(f"http://localhost:{port}/health")
                 self.services_status[service_name] = {
                     "status": "online" if response.status_code == 200 else "offline",
-                    "port": port
+                    "port": port,
                 }
             except:
-                self.services_status[service_name] = {
-                    "status": "offline",
-                    "port": port
-                }
+                self.services_status[service_name] = {"status": "offline", "port": port}
 
     async def _update_agents(self, client):
         """Update agents status from database"""
         try:
-            response = await client.post("http://localhost:8004/query", json={
-                "sql": "SELECT id, name, status, biome, generation, fitness_score FROM agents",
-                "fetch_all": True
-            })
+            response = await client.post(
+                "http://localhost:8004/query",
+                json={
+                    "sql": "SELECT id, name, status, biome, generation, fitness_score FROM agents",
+                    "fetch_all": True,
+                },
+            )
 
             if response.status_code == 200 and response.json().get("success"):
                 agents_data = response.json().get("data", [])
@@ -103,7 +105,7 @@ class DashboardData:
                         "status": agent["status"],
                         "biome": agent["biome"],
                         "generation": agent["generation"],
-                        "fitness": agent["fitness_score"]
+                        "fitness": agent["fitness_score"],
                     }
         except:
             pass  # Database might not be available
@@ -121,9 +123,13 @@ class DashboardData:
         # Calculate summary metrics
         self.system_metrics["summary"] = {
             "total_services": len(self.services_status),
-            "online_services": sum(1 for s in self.services_status.values() if s["status"] == "online"),
+            "online_services": sum(
+                1 for s in self.services_status.values() if s["status"] == "online"
+            ),
             "total_agents": len(self.agents_status),
-            "active_agents": sum(1 for a in self.agents_status.values() if a["status"] == "active")
+            "active_agents": sum(
+                1 for a in self.agents_status.values() if a["status"] == "active"
+            ),
         }
 
     def _load_health_data(self):
@@ -131,7 +137,7 @@ class DashboardData:
         try:
             health_file = "/tmp/boarderframe_health.json"
             if os.path.exists(health_file):
-                with open(health_file, 'r') as f:
+                with open(health_file, "r") as f:
                     self.health_status = json.load(f)
         except:
             pass
@@ -433,8 +439,10 @@ class DashboardData:
 </body>
 </html>"""
 
+
 # Global dashboard data manager
 dashboard_data = DashboardData()
+
 
 class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
@@ -443,32 +451,32 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         try:
-            if self.path == '/' or self.path == '/index.html':
+            if self.path == "/" or self.path == "/index.html":
                 self.send_response(200)
-                self.send_header('Content-type', 'text/html')
-                self.send_header('Cache-Control', 'no-cache')
+                self.send_header("Content-type", "text/html")
+                self.send_header("Cache-Control", "no-cache")
                 self.end_headers()
 
                 html = dashboard_data.get_dashboard_html()
                 self.wfile.write(html.encode())
 
-            elif self.path == '/health':
+            elif self.path == "/health":
                 self.send_response(200)
-                self.send_header('Content-type', 'application/json')
+                self.send_header("Content-type", "application/json")
                 self.end_headers()
 
                 health_data = {
                     "status": "healthy",
                     "timestamp": datetime.now().isoformat(),
                     "services": dashboard_data.services_status,
-                    "agents": len(dashboard_data.agents_status)
+                    "agents": len(dashboard_data.agents_status),
                 }
                 self.wfile.write(json.dumps(health_data).encode())
 
-            elif self.path == '/api/status':
+            elif self.path == "/api/status":
                 self.send_response(200)
-                self.send_header('Content-type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header("Content-type", "application/json")
+                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
 
                 status = {
@@ -476,7 +484,11 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                     "agents": dashboard_data.agents_status,
                     "metrics": dashboard_data.system_metrics,
                     "health": dashboard_data.health_status,
-                    "last_update": dashboard_data.last_update.isoformat() if dashboard_data.last_update else None
+                    "last_update": (
+                        dashboard_data.last_update.isoformat()
+                        if dashboard_data.last_update
+                        else None
+                    ),
                 }
                 self.wfile.write(json.dumps(status).encode())
 
@@ -488,10 +500,12 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
             print(f"Request error: {e}")
             self.send_error(500)
 
+
 def signal_handler(sig, frame):
     print("\n🛑 Shutting down dashboard...")
     dashboard_data.running = False
     sys.exit(0)
+
 
 def main():
     signal.signal(signal.SIGINT, signal_handler)
@@ -520,6 +534,7 @@ def main():
             print(f"❌ Server error: {e}")
     except KeyboardInterrupt:
         print("\n🛑 Dashboard stopped")
+
 
 if __name__ == "__main__":
     main()

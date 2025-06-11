@@ -13,7 +13,7 @@ def comprehensive_metric_fix():
 
     file_path = "/Users/cosburn/BoarderframeOS/corporate_headquarters.py"
 
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         content = f.read()
 
     # First, ensure centralized metrics are called during initialization
@@ -22,7 +22,7 @@ def comprehensive_metric_fix():
     # Add initialization after monitoring thread starts
     if "self._get_centralized_metrics()" not in content[:10000]:  # Check early in file
         # Find where to add it in __init__
-        pattern = r'(self\.start_monitoring_thread\(\))'
+        pattern = r"(self\.start_monitoring_thread\(\))"
         replacement = r'\1\n        \n        # Initialize centralized metrics on startup\n        try:\n            self._get_centralized_metrics()\n            print("✅ Centralized metrics initialized")\n        except Exception as e:\n            print(f"⚠️ Failed to initialize centralized metrics: {e}")'
         content = re.sub(pattern, replacement, content)
         print("   ✅ Added initialization in __init__")
@@ -44,24 +44,29 @@ def comprehensive_metric_fix():
             # Insert metric fetching at the start of the method
             method_body_start = content.find("\n", dashboard_start) + 1
             # Skip docstring
-            lines = content[method_body_start:].split('\n')
+            lines = content[method_body_start:].split("\n")
             insert_line = 0
             for i, line in enumerate(lines):
                 if line.strip() and not line.strip().startswith('"""'):
                     insert_line = i
                     break
 
-            insert_pos = method_body_start + sum(len(l) + 1 for l in lines[:insert_line])
+            insert_pos = method_body_start + sum(
+                len(l) + 1 for l in lines[:insert_line]
+            )
 
-            metric_code = '''        # Get centralized metrics for display
+            metric_code = """        # Get centralized metrics for display
         metrics = self._get_centralized_metrics() if hasattr(self, '_get_centralized_metrics') else {}
         total_agents = metrics.get('agents', {}).get('total', 195)
         active_agents = metrics.get('agents', {}).get('active', 2)
         total_departments = metrics.get('departments', {}).get('total', 45)
         total_divisions = metrics.get('divisions', {}).get('total', 9)
 
-'''
-            if "Get centralized metrics for display" not in content[dashboard_start:dashboard_start+5000]:
+"""
+            if (
+                "Get centralized metrics for display"
+                not in content[dashboard_start : dashboard_start + 5000]
+            ):
                 content = content[:insert_pos] + metric_code + content[insert_pos:]
                 print("   ✅ Added metric fetching in generate_dashboard_html")
 
@@ -81,23 +86,25 @@ def comprehensive_metric_fix():
         # Add metric fetching at start of method
         if "Get centralized metrics" not in dept_section:
             method_body_start = dept_section.find("\n") + 1
-            lines = dept_section.split('\n')
+            lines = dept_section.split("\n")
             insert_line = 0
             for i, line in enumerate(lines[1:], 1):
                 if line.strip() and not line.strip().startswith('"""'):
                     insert_line = i
                     break
 
-            metric_code = '''        # Get centralized metrics for display
+            metric_code = """        # Get centralized metrics for display
         metrics = self._get_centralized_metrics() if hasattr(self, '_get_centralized_metrics') else {}
         total_agents = metrics.get('agents', {}).get('total', 195)
 
-'''
+"""
             insert_pos = sum(len(l) + 1 for l in lines[:insert_line])
-            dept_section = dept_section[:insert_pos] + metric_code + dept_section[insert_pos:]
+            dept_section = (
+                dept_section[:insert_pos] + metric_code + dept_section[insert_pos:]
+            )
 
         # Replace 120+ with dynamic value
-        dept_section = dept_section.replace('120+', '{total_agents}')
+        dept_section = dept_section.replace("120+", "{total_agents}")
 
         # Update the content
         content = content[:dept_method_start] + dept_section + content[dept_method_end:]
@@ -108,12 +115,16 @@ def comprehensive_metric_fix():
 
     # Pattern 1: health_summary['agents']['total'] or 2
     old_pattern = r"health_summary\['agents'\]\['total'\] or 2"
-    new_pattern = "self.get_metric('agents', 'total') if hasattr(self, 'get_metric') else 195"
+    new_pattern = (
+        "self.get_metric('agents', 'total') if hasattr(self, 'get_metric') else 195"
+    )
     content = content.replace(old_pattern, new_pattern)
 
     # Pattern 2: health_summary.get('agents', {}).get('total', 2)
     old_pattern2 = r"health_summary\.get\('agents', \{\}\)\.get\('total', 2\)"
-    new_pattern2 = "self.get_metric('agents', 'total') if hasattr(self, 'get_metric') else 195"
+    new_pattern2 = (
+        "self.get_metric('agents', 'total') if hasattr(self, 'get_metric') else 195"
+    )
     content = re.sub(old_pattern2, new_pattern2, content)
 
     # Update the overview generation to use centralized metrics
@@ -125,15 +136,18 @@ def comprehensive_metric_fix():
         # Add metric fetching
         method_body = content.find("\n", overview_start) + 1
 
-        if "Get centralized metrics" not in content[overview_start:overview_start+2000]:
-            metric_code = '''        # Get centralized metrics
+        if (
+            "Get centralized metrics"
+            not in content[overview_start : overview_start + 2000]
+        ):
+            metric_code = """        # Get centralized metrics
         metrics = self._get_centralized_metrics() if hasattr(self, '_get_centralized_metrics') else {}
         agent_metrics = metrics.get('agents', {})
         dept_metrics = metrics.get('departments', {})
 
-'''
+"""
             # Find first non-docstring line
-            lines = content[method_body:].split('\n')
+            lines = content[method_body:].split("\n")
             for i, line in enumerate(lines):
                 if line.strip() and not line.strip().startswith('"""'):
                     insert_pos = method_body + sum(len(l) + 1 for l in lines[:i])
@@ -142,7 +156,7 @@ def comprehensive_metric_fix():
             print("   ✅ Added metrics to overview generation")
 
     # Write the updated content
-    with open(file_path, 'w') as f:
+    with open(file_path, "w") as f:
         f.write(content)
 
     print("\n✅ Comprehensive metric fix applied!")
@@ -157,11 +171,13 @@ def comprehensive_metric_fix():
     print("\n🔍 Verification:")
 
     # Count metric usages
-    metric_calls = len(re.findall(r'get_metric|_get_centralized_metrics|total_agents', content))
+    metric_calls = len(
+        re.findall(r"get_metric|_get_centralized_metrics|total_agents", content)
+    )
     print(f"   - Found {metric_calls} metric-related references")
 
     # Check if 120+ is gone
-    if '120+' in content:
+    if "120+" in content:
         print("   ⚠️  Warning: '120+' still found in file")
     else:
         print("   ✅ '120+' has been replaced")

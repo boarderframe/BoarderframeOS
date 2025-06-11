@@ -14,11 +14,11 @@ def debug_metrics():
     # Check database directly
     try:
         conn = psycopg2.connect(
-            host='localhost',
+            host="localhost",
             port=5434,
-            database='boarderframeos',
-            user='boarderframe',
-            password='boarderframe_secure_2025'
+            database="boarderframeos",
+            user="boarderframe",
+            password="boarderframe_secure_2025",
         )
         cur = conn.cursor()
 

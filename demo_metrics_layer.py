@@ -27,24 +27,24 @@ def demo_metrics_layer():
     all_metrics = metrics.get_all_metrics()
 
     # Display agent metrics
-    agent_summary = all_metrics.get('agents', {}).get('summary', {})
+    agent_summary = all_metrics.get("agents", {}).get("summary", {})
     print("\n📊 Agent Metrics:")
     for key, metric in agent_summary.items():
-        if hasattr(metric, 'value'):
+        if hasattr(metric, "value"):
             print(f"   - {metric.label}: {metric.value}")
 
     # Display department metrics
-    dept_summary = all_metrics.get('departments', {}).get('summary', {})
+    dept_summary = all_metrics.get("departments", {}).get("summary", {})
     print("\n🏢 Department Metrics:")
     for key, metric in dept_summary.items():
-        if hasattr(metric, 'value'):
+        if hasattr(metric, "value"):
             print(f"   - {metric.label}: {metric.value}")
 
     # Display server metrics
-    server_summary = all_metrics.get('servers', {}).get('summary', {})
+    server_summary = all_metrics.get("servers", {}).get("summary", {})
     print("\n🖥️ Server Metrics:")
     for key, metric in server_summary.items():
-        if hasattr(metric, 'value'):
+        if hasattr(metric, "value"):
             print(f"   - {metric.label}: {metric.value}")
 
     # 2. Generate dashboard cards
@@ -61,8 +61,8 @@ def demo_metrics_layer():
 
     # Show by type
     print("\n   By Type:")
-    for agent_type, metric in agent_page.get('by_type', {}).items():
-        if hasattr(metric, 'value'):
+    for agent_type, metric in agent_page.get("by_type", {}).items():
+        if hasattr(metric, "value"):
             print(f"     - {agent_type}: {metric.value}")
 
     # 4. Get departments with visual data
@@ -79,20 +79,20 @@ def demo_metrics_layer():
 
     # Agent cards
     agent_cards = metrics.get_agent_cards_html(limit=3)
-    agent_count = agent_cards.count('agent-card')
+    agent_count = agent_cards.count("agent-card")
     print(f"   ✅ Generated {agent_count} agent cards")
 
     # Department cards
     dept_cards = metrics.get_department_cards_html()
-    dept_count = dept_cards.count('department-card')
+    dept_count = dept_cards.count("department-card")
     print(f"   ✅ Generated {dept_count} department cards")
 
     # 6. Test specific metric retrieval
     print("\n6️⃣ Testing Specific Metric Retrieval...")
-    online_agents = metrics.get_metric_value('agents', 'summary.online', 0)
+    online_agents = metrics.get_metric_value("agents", "summary.online", 0)
     print(f"   - Online agents: {online_agents}")
 
-    total_servers = metrics.get_metric_value('servers', 'summary.total', 0)
+    total_servers = metrics.get_metric_value("servers", "summary.total", 0)
     print(f"   - Total servers: {total_servers}")
 
     # 7. Show color palette
@@ -172,11 +172,12 @@ def demo_metrics_layer():
 </html>
 """
 
-    with open('demo_metrics_output.html', 'w') as f:
+    with open("demo_metrics_output.html", "w") as f:
         f.write(html_content)
 
     print("   ✅ Created demo_metrics_output.html")
     print("\n✨ Demo complete! Open demo_metrics_output.html to see the results.")
+
 
 if __name__ == "__main__":
     demo_metrics_layer()

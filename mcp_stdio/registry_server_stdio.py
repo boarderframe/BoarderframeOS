@@ -23,10 +23,10 @@ original_path = sys.path.copy()
 # Remove current and parent directories to avoid local mcp module conflicts
 current_dir = str(Path(__file__).parent)
 parent_dir = str(Path(__file__).parent.parent)
-sys.path = [p for p in sys.path if p not in (current_dir, parent_dir, '')]
+sys.path = [p for p in sys.path if p not in (current_dir, parent_dir, "")]
 
 # Clear any cached local mcp modules
-local_mcp_modules = [name for name in sys.modules.keys() if name.startswith('mcp')]
+local_mcp_modules = [name for name in sys.modules.keys() if name.startswith("mcp")]
 for module_name in local_mcp_modules:
     del sys.modules[module_name]
 
@@ -45,7 +45,7 @@ log_file = Path(__file__).parent / "registry_stdio.log"
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler(log_file)]
+    handlers=[logging.FileHandler(log_file)],
 )
 logger = logging.getLogger("registry_stdio")
 
@@ -54,6 +54,7 @@ server = Server("registry")
 # Mock data for development (in production would connect to actual database)
 agents_registry = {}
 servers_registry = {}
+
 
 @server.list_tools()
 async def handle_list_tools() -> List[types.Tool]:
@@ -67,28 +68,22 @@ async def handle_list_tools() -> List[types.Tool]:
                 "properties": {
                     "agent_id": {
                         "type": "string",
-                        "description": "Unique agent identifier"
+                        "description": "Unique agent identifier",
                     },
-                    "name": {
-                        "type": "string",
-                        "description": "Agent name"
-                    },
-                    "agent_type": {
-                        "type": "string",
-                        "description": "Type of agent"
-                    },
+                    "name": {"type": "string", "description": "Agent name"},
+                    "agent_type": {"type": "string", "description": "Type of agent"},
                     "department_id": {
                         "type": "string",
-                        "description": "Department assignment (optional)"
+                        "description": "Department assignment (optional)",
                     },
                     "capabilities": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "List of agent capabilities"
-                    }
+                        "description": "List of agent capabilities",
+                    },
                 },
-                "required": ["agent_id", "name", "agent_type"]
-            }
+                "required": ["agent_id", "name", "agent_type"],
+            },
         ),
         types.Tool(
             name="discover_agents",
@@ -98,18 +93,18 @@ async def handle_list_tools() -> List[types.Tool]:
                 "properties": {
                     "agent_type": {
                         "type": "string",
-                        "description": "Filter by agent type (optional)"
+                        "description": "Filter by agent type (optional)",
                     },
                     "department_id": {
                         "type": "string",
-                        "description": "Filter by department (optional)"
+                        "description": "Filter by department (optional)",
                     },
                     "status": {
                         "type": "string",
-                        "description": "Filter by status (optional)"
-                    }
-                }
-            }
+                        "description": "Filter by status (optional)",
+                    },
+                },
+            },
         ),
         types.Tool(
             name="register_server",
@@ -117,26 +112,20 @@ async def handle_list_tools() -> List[types.Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "Server name"
-                    },
-                    "server_type": {
-                        "type": "string",
-                        "description": "Type of server"
-                    },
+                    "name": {"type": "string", "description": "Server name"},
+                    "server_type": {"type": "string", "description": "Type of server"},
                     "endpoint_url": {
                         "type": "string",
-                        "description": "Server endpoint URL"
+                        "description": "Server endpoint URL",
                     },
                     "capabilities": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "List of server capabilities"
-                    }
+                        "description": "List of server capabilities",
+                    },
                 },
-                "required": ["name", "server_type", "endpoint_url"]
-            }
+                "required": ["name", "server_type", "endpoint_url"],
+            },
         ),
         types.Tool(
             name="discover_servers",
@@ -146,23 +135,23 @@ async def handle_list_tools() -> List[types.Tool]:
                 "properties": {
                     "server_type": {
                         "type": "string",
-                        "description": "Filter by server type (optional)"
+                        "description": "Filter by server type (optional)",
                     }
-                }
-            }
+                },
+            },
         ),
         types.Tool(
             name="get_registry_health",
             description="Get registry health status",
-            inputSchema={
-                "type": "object",
-                "properties": {}
-            }
-        )
+            inputSchema={"type": "object", "properties": {}},
+        ),
     ]
 
+
 @server.call_tool()
-async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_call_tool(
+    name: str, arguments: Dict[str, Any]
+) -> List[types.TextContent]:
     """Handle tool calls."""
     try:
         if name == "register_agent":
@@ -181,6 +170,7 @@ async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[types.T
         logger.error(f"Tool {name} failed: {e}")
         return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
+
 async def register_agent(args: Dict[str, Any]) -> List[types.TextContent]:
     """Register a new agent."""
     try:
@@ -193,7 +183,7 @@ async def register_agent(args: Dict[str, Any]) -> List[types.TextContent]:
             "capabilities": args.get("capabilities", []),
             "status": "online",
             "registered_at": datetime.now().isoformat(),
-            "health_status": "healthy"
+            "health_status": "healthy",
         }
 
         agents_registry[agent_id] = agent_data
@@ -202,13 +192,16 @@ async def register_agent(args: Dict[str, Any]) -> List[types.TextContent]:
             "success": True,
             "agent_id": agent_id,
             "status": "registered",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error registering agent: {str(e)}")]
+        return [
+            types.TextContent(type="text", text=f"Error registering agent: {str(e)}")
+        ]
+
 
 async def discover_agents(args: Dict[str, Any]) -> List[types.TextContent]:
     """Discover agents based on filters."""
@@ -233,13 +226,16 @@ async def discover_agents(args: Dict[str, Any]) -> List[types.TextContent]:
             "success": True,
             "agents": filtered_agents,
             "count": len(filtered_agents),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error discovering agents: {str(e)}")]
+        return [
+            types.TextContent(type="text", text=f"Error discovering agents: {str(e)}")
+        ]
+
 
 async def register_server(args: Dict[str, Any]) -> List[types.TextContent]:
     """Register a new server."""
@@ -252,7 +248,7 @@ async def register_server(args: Dict[str, Any]) -> List[types.TextContent]:
             "capabilities": args.get("capabilities", []),
             "status": "online",
             "registered_at": datetime.now().isoformat(),
-            "health_status": "healthy"
+            "health_status": "healthy",
         }
 
         servers_registry[name] = server_data
@@ -261,13 +257,16 @@ async def register_server(args: Dict[str, Any]) -> List[types.TextContent]:
             "success": True,
             "server_name": name,
             "status": "registered",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error registering server: {str(e)}")]
+        return [
+            types.TextContent(type="text", text=f"Error registering server: {str(e)}")
+        ]
+
 
 async def discover_servers(args: Dict[str, Any]) -> List[types.TextContent]:
     """Discover available servers."""
@@ -286,13 +285,16 @@ async def discover_servers(args: Dict[str, Any]) -> List[types.TextContent]:
             "success": True,
             "servers": filtered_servers,
             "count": len(filtered_servers),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error discovering servers: {str(e)}")]
+        return [
+            types.TextContent(type="text", text=f"Error discovering servers: {str(e)}")
+        ]
+
 
 async def get_registry_health() -> List[types.TextContent]:
     """Get registry health status."""
@@ -301,19 +303,32 @@ async def get_registry_health() -> List[types.TextContent]:
             "status": "healthy",
             "agents": {
                 "total": len(agents_registry),
-                "online": len([a for a in agents_registry.values() if a.get("status") == "online"])
+                "online": len(
+                    [a for a in agents_registry.values() if a.get("status") == "online"]
+                ),
             },
             "servers": {
                 "total": len(servers_registry),
-                "online": len([s for s in servers_registry.values() if s.get("status") == "online"])
+                "online": len(
+                    [
+                        s
+                        for s in servers_registry.values()
+                        if s.get("status") == "online"
+                    ]
+                ),
             },
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error getting registry health: {str(e)}")]
+        return [
+            types.TextContent(
+                type="text", text=f"Error getting registry health: {str(e)}"
+            )
+        ]
+
 
 async def main():
     """Main entry point."""
@@ -330,6 +345,7 @@ async def main():
                 ),
             ),
         )
+
 
 if __name__ == "__main__":
     asyncio.run(main())

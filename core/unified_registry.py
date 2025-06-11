@@ -39,6 +39,7 @@ from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
+
 # Registry Entry Types
 class RegistryType(str, Enum):
     AGENT = "agent"
@@ -50,6 +51,7 @@ class RegistryType(str, Enum):
     SERVER_MCP = "server_mcp"
     SERVER_BUSINESS = "server_business"
 
+
 # Service Status
 class ServiceStatus(str, Enum):
     ONLINE = "online"
@@ -59,9 +61,11 @@ class ServiceStatus(str, Enum):
     ERROR = "error"
     MAINTENANCE = "maintenance"
 
+
 # Base Registry Entry Models
 class RegistryEntry(BaseModel):
     """Base model for all registry entries"""
+
     id: str
     name: str
     type: RegistryType
@@ -73,8 +77,10 @@ class RegistryEntry(BaseModel):
     registered_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
+
 class AgentEntry(RegistryEntry):
     """Registry entry for AI agents"""
+
     type: RegistryType = RegistryType.AGENT
     department_id: Optional[str] = None
     division_id: Optional[str] = None
@@ -88,15 +94,19 @@ class AgentEntry(RegistryEntry):
     total_tokens_used: int = 0
     total_cost: float = 0.0
 
+
 class LeaderEntry(AgentEntry):
     """Registry entry for department leaders"""
+
     type: RegistryType = RegistryType.LEADER
     subordinates: List[str] = Field(default_factory=list)
     department_managed: Optional[str] = None
     leadership_style: Optional[str] = None
 
+
 class DepartmentEntry(RegistryEntry):
     """Registry entry for departments"""
+
     type: RegistryType = RegistryType.DEPARTMENT
     division_id: str
     leader_id: Optional[str] = None
@@ -105,8 +115,10 @@ class DepartmentEntry(RegistryEntry):
     revenue: float = 0.0
     description: Optional[str] = None
 
+
 class DivisionEntry(RegistryEntry):
     """Registry entry for divisions"""
+
     type: RegistryType = RegistryType.DIVISION
     department_ids: List[str] = Field(default_factory=list)
     executive_id: Optional[str] = None
@@ -114,8 +126,10 @@ class DivisionEntry(RegistryEntry):
     total_budget: float = 0.0
     total_revenue: float = 0.0
 
+
 class DatabaseEntry(RegistryEntry):
     """Registry entry for databases"""
+
     type: RegistryType = RegistryType.DATABASE
     db_type: str  # postgresql, sqlite, redis
     connection_string: str
@@ -124,8 +138,10 @@ class DatabaseEntry(RegistryEntry):
     current_connections: int = 0
     query_performance: float = 0.0  # avg query time in ms
 
+
 class ServerEntry(RegistryEntry):
     """Registry entry for servers"""
+
     host: str = "localhost"
     port: int
     protocol: str = "http"
@@ -135,6 +151,7 @@ class ServerEntry(RegistryEntry):
     max_load: float = 100.0
     response_time: float = 0.0  # avg response time in ms
     uptime: float = 0.0  # uptime percentage
+
 
 # Unified Registry Service
 class UnifiedRegistry:
@@ -161,10 +178,7 @@ class UnifiedRegistry:
         try:
             # Initialize PostgreSQL
             self.db_pool = await asyncpg.create_pool(
-                self.db_url,
-                min_size=10,
-                max_size=50,
-                command_timeout=60
+                self.db_url, min_size=10, max_size=50, command_timeout=60
             )
 
             # Initialize Redis
@@ -201,7 +215,7 @@ class UnifiedRegistry:
                 "registry_size": len(self.cache),
                 "db_connected": self.db_pool is not None,
                 "redis_connected": self.redis is not None,
-                "websocket_clients": len(self.websocket_connections)
+                "websocket_clients": len(self.websocket_connections),
             }
 
         @self.app.post("/register")
@@ -214,7 +228,7 @@ class UnifiedRegistry:
         async def discover_entries(
             entry_type: RegistryType,
             status: Optional[ServiceStatus] = None,
-            capability: Optional[str] = None
+            capability: Optional[str] = None,
         ):
             """Discover entries by type and filters"""
             entries = await self.discover(entry_type, status, capability)
@@ -278,10 +292,7 @@ class UnifiedRegistry:
             await self._publish_event("register", entry)
 
             # Notify WebSocket clients
-            await self._notify_websockets({
-                "event": "register",
-                "entry": entry.dict()
-            })
+            await self._notify_websockets({"event": "register", "entry": entry.dict()})
 
             logger.info(f"Registered {entry.type} entry: {entry.name} ({entry.id})")
             return entry
@@ -305,10 +316,9 @@ class UnifiedRegistry:
                 await self._publish_event("unregister", entry)
 
                 # Notify WebSocket clients
-                await self._notify_websockets({
-                    "event": "unregister",
-                    "entry_id": entry_id
-                })
+                await self._notify_websockets(
+                    {"event": "unregister", "entry_id": entry_id}
+                )
 
                 logger.info(f"Unregistered entry: {entry_id}")
 
@@ -320,7 +330,7 @@ class UnifiedRegistry:
         self,
         entry_type: Optional[RegistryType] = None,
         status: Optional[ServiceStatus] = None,
-        capability: Optional[str] = None
+        capability: Optional[str] = None,
     ) -> List[RegistryEntry]:
         """Discover entries based on filters"""
         results = []
@@ -359,19 +369,20 @@ class UnifiedRegistry:
                 await self._update_entry_status(conn, entry_id, status)
 
             # Publish event
-            await self._publish_event("status_change", {
-                "entry": entry,
-                "old_status": old_status,
-                "new_status": status
-            })
+            await self._publish_event(
+                "status_change",
+                {"entry": entry, "old_status": old_status, "new_status": status},
+            )
 
             # Notify WebSocket clients
-            await self._notify_websockets({
-                "event": "status_change",
-                "entry_id": entry_id,
-                "old_status": old_status,
-                "new_status": status
-            })
+            await self._notify_websockets(
+                {
+                    "event": "status_change",
+                    "entry_id": entry_id,
+                    "old_status": old_status,
+                    "new_status": status,
+                }
+            )
 
     async def update_heartbeat(self, entry_id: str):
         """Update entry heartbeat timestamp"""
@@ -410,10 +421,9 @@ class UnifiedRegistry:
             await self._assign_agent_to_department(conn, agent_id, department_id)
 
         # Publish event
-        await self._publish_event("agent_assigned", {
-            "agent_id": agent_id,
-            "department_id": department_id
-        })
+        await self._publish_event(
+            "agent_assigned", {"agent_id": agent_id, "department_id": department_id}
+        )
 
     async def get_statistics(self) -> Dict[str, Any]:
         """Get comprehensive registry statistics"""
@@ -421,21 +431,9 @@ class UnifiedRegistry:
             "total_entries": len(self.cache),
             "by_type": {},
             "by_status": {},
-            "health_summary": {
-                "healthy": 0,
-                "warning": 0,
-                "critical": 0
-            },
-            "departments": {
-                "total": 0,
-                "with_leaders": 0,
-                "average_agents": 0
-            },
-            "agents": {
-                "total": 0,
-                "online": 0,
-                "average_load": 0
-            }
+            "health_summary": {"healthy": 0, "warning": 0, "critical": 0},
+            "departments": {"total": 0, "with_leaders": 0, "average_agents": 0},
+            "agents": {"total": 0, "online": 0, "average_load": 0},
         }
 
         # Calculate statistics
@@ -444,7 +442,9 @@ class UnifiedRegistry:
             stats["by_type"][entry.type] = stats["by_type"].get(entry.type, 0) + 1
 
             # By status
-            stats["by_status"][entry.status] = stats["by_status"].get(entry.status, 0) + 1
+            stats["by_status"][entry.status] = (
+                stats["by_status"].get(entry.status, 0) + 1
+            )
 
             # Health summary
             if entry.health_score >= 80:
@@ -468,7 +468,8 @@ class UnifiedRegistry:
         # Calculate averages
         if stats["departments"]["total"] > 0:
             total_agents_in_depts = sum(
-                len(e.agent_ids) for e in self.cache.values()
+                len(e.agent_ids)
+                for e in self.cache.values()
                 if isinstance(e, DepartmentEntry)
             )
             stats["departments"]["average_agents"] = (
@@ -477,7 +478,8 @@ class UnifiedRegistry:
 
         if stats["agents"]["online"] > 0:
             total_load = sum(
-                e.current_load for e in self.cache.values()
+                e.current_load
+                for e in self.cache.values()
                 if isinstance(e, AgentEntry) and e.status == ServiceStatus.ONLINE
             )
             stats["agents"]["average_load"] = total_load / stats["agents"]["online"]
@@ -488,7 +490,8 @@ class UnifiedRegistry:
     async def _store_entry(self, conn: asyncpg.Connection, entry: RegistryEntry):
         """Store entry in appropriate database table"""
         if entry.type in [RegistryType.AGENT, RegistryType.LEADER]:
-            await conn.execute("""
+            await conn.execute(
+                """
                 INSERT INTO agent_registry (
                     id, name, type, status, metadata, capabilities,
                     health_score, department_id, division_id, llm_model,
@@ -501,19 +504,26 @@ class UnifiedRegistry:
                     capabilities = EXCLUDED.capabilities,
                     health_score = EXCLUDED.health_score,
                     updated_at = CURRENT_TIMESTAMP
-            """, entry.id, entry.name, entry.type, entry.status,
-                json.dumps(entry.metadata), entry.capabilities,
+            """,
+                entry.id,
+                entry.name,
+                entry.type,
+                entry.status,
+                json.dumps(entry.metadata),
+                entry.capabilities,
                 entry.health_score,
-                getattr(entry, 'department_id', None),
-                getattr(entry, 'division_id', None),
-                getattr(entry, 'llm_model', None),
-                getattr(entry, 'max_tokens', 4096),
-                getattr(entry, 'temperature', 0.7),
-                getattr(entry, 'current_load', 0.0),
-                getattr(entry, 'max_load', 100.0))
+                getattr(entry, "department_id", None),
+                getattr(entry, "division_id", None),
+                getattr(entry, "llm_model", None),
+                getattr(entry, "max_tokens", 4096),
+                getattr(entry, "temperature", 0.7),
+                getattr(entry, "current_load", 0.0),
+                getattr(entry, "max_load", 100.0),
+            )
 
         elif entry.type == RegistryType.DEPARTMENT:
-            await conn.execute("""
+            await conn.execute(
+                """
                 INSERT INTO departments (
                     id, name, division_id, description, leader_id
                 ) VALUES ($1, $2, $3, $4, $5)
@@ -522,25 +532,36 @@ class UnifiedRegistry:
                     division_id = EXCLUDED.division_id,
                     description = EXCLUDED.description,
                     leader_id = EXCLUDED.leader_id
-            """, entry.id, entry.name,
-                getattr(entry, 'division_id', None),
-                getattr(entry, 'description', None),
-                getattr(entry, 'leader_id', None))
+            """,
+                entry.id,
+                entry.name,
+                getattr(entry, "division_id", None),
+                getattr(entry, "description", None),
+                getattr(entry, "leader_id", None),
+            )
 
         elif entry.type == RegistryType.DIVISION:
-            await conn.execute("""
+            await conn.execute(
+                """
                 INSERT INTO divisions (
                     id, name, description
                 ) VALUES ($1, $2, $3)
                 ON CONFLICT (id) DO UPDATE SET
                     name = EXCLUDED.name,
                     description = EXCLUDED.description
-            """, entry.id, entry.name,
-                entry.metadata.get('description', ''))
+            """,
+                entry.id,
+                entry.name,
+                entry.metadata.get("description", ""),
+            )
 
-        elif entry.type in [RegistryType.SERVER_CORE, RegistryType.SERVER_MCP,
-                           RegistryType.SERVER_BUSINESS]:
-            await conn.execute("""
+        elif entry.type in [
+            RegistryType.SERVER_CORE,
+            RegistryType.SERVER_MCP,
+            RegistryType.SERVER_BUSINESS,
+        ]:
+            await conn.execute(
+                """
                 INSERT INTO server_registry (
                     id, name, type, status, host, port, protocol,
                     metadata, capabilities, health_score, endpoints
@@ -550,40 +571,61 @@ class UnifiedRegistry:
                     metadata = EXCLUDED.metadata,
                     health_score = EXCLUDED.health_score,
                     updated_at = CURRENT_TIMESTAMP
-            """, entry.id, entry.name, entry.type, entry.status,
-                getattr(entry, 'host', 'localhost'),
-                getattr(entry, 'port', 0),
-                getattr(entry, 'protocol', 'http'),
-                json.dumps(entry.metadata), entry.capabilities,
+            """,
+                entry.id,
+                entry.name,
+                entry.type,
+                entry.status,
+                getattr(entry, "host", "localhost"),
+                getattr(entry, "port", 0),
+                getattr(entry, "protocol", "http"),
+                json.dumps(entry.metadata),
+                entry.capabilities,
                 entry.health_score,
-                getattr(entry, 'endpoints', []))
+                getattr(entry, "endpoints", []),
+            )
 
-    async def _update_entry_status(self, conn: asyncpg.Connection,
-                                  entry_id: str, status: ServiceStatus):
+    async def _update_entry_status(
+        self, conn: asyncpg.Connection, entry_id: str, status: ServiceStatus
+    ):
         """Update entry status in database"""
-        await conn.execute("""
+        await conn.execute(
+            """
             UPDATE agent_registry SET status = $1, updated_at = CURRENT_TIMESTAMP
             WHERE id = $2
-        """, status, entry_id)
+        """,
+            status,
+            entry_id,
+        )
 
-        await conn.execute("""
+        await conn.execute(
+            """
             UPDATE server_registry SET status = $1, updated_at = CURRENT_TIMESTAMP
             WHERE id = $2
-        """, status, entry_id)
+        """,
+            status,
+            entry_id,
+        )
 
     async def _update_entry_heartbeat(self, conn: asyncpg.Connection, entry_id: str):
         """Update entry heartbeat in database"""
-        await conn.execute("""
+        await conn.execute(
+            """
             UPDATE agent_registry
             SET last_heartbeat = CURRENT_TIMESTAMP, health_score = 100
             WHERE id = $1
-        """, entry_id)
+        """,
+            entry_id,
+        )
 
-        await conn.execute("""
+        await conn.execute(
+            """
             UPDATE server_registry
             SET last_heartbeat = CURRENT_TIMESTAMP, health_score = 100
             WHERE id = $1
-        """, entry_id)
+        """,
+            entry_id,
+        )
 
     async def _delete_entry(self, conn: asyncpg.Connection, entry_id: str):
         """Delete entry from database"""
@@ -592,16 +634,21 @@ class UnifiedRegistry:
         await conn.execute("DELETE FROM departments WHERE id = $1", entry_id)
         await conn.execute("DELETE FROM divisions WHERE id = $1", entry_id)
 
-    async def _assign_agent_to_department(self, conn: asyncpg.Connection,
-                                         agent_id: str, department_id: str):
+    async def _assign_agent_to_department(
+        self, conn: asyncpg.Connection, agent_id: str, department_id: str
+    ):
         """Assign agent to department in database"""
-        await conn.execute("""
+        await conn.execute(
+            """
             INSERT INTO agent_department_assignments (agent_id, department_id)
             VALUES ($1, $2)
             ON CONFLICT (agent_id) DO UPDATE SET
                 department_id = EXCLUDED.department_id,
                 assigned_at = CURRENT_TIMESTAMP
-        """, agent_id, department_id)
+        """,
+            agent_id,
+            department_id,
+        )
 
     async def _load_cache(self):
         """Load all entries from database into cache"""
@@ -610,20 +657,20 @@ class UnifiedRegistry:
             agents = await conn.fetch("SELECT * FROM agent_registry")
             for row in agents:
                 entry = AgentEntry(
-                    id=row['id'],
-                    name=row['name'],
-                    type=row['type'],
-                    status=row['status'],
-                    metadata=json.loads(row['metadata']) if row['metadata'] else {},
-                    capabilities=row['capabilities'] or [],
-                    health_score=row['health_score'],
-                    department_id=row.get('department_id'),
-                    division_id=row.get('division_id'),
-                    llm_model=row.get('llm_model'),
-                    max_tokens=row.get('max_tokens', 4096),
-                    temperature=row.get('temperature', 0.7),
-                    current_load=row.get('current_load', 0.0),
-                    max_load=row.get('max_load', 100.0)
+                    id=row["id"],
+                    name=row["name"],
+                    type=row["type"],
+                    status=row["status"],
+                    metadata=json.loads(row["metadata"]) if row["metadata"] else {},
+                    capabilities=row["capabilities"] or [],
+                    health_score=row["health_score"],
+                    department_id=row.get("department_id"),
+                    division_id=row.get("division_id"),
+                    llm_model=row.get("llm_model"),
+                    max_tokens=row.get("max_tokens", 4096),
+                    temperature=row.get("temperature", 0.7),
+                    current_load=row.get("current_load", 0.0),
+                    max_load=row.get("max_load", 100.0),
                 )
                 self.cache[entry.id] = entry
 
@@ -631,17 +678,17 @@ class UnifiedRegistry:
             servers = await conn.fetch("SELECT * FROM server_registry")
             for row in servers:
                 entry = ServerEntry(
-                    id=row['id'],
-                    name=row['name'],
-                    type=row['type'],
-                    status=row['status'],
-                    host=row['host'],
-                    port=row['port'],
-                    protocol=row['protocol'],
-                    metadata=json.loads(row['metadata']) if row['metadata'] else {},
-                    capabilities=row['capabilities'] or [],
-                    health_score=row['health_score'],
-                    endpoints=row.get('endpoints', [])
+                    id=row["id"],
+                    name=row["name"],
+                    type=row["type"],
+                    status=row["status"],
+                    host=row["host"],
+                    port=row["port"],
+                    protocol=row["protocol"],
+                    metadata=json.loads(row["metadata"]) if row["metadata"] else {},
+                    capabilities=row["capabilities"] or [],
+                    health_score=row["health_score"],
+                    endpoints=row.get("endpoints", []),
                 )
                 self.cache[entry.id] = entry
 
@@ -649,20 +696,23 @@ class UnifiedRegistry:
             departments = await conn.fetch("SELECT * FROM departments")
             for row in departments:
                 # Get agent assignments
-                assignments = await conn.fetch("""
+                assignments = await conn.fetch(
+                    """
                     SELECT agent_id FROM agent_department_assignments
                     WHERE department_id = $1
-                """, row['id'])
-                agent_ids = [a['agent_id'] for a in assignments]
+                """,
+                    row["id"],
+                )
+                agent_ids = [a["agent_id"] for a in assignments]
 
                 entry = DepartmentEntry(
-                    id=row['id'],
-                    name=row['name'],
+                    id=row["id"],
+                    name=row["name"],
                     type=RegistryType.DEPARTMENT,
-                    division_id=row['division_id'],
-                    leader_id=row.get('leader_id'),
+                    division_id=row["division_id"],
+                    leader_id=row.get("leader_id"),
                     agent_ids=agent_ids,
-                    description=row.get('description')
+                    description=row.get("description"),
                 )
                 self.cache[entry.id] = entry
 
@@ -670,17 +720,20 @@ class UnifiedRegistry:
             divisions = await conn.fetch("SELECT * FROM divisions")
             for row in divisions:
                 # Get departments in division
-                depts = await conn.fetch("""
+                depts = await conn.fetch(
+                    """
                     SELECT id FROM departments WHERE division_id = $1
-                """, row['id'])
-                dept_ids = [d['id'] for d in depts]
+                """,
+                    row["id"],
+                )
+                dept_ids = [d["id"] for d in depts]
 
                 entry = DivisionEntry(
-                    id=row['id'],
-                    name=row['name'],
+                    id=row["id"],
+                    name=row["name"],
                     type=RegistryType.DIVISION,
                     department_ids=dept_ids,
-                    metadata={'description': row.get('description', '')}
+                    metadata={"description": row.get("description", "")},
                 )
                 self.cache[entry.id] = entry
 
@@ -691,12 +744,9 @@ class UnifiedRegistry:
             event = {
                 "type": event_type,
                 "timestamp": datetime.utcnow().isoformat(),
-                "data": data.dict() if hasattr(data, 'dict') else data
+                "data": data.dict() if hasattr(data, "dict") else data,
             }
-            await self.redis.xadd(
-                "registry:events",
-                {"event": json.dumps(event)}
-            )
+            await self.redis.xadd("registry:events", {"event": json.dumps(event)})
 
     async def _notify_websockets(self, message: Dict[str, Any]):
         """Notify all WebSocket clients"""
@@ -746,10 +796,7 @@ class UnifiedRegistry:
         while True:
             try:
                 # Read events from stream
-                events = await self.redis.xread(
-                    {"registry:events": "$"},
-                    block=1000
-                )
+                events = await self.redis.xread({"registry:events": "$"}, block=1000)
 
                 for stream, messages in events:
                     for message_id, data in messages:
@@ -798,7 +845,7 @@ if __name__ == "__main__":
 
     db_url = os.getenv(
         "DATABASE_URL",
-        "postgresql://boarderframe:boarderframe@localhost:5434/boarderframeos"
+        "postgresql://boarderframe:boarderframe@localhost:5434/boarderframeos",
     )
     redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
 

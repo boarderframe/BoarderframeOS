@@ -14,6 +14,7 @@ from datetime import datetime
 PORT = 8888
 MAX_RETRIES = 5
 
+
 class StableHandler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
         # Suppress access logs to keep output clean
@@ -21,13 +22,14 @@ class StableHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         try:
-            if self.path == '/' or self.path == '/index.html':
+            if self.path == "/" or self.path == "/index.html":
                 self.send_response(200)
-                self.send_header('Content-type', 'text/html')
-                self.send_header('Cache-Control', 'no-cache')
+                self.send_header("Content-type", "text/html")
+                self.send_header("Cache-Control", "no-cache")
                 self.end_headers()
 
-                html = """<!DOCTYPE html>
+                html = (
+                    """<!DOCTYPE html>
 <html>
 <head>
     <title>BoarderframeOS Dashboard</title>
@@ -257,7 +259,9 @@ class StableHandler(http.server.SimpleHTTPRequestHandler):
     </div>
 
     <div style="text-align: center; margin: 40px 0; color: #64748b;">
-        <p>Dashboard auto-refreshes every 30 seconds • Server Time: """ + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + """</p>
+        <p>Dashboard auto-refreshes every 30 seconds • Server Time: """
+                    + datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    + """</p>
     </div>
 
     <script>
@@ -270,13 +274,18 @@ class StableHandler(http.server.SimpleHTTPRequestHandler):
     </script>
 </body>
 </html>"""
+                )
                 self.wfile.write(html.encode())
 
-            elif self.path == '/health':
+            elif self.path == "/health":
                 self.send_response(200)
-                self.send_header('Content-type', 'application/json')
+                self.send_header("Content-type", "application/json")
                 self.end_headers()
-                response = '{"status":"healthy","timestamp":"' + datetime.now().isoformat() + '"}'
+                response = (
+                    '{"status":"healthy","timestamp":"'
+                    + datetime.now().isoformat()
+                    + '"}'
+                )
                 self.wfile.write(response.encode())
 
             else:
@@ -287,16 +296,19 @@ class StableHandler(http.server.SimpleHTTPRequestHandler):
             print(f"Request error: {e}")
             self.send_error(500)
 
+
 def signal_handler(signum, frame):
     print("\n🛑 Shutting down gracefully...")
     sys.exit(0)
 
+
 def open_browser_delayed():
     time.sleep(2)
     try:
-        webbrowser.open(f'http://localhost:{PORT}')
+        webbrowser.open(f"http://localhost:{PORT}")
     except:
         pass
+
 
 def start_server():
     retries = 0
@@ -339,6 +351,7 @@ def start_server():
                 time.sleep(3)
 
     print("❌ Server failed to start after maximum retries")
+
 
 if __name__ == "__main__":
     start_server()

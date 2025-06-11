@@ -22,13 +22,14 @@ from pydantic import BaseModel, EmailStr, validator
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger("mcp_customer")
 
+
 class CustomerCreate(BaseModel):
     """Customer creation model"""
+
     email: str  # Would use EmailStr in a full implementation
     name: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
@@ -37,6 +38,7 @@ class CustomerCreate(BaseModel):
 
 class CustomerUpdate(BaseModel):
     """Customer update model"""
+
     name: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
     subscription_status: Optional[str] = None
@@ -45,6 +47,7 @@ class CustomerUpdate(BaseModel):
 
 class InteractionCreate(BaseModel):
     """Customer interaction model"""
+
     customer_id: str
     interaction_type: str  # support, feedback, onboarding, etc.
     content: str
@@ -86,8 +89,12 @@ class MCPCustomerServer:
         self.app.delete("/customers/{customer_id}")(self.delete_customer)
         self.app.get("/customers")(self.list_customers)
         self.app.post("/interactions")(self.create_interaction)
-        self.app.get("/customers/{customer_id}/interactions")(self.list_customer_interactions)
-        self.app.get("/customers/{customer_id}/subscription")(self.get_customer_subscription)
+        self.app.get("/customers/{customer_id}/interactions")(
+            self.list_customer_interactions
+        )
+        self.app.get("/customers/{customer_id}/subscription")(
+            self.get_customer_subscription
+        )
         self.app.get("/stats")(self.get_stats)
 
     async def start(self, port: int = 8008):
@@ -113,7 +120,7 @@ class MCPCustomerServer:
             "timestamp": datetime.now().isoformat(),
             "customers_count": len(self.customers),
             "interactions_count": len(self.interactions),
-            "server": "mcp_customer"
+            "server": "mcp_customer",
         }
 
     async def create_customer(self, customer: CustomerCreate):
@@ -132,7 +139,7 @@ class MCPCustomerServer:
                 "monthly_value": 0.0,
                 "created_by_agent": customer.created_by_agent,
                 "metadata": customer.metadata or {},
-                "stripe_customer_id": None  # Would be populated by Stripe API
+                "stripe_customer_id": None,  # Would be populated by Stripe API
             }
 
             # Store customer
@@ -148,12 +155,14 @@ class MCPCustomerServer:
                 "customer_id": customer_id,
                 "email": customer.email,
                 "name": customer.name,
-                "created_at": customer_data["created_at"]
+                "created_at": customer_data["created_at"],
             }
 
         except Exception as e:
             logger.error(f"Customer creation error: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Customer creation error: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Customer creation error: {str(e)}"
+            )
 
     async def get_customer(self, customer_id: str):
         """Get customer details"""
@@ -194,22 +203,26 @@ class MCPCustomerServer:
 
         return {"status": "deleted", "customer_id": customer_id}
 
-    async def list_customers(self, skip: int = 0, limit: int = 100, status: Optional[str] = None):
+    async def list_customers(
+        self, skip: int = 0, limit: int = 100, status: Optional[str] = None
+    ):
         """List customers with filtering options"""
         customers_list = list(self.customers.values())
 
         # Apply status filter if provided
         if status:
-            customers_list = [c for c in customers_list if c["subscription_status"] == status]
+            customers_list = [
+                c for c in customers_list if c["subscription_status"] == status
+            ]
 
         # Apply pagination
-        paginated = customers_list[skip:skip + limit]
+        paginated = customers_list[skip : skip + limit]
 
         return {
             "total": len(customers_list),
             "skip": skip,
             "limit": limit,
-            "customers": paginated
+            "customers": paginated,
         }
 
     async def create_interaction(self, interaction: InteractionCreate):
@@ -230,7 +243,7 @@ class MCPCustomerServer:
                 "content": interaction.content,
                 "agent_id": interaction.agent_id,
                 "created_at": datetime.now().isoformat(),
-                "metadata": interaction.metadata or {}
+                "metadata": interaction.metadata or {},
             }
 
             # Store interaction
@@ -239,34 +252,40 @@ class MCPCustomerServer:
             return {
                 "interaction_id": interaction_id,
                 "customer_id": interaction.customer_id,
-                "created_at": interaction_data["created_at"]
+                "created_at": interaction_data["created_at"],
             }
 
         except HTTPException:
             raise
         except Exception as e:
             logger.error(f"Interaction creation error: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Interaction creation error: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Interaction creation error: {str(e)}"
+            )
 
-    async def list_customer_interactions(self, customer_id: str, skip: int = 0, limit: int = 100):
+    async def list_customer_interactions(
+        self, customer_id: str, skip: int = 0, limit: int = 100
+    ):
         """List interactions for a specific customer"""
         if customer_id not in self.customers:
             raise HTTPException(status_code=404, detail="Customer not found")
 
         # Filter interactions by customer
-        customer_interactions = [i for i in self.interactions if i["customer_id"] == customer_id]
+        customer_interactions = [
+            i for i in self.interactions if i["customer_id"] == customer_id
+        ]
 
         # Sort by creation date (newest first)
         customer_interactions.sort(key=lambda x: x["created_at"], reverse=True)
 
         # Apply pagination
-        paginated = customer_interactions[skip:skip + limit]
+        paginated = customer_interactions[skip : skip + limit]
 
         return {
             "total": len(customer_interactions),
             "skip": skip,
             "limit": limit,
-            "interactions": paginated
+            "interactions": paginated,
         }
 
     async def get_customer_subscription(self, customer_id: str):
@@ -287,26 +306,37 @@ class MCPCustomerServer:
             "plan": "pro",
             "monthly_value": self.customers[customer_id]["monthly_value"],
             "next_billing_date": "2023-07-01",
-            "payment_method": "card"
+            "payment_method": "card",
         }
 
-    async def track_analytics_event(self, event_type: str, customer_id: str, data: Dict[str, Any] = None):
+    async def track_analytics_event(
+        self, event_type: str, customer_id: str, data: Dict[str, Any] = None
+    ):
         """Track an analytics event"""
         # In a real implementation, this would call the Analytics Server
-        logger.info(f"Tracking analytics event: {event_type} for customer {customer_id}")
+        logger.info(
+            f"Tracking analytics event: {event_type} for customer {customer_id}"
+        )
 
     async def get_stats(self):
         """Get customer statistics"""
         total_customers = len(self.customers)
-        active_subscriptions = sum(1 for c in self.customers.values() if c["subscription_status"] == "active")
+        active_subscriptions = sum(
+            1 for c in self.customers.values() if c["subscription_status"] == "active"
+        )
         total_monthly_value = sum(c["monthly_value"] for c in self.customers.values())
 
         return {
             "total_customers": total_customers,
             "active_subscriptions": active_subscriptions,
             "total_monthly_value": total_monthly_value,
-            "average_monthly_value": total_monthly_value / active_subscriptions if active_subscriptions > 0 else 0
+            "average_monthly_value": (
+                total_monthly_value / active_subscriptions
+                if active_subscriptions > 0
+                else 0
+            ),
         }
+
 
 async def main():
     """Run the server directly"""
@@ -325,6 +355,7 @@ async def main():
     # Create and start the server
     server = MCPCustomerServer()
     await server.start(port)
+
 
 if __name__ == "__main__":
     try:

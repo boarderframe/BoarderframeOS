@@ -25,6 +25,7 @@ async def quick_register():
     # Check if registry is accessible at port 8100
     try:
         import httpx
+
         async with httpx.AsyncClient(timeout=2.0) as client:
             resp = await client.get("http://localhost:8100/health")
             if resp.status_code == 200:
@@ -33,9 +34,11 @@ async def quick_register():
                 print("⚠️  Enhanced Registry Service not responding properly")
                 print("   Starting registry service...")
                 # Start the registry service
-                subprocess.Popen([
-                    sys.executable, "-m", "core.enhanced_registry_system"
-                ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.Popen(
+                    [sys.executable, "-m", "core.enhanced_registry_system"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
                 await asyncio.sleep(3)
     except:
         print("❌ Enhanced Registry Service not running on port 8100")
@@ -88,7 +91,7 @@ async def register_directly_to_database():
             port=5434,
             database="boarderframeos",
             user="boarderframe",
-            password="boarderframe"
+            password="boarderframe",
         )
 
         print("\n📝 Direct database registration...")
@@ -104,7 +107,8 @@ async def register_directly_to_database():
         ]
 
         for name, server_type, port, url in mcp_servers:
-            await conn.execute("""
+            await conn.execute(
+                """
                 INSERT INTO server_registry (
                     id, name, server_type, status, endpoint_url,
                     health_check_url, capabilities, health_status,
@@ -114,9 +118,16 @@ async def register_directly_to_database():
                     endpoint_url = EXCLUDED.endpoint_url,
                     updated_at = CURRENT_TIMESTAMP
             """,
-                str(uuid.uuid4()), name, server_type, 'online', url,
-                f"{url}/health", '["mcp_protocol"]', 'healthy',
-                '{"registered_by": "direct_registration"}', datetime.utcnow()
+                str(uuid.uuid4()),
+                name,
+                server_type,
+                "online",
+                url,
+                f"{url}/health",
+                '["mcp_protocol"]',
+                "healthy",
+                '{"registered_by": "direct_registration"}',
+                datetime.utcnow(),
             )
             print(f"   ✅ Registered {name}")
 
@@ -127,7 +138,8 @@ async def register_directly_to_database():
         ]
 
         for name, server_type, port, url in core_systems:
-            await conn.execute("""
+            await conn.execute(
+                """
                 INSERT INTO server_registry (
                     id, name, server_type, status, endpoint_url,
                     health_check_url, capabilities, health_status,
@@ -137,9 +149,16 @@ async def register_directly_to_database():
                     endpoint_url = EXCLUDED.endpoint_url,
                     updated_at = CURRENT_TIMESTAMP
             """,
-                str(uuid.uuid4()), name, server_type, 'online', url,
-                f"{url}/health", '["dashboard", "monitoring"]', 'healthy',
-                '{"registered_by": "direct_registration"}', datetime.utcnow()
+                str(uuid.uuid4()),
+                name,
+                server_type,
+                "online",
+                url,
+                f"{url}/health",
+                '["dashboard", "monitoring"]',
+                "healthy",
+                '{"registered_by": "direct_registration"}',
+                datetime.utcnow(),
             )
             print(f"   ✅ Registered {name}")
 
@@ -150,7 +169,8 @@ async def register_directly_to_database():
         ]
 
         for name, db_type, host, port in databases:
-            await conn.execute("""
+            await conn.execute(
+                """
                 INSERT INTO database_registry (
                     id, name, db_type, status, host, port,
                     health_status, max_connections, metadata,
@@ -160,9 +180,16 @@ async def register_directly_to_database():
                     name = EXCLUDED.name,
                     updated_at = CURRENT_TIMESTAMP
             """,
-                str(uuid.uuid4()), name, db_type, 'online', host, port,
-                'healthy', 100, '{"registered_by": "direct_registration"}',
-                datetime.utcnow()
+                str(uuid.uuid4()),
+                name,
+                db_type,
+                "online",
+                host,
+                port,
+                "healthy",
+                100,
+                '{"registered_by": "direct_registration"}',
+                datetime.utcnow(),
             )
             print(f"   ✅ Registered {name}")
 

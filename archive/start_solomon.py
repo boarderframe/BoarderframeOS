@@ -2,7 +2,7 @@
 import os
 import sys
 
-sys.path.insert(0, '/Users/cosburn/BoarderframeOS/boarderframeos')
+sys.path.insert(0, "/Users/cosburn/BoarderframeOS/boarderframeos")
 
 import asyncio
 

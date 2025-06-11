@@ -31,6 +31,7 @@ from boarderframeos.core.resource_manager import ResourceLimit, ResourceManager
 
 class TestAgent:
     """Simple test agent to demonstrate the control system"""
+
     def __init__(self, agent_id: str, name: str):
         self.agent_id = agent_id
         self.name = name
@@ -60,7 +61,7 @@ async def test_agent_control_system():
             model="claude-3-opus-20240229",
             version="1.0.0",
             host="localhost",
-            port=8890
+            port=8890,
         ),
         AgentDiscoveryInfo(
             agent_id="david-001",
@@ -70,7 +71,7 @@ async def test_agent_control_system():
             state=AgentState.IDLE,
             zone="council",
             model="claude-3-opus-20240229",
-            version="1.0.0"
+            version="1.0.0",
         ),
         AgentDiscoveryInfo(
             agent_id="research-001",
@@ -80,8 +81,8 @@ async def test_agent_control_system():
             state=AgentState.IDLE,
             zone="research",
             model="claude-3-opus-20240229",
-            version="1.0.0"
-        )
+            version="1.0.0",
+        ),
     ]
 
     for agent in test_agents:
@@ -89,7 +90,9 @@ async def test_agent_control_system():
         print(f"   ✅ Registered {agent.name} (ID: {agent.agent_id}): {success}")
 
     # Test agent discovery
-    coordination_agents = registry.find_agents_by_capability(AgentCapability.COORDINATION)
+    coordination_agents = registry.find_agents_by_capability(
+        AgentCapability.COORDINATION
+    )
     print(f"   🔍 Found {len(coordination_agents)} agents with coordination capability")
 
     research_agents = registry.find_agents_by_capability(AgentCapability.RESEARCH)
@@ -104,11 +107,7 @@ async def test_agent_control_system():
     await resource_manager.start()
 
     # Set resource limits for agents
-    solomon_limits = ResourceLimit(
-        cpu_percent=25.0,
-        memory_mb=4096.0,
-        gpu_percent=10.0
-    )
+    solomon_limits = ResourceLimit(cpu_percent=25.0, memory_mb=4096.0, gpu_percent=10.0)
 
     resource_manager.set_agent_limits("solomon-001", solomon_limits)
     print(f"   ⚙️  Set resource limits for Solomon")
@@ -141,12 +140,14 @@ async def test_agent_control_system():
         agent_id="solomon-001",
         task_type="coordination",
         task_data={"goal": "Coordinate morning standup meeting"},
-        priority=TaskPriority.HIGH
+        priority=TaskPriority.HIGH,
     )
     print(f"   📝 Task assigned: {task_result.get('task_id', 'failed')}")
 
     # Test best agent selection
-    best_agent = await controller.find_best_agent_for_task("research", required_capabilities=[AgentCapability.RESEARCH])
+    best_agent = await controller.find_best_agent_for_task(
+        "research", required_capabilities=[AgentCapability.RESEARCH]
+    )
     print(f"   🏆 Best agent for research task: {best_agent}")
 
     print()
@@ -161,14 +162,14 @@ async def test_agent_control_system():
         to_agent="solomon-001",
         message_type=MessageType.TASK_REQUEST,
         content={"request": "Please prepare quarterly report"},
-        priority=MessagePriority.HIGH
+        priority=MessagePriority.HIGH,
     )
     print(f"   📨 Message sent from David to Solomon: {message_sent}")
 
     # Test broadcast
     broadcast_result = await controller.broadcast_system_message(
         message="System maintenance scheduled for tonight",
-        priority=MessagePriority.NORMAL
+        priority=MessagePriority.NORMAL,
     )
     print(f"   📢 System broadcast sent: {broadcast_result}")
 
@@ -193,10 +194,12 @@ async def test_agent_control_system():
     print("6️⃣  Testing Advanced Control Features")
 
     # Test batch operations
-    batch_result = await controller.execute_batch_commands([
-        {"agent_id": "david-001", "command": ControlCommand.START},
-        {"agent_id": "research-001", "command": ControlCommand.START}
-    ])
+    batch_result = await controller.execute_batch_commands(
+        [
+            {"agent_id": "david-001", "command": ControlCommand.START},
+            {"agent_id": "research-001", "command": ControlCommand.START},
+        ]
+    )
     print(f"   🔄 Batch command execution: {len(batch_result)} commands processed")
 
     # Test health checks
@@ -226,7 +229,7 @@ async def test_agent_control_system():
     print()
 
     print("🎉 Agent Control System Test Complete!")
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("SUMMARY: BoarderframeOS has a fully functional agent control system with:")
     print("✅ Agent Registry & Discovery Service")
     print("✅ Resource Management System")

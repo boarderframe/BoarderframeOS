@@ -26,6 +26,7 @@ from pydantic import BaseModel, Field
 
 try:
     from PIL import Image, ImageDraw, ImageFont
+
     HAS_PIL = True
 except ImportError:
     HAS_PIL = False
@@ -33,6 +34,7 @@ except ImportError:
 
 try:
     import pyautogui
+
     HAS_PYAUTOGUI = True
     # Disable pyautogui failsafe for server use
     pyautogui.FAILSAFE = False
@@ -42,8 +44,7 @@ except ImportError:
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger("mcp_screenshot")
 
@@ -56,28 +57,42 @@ DEFAULT_QUALITY = 85  # JPEG quality
 # Ensure screenshots directory exists
 SCREENSHOTS_DIR.mkdir(parents=True, exist_ok=True)
 
+
 class ScreenshotRequest(BaseModel):
     """Screenshot capture request model"""
-    region: Optional[Dict[str, int]] = Field(default=None, description="Region to capture {x, y, width, height}")
+
+    region: Optional[Dict[str, int]] = Field(
+        default=None, description="Region to capture {x, y, width, height}"
+    )
     display: int = Field(default=1, description="Display number to capture (1-based)")
     format: str = Field(default="jpeg", description="Output format: jpeg, png")
     quality: int = Field(default=DEFAULT_QUALITY, description="JPEG quality (1-100)")
     scale: float = Field(default=1.0, description="Scale factor (0.1-2.0)")
-    annotation: Optional[Dict[str, Any]] = Field(default=None, description="Annotation to add")
+    annotation: Optional[Dict[str, Any]] = Field(
+        default=None, description="Annotation to add"
+    )
     save_to_disk: bool = Field(default=True, description="Save screenshot to disk")
     return_base64: bool = Field(default=True, description="Return base64 encoded image")
 
+
 class AnnotationRequest(BaseModel):
     """Annotation configuration"""
+
     text: Optional[str] = None
-    rectangles: Optional[List[Dict[str, int]]] = None  # [{"x": 0, "y": 0, "width": 100, "height": 50}]
-    circles: Optional[List[Dict[str, int]]] = None     # [{"x": 50, "y": 50, "radius": 25}]
-    arrows: Optional[List[Dict[str, int]]] = None      # [{"x1": 0, "y1": 0, "x2": 100, "y2": 100}]
+    rectangles: Optional[List[Dict[str, int]]] = (
+        None  # [{"x": 0, "y": 0, "width": 100, "height": 50}]
+    )
+    circles: Optional[List[Dict[str, int]]] = None  # [{"x": 50, "y": 50, "radius": 25}]
+    arrows: Optional[List[Dict[str, int]]] = (
+        None  # [{"x1": 0, "y1": 0, "x2": 100, "y2": 100}]
+    )
     color: str = "red"
     font_size: int = 16
 
+
 class ScreenshotResponse(BaseModel):
     """Screenshot response model"""
+
     success: bool
     screenshot_id: str
     file_path: Optional[str] = None
@@ -87,6 +102,7 @@ class ScreenshotResponse(BaseModel):
     file_size: int
     timestamp: str
     error: Optional[str] = None
+
 
 class ScreenshotManager:
     """Advanced screenshot management with caching and cleanup"""
@@ -101,7 +117,9 @@ class ScreenshotManager:
         self.cleanup_task = asyncio.create_task(self._cleanup_old_screenshots())
         logger.info("Screenshot manager initialized")
 
-    async def capture_screenshot(self, request: ScreenshotRequest) -> ScreenshotResponse:
+    async def capture_screenshot(
+        self, request: ScreenshotRequest
+    ) -> ScreenshotResponse:
         """Capture screenshot with advanced options"""
         try:
             screenshot_id = str(uuid.uuid4())
@@ -124,7 +142,7 @@ class ScreenshotManager:
                 if request.scale != 1.0:
                     new_size = (
                         int(image.width * request.scale),
-                        int(image.height * request.scale)
+                        int(image.height * request.scale),
                     )
                     image = image.resize(new_size, Image.Resampling.LANCZOS)
 
@@ -136,7 +154,12 @@ class ScreenshotManager:
                 output_buffer = io.BytesIO()
                 if request.format.lower() == "jpeg":
                     image = image.convert("RGB")  # JPEG doesn't support transparency
-                    image.save(output_buffer, format="JPEG", quality=request.quality, optimize=True)
+                    image.save(
+                        output_buffer,
+                        format="JPEG",
+                        quality=request.quality,
+                        optimize=True,
+                    )
                 else:
                     image.save(output_buffer, format="PNG", optimize=True)
 
@@ -148,7 +171,9 @@ class ScreenshotManager:
 
             # Check size limit
             if len(image_data) > MAX_SCREENSHOT_SIZE:
-                raise Exception(f"Screenshot too large: {len(image_data)} bytes (max {MAX_SCREENSHOT_SIZE})")
+                raise Exception(
+                    f"Screenshot too large: {len(image_data)} bytes (max {MAX_SCREENSHOT_SIZE})"
+                )
 
             # Save to disk if requested
             file_path = None
@@ -166,11 +191,15 @@ class ScreenshotManager:
                 success=True,
                 screenshot_id=screenshot_id,
                 file_path=str(file_path) if file_path else None,
-                base64_data=base64.b64encode(image_data).decode() if request.return_base64 else None,
+                base64_data=(
+                    base64.b64encode(image_data).decode()
+                    if request.return_base64
+                    else None
+                ),
                 format=request.format,
                 dimensions=dimensions,
                 file_size=len(image_data),
-                timestamp=timestamp
+                timestamp=timestamp,
             )
 
             # Cache screenshot metadata
@@ -179,7 +208,7 @@ class ScreenshotManager:
                 "timestamp": datetime.fromisoformat(timestamp),
                 "format": request.format,
                 "dimensions": dimensions,
-                "file_size": len(image_data)
+                "file_size": len(image_data),
             }
 
             return response
@@ -193,7 +222,7 @@ class ScreenshotManager:
                 dimensions={"width": 0, "height": 0},
                 file_size=0,
                 timestamp=datetime.now().isoformat(),
-                error=str(e)
+                error=str(e),
             )
 
     async def _capture_with_pyautogui(self, request: ScreenshotRequest) -> bytes:
@@ -206,7 +235,7 @@ class ScreenshotManager:
                         request.region["x"],
                         request.region["y"],
                         request.region["width"],
-                        request.region["height"]
+                        request.region["height"],
                     )
                 )
             else:
@@ -242,9 +271,7 @@ class ScreenshotManager:
 
             # Execute command
             result = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
 
             stdout, stderr = await result.communicate()
@@ -259,7 +286,9 @@ class ScreenshotManager:
             logger.error(f"macOS capture failed: {e}")
             return None
 
-    async def _add_annotations(self, image: Image.Image, annotation: Dict[str, Any]) -> Image.Image:
+    async def _add_annotations(
+        self, image: Image.Image, annotation: Dict[str, Any]
+    ) -> Image.Image:
         """Add annotations to image"""
         if not HAS_PIL:
             return image
@@ -274,7 +303,9 @@ class ScreenshotManager:
 
             # Load font
             try:
-                font = ImageFont.truetype("/System/Library/Fonts/Arial.ttf", ann.font_size)
+                font = ImageFont.truetype(
+                    "/System/Library/Fonts/Arial.ttf", ann.font_size
+                )
             except:
                 font = ImageFont.load_default()
 
@@ -282,16 +313,21 @@ class ScreenshotManager:
             if ann.rectangles:
                 for rect in ann.rectangles:
                     draw.rectangle(
-                        [rect["x"], rect["y"], rect["x"] + rect["width"], rect["y"] + rect["height"]],
+                        [
+                            rect["x"],
+                            rect["y"],
+                            rect["x"] + rect["width"],
+                            rect["y"] + rect["height"],
+                        ],
                         outline=color,
-                        width=2
+                        width=2,
                     )
 
             # Draw circles
             if ann.circles:
                 for circle in ann.circles:
                     x, y, r = circle["x"], circle["y"], circle["radius"]
-                    draw.ellipse([x-r, y-r, x+r, y+r], outline=color, width=2)
+                    draw.ellipse([x - r, y - r, x + r, y + r], outline=color, width=2)
 
             # Draw arrows
             if ann.arrows:
@@ -301,6 +337,7 @@ class ScreenshotManager:
 
                     # Draw arrowhead
                     import math
+
                     angle = math.atan2(y2 - y1, x2 - x1)
                     arrow_length = 10
                     arrow_angle = math.pi / 6
@@ -331,18 +368,24 @@ class ScreenshotManager:
         try:
             # Get from cache first
             for screenshot_id, info in self.screenshot_cache.items():
-                screenshots.append({
-                    "id": screenshot_id,
-                    "file_path": str(info["file_path"]) if info["file_path"] else None,
-                    "timestamp": info["timestamp"].isoformat(),
-                    "format": info["format"],
-                    "dimensions": info["dimensions"],
-                    "file_size": info["file_size"]
-                })
+                screenshots.append(
+                    {
+                        "id": screenshot_id,
+                        "file_path": (
+                            str(info["file_path"]) if info["file_path"] else None
+                        ),
+                        "timestamp": info["timestamp"].isoformat(),
+                        "format": info["format"],
+                        "dimensions": info["dimensions"],
+                        "file_size": info["file_size"],
+                    }
+                )
 
             # Also scan directory for persisted screenshots
             if SCREENSHOTS_DIR.exists():
-                for file_path in sorted(SCREENSHOTS_DIR.glob("screenshot_*"), reverse=True):
+                for file_path in sorted(
+                    SCREENSHOTS_DIR.glob("screenshot_*"), reverse=True
+                ):
                     if len(screenshots) >= limit:
                         break
 
@@ -351,14 +394,21 @@ class ScreenshotManager:
                         continue
 
                     stat = file_path.stat()
-                    screenshots.append({
-                        "id": file_path.stem,
-                        "file_path": str(file_path),
-                        "timestamp": datetime.fromtimestamp(stat.st_mtime).isoformat(),
-                        "format": file_path.suffix[1:],
-                        "dimensions": {"width": 0, "height": 0},  # Would need to open file to get
-                        "file_size": stat.st_size
-                    })
+                    screenshots.append(
+                        {
+                            "id": file_path.stem,
+                            "file_path": str(file_path),
+                            "timestamp": datetime.fromtimestamp(
+                                stat.st_mtime
+                            ).isoformat(),
+                            "format": file_path.suffix[1:],
+                            "dimensions": {
+                                "width": 0,
+                                "height": 0,
+                            },  # Would need to open file to get
+                            "file_size": stat.st_size,
+                        }
+                    )
 
             # Sort by timestamp and limit
             screenshots.sort(key=lambda x: x["timestamp"], reverse=True)
@@ -386,7 +436,7 @@ class ScreenshotManager:
                         "format": info["format"],
                         "dimensions": info["dimensions"],
                         "file_size": info["file_size"],
-                        "timestamp": info["timestamp"].isoformat()
+                        "timestamp": info["timestamp"].isoformat(),
                     }
 
             # Search in directory
@@ -400,7 +450,9 @@ class ScreenshotManager:
                     "format": file_path.suffix[1:],
                     "dimensions": {"width": 0, "height": 0},
                     "file_size": len(image_data),
-                    "timestamp": datetime.fromtimestamp(file_path.stat().st_mtime).isoformat()
+                    "timestamp": datetime.fromtimestamp(
+                        file_path.stat().st_mtime
+                    ).isoformat(),
                 }
 
             return None
@@ -453,7 +505,10 @@ class ScreenshotManager:
                 # Cleanup directory
                 if SCREENSHOTS_DIR.exists():
                     for file_path in SCREENSHOTS_DIR.glob("screenshot_*"):
-                        if datetime.fromtimestamp(file_path.stat().st_mtime) < cutoff_time:
+                        if (
+                            datetime.fromtimestamp(file_path.stat().st_mtime)
+                            < cutoff_time
+                        ):
                             try:
                                 file_path.unlink()
                                 deleted_count += 1
@@ -470,6 +525,7 @@ class ScreenshotManager:
                 logger.error(f"Cleanup task error: {e}")
                 await asyncio.sleep(300)  # Sleep 5 minutes on error
 
+
 class MCPScreenshotServer:
     """MCP Screenshot Server for BoarderframeOS"""
 
@@ -477,7 +533,7 @@ class MCPScreenshotServer:
         self.app = FastAPI(
             title="BoarderframeOS Screenshot MCP Server",
             version="1.0.0",
-            description="Advanced screenshot capture with annotations and management"
+            description="Advanced screenshot capture with annotations and management",
         )
         self.setup_app()
         self.screenshot_manager = ScreenshotManager()
@@ -513,7 +569,7 @@ class MCPScreenshotServer:
         deps = {
             "PIL": HAS_PIL,
             "pyautogui": HAS_PYAUTOGUI,
-            "macOS screencapture": sys.platform == "darwin"
+            "macOS screencapture": sys.platform == "darwin",
         }
 
         logger.info(f"Dependencies: {deps}")
@@ -532,10 +588,10 @@ class MCPScreenshotServer:
             "dependencies": {
                 "PIL": HAS_PIL,
                 "pyautogui": HAS_PYAUTOGUI,
-                "platform": sys.platform
+                "platform": sys.platform,
             },
             "screenshot_cache_size": len(self.screenshot_manager.screenshot_cache),
-            "screenshots_directory": str(SCREENSHOTS_DIR)
+            "screenshots_directory": str(SCREENSHOTS_DIR),
         }
 
     async def capture_screenshot(self, request: ScreenshotRequest):
@@ -545,11 +601,7 @@ class MCPScreenshotServer:
     async def list_screenshots(self, limit: int = 50):
         """List screenshots endpoint"""
         screenshots = await self.screenshot_manager.list_screenshots(limit)
-        return {
-            "screenshots": screenshots,
-            "count": len(screenshots),
-            "limit": limit
-        }
+        return {"screenshots": screenshots, "count": len(screenshots), "limit": limit}
 
     async def get_screenshot(self, screenshot_id: str):
         """Get specific screenshot endpoint"""
@@ -578,16 +630,18 @@ class MCPScreenshotServer:
                             "id": 1,
                             "width": size.width,
                             "height": size.height,
-                            "primary": True
+                            "primary": True,
                         }
                     ]
                 }
             else:
                 # Fallback for macOS
                 result = await asyncio.create_subprocess_exec(
-                    "system_profiler", "SPDisplaysDataType", "-json",
+                    "system_profiler",
+                    "SPDisplaysDataType",
+                    "-json",
                     stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE
+                    stderr=asyncio.subprocess.PIPE,
                 )
                 stdout, _ = await result.communicate()
 
@@ -596,20 +650,26 @@ class MCPScreenshotServer:
                     displays = []
 
                     for i, display in enumerate(data.get("SPDisplaysDataType", [])):
-                        displays.append({
-                            "id": i + 1,
-                            "width": 1920,  # Default fallback
-                            "height": 1080,
-                            "primary": i == 0
-                        })
+                        displays.append(
+                            {
+                                "id": i + 1,
+                                "width": 1920,  # Default fallback
+                                "height": 1080,
+                                "primary": i == 0,
+                            }
+                        )
 
                     return {"displays": displays}
 
-            return {"displays": [{"id": 1, "width": 1920, "height": 1080, "primary": True}]}
+            return {
+                "displays": [{"id": 1, "width": 1920, "height": 1080, "primary": True}]
+            }
 
         except Exception as e:
             logger.error(f"Failed to get displays: {e}")
-            return {"displays": [{"id": 1, "width": 1920, "height": 1080, "primary": True}]}
+            return {
+                "displays": [{"id": 1, "width": 1920, "height": 1080, "primary": True}]
+            }
 
     async def cleanup_screenshots(self, background_tasks: BackgroundTasks):
         """Manual cleanup of old screenshots"""
@@ -623,7 +683,7 @@ class MCPScreenshotServer:
             return {
                 "success": True,
                 "message": "Cleanup initiated",
-                "cutoff_time": cutoff_time.isoformat()
+                "cutoff_time": cutoff_time.isoformat(),
             }
 
         except Exception as e:
@@ -646,6 +706,7 @@ class MCPScreenshotServer:
 
         logger.info(f"Manual cleanup completed: {deleted_count} screenshots deleted")
 
+
 async def main():
     """Run the server directly"""
     port = 8011
@@ -660,6 +721,7 @@ async def main():
     # Create and start server
     server = MCPScreenshotServer()
     await server.start(port)
+
 
 if __name__ == "__main__":
     try:

@@ -28,14 +28,15 @@ providers = {
     "anthropic": {
         "provider_type": "anthropic",
         "models": ["claude-opus-4-20250514", "claude-4-sonnet-20250514"],
-        "is_active": True
+        "is_active": True,
     },
     "openai": {
         "provider_type": "openai",
         "models": ["gpt-4o", "gpt-4o-mini"],
-        "is_active": True
-    }
+        "is_active": True,
+    },
 }
+
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
@@ -74,6 +75,7 @@ async def root():
     </html>
     """
 
+
 @app.get("/api/cortex/overview")
 async def get_overview():
     return {
@@ -81,12 +83,14 @@ async def get_overview():
         "active_providers": 2,
         "departments": 24,
         "model_assignments": 5,
-        "cortex_status": "operational"
+        "cortex_status": "operational",
     }
+
 
 @app.get("/api/cortex/providers")
 async def get_providers():
     return providers
+
 
 if __name__ == "__main__":
     print("\n🚀 Starting Agent Cortex Panel with Uvicorn...")

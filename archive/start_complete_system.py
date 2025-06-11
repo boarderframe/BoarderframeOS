@@ -14,7 +14,7 @@ import webbrowser
 from pathlib import Path
 
 # Add boarderframeos to path
-sys.path.insert(0, str(Path(__file__).parent / 'boarderframeos'))
+sys.path.insert(0, str(Path(__file__).parent / "boarderframeos"))
 
 from demo_enhanced_agent_coordination import CoordinationDemo
 
@@ -29,7 +29,7 @@ class SystemManager:
 
     def signal_handler(self, sig, frame):
         """Handle shutdown signals"""
-        print('\n🛑 Shutting down BoarderframeOS...')
+        print("\n🛑 Shutting down BoarderframeOS...")
         asyncio.create_task(self.shutdown())
 
     async def start_dashboard(self):
@@ -37,15 +37,16 @@ class SystemManager:
         print("📊 Starting Enhanced Dashboard...")
 
         # Kill any existing dashboard process
-        subprocess.run(["pkill", "-f", "python.*enhanced_dashboard.py"],
-                      stderr=subprocess.DEVNULL)
+        subprocess.run(
+            ["pkill", "-f", "python.*enhanced_dashboard.py"], stderr=subprocess.DEVNULL
+        )
         time.sleep(2)
 
         # Start dashboard in background
         self.dashboard_process = subprocess.Popen(
             [sys.executable, str(Path(__file__).parent / "enhanced_dashboard.py")],
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            stderr=subprocess.PIPE,
         )
 
         # Wait a moment for startup
@@ -54,6 +55,7 @@ class SystemManager:
         # Test if dashboard is running
         try:
             import requests
+
             response = requests.get("http://localhost:8888/health", timeout=2)
             if response.status_code == 200:
                 print("✅ Dashboard is running at http://localhost:8888")
@@ -147,10 +149,12 @@ class SystemManager:
         print("🏁 System shutdown complete")
         sys.exit(0)
 
+
 async def main():
     """Main entry point"""
     manager = SystemManager()
     await manager.run_system()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

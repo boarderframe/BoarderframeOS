@@ -13,7 +13,7 @@ def update_agents_metrics():
 
     file_path = "/Users/cosburn/BoarderframeOS/corporate_headquarters.py"
 
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         content = f.read()
 
     # First, ensure we're using centralized metrics
@@ -41,12 +41,15 @@ def update_agents_metrics():
     metrics_start = content.find("<!-- Agent Metrics Grid -->")
     if metrics_start > 0:
         # Find the end of the metrics grid div
-        grid_start = content.find('<div style="display: grid; grid-template-columns: repeat(5, 1fr)', metrics_start)
-        grid_end = content.find('</div>\n            </div>', grid_start) + 6
+        grid_start = content.find(
+            '<div style="display: grid; grid-template-columns: repeat(5, 1fr)',
+            metrics_start,
+        )
+        grid_end = content.find("</div>\n            </div>", grid_start) + 6
 
         if grid_start > 0 and grid_end > grid_start:
             # Replace with new 3-column grid
-            new_metrics_grid = '''<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; align-items: stretch;">
+            new_metrics_grid = """<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; align-items: stretch;">
                     <div class="widget widget-medium">
                         <div class="widget-header">
                             <div class="widget-title">
@@ -85,7 +88,7 @@ def update_agents_metrics():
                         </div>
                         <div class="widget-subtitle">Registered Agents</div>
                     </div>
-                </div>'''
+                </div>"""
 
             content = content[:grid_start] + new_metrics_grid + content[grid_end:]
             print("   ✅ Updated metrics grid to show only Active, Inactive, and Total")
@@ -96,10 +99,10 @@ def update_agents_metrics():
     # Find and update the Overall Status calculation
     overall_status_pattern = r"<div style=\"font-size: 0\.75rem; color: var\(--secondary-text\); margin-bottom: 0\.25rem;\">Overall Status</div>\s*<div style=\"font-size: 1rem; font-weight: 600; color: \{[^}]+\};\">[\s\S]*?</div>"
 
-    new_overall_status = '''<div style="font-size: 0.75rem; color: var(--secondary-text); margin-bottom: 0.25rem;">Overall Status</div>
+    new_overall_status = """<div style="font-size: 0.75rem; color: var(--secondary-text); margin-bottom: 0.25rem;">Overall Status</div>
                         <div style="font-size: 1rem; font-weight: 600; color: {overall_status_color};">
                             {overall_status_text}
-                        </div>'''
+                        </div>"""
 
     content = re.sub(overall_status_pattern, new_overall_status, content, count=1)
     print("   ✅ Updated Overall Status to use dynamic values")
@@ -116,28 +119,50 @@ def update_agents_metrics():
     if active_agents_line in content:
         # Add inactive_agents calculation after active_agents
         insert_pos = content.find(active_agents_line) + len(active_agents_line)
-        insert_pos = content.find('\n', insert_pos) + 1
+        insert_pos = content.find("\n", insert_pos) + 1
 
-        inactive_calculation = "        inactive_agents = total_agents - active_agents\n"
+        inactive_calculation = (
+            "        inactive_agents = total_agents - active_agents\n"
+        )
         inactive_calculation += "        \n"
         inactive_calculation += "        # Overall status calculation\n"
         inactive_calculation += "        if active_agents == 0:\n"
-        inactive_calculation += "            overall_status_text = 'All Agents Offline'\n"
-        inactive_calculation += "            overall_status_color = 'var(--danger-color)'\n"
+        inactive_calculation += (
+            "            overall_status_text = 'All Agents Offline'\n"
+        )
+        inactive_calculation += (
+            "            overall_status_color = 'var(--danger-color)'\n"
+        )
         inactive_calculation += "        elif active_agents == total_agents:\n"
-        inactive_calculation += "            overall_status_text = 'All Agents Active'\n"
-        inactive_calculation += "            overall_status_color = 'var(--success-color)'\n"
+        inactive_calculation += (
+            "            overall_status_text = 'All Agents Active'\n"
+        )
+        inactive_calculation += (
+            "            overall_status_color = 'var(--success-color)'\n"
+        )
         inactive_calculation += "        else:\n"
         inactive_calculation += "            active_percentage = (active_agents / total_agents * 100) if total_agents > 0 else 0\n"
         inactive_calculation += "            if active_percentage >= 80:\n"
-        inactive_calculation += "                overall_status_text = f'{active_percentage:.0f}% Active'\n"
-        inactive_calculation += "                overall_status_color = 'var(--success-color)'\n"
+        inactive_calculation += (
+            "                overall_status_text = f'{active_percentage:.0f}% Active'\n"
+        )
+        inactive_calculation += (
+            "                overall_status_color = 'var(--success-color)'\n"
+        )
         inactive_calculation += "            elif active_percentage >= 50:\n"
-        inactive_calculation += "                overall_status_text = f'{active_percentage:.0f}% Active'\n"
-        inactive_calculation += "                overall_status_color = 'var(--warning-color)'\n"
+        inactive_calculation += (
+            "                overall_status_text = f'{active_percentage:.0f}% Active'\n"
+        )
+        inactive_calculation += (
+            "                overall_status_color = 'var(--warning-color)'\n"
+        )
         inactive_calculation += "            else:\n"
-        inactive_calculation += "                overall_status_text = f'{active_percentage:.0f}% Active'\n"
-        inactive_calculation += "                overall_status_color = 'var(--danger-color)'\n"
+        inactive_calculation += (
+            "                overall_status_text = f'{active_percentage:.0f}% Active'\n"
+        )
+        inactive_calculation += (
+            "                overall_status_color = 'var(--danger-color)'\n"
+        )
 
         content = content[:insert_pos] + inactive_calculation + content[insert_pos:]
         print("   ✅ Added inactive_agents calculation and overall status logic")
@@ -157,14 +182,14 @@ def update_agents_metrics():
     # Find and update the filter options
     filter_pattern = r'<option value="active">🟢 Active</option>\s*<option value="productive">🚀 Productive</option>\s*<option value="healthy">💚 Healthy</option>\s*<option value="inactive">🔴 Offline</option>'
 
-    new_filter_options = '''<option value="active">🟢 Active</option>
-                                <option value="inactive">🔴 Inactive</option>'''
+    new_filter_options = """<option value="active">🟢 Active</option>
+                                <option value="inactive">🔴 Inactive</option>"""
 
     content = re.sub(filter_pattern, new_filter_options, content)
     print("   ✅ Updated filter options")
 
     # Write the updated content
-    with open(file_path, 'w') as f:
+    with open(file_path, "w") as f:
         f.write(content)
 
     print("\n✅ Agents page updated successfully!")

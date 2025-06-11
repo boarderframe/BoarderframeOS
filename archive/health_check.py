@@ -29,20 +29,21 @@ def check_dashboard():
         print(f"❌ Dashboard: Error {e}")
         return False
 
+
 def check_agents():
     """Check for running agent processes"""
     running_agents = []
 
     try:
-        for process in psutil.process_iter(['pid', 'name', 'cmdline']):
+        for process in psutil.process_iter(["pid", "name", "cmdline"]):
             try:
-                cmdline = ' '.join(process.info['cmdline'] or [])
+                cmdline = " ".join(process.info["cmdline"] or [])
 
-                if 'solomon.py' in cmdline:
+                if "solomon.py" in cmdline:
                     running_agents.append(f"Solomon (PID: {process.info['pid']})")
-                elif 'david.py' in cmdline:
+                elif "david.py" in cmdline:
                     running_agents.append(f"David (PID: {process.info['pid']})")
-                elif 'analyst_agent.py' in cmdline:
+                elif "analyst_agent.py" in cmdline:
                     running_agents.append(f"Analyst (PID: {process.info['pid']})")
 
             except (psutil.NoSuchProcess, psutil.AccessDenied):
@@ -58,6 +59,7 @@ def check_agents():
         print("❌ Agents: No agent processes found")
 
     return running_agents
+
 
 def main():
     """Run health check"""
@@ -77,6 +79,7 @@ def main():
         print("❌ System Status: Issues detected")
 
     print("\n💡 To start the complete system: python start_system_simple.py")
+
 
 if __name__ == "__main__":
     main()

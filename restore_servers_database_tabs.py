@@ -3,6 +3,7 @@
 Restore the missing Servers and Database tabs
 """
 
+
 def restore_servers_database_tabs():
     """Add back the missing Servers tab"""
     print("🔧 Restoring Servers Tab")
@@ -10,17 +11,19 @@ def restore_servers_database_tabs():
 
     file_path = "/Users/cosburn/BoarderframeOS/corporate_headquarters.py"
 
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         content = f.read()
 
     # Find where to insert (after divisions tab, before system tab)
-    insertion_point = content.find('        </div></div>\n\n        <!-- System Tab -->')
+    insertion_point = content.find(
+        "        </div></div>\n\n        <!-- System Tab -->"
+    )
 
     if insertion_point > 0:
         print("✅ Found insertion point after divisions tab")
 
         # The servers tab content from backup
-        servers_tab = '''
+        servers_tab = """
         <!-- Servers Tab -->
         <div id="services" class="tab-content">
             <!-- System Status Card -->
@@ -154,13 +157,17 @@ def restore_servers_database_tabs():
                 </h3>
                 {self._generate_services_html()}
             </div>
-        </div>'''
+        </div>"""
 
         # Insert the servers tab
-        content = content[:insertion_point + 17] + servers_tab + content[insertion_point + 17:]
+        content = (
+            content[: insertion_point + 17]
+            + servers_tab
+            + content[insertion_point + 17 :]
+        )
 
         # Write back
-        with open(file_path, 'w') as f:
+        with open(file_path, "w") as f:
             f.write(content)
 
         print("✅ Restored Servers tab")

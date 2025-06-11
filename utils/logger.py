@@ -1,6 +1,7 @@
 """
 Simple logging setup for BoarderframeOS
 """
+
 import logging
 import sys
 from pathlib import Path
@@ -20,8 +21,8 @@ def setup_logging(level=logging.INFO):
         format=log_format,
         handlers=[
             logging.StreamHandler(sys.stdout),
-            logging.FileHandler(log_dir / "boarderframeos.log")
-        ]
+            logging.FileHandler(log_dir / "boarderframeos.log"),
+        ],
     )
 
     return logging.getLogger("boarderframeos")

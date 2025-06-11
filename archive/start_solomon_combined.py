@@ -10,16 +10,16 @@ from pathlib import Path
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
-sys.path.insert(0, str(Path(__file__).parent / 'boarderframeos'))
+sys.path.insert(0, str(Path(__file__).parent / "boarderframeos"))
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler(Path(__file__).parent / 'logs' / 'solomon_combined.log')
-    ]
+        logging.FileHandler(Path(__file__).parent / "logs" / "solomon_combined.log"),
+    ],
 )
 
 logger = logging.getLogger("solomon_combined")
@@ -58,6 +58,7 @@ async def main():
     except Exception as e:
         logger.error(f"Error starting Solomon systems: {e}")
         raise
+
 
 if __name__ == "__main__":
     asyncio.run(main())

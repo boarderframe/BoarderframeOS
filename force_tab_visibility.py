@@ -9,26 +9,26 @@ import re
 def force_tab_visibility():
     """Apply aggressive fixes to ensure tabs are visible"""
 
-    with open('corporate_headquarters.py', 'r') as f:
+    with open("corporate_headquarters.py", "r") as f:
         content = f.read()
 
     print("Applying aggressive tab visibility fixes...")
 
     # 1. Update CSS to be more specific and aggressive
     # Find the tab-content CSS section
-    css_section_start = content.find('/* Tab Content - Fixed Rules */')
+    css_section_start = content.find("/* Tab Content - Fixed Rules */")
     if css_section_start == -1:
-        css_section_start = content.find('.tab-content {')
+        css_section_start = content.find(".tab-content {")
 
     if css_section_start != -1:
         # Find the end of the CSS section for tabs
-        css_section_end = content.find('/* Agent nested tabs */', css_section_start)
+        css_section_end = content.find("/* Agent nested tabs */", css_section_start)
         if css_section_end == -1:
-            css_section_end = content.find('@media', css_section_start)
+            css_section_end = content.find("@media", css_section_start)
 
         if css_section_end != -1:
             # Replace with more aggressive CSS
-            new_css = '''/* Tab Content - Ultra Fixed Rules */
+            new_css = """/* Tab Content - Ultra Fixed Rules */
         .tab-content {
             display: none !important;
             opacity: 0 !important;
@@ -72,19 +72,29 @@ def force_tab_visibility():
             opacity: 1 !important;
             visibility: visible !important;
         }
-        '''
+        """
 
             # Find where tab CSS starts and ends more precisely
-            tab_css_match = re.search(r'/\*[^*]*Tab Content[^*]*\*/.*?(?=/\*|\n\s*@media)', content[css_section_start:css_section_end], re.DOTALL)
+            tab_css_match = re.search(
+                r"/\*[^*]*Tab Content[^*]*\*/.*?(?=/\*|\n\s*@media)",
+                content[css_section_start:css_section_end],
+                re.DOTALL,
+            )
             if tab_css_match:
                 old_css = tab_css_match.group(0)
-                content = content[:css_section_start] + content[css_section_start:css_section_end].replace(old_css, new_css) + content[css_section_end:]
+                content = (
+                    content[:css_section_start]
+                    + content[css_section_start:css_section_end].replace(
+                        old_css, new_css
+                    )
+                    + content[css_section_end:]
+                )
                 print("✓ Replaced CSS with ultra-aggressive rules")
 
     # 2. Replace showTab function with bulletproof version
-    show_tab_pattern = r'function showTab\(tabName\)\s*\{[^}]+(?:\{[^}]*\}[^}]*)*\}'
+    show_tab_pattern = r"function showTab\(tabName\)\s*\{[^}]+(?:\{[^}]*\}[^}]*)*\}"
 
-    new_show_tab = '''function showTab(tabName) {
+    new_show_tab = """function showTab(tabName) {
             console.log('[ShowTab] Switching to tab:', tabName);
             console.log('[ShowTab] Current URL:', window.location.href);
 
@@ -158,7 +168,7 @@ def force_tab_visibility():
             } else {
                 console.error('[ShowTab] ERROR: Tab not found:', tabName);
             }
-        }'''
+        }"""
 
     # Replace the function
     if re.search(show_tab_pattern, content):
@@ -168,8 +178,10 @@ def force_tab_visibility():
         print("⚠️  Could not find showTab function to replace")
 
     # 3. Add initialization that forces dashboard visible
-    init_pattern = r'(document\.addEventListener\(\'DOMContentLoaded\',\s*function\(\)\s*\{)'
-    init_replacement = r'''\1
+    init_pattern = (
+        r"(document\.addEventListener\(\'DOMContentLoaded\',\s*function\(\)\s*\{)"
+    )
+    init_replacement = r"""\1
             console.log('[Init] DOMContentLoaded - Forcing initial tab setup');
 
             // Wait a moment for everything to load
@@ -193,13 +205,13 @@ def force_tab_visibility():
                 // Now properly initialize
                 showTab('dashboard');
             }, 100);
-            '''
+            """
 
     content = re.sub(init_pattern, init_replacement, content, count=1)
     print("✓ Enhanced initialization")
 
     # 4. Add a global style tag to ensure active tabs are visible
-    style_injection = '''
+    style_injection = """
     <style id="tab-visibility-fix">
         /* Emergency tab visibility fix */
         .tab-content { display: none !important; }
@@ -210,17 +222,17 @@ def force_tab_visibility():
             position: static !important;
         }
     </style>
-    '''
+    """
 
     # Insert right after <head>
-    head_pos = content.find('<head>')
+    head_pos = content.find("<head>")
     if head_pos != -1:
-        insert_pos = content.find('\n', head_pos) + 1
+        insert_pos = content.find("\n", head_pos) + 1
         content = content[:insert_pos] + style_injection + content[insert_pos:]
         print("✓ Added emergency style tag")
 
     # Save
-    with open('corporate_headquarters.py', 'w') as f:
+    with open("corporate_headquarters.py", "w") as f:
         f.write(content)
 
     print("\n✅ Applied all aggressive fixes!")
@@ -232,6 +244,7 @@ def force_tab_visibility():
     print("\nThe tabs WILL be visible now!")
 
     return True
+
 
 if __name__ == "__main__":
     force_tab_visibility()

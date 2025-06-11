@@ -27,12 +27,16 @@ class FilesystemServerMonitor:
         try:
             async with httpx.AsyncClient() as client:
                 # Health check
-                health_response = await client.get(f"{self.base_url}/health", timeout=5.0)
+                health_response = await client.get(
+                    f"{self.base_url}/health", timeout=5.0
+                )
                 health_data = health_response.json()
 
                 # Statistics
                 try:
-                    stats_response = await client.get(f"{self.base_url}/stats", timeout=5.0)
+                    stats_response = await client.get(
+                        f"{self.base_url}/stats", timeout=5.0
+                    )
                     stats_data = stats_response.json()
                 except:
                     stats_data = {}
@@ -41,19 +45,19 @@ class FilesystemServerMonitor:
                     "timestamp": datetime.now().isoformat(),
                     "status": "online",
                     "health": health_data,
-                    "stats": stats_data
+                    "stats": stats_data,
                 }
         except httpx.ConnectError:
             return {
                 "timestamp": datetime.now().isoformat(),
                 "status": "offline",
-                "error": "Connection refused"
+                "error": "Connection refused",
             }
         except Exception as e:
             return {
                 "timestamp": datetime.now().isoformat(),
                 "status": "error",
-                "error": str(e)
+                "error": str(e),
             }
 
     def format_status_display(self, status: Dict[str, Any]) -> str:
@@ -86,7 +90,9 @@ class FilesystemServerMonitor:
 
     async def run_continuous_monitor(self, interval: int = 30):
         """Run continuous monitoring with specified interval"""
-        print(f"🔍 Starting continuous monitoring of filesystem server on port {self.port}")
+        print(
+            f"🔍 Starting continuous monitoring of filesystem server on port {self.port}"
+        )
         print(f"📊 Update interval: {interval} seconds")
         print("Press Ctrl+C to stop\n")
 
@@ -118,11 +124,22 @@ class FilesystemServerMonitor:
 
         return status["status"] == "online"
 
+
 async def main():
     parser = argparse.ArgumentParser(description="Monitor MCP Filesystem Server health")
-    parser.add_argument("--port", "-p", type=int, default=8001, help="Server port (default: 8001)")
-    parser.add_argument("--continuous", "-c", action="store_true", help="Run continuous monitoring")
-    parser.add_argument("--interval", "-i", type=int, default=30, help="Update interval for continuous mode (default: 30s)")
+    parser.add_argument(
+        "--port", "-p", type=int, default=8001, help="Server port (default: 8001)"
+    )
+    parser.add_argument(
+        "--continuous", "-c", action="store_true", help="Run continuous monitoring"
+    )
+    parser.add_argument(
+        "--interval",
+        "-i",
+        type=int,
+        default=30,
+        help="Update interval for continuous mode (default: 30s)",
+    )
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
 
     args = parser.parse_args()
@@ -134,6 +151,7 @@ async def main():
     else:
         success = await monitor.run_single_check(verbose=args.verbose)
         exit(0 if success else 1)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

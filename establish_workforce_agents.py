@@ -43,14 +43,26 @@ def establish_workforce():
         ADD COLUMN IF NOT EXISTS operational_status VARCHAR(50) DEFAULT 'not_started',
         ADD COLUMN IF NOT EXISTS skill_level INTEGER DEFAULT 1,
         ADD COLUMN IF NOT EXISTS training_progress REAL DEFAULT 0.0;
-        """
+        """,
     ]
 
     for query in schema_updates:
-        result = subprocess.run([
-            "docker", "exec", "boarderframeos_postgres",
-            "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", query
-        ], capture_output=True, text=True)
+        result = subprocess.run(
+            [
+                "docker",
+                "exec",
+                "boarderframeos_postgres",
+                "psql",
+                "-U",
+                "boarderframe",
+                "-d",
+                "boarderframeos",
+                "-c",
+                query,
+            ],
+            capture_output=True,
+            text=True,
+        )
 
         if result.returncode == 0 or "already exists" in result.stderr:
             print("   ✅ Schema update applied")
@@ -76,26 +88,44 @@ def establish_workforce():
     ORDER BY d.priority, d.name;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", dept_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-A",
+            "-F",
+            "|",
+            "-c",
+            dept_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     departments = []
     if result.returncode == 0 and result.stdout:
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 7:
-                    departments.append({
-                        "id": parts[0],
-                        "name": parts[1],
-                        "capacity": int(parts[2] or 10),
-                        "operational_status": parts[3],
-                        "leader_name": parts[4],
-                        "leader_id": parts[5],
-                        "current_agents": int(parts[6])
-                    })
+                    departments.append(
+                        {
+                            "id": parts[0],
+                            "name": parts[1],
+                            "capacity": int(parts[2] or 10),
+                            "operational_status": parts[3],
+                            "leader_name": parts[4],
+                            "leader_id": parts[5],
+                            "current_agents": int(parts[6]),
+                        }
+                    )
 
     print(f"\nFound {len(departments)} departments to staff")
 
@@ -104,13 +134,13 @@ def establish_workforce():
         "operational": [
             ("Senior Agent", "ready", "operational", 5, 1.0),
             ("Agent", "deployed", "operational", 3, 0.9),
-            ("Junior Agent", "testing", "learning", 2, 0.7)
+            ("Junior Agent", "testing", "learning", 2, 0.7),
         ],
         "planned": [
             ("Agent Trainee", "training", "initializing", 1, 0.5),
             ("Agent Candidate", "in_development", "not_started", 1, 0.3),
-            ("Future Agent", "planned", "not_started", 1, 0.0)
-        ]
+            ("Future Agent", "planned", "not_started", 1, 0.0),
+        ],
     }
 
     total_created = 0
@@ -132,7 +162,9 @@ def establish_workforce():
         if agents_to_create <= 0:
             continue
 
-        print(f"\n📁 {dept['name']} (Capacity: {dept['capacity']}, Current: {dept['current_agents']})")
+        print(
+            f"\n📁 {dept['name']} (Capacity: {dept['capacity']}, Current: {dept['current_agents']})"
+        )
 
         for i in range(agents_to_create):
             role_info = role_pool[i % len(role_pool)]
@@ -140,7 +172,9 @@ def establish_workforce():
 
             # Generate agent name based on department and role
             agent_number = dept["current_agents"] + i + 1
-            agent_name = f"{dept['name'].split()[0]}-{role_name.replace(' ', '')}-{agent_number}"
+            agent_name = (
+                f"{dept['name'].split()[0]}-{role_name.replace(' ', '')}-{agent_number}"
+            )
             agent_id = str(uuid.uuid4())
 
             # Create agent in agents table
@@ -169,10 +203,22 @@ def establish_workforce():
             );
             """
 
-            result = subprocess.run([
-                "docker", "exec", "boarderframeos_postgres",
-                "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", create_agent_query
-            ], capture_output=True, text=True)
+            result = subprocess.run(
+                [
+                    "docker",
+                    "exec",
+                    "boarderframeos_postgres",
+                    "psql",
+                    "-U",
+                    "boarderframe",
+                    "-d",
+                    "boarderframeos",
+                    "-c",
+                    create_agent_query,
+                ],
+                capture_output=True,
+                text=True,
+            )
 
             if result.returncode == 0:
                 # Register in agent_registry
@@ -211,10 +257,22 @@ def establish_workforce():
                 );
                 """
 
-                reg_result = subprocess.run([
-                    "docker", "exec", "boarderframeos_postgres",
-                    "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", register_query
-                ], capture_output=True, text=True)
+                reg_result = subprocess.run(
+                    [
+                        "docker",
+                        "exec",
+                        "boarderframeos_postgres",
+                        "psql",
+                        "-U",
+                        "boarderframe",
+                        "-d",
+                        "boarderframeos",
+                        "-c",
+                        register_query,
+                    ],
+                    capture_output=True,
+                    text=True,
+                )
 
                 if reg_result.returncode == 0:
                     total_created += 1
@@ -245,10 +303,22 @@ def establish_workforce():
         updated_at = CURRENT_TIMESTAMP;
     """
 
-    subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", update_metrics_query
-    ], capture_output=True, text=True)
+    subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-c",
+            update_metrics_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     # Show summary statistics
     print("\n📊 Workforce Establishment Summary...")
@@ -284,16 +354,29 @@ def establish_workforce():
     WHERE agent_type = 'workforce';
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", summary_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-c",
+            summary_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
         print("\nWorkforce Metrics:")
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 2:
                     metric = parts[0].strip()
                     value = parts[1].strip()
@@ -322,22 +405,37 @@ def establish_workforce():
         END;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", pipeline_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-c",
+            pipeline_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
         print("\nDevelopment Status:")
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 4:
                     dev_status = parts[0].strip()
                     op_status = parts[1].strip()
                     count = parts[2].strip()
                     progress = parts[3].strip() or "0"
-                    print(f"   {dev_status} / {op_status}: {count} agents ({progress}% progress)")
+                    print(
+                        f"   {dev_status} / {op_status}: {count} agents ({progress}% progress)"
+                    )
 
     print(f"\n✅ Workforce establishment complete!")
     print(f"   Created {total_created} new workforce agents")

@@ -27,7 +27,9 @@ async def demo_variable_control():
 
     # 1. Show all variable layers
     print("📋 Variable Layers Available:")
-    layers = set(var.layer for var in agent_variable_inspector.variable_definitions.values())
+    layers = set(
+        var.layer for var in agent_variable_inspector.variable_definitions.values()
+    )
     for layer in sorted(layers):
         layer_vars = agent_variable_inspector.get_variables_by_layer(layer)
         editable_count = len([v for v in layer_vars.values() if v.editable])
@@ -73,7 +75,7 @@ async def demo_variable_control():
         goals=["demonstrate variable control"],
         tools=["filesystem"],
         temperature=0.7,
-        max_concurrent_tasks=3
+        max_concurrent_tasks=3,
     )
 
     try:
@@ -84,7 +86,7 @@ async def demo_variable_control():
             goals=["business intelligence", "decision making"],
             tools=["filesystem", "analytics"],
             temperature=0.8,
-            max_concurrent_tasks=5
+            max_concurrent_tasks=5,
         )
         solomon = Solomon(solomon_config)
 
@@ -100,7 +102,9 @@ async def demo_variable_control():
         print()
         print("👑 Solomon-Specific Variables:")
         solomon_vars = agent_variable_inspector.get_variables_by_agent("solomon")
-        solomon_specific = {k: v for k, v in solomon_vars.items() if v.layer == "Solomon"}
+        solomon_specific = {
+            k: v for k, v in solomon_vars.items() if v.layer == "Solomon"
+        }
 
         for name, var in solomon_specific.items():
             status = "✏️ " if var.editable else "👁️ "
@@ -147,14 +151,16 @@ async def demo_variable_control():
             ("llm.config.max_tokens", "Maximum response length"),
             ("solomon.decision_framework.maximize", "Solomon's decision priorities"),
             ("memory.max_short_term", "How many recent memories to keep"),
-            ("cost.smart_batching.enabled", "Enable efficient message batching")
+            ("cost.smart_batching.enabled", "Enable efficient message batching"),
         ]
 
         for var_name, description in controllable_vars:
             if var_name in agent_variable_inspector.variable_definitions:
                 var = agent_variable_inspector.variable_definitions[var_name]
                 print(f"      • {var_name}: {description}")
-                print(f"        Current: {var.current_value}, Default: {var.default_value}")
+                print(
+                    f"        Current: {var.current_value}, Default: {var.default_value}"
+                )
 
         print()
         print("💡 All changes in the UI immediately affect the actual running agents!")
@@ -170,6 +176,7 @@ async def demo_variable_control():
     print("   3. Select different layers to see all controllable variables")
     print("   4. Edit any variable and click save to see immediate effect")
     print("   5. Check 'Live Agents' section to see real-time agent states")
+
 
 if __name__ == "__main__":
     asyncio.run(demo_variable_control())

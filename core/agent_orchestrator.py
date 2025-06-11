@@ -19,14 +19,17 @@ from .message_bus import AgentMessage, MessagePriority, MessageType, message_bus
 
 logger = logging.getLogger("agent_orchestrator")
 
+
 class OrchestrationMode(Enum):
     DEVELOPMENT = "development"
     PRODUCTION = "production"
     TESTING = "testing"
 
+
 @dataclass
 class AgentInstance:
     """Represents a running agent instance"""
+
     agent_id: str
     name: str
     class_name: str
@@ -39,9 +42,11 @@ class AgentInstance:
     resource_usage: Dict[str, float] = None
     performance_metrics: Dict[str, float] = None
 
+
 @dataclass
 class TaskAssignment:
     """Represents a task assigned to an agent"""
+
     task_id: str
     agent_id: str
     task_type: str
@@ -51,6 +56,7 @@ class TaskAssignment:
     deadline: Optional[datetime] = None
     status: str = "pending"
     result: Optional[Dict] = None
+
 
 class AgentOrchestrator:
     """Central orchestrator for all agent operations"""
@@ -68,14 +74,14 @@ class AgentOrchestrator:
             "response_time_ms": 5000,
             "memory_usage_mb": 1024,
             "cpu_usage_percent": 80,
-            "heartbeat_timeout_seconds": 300
+            "heartbeat_timeout_seconds": 300,
         }
 
         # Agent limits by mode
         self.agent_limits = {
             OrchestrationMode.DEVELOPMENT: {"max_agents": 10},
             OrchestrationMode.PRODUCTION: {"max_agents": 100},
-            OrchestrationMode.TESTING: {"max_agents": 5}
+            OrchestrationMode.TESTING: {"max_agents": 5},
         }
 
     async def initialize(self):
@@ -86,7 +92,9 @@ class AgentOrchestrator:
         await self._start_orchestrator_services()
 
         # Register with message bus
-        await message_bus.subscribe(self.orchestrator_id, self._handle_orchestrator_message)
+        await message_bus.subscribe(
+            self.orchestrator_id, self._handle_orchestrator_message
+        )
 
         # Defer agent registry loading - will be done lazily or via explicit call
         self._registry_loaded = False
@@ -108,37 +116,55 @@ class AgentOrchestrator:
             try:
                 async with httpx.AsyncClient(timeout=10.0) as client:
                     # Use PostgreSQL MCP server instead of SQLite
-                    response = await client.post("http://localhost:8010/query", json={
-                        "sql": "SELECT id, name, configuration as config FROM agents WHERE status = 'active'"
-                    })
+                    response = await client.post(
+                        "http://localhost:8010/query",
+                        json={
+                            "sql": "SELECT id, name, configuration as config FROM agents WHERE status = 'active'"
+                        },
+                    )
 
                     if response.status_code == 200 and response.json().get("success"):
                         data = response.json().get("data", [])
                         for row in data:
                             try:
-                                config = json.loads(row["config"]) if isinstance(row["config"], str) else row["config"]
+                                config = (
+                                    json.loads(row["config"])
+                                    if isinstance(row["config"], str)
+                                    else row["config"]
+                                )
                                 self.agent_registry[row["id"]] = {
                                     "name": row["name"],
                                     "config": config,
                                     "class_name": config.get("class_name", row["name"]),
-                                    "module_path": config.get("module_path", f"agents.{row['name'].lower()}.{row['name'].lower()}"),
-                                    "biome": config.get("biome", "default")
+                                    "module_path": config.get(
+                                        "module_path",
+                                        f"agents.{row['name'].lower()}.{row['name'].lower()}",
+                                    ),
+                                    "biome": config.get("biome", "default"),
                                 }
                             except (json.JSONDecodeError, KeyError) as e:
-                                logger.warning(f"Skipping invalid agent config for {row.get('name', 'unknown')}: {e}")
+                                logger.warning(
+                                    f"Skipping invalid agent config for {row.get('name', 'unknown')}: {e}"
+                                )
                                 continue
 
-                        logger.info(f"Loaded {len(self.agent_registry)} agents from registry")
+                        logger.info(
+                            f"Loaded {len(self.agent_registry)} agents from registry"
+                        )
                         return  # Success, exit retry loop
                     else:
                         logger.warning(f"Database query failed: {response.status_code}")
 
             except Exception as e:
                 if attempt < max_retries - 1:
-                    logger.warning(f"Failed to load agent registry (attempt {attempt + 1}/{max_retries}): {e}")
+                    logger.warning(
+                        f"Failed to load agent registry (attempt {attempt + 1}/{max_retries}): {e}"
+                    )
                     await asyncio.sleep(retry_delay)
                 else:
-                    logger.error(f"Failed to load agent registry after {max_retries} attempts: {e}")
+                    logger.error(
+                        f"Failed to load agent registry after {max_retries} attempts: {e}"
+                    )
 
     async def _start_orchestrator_services(self):
         """Start background orchestrator services"""
@@ -176,7 +202,7 @@ class AgentOrchestrator:
                 state=AgentState.INITIALIZING,
                 started_at=datetime.now(),
                 resource_usage={},
-                performance_metrics={}
+                performance_metrics={},
             )
 
             # Start the agent
@@ -184,16 +210,24 @@ class AgentOrchestrator:
 
             if success:
                 self.running_agents[agent_id] = instance
-                logger.info(f"Agent {agent_id} ({registry_entry['name']}) started successfully")
+                logger.info(
+                    f"Agent {agent_id} ({registry_entry['name']}) started successfully"
+                )
 
                 # Notify system of agent start
-                await message_bus.broadcast(AgentMessage(
-                    from_agent=self.orchestrator_id,
-                    to_agent="system",
-                    message_type=MessageType.STATUS_UPDATE,
-                    content={"event": "agent_started", "agent_id": agent_id, "name": registry_entry["name"]},
-                    priority=MessagePriority.NORMAL
-                ))
+                await message_bus.broadcast(
+                    AgentMessage(
+                        from_agent=self.orchestrator_id,
+                        to_agent="system",
+                        message_type=MessageType.STATUS_UPDATE,
+                        content={
+                            "event": "agent_started",
+                            "agent_id": agent_id,
+                            "name": registry_entry["name"],
+                        },
+                        priority=MessagePriority.NORMAL,
+                    )
+                )
 
                 return True
             else:
@@ -215,13 +249,15 @@ class AgentOrchestrator:
 
             if graceful:
                 # Send shutdown signal
-                await message_bus.send_direct(AgentMessage(
-                    from_agent=self.orchestrator_id,
-                    to_agent=agent_id,
-                    message_type=MessageType.CONTROL,
-                    data={"command": "shutdown"},
-                    priority=MessagePriority.HIGH
-                ))
+                await message_bus.send_direct(
+                    AgentMessage(
+                        from_agent=self.orchestrator_id,
+                        to_agent=agent_id,
+                        message_type=MessageType.CONTROL,
+                        data={"command": "shutdown"},
+                        priority=MessagePriority.HIGH,
+                    )
+                )
 
                 # Wait for graceful shutdown
                 await asyncio.sleep(5)
@@ -231,6 +267,7 @@ class AgentOrchestrator:
                 try:
                     import os
                     import signal
+
                     os.kill(instance.pid, signal.SIGTERM)
                 except:
                     pass
@@ -241,13 +278,15 @@ class AgentOrchestrator:
             logger.info(f"Agent {agent_id} stopped")
 
             # Notify system
-            await message_bus.broadcast(AgentMessage(
-                from_agent=self.orchestrator_id,
-                to_agent="system",
-                message_type=MessageType.STATUS_UPDATE,
-                content={"event": "agent_stopped", "agent_id": agent_id},
-                priority=MessagePriority.NORMAL
-            ))
+            await message_bus.broadcast(
+                AgentMessage(
+                    from_agent=self.orchestrator_id,
+                    to_agent="system",
+                    message_type=MessageType.STATUS_UPDATE,
+                    content={"event": "agent_stopped", "agent_id": agent_id},
+                    priority=MessagePriority.NORMAL,
+                )
+            )
 
             return True
 
@@ -289,7 +328,14 @@ class AgentOrchestrator:
 
         return results
 
-    async def assign_task(self, agent_id: str, task_type: str, data: Dict, priority: MessagePriority = MessagePriority.NORMAL, deadline: Optional[datetime] = None) -> str:
+    async def assign_task(
+        self,
+        agent_id: str,
+        task_type: str,
+        data: Dict,
+        priority: MessagePriority = MessagePriority.NORMAL,
+        deadline: Optional[datetime] = None,
+    ) -> str:
         """Assign a task to an agent"""
         task_id = str(uuid.uuid4())[:8]
 
@@ -300,29 +346,33 @@ class AgentOrchestrator:
             data=data,
             priority=priority,
             created_at=datetime.now(),
-            deadline=deadline
+            deadline=deadline,
         )
 
         self.task_queue[task_id] = assignment
 
         # Send task to agent
-        await message_bus.send_direct(AgentMessage(
-            from_agent=self.orchestrator_id,
-            to_agent=agent_id,
-            message_type=MessageType.TASK_REQUEST,
-            content={
-                "task_id": task_id,
-                "task_type": task_type,
-                "task_data": data,
-                "deadline": deadline.isoformat() if deadline else None
-            },
-            priority=priority
-        ))
+        await message_bus.send_direct(
+            AgentMessage(
+                from_agent=self.orchestrator_id,
+                to_agent=agent_id,
+                message_type=MessageType.TASK_REQUEST,
+                content={
+                    "task_id": task_id,
+                    "task_type": task_type,
+                    "task_data": data,
+                    "deadline": deadline.isoformat() if deadline else None,
+                },
+                priority=priority,
+            )
+        )
 
         logger.info(f"Task {task_id} assigned to agent {agent_id}")
         return task_id
 
-    async def create_mesh_network(self, mesh_id: str, agent_ids: List[str], purpose: str) -> bool:
+    async def create_mesh_network(
+        self, mesh_id: str, agent_ids: List[str], purpose: str
+    ) -> bool:
         """Create a consciousness mesh network"""
         try:
             # Validate agents are running
@@ -336,20 +386,24 @@ class AgentOrchestrator:
 
             # Notify agents of mesh formation
             for agent_id in valid_agents:
-                await message_bus.send_direct(AgentMessage(
-                    from_agent=self.orchestrator_id,
-                    to_agent=agent_id,
-                    message_type=MessageType.MESH_CONTROL,
-                    content={
-                        "action": "join_mesh",
-                        "mesh_id": mesh_id,
-                        "mesh_members": valid_agents,
-                        "purpose": purpose
-                    },
-                    priority=MessagePriority.HIGH
-                ))
+                await message_bus.send_direct(
+                    AgentMessage(
+                        from_agent=self.orchestrator_id,
+                        to_agent=agent_id,
+                        message_type=MessageType.MESH_CONTROL,
+                        content={
+                            "action": "join_mesh",
+                            "mesh_id": mesh_id,
+                            "mesh_members": valid_agents,
+                            "purpose": purpose,
+                        },
+                        priority=MessagePriority.HIGH,
+                    )
+                )
 
-            logger.info(f"Mesh network {mesh_id} created with {len(valid_agents)} agents")
+            logger.info(
+                f"Mesh network {mesh_id} created with {len(valid_agents)} agents"
+            )
             return True
 
         except Exception as e:
@@ -367,16 +421,15 @@ class AgentOrchestrator:
             # Notify agents of mesh dissolution
             for agent_id in agent_ids:
                 if agent_id in self.running_agents:
-                    await message_bus.send_direct(AgentMessage(
-                        from_agent=self.orchestrator_id,
-                        to_agent=agent_id,
-                        message_type=MessageType.MESH_CONTROL,
-                        content={
-                            "action": "leave_mesh",
-                            "mesh_id": mesh_id
-                        },
-                        priority=MessagePriority.HIGH
-                    ))
+                    await message_bus.send_direct(
+                        AgentMessage(
+                            from_agent=self.orchestrator_id,
+                            to_agent=agent_id,
+                            message_type=MessageType.MESH_CONTROL,
+                            content={"action": "leave_mesh", "mesh_id": mesh_id},
+                            priority=MessagePriority.HIGH,
+                        )
+                    )
 
             del self.mesh_networks[mesh_id]
             logger.info(f"Mesh network {mesh_id} dissolved")
@@ -394,24 +447,40 @@ class AgentOrchestrator:
                 "running_since": datetime.now().isoformat(),
                 "total_agents": len(self.agent_registry),
                 "running_agents": len(self.running_agents),
-                "active_tasks": len([t for t in self.task_queue.values() if t.status == "pending"]),
-                "mesh_networks": len(self.mesh_networks)
+                "active_tasks": len(
+                    [t for t in self.task_queue.values() if t.status == "pending"]
+                ),
+                "mesh_networks": len(self.mesh_networks),
             },
             "agents": {
                 agent_id: {
                     "name": instance.name,
                     "biome": instance.biome,
                     "state": instance.state.value,
-                    "uptime_minutes": (datetime.now() - instance.started_at).total_seconds() / 60 if instance.started_at else 0,
-                    "last_heartbeat": instance.last_heartbeat.isoformat() if instance.last_heartbeat else None
+                    "uptime_minutes": (
+                        (datetime.now() - instance.started_at).total_seconds() / 60
+                        if instance.started_at
+                        else 0
+                    ),
+                    "last_heartbeat": (
+                        instance.last_heartbeat.isoformat()
+                        if instance.last_heartbeat
+                        else None
+                    ),
                 }
                 for agent_id, instance in self.running_agents.items()
             },
             "performance": {
-                "healthy_agents": len([a for a in self.running_agents.values() if a.state == AgentState.IDLE]),
+                "healthy_agents": len(
+                    [
+                        a
+                        for a in self.running_agents.values()
+                        if a.state == AgentState.IDLE
+                    ]
+                ),
                 "system_load": self._calculate_system_load(),
-                "average_response_time": self._calculate_average_response_time()
-            }
+                "average_response_time": self._calculate_average_response_time(),
+            },
         }
 
     async def _launch_agent_process(self, instance: AgentInstance, **kwargs) -> bool:
@@ -424,7 +493,9 @@ class AgentOrchestrator:
             instance.last_heartbeat = datetime.now()
 
             # Store agent startup in database
-            await self._log_agent_event(instance.agent_id, "started", {"instance": instance.name})
+            await self._log_agent_event(
+                instance.agent_id, "started", {"instance": instance.name}
+            )
 
             return True
 
@@ -442,7 +513,9 @@ class AgentOrchestrator:
             elif message.message_type == MessageType.HEARTBEAT:
                 await self._handle_agent_heartbeat(message)
             else:
-                logger.debug(f"Unhandled orchestrator message type: {message.message_type}")
+                logger.debug(
+                    f"Unhandled orchestrator message type: {message.message_type}"
+                )
 
         except Exception as e:
             logger.error(f"Error handling orchestrator message: {e}")
@@ -487,12 +560,19 @@ class AgentOrchestrator:
         while True:
             try:
                 current_time = datetime.now()
-                timeout_threshold = timedelta(seconds=self.performance_thresholds["heartbeat_timeout_seconds"])
+                timeout_threshold = timedelta(
+                    seconds=self.performance_thresholds["heartbeat_timeout_seconds"]
+                )
 
                 for agent_id, instance in list(self.running_agents.items()):
                     # Check heartbeat timeout
-                    if instance.last_heartbeat and (current_time - instance.last_heartbeat) > timeout_threshold:
-                        logger.warning(f"Agent {agent_id} heartbeat timeout - restarting")
+                    if (
+                        instance.last_heartbeat
+                        and (current_time - instance.last_heartbeat) > timeout_threshold
+                    ):
+                        logger.warning(
+                            f"Agent {agent_id} heartbeat timeout - restarting"
+                        )
                         await self.stop_agent(agent_id, graceful=False)
                         await self.start_agent(agent_id)
 
@@ -510,7 +590,11 @@ class AgentOrchestrator:
 
                 # Check for task timeouts
                 for task_id, assignment in list(self.task_queue.items()):
-                    if assignment.deadline and current_time > assignment.deadline and assignment.status == "pending":
+                    if (
+                        assignment.deadline
+                        and current_time > assignment.deadline
+                        and assignment.status == "pending"
+                    ):
                         assignment.status = "timeout"
                         logger.warning(f"Task {task_id} timed out")
 
@@ -518,7 +602,10 @@ class AgentOrchestrator:
                 cutoff_time = current_time - timedelta(hours=1)
                 for task_id in list(self.task_queue.keys()):
                     assignment = self.task_queue[task_id]
-                    if assignment.status in ["completed", "timeout"] and assignment.created_at < cutoff_time:
+                    if (
+                        assignment.status in ["completed", "timeout"]
+                        and assignment.created_at < cutoff_time
+                    ):
                         del self.task_queue[task_id]
 
                 await asyncio.sleep(30)  # Check every 30 seconds
@@ -549,10 +636,14 @@ class AgentOrchestrator:
             try:
                 # Monitor mesh health and performance
                 for mesh_id, agent_ids in list(self.mesh_networks.items()):
-                    active_agents = [aid for aid in agent_ids if aid in self.running_agents]
+                    active_agents = [
+                        aid for aid in agent_ids if aid in self.running_agents
+                    ]
 
                     if len(active_agents) < 2:
-                        logger.info(f"Dissolving mesh {mesh_id} - insufficient active agents")
+                        logger.info(
+                            f"Dissolving mesh {mesh_id} - insufficient active agents"
+                        )
                         await self.dissolve_mesh_network(mesh_id)
 
                 await asyncio.sleep(120)  # Every 2 minutes
@@ -580,7 +671,13 @@ class AgentOrchestrator:
         if not self.running_agents:
             return 0.0
 
-        busy_agents = len([a for a in self.running_agents.values() if a.state in [AgentState.THINKING, AgentState.ACTING]])
+        busy_agents = len(
+            [
+                a
+                for a in self.running_agents.values()
+                if a.state in [AgentState.THINKING, AgentState.ACTING]
+            ]
+        )
         return busy_agents / len(self.running_agents)
 
     def _calculate_average_response_time(self) -> float:
@@ -588,7 +685,10 @@ class AgentOrchestrator:
         # Simplified calculation
         response_times = []
         for instance in self.running_agents.values():
-            if instance.performance_metrics and "response_time_ms" in instance.performance_metrics:
+            if (
+                instance.performance_metrics
+                and "response_time_ms" in instance.performance_metrics
+            ):
                 response_times.append(instance.performance_metrics["response_time_ms"])
 
         return sum(response_times) / len(response_times) if response_times else 0.0
@@ -600,24 +700,29 @@ class AgentOrchestrator:
             "total_agents": len(self.running_agents),
             "system_load": self._calculate_system_load(),
             "average_response_time": self._calculate_average_response_time(),
-            "active_tasks": len([t for t in self.task_queue.values() if t.status == "pending"]),
-            "mesh_networks": len(self.mesh_networks)
+            "active_tasks": len(
+                [t for t in self.task_queue.values() if t.status == "pending"]
+            ),
+            "mesh_networks": len(self.mesh_networks),
         }
 
     async def _log_agent_event(self, agent_id: str, event: str, data: Dict):
         """Log agent events to database"""
         try:
             async with httpx.AsyncClient() as client:
-                await client.post("http://localhost:8010/insert", json={
-                    "table": "agent_interactions",
-                    "data": {
-                        "id": str(uuid.uuid4()),
-                        "source_agent": self.orchestrator_id,
-                        "target_agent": agent_id,
-                        "interaction_type": f"orchestrator_{event}",
-                        "data": json.dumps(data)
-                    }
-                })
+                await client.post(
+                    "http://localhost:8010/insert",
+                    json={
+                        "table": "agent_interactions",
+                        "data": {
+                            "id": str(uuid.uuid4()),
+                            "source_agent": self.orchestrator_id,
+                            "target_agent": agent_id,
+                            "interaction_type": f"orchestrator_{event}",
+                            "data": json.dumps(data),
+                        },
+                    },
+                )
         except Exception as e:
             logger.error(f"Failed to log agent event: {e}")
 
@@ -625,19 +730,24 @@ class AgentOrchestrator:
         """Log performance metrics to database with error handling"""
         try:
             async with httpx.AsyncClient(timeout=5.0) as client:
-                response = await client.post("http://localhost:8010/insert", json={
-                    "table": "metrics",
-                    "data": {
-                        "id": str(uuid.uuid4()),
-                        "agent_id": self.orchestrator_id,
-                        "metric_name": "system_performance",
-                        "metric_value": metrics.get("system_load", 0.0),
-                        "metadata": json.dumps(metrics)
-                    }
-                })
+                response = await client.post(
+                    "http://localhost:8010/insert",
+                    json={
+                        "table": "metrics",
+                        "data": {
+                            "id": str(uuid.uuid4()),
+                            "agent_id": self.orchestrator_id,
+                            "metric_name": "system_performance",
+                            "metric_value": metrics.get("system_load", 0.0),
+                            "metadata": json.dumps(metrics),
+                        },
+                    },
+                )
 
                 if response.status_code != 200:
-                    logger.debug(f"Performance metrics logging failed: HTTP {response.status_code}")
+                    logger.debug(
+                        f"Performance metrics logging failed: HTTP {response.status_code}"
+                    )
 
         except httpx.ConnectError:
             # Silently ignore connection errors during startup
@@ -657,8 +767,15 @@ class AgentOrchestrator:
         # This would implement load balancing logic
         pass
 
+
 # Global orchestrator instance
 orchestrator = AgentOrchestrator()
 
 # Export
-__all__ = ["AgentOrchestrator", "orchestrator", "AgentInstance", "TaskAssignment", "OrchestrationMode"]
+__all__ = [
+    "AgentOrchestrator",
+    "orchestrator",
+    "AgentInstance",
+    "TaskAssignment",
+    "OrchestrationMode",
+]

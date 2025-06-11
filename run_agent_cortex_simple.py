@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 print("🔍 Step 1: Importing modules...")
 try:
     from ui.agent_cortex_panel import AgentCortexPanel
+
     print("✅ Successfully imported AgentCortexPanel")
 except Exception as e:
     print(f"❌ Failed to import: {e}")
@@ -28,6 +29,8 @@ except Exception as e:
     sys.exit(1)
 
 print("\n🔍 Step 3: Initializing panel (database, configs)...")
+
+
 async def init_panel():
     try:
         await panel.initialize()
@@ -36,8 +39,10 @@ async def init_panel():
     except Exception as e:
         print(f"❌ Failed to initialize: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 # Run initialization
 if not asyncio.run(init_panel()):
@@ -57,4 +62,5 @@ except KeyboardInterrupt:
 except Exception as e:
     print(f"\n❌ Server error: {e}")
     import traceback
+
     traceback.print_exc()

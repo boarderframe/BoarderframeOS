@@ -3,38 +3,39 @@
 Verify that all UI fixes have been properly applied
 """
 
+
 def verify_fixes():
     """Check that all fixes are in place"""
 
     issues = []
 
     # Read corporate headquarters
-    with open('corporate_headquarters.py', 'r') as f:
+    with open("corporate_headquarters.py", "r") as f:
         hq_content = f.read()
 
     # Read metrics integration
-    with open('core/hq_metrics_integration.py', 'r') as f:
+    with open("core/hq_metrics_integration.py", "r") as f:
         metrics_content = f.read()
 
     print("Verifying UI fixes...")
     print("-" * 50)
 
     # Check agents tab
-    if 'get_agents_page_html() if self.metrics_layer' in hq_content:
+    if "get_agents_page_html() if self.metrics_layer" in hq_content:
         print("✓ Agents tab uses metrics layer")
     else:
         issues.append("Agents tab not using metrics layer")
         print("✗ Agents tab not using metrics layer")
 
     # Check database tab
-    if 'get_database_page_html() if self.metrics_layer' in hq_content:
+    if "get_database_page_html() if self.metrics_layer" in hq_content:
         print("✓ Database tab uses metrics layer")
     else:
         issues.append("Database tab not using metrics layer")
         print("✗ Database tab not using metrics layer")
 
     # Check registry tab
-    if 'get_registry_page_html() if self.metrics_layer' in hq_content:
+    if "get_registry_page_html() if self.metrics_layer" in hq_content:
         print("✓ Registry tab uses metrics layer")
     else:
         issues.append("Registry tab not using metrics layer")
@@ -48,19 +49,19 @@ def verify_fixes():
         print("✗ Registry navigation button missing")
 
     # Check metrics methods
-    if 'def get_agents_page_html' in metrics_content:
+    if "def get_agents_page_html" in metrics_content:
         print("✓ get_agents_page_html method exists")
     else:
         issues.append("get_agents_page_html method missing")
         print("✗ get_agents_page_html method missing")
 
-    if 'def get_database_page_html' in metrics_content:
+    if "def get_database_page_html" in metrics_content:
         print("✓ get_database_page_html method exists")
     else:
         issues.append("get_database_page_html method missing")
         print("✗ get_database_page_html method missing")
 
-    if 'def get_registry_page_html' in metrics_content:
+    if "def get_registry_page_html" in metrics_content:
         print("✓ get_registry_page_html method exists")
     else:
         issues.append("get_registry_page_html method missing")
@@ -98,6 +99,7 @@ def verify_fixes():
         print("  - Registry page: Shows service registry information")
         print("\nRestart the Corporate Headquarters server to see the changes.")
         return True
+
 
 if __name__ == "__main__":
     verify_fixes()

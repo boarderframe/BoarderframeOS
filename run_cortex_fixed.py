@@ -12,7 +12,8 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Disable Flask reloader
-os.environ['WERKZEUG_RUN_MAIN'] = 'true'
+os.environ["WERKZEUG_RUN_MAIN"] = "true"
+
 
 async def main():
     print("🚀 Starting Agent Cortex Panel (Fixed Version)...")
@@ -30,7 +31,8 @@ async def main():
     print("🛑 Press Ctrl+C to stop\n")
 
     # Run without debug mode
-    panel.app.run(host='127.0.0.1', port=8890, debug=False, use_reloader=False)
+    panel.app.run(host="127.0.0.1", port=8890, debug=False, use_reloader=False)
+
 
 if __name__ == "__main__":
     try:

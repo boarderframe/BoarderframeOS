@@ -39,18 +39,42 @@ def register_organizational_data():
         updated_at = CURRENT_TIMESTAMP;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", dept_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-c",
+            dept_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
         # Get count of registered departments
-        count_result = subprocess.run([
-            "docker", "exec", "boarderframeos_postgres",
-            "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c",
-            "SELECT COUNT(*) FROM department_registry;"
-        ], capture_output=True, text=True)
+        count_result = subprocess.run(
+            [
+                "docker",
+                "exec",
+                "boarderframeos_postgres",
+                "psql",
+                "-U",
+                "boarderframe",
+                "-d",
+                "boarderframeos",
+                "-t",
+                "-c",
+                "SELECT COUNT(*) FROM department_registry;",
+            ],
+            capture_output=True,
+            text=True,
+        )
         count = count_result.stdout.strip()
         print(f"   ✅ Registered {count} departments")
     else:
@@ -97,18 +121,42 @@ def register_organizational_data():
         updated_at = CURRENT_TIMESTAMP;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", leader_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-c",
+            leader_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
         # Get count of leaders
-        count_result = subprocess.run([
-            "docker", "exec", "boarderframeos_postgres",
-            "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c",
-            "SELECT COUNT(*) FROM agent_registry WHERE is_leader = true;"
-        ], capture_output=True, text=True)
+        count_result = subprocess.run(
+            [
+                "docker",
+                "exec",
+                "boarderframeos_postgres",
+                "psql",
+                "-U",
+                "boarderframe",
+                "-d",
+                "boarderframeos",
+                "-t",
+                "-c",
+                "SELECT COUNT(*) FROM agent_registry WHERE is_leader = true;",
+            ],
+            capture_output=True,
+            text=True,
+        )
         count = count_result.stdout.strip()
         print(f"   ✅ Registered {count} leaders as agents")
     else:
@@ -146,10 +194,22 @@ def register_organizational_data():
         updated_at = CURRENT_TIMESTAMP;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", agent_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-c",
+            agent_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
         print(f"   ✅ Synchronized agents from agents table")
@@ -162,28 +222,28 @@ def register_organizational_data():
         {
             "name": "Solomon",
             "role": "Chief of Staff",
-            "capabilities": ["coordination", "leadership", "wisdom", "decision_making"]
+            "capabilities": ["coordination", "leadership", "wisdom", "decision_making"],
         },
         {
             "name": "David",
             "role": "CEO",
-            "capabilities": ["executive", "strategy", "vision", "leadership"]
+            "capabilities": ["executive", "strategy", "vision", "leadership"],
         },
         {
             "name": "Adam",
             "role": "Agent Creator",
-            "capabilities": ["agent_creation", "automation", "development"]
+            "capabilities": ["agent_creation", "automation", "development"],
         },
         {
             "name": "Eve",
             "role": "Agent Evolver",
-            "capabilities": ["agent_evolution", "optimization", "adaptation"]
+            "capabilities": ["agent_evolution", "optimization", "adaptation"],
         },
         {
             "name": "Bezalel",
             "role": "Master Programmer",
-            "capabilities": ["programming", "architecture", "craftsmanship"]
-        }
+            "capabilities": ["programming", "architecture", "craftsmanship"],
+        },
     ]
 
     for exec_agent in executives:
@@ -209,10 +269,22 @@ def register_organizational_data():
             updated_at = CURRENT_TIMESTAMP;
         """
 
-        result = subprocess.run([
-            "docker", "exec", "boarderframeos_postgres",
-            "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", exec_query
-        ], capture_output=True, text=True)
+        result = subprocess.run(
+            [
+                "docker",
+                "exec",
+                "boarderframeos_postgres",
+                "psql",
+                "-U",
+                "boarderframe",
+                "-d",
+                "boarderframeos",
+                "-c",
+                exec_query,
+            ],
+            capture_output=True,
+            text=True,
+        )
 
         if result.returncode == 0:
             print(f"   ✅ {exec_agent['name']} ({exec_agent['role']})")
@@ -238,10 +310,22 @@ def register_organizational_data():
     );
     """
 
-    subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", event_query
-    ], capture_output=True, text=True)
+    subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-c",
+            event_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     # Show final counts
     print("\n📊 Final Registry Status...")
@@ -263,16 +347,29 @@ def register_organizational_data():
         'Databases' as type, COUNT(*) as count FROM database_registry;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", count_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-c",
+            count_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
         print("\nRegistry Contents:")
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 2:
                     type_name = parts[0].strip()
                     count = parts[1].strip()

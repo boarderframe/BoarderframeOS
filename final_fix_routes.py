@@ -3,32 +3,33 @@
 Final fix for Flask routes
 """
 
+
 def final_fix_routes():
     """Remove the metrics routes and add them properly after the dashboard route"""
 
-    with open('corporate_headquarters.py', 'r') as f:
+    with open("corporate_headquarters.py", "r") as f:
         content = f.read()
 
     # Remove the incorrectly placed metrics routes
     # Find where they start
-    bad_start = content.find('         @app.route(\'/api/metrics\')')
+    bad_start = content.find("         @app.route('/api/metrics')")
     if bad_start != -1:
         # Find where they end (look for the dashboard route)
-        bad_end = content.find('@app.route(\'/\')', bad_start)
+        bad_end = content.find("@app.route('/')", bad_start)
         if bad_end != -1:
             content = content[:bad_start] + content[bad_end:]
             print("✓ Removed incorrectly placed metrics routes")
 
     # Now add them after the dashboard route with proper indentation
     # Find the dashboard route
-    dashboard_route = content.find('@app.route(\'/\')')
+    dashboard_route = content.find("@app.route('/')")
     if dashboard_route != -1:
         # Find the end of the dashboard function
         # Look for the next @app.route or the end of the Flask section
-        next_route = content.find('@app.route', dashboard_route + 10)
+        next_route = content.find("@app.route", dashboard_route + 10)
         if next_route == -1:
             # Look for app.run
-            next_route = content.find('app.run(', dashboard_route)
+            next_route = content.find("app.run(", dashboard_route)
 
         if next_route != -1:
             # Insert the metrics routes with proper indentation (12 spaces)
@@ -79,15 +80,18 @@ def final_fix_routes():
                     }), 500
             '''
 
-            content = content[:next_route] + metrics_routes + '\n' + content[next_route:]
+            content = (
+                content[:next_route] + metrics_routes + "\n" + content[next_route:]
+            )
             print("✓ Added metrics routes with correct indentation")
 
     # Save the file
-    with open('corporate_headquarters.py', 'w') as f:
+    with open("corporate_headquarters.py", "w") as f:
         f.write(content)
 
     print("✅ Flask routes fixed!")
     return True
+
 
 if __name__ == "__main__":
     final_fix_routes()

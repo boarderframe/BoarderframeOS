@@ -23,10 +23,10 @@ original_path = sys.path.copy()
 # Remove current and parent directories to avoid local mcp module conflicts
 current_dir = str(Path(__file__).parent)
 parent_dir = str(Path(__file__).parent.parent)
-sys.path = [p for p in sys.path if p not in (current_dir, parent_dir, '')]
+sys.path = [p for p in sys.path if p not in (current_dir, parent_dir, "")]
 
 # Clear any cached local mcp modules
-local_mcp_modules = [name for name in sys.modules.keys() if name.startswith('mcp')]
+local_mcp_modules = [name for name in sys.modules.keys() if name.startswith("mcp")]
 for module_name in local_mcp_modules:
     del sys.modules[module_name]
 
@@ -45,7 +45,7 @@ log_file = Path(__file__).parent / "customer_stdio.log"
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler(log_file)]
+    handlers=[logging.FileHandler(log_file)],
 )
 logger = logging.getLogger("customer_stdio")
 
@@ -54,6 +54,7 @@ server = Server("customer")
 # Mock data for development
 customers = {}
 interactions = []
+
 
 @server.list_tools()
 async def handle_list_tools() -> List[types.Tool]:
@@ -67,23 +68,23 @@ async def handle_list_tools() -> List[types.Tool]:
                 "properties": {
                     "email": {
                         "type": "string",
-                        "description": "Customer email address"
+                        "description": "Customer email address",
                     },
                     "name": {
                         "type": "string",
-                        "description": "Customer name (optional)"
+                        "description": "Customer name (optional)",
                     },
                     "created_by_agent": {
                         "type": "string",
-                        "description": "Agent that created the customer (optional)"
+                        "description": "Agent that created the customer (optional)",
                     },
                     "metadata": {
                         "type": "object",
-                        "description": "Additional metadata (optional)"
-                    }
+                        "description": "Additional metadata (optional)",
+                    },
                 },
-                "required": ["email"]
-            }
+                "required": ["email"],
+            },
         ),
         types.Tool(
             name="get_customer",
@@ -93,11 +94,11 @@ async def handle_list_tools() -> List[types.Tool]:
                 "properties": {
                     "customer_id": {
                         "type": "string",
-                        "description": "Customer identifier"
+                        "description": "Customer identifier",
                     }
                 },
-                "required": ["customer_id"]
-            }
+                "required": ["customer_id"],
+            },
         ),
         types.Tool(
             name="update_customer",
@@ -107,27 +108,27 @@ async def handle_list_tools() -> List[types.Tool]:
                 "properties": {
                     "customer_id": {
                         "type": "string",
-                        "description": "Customer identifier"
+                        "description": "Customer identifier",
                     },
                     "name": {
                         "type": "string",
-                        "description": "Updated name (optional)"
+                        "description": "Updated name (optional)",
                     },
                     "subscription_status": {
                         "type": "string",
-                        "description": "Updated subscription status (optional)"
+                        "description": "Updated subscription status (optional)",
                     },
                     "monthly_value": {
                         "type": "number",
-                        "description": "Updated monthly value (optional)"
+                        "description": "Updated monthly value (optional)",
                     },
                     "metadata": {
                         "type": "object",
-                        "description": "Additional metadata (optional)"
-                    }
+                        "description": "Additional metadata (optional)",
+                    },
                 },
-                "required": ["customer_id"]
-            }
+                "required": ["customer_id"],
+            },
         ),
         types.Tool(
             name="list_customers",
@@ -137,20 +138,20 @@ async def handle_list_tools() -> List[types.Tool]:
                 "properties": {
                     "status": {
                         "type": "string",
-                        "description": "Filter by subscription status (optional)"
+                        "description": "Filter by subscription status (optional)",
                     },
                     "limit": {
                         "type": "integer",
                         "description": "Maximum number of results",
-                        "default": 100
+                        "default": 100,
                     },
                     "skip": {
                         "type": "integer",
                         "description": "Number of results to skip",
-                        "default": 0
-                    }
-                }
-            }
+                        "default": 0,
+                    },
+                },
+            },
         ),
         types.Tool(
             name="create_interaction",
@@ -160,27 +161,24 @@ async def handle_list_tools() -> List[types.Tool]:
                 "properties": {
                     "customer_id": {
                         "type": "string",
-                        "description": "Customer identifier"
+                        "description": "Customer identifier",
                     },
                     "interaction_type": {
                         "type": "string",
-                        "description": "Type of interaction (support, feedback, onboarding, etc.)"
+                        "description": "Type of interaction (support, feedback, onboarding, etc.)",
                     },
-                    "content": {
-                        "type": "string",
-                        "description": "Interaction content"
-                    },
+                    "content": {"type": "string", "description": "Interaction content"},
                     "agent_id": {
                         "type": "string",
-                        "description": "Agent handling the interaction (optional)"
+                        "description": "Agent handling the interaction (optional)",
                     },
                     "metadata": {
                         "type": "object",
-                        "description": "Additional metadata (optional)"
-                    }
+                        "description": "Additional metadata (optional)",
+                    },
                 },
-                "required": ["customer_id", "interaction_type", "content"]
-            }
+                "required": ["customer_id", "interaction_type", "content"],
+            },
         ),
         types.Tool(
             name="get_customer_interactions",
@@ -190,34 +188,34 @@ async def handle_list_tools() -> List[types.Tool]:
                 "properties": {
                     "customer_id": {
                         "type": "string",
-                        "description": "Customer identifier"
+                        "description": "Customer identifier",
                     },
                     "limit": {
                         "type": "integer",
                         "description": "Maximum number of results",
-                        "default": 100
+                        "default": 100,
                     },
                     "skip": {
                         "type": "integer",
                         "description": "Number of results to skip",
-                        "default": 0
-                    }
+                        "default": 0,
+                    },
                 },
-                "required": ["customer_id"]
-            }
+                "required": ["customer_id"],
+            },
         ),
         types.Tool(
             name="get_customer_stats",
             description="Get customer statistics",
-            inputSchema={
-                "type": "object",
-                "properties": {}
-            }
-        )
+            inputSchema={"type": "object", "properties": {}},
+        ),
     ]
 
+
 @server.call_tool()
-async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_call_tool(
+    name: str, arguments: Dict[str, Any]
+) -> List[types.TextContent]:
     """Handle tool calls."""
     try:
         if name == "create_customer":
@@ -240,6 +238,7 @@ async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[types.T
         logger.error(f"Tool {name} failed: {e}")
         return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
+
 async def create_customer(args: Dict[str, Any]) -> List[types.TextContent]:
     """Create a new customer."""
     try:
@@ -254,7 +253,7 @@ async def create_customer(args: Dict[str, Any]) -> List[types.TextContent]:
             "monthly_value": 0.0,
             "created_by_agent": args.get("created_by_agent"),
             "metadata": args.get("metadata", {}),
-            "stripe_customer_id": None
+            "stripe_customer_id": None,
         }
 
         customers[customer_id] = customer_data
@@ -265,13 +264,16 @@ async def create_customer(args: Dict[str, Any]) -> List[types.TextContent]:
             "email": args["email"],
             "name": args.get("name"),
             "created_at": customer_data["created_at"],
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error creating customer: {str(e)}")]
+        return [
+            types.TextContent(type="text", text=f"Error creating customer: {str(e)}")
+        ]
+
 
 async def get_customer(args: Dict[str, Any]) -> List[types.TextContent]:
     """Get customer details."""
@@ -282,19 +284,22 @@ async def get_customer(args: Dict[str, Any]) -> List[types.TextContent]:
             result = {
                 "success": False,
                 "error": "Customer not found",
-                "customer_id": customer_id
+                "customer_id": customer_id,
             }
         else:
             result = {
                 "success": True,
                 "customer": customers[customer_id],
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error getting customer: {str(e)}")]
+        return [
+            types.TextContent(type="text", text=f"Error getting customer: {str(e)}")
+        ]
+
 
 async def update_customer(args: Dict[str, Any]) -> List[types.TextContent]:
     """Update customer details."""
@@ -305,7 +310,7 @@ async def update_customer(args: Dict[str, Any]) -> List[types.TextContent]:
             result = {
                 "success": False,
                 "error": "Customer not found",
-                "customer_id": customer_id
+                "customer_id": customer_id,
             }
         else:
             customer = customers[customer_id]
@@ -314,7 +319,10 @@ async def update_customer(args: Dict[str, Any]) -> List[types.TextContent]:
             if "name" in args and args["name"] is not None:
                 customer["name"] = args["name"]
 
-            if "subscription_status" in args and args["subscription_status"] is not None:
+            if (
+                "subscription_status" in args
+                and args["subscription_status"] is not None
+            ):
                 customer["subscription_status"] = args["subscription_status"]
 
             if "monthly_value" in args and args["monthly_value"] is not None:
@@ -328,13 +336,16 @@ async def update_customer(args: Dict[str, Any]) -> List[types.TextContent]:
             result = {
                 "success": True,
                 "customer": customer,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error updating customer: {str(e)}")]
+        return [
+            types.TextContent(type="text", text=f"Error updating customer: {str(e)}")
+        ]
+
 
 async def list_customers(args: Dict[str, Any]) -> List[types.TextContent]:
     """List customers with optional filtering."""
@@ -347,11 +358,13 @@ async def list_customers(args: Dict[str, Any]) -> List[types.TextContent]:
 
         # Apply status filter if provided
         if status:
-            customers_list = [c for c in customers_list if c["subscription_status"] == status]
+            customers_list = [
+                c for c in customers_list if c["subscription_status"] == status
+            ]
 
         # Apply pagination
         total = len(customers_list)
-        paginated = customers_list[skip:skip + limit]
+        paginated = customers_list[skip : skip + limit]
 
         result = {
             "success": True,
@@ -359,13 +372,16 @@ async def list_customers(args: Dict[str, Any]) -> List[types.TextContent]:
             "total": total,
             "skip": skip,
             "limit": limit,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error listing customers: {str(e)}")]
+        return [
+            types.TextContent(type="text", text=f"Error listing customers: {str(e)}")
+        ]
+
 
 async def create_interaction(args: Dict[str, Any]) -> List[types.TextContent]:
     """Create a customer interaction."""
@@ -377,7 +393,7 @@ async def create_interaction(args: Dict[str, Any]) -> List[types.TextContent]:
             result = {
                 "success": False,
                 "error": "Customer not found",
-                "customer_id": customer_id
+                "customer_id": customer_id,
             }
         else:
             interaction_id = str(uuid.uuid4())
@@ -389,7 +405,7 @@ async def create_interaction(args: Dict[str, Any]) -> List[types.TextContent]:
                 "content": args["content"],
                 "agent_id": args.get("agent_id"),
                 "created_at": datetime.now().isoformat(),
-                "metadata": args.get("metadata", {})
+                "metadata": args.get("metadata", {}),
             }
 
             interactions.append(interaction_data)
@@ -399,13 +415,16 @@ async def create_interaction(args: Dict[str, Any]) -> List[types.TextContent]:
                 "interaction_id": interaction_id,
                 "customer_id": customer_id,
                 "created_at": interaction_data["created_at"],
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error creating interaction: {str(e)}")]
+        return [
+            types.TextContent(type="text", text=f"Error creating interaction: {str(e)}")
+        ]
+
 
 async def get_customer_interactions(args: Dict[str, Any]) -> List[types.TextContent]:
     """Get interactions for a specific customer."""
@@ -418,18 +437,20 @@ async def get_customer_interactions(args: Dict[str, Any]) -> List[types.TextCont
             result = {
                 "success": False,
                 "error": "Customer not found",
-                "customer_id": customer_id
+                "customer_id": customer_id,
             }
         else:
             # Filter interactions by customer
-            customer_interactions = [i for i in interactions if i["customer_id"] == customer_id]
+            customer_interactions = [
+                i for i in interactions if i["customer_id"] == customer_id
+            ]
 
             # Sort by creation date (newest first)
             customer_interactions.sort(key=lambda x: x["created_at"], reverse=True)
 
             # Apply pagination
             total = len(customer_interactions)
-            paginated = customer_interactions[skip:skip + limit]
+            paginated = customer_interactions[skip : skip + limit]
 
             result = {
                 "success": True,
@@ -438,19 +459,26 @@ async def get_customer_interactions(args: Dict[str, Any]) -> List[types.TextCont
                 "total": total,
                 "skip": skip,
                 "limit": limit,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error getting customer interactions: {str(e)}")]
+        return [
+            types.TextContent(
+                type="text", text=f"Error getting customer interactions: {str(e)}"
+            )
+        ]
+
 
 async def get_customer_stats() -> List[types.TextContent]:
     """Get customer statistics."""
     try:
         total_customers = len(customers)
-        active_subscriptions = sum(1 for c in customers.values() if c["subscription_status"] == "active")
+        active_subscriptions = sum(
+            1 for c in customers.values() if c["subscription_status"] == "active"
+        )
         total_monthly_value = sum(c["monthly_value"] for c in customers.values())
 
         result = {
@@ -459,16 +487,25 @@ async def get_customer_stats() -> List[types.TextContent]:
                 "total_customers": total_customers,
                 "active_subscriptions": active_subscriptions,
                 "total_monthly_value": total_monthly_value,
-                "average_monthly_value": total_monthly_value / active_subscriptions if active_subscriptions > 0 else 0,
-                "total_interactions": len(interactions)
+                "average_monthly_value": (
+                    total_monthly_value / active_subscriptions
+                    if active_subscriptions > 0
+                    else 0
+                ),
+                "total_interactions": len(interactions),
             },
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error getting customer stats: {str(e)}")]
+        return [
+            types.TextContent(
+                type="text", text=f"Error getting customer stats: {str(e)}"
+            )
+        ]
+
 
 async def main():
     """Main entry point."""
@@ -485,6 +522,7 @@ async def main():
                 ),
             ),
         )
+
 
 if __name__ == "__main__":
     asyncio.run(main())

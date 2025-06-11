@@ -110,21 +110,25 @@ DASHBOARD_HTML = """
 </html>
 """
 
+
 @app.get("/", response_class=HTMLResponse)
 async def dashboard():
     return DASHBOARD_HTML
 
+
 @app.get("/health")
 async def health():
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+
 
 @app.get("/api/status")
 async def get_status():
     return {
         "ui_server": "online",
         "backend_status": "not_connected",
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
     }
+
 
 if __name__ == "__main__":
     print("🚀 Starting Simple BoarderframeOS UI...")

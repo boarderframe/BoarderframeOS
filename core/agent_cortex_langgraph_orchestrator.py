@@ -26,6 +26,7 @@ from .message_bus import MessagePriority, MessageType, message_bus
 
 class WorkflowType(Enum):
     """Types of agent workflows"""
+
     USER_CHAT = "user_chat"
     AGENT_HANDOFF = "agent_handoff"
     SWARM_COORDINATION = "swarm_coordination"
@@ -35,6 +36,7 @@ class WorkflowType(Enum):
 
 class BoarderframeState(TypedDict):
     """Complete state for BoarderframeOS agent workflows"""
+
     # Core request data
     user_request: str
     conversation_id: str
@@ -103,7 +105,7 @@ class AgentCortexLangGraphOrchestrator:
                 You provide strategic analysis, business intelligence, and system coordination.
                 Your primary goals are strategic planning, business optimization, and intelligent routing.""",
                 "tools": ["analytics", "customer", "registry"],
-                "complexity_baseline": 7
+                "complexity_baseline": 7,
             },
             "david": {
                 "role": "CEO - Executive Decision Maker",
@@ -111,7 +113,7 @@ class AgentCortexLangGraphOrchestrator:
                 You make executive decisions, drive revenue optimization, and manage strategic direction.
                 Your focus is on business growth, operational efficiency, and leadership.""",
                 "tools": ["analytics", "payment", "customer", "registry"],
-                "complexity_baseline": 8
+                "complexity_baseline": 8,
             },
             "adam": {
                 "role": "Agent Creator - The Factory",
@@ -119,8 +121,8 @@ class AgentCortexLangGraphOrchestrator:
                 You design, create, and deploy new AI agents based on specifications and requirements.
                 Your expertise is in agent architecture, capability design, and system evolution.""",
                 "tools": ["filesystem", "registry", "database"],
-                "complexity_baseline": 9
-            }
+                "complexity_baseline": 9,
+            },
         }
 
     def _setup_mcp_tools(self) -> Dict[str, Any]:
@@ -161,7 +163,7 @@ class AgentCortexLangGraphOrchestrator:
             "customer": customer_tool,
             "registry": registry_tool,
             "filesystem": filesystem_tool,
-            "database": database_tool
+            "database": database_tool,
         }
 
     async def _create_agent_cortex_powered_graph(self) -> StateGraph:
@@ -191,8 +193,8 @@ class AgentCortexLangGraphOrchestrator:
                 "solomon": "solomon",
                 "david": "david",
                 "adam": "adam",
-                "department": "department_router"
-            }
+                "department": "department_router",
+            },
         )
 
         graph.add_conditional_edges(
@@ -201,8 +203,8 @@ class AgentCortexLangGraphOrchestrator:
             {
                 "david": "david",
                 "department": "department_router",
-                "complete": "finalize_response"
-            }
+                "complete": "finalize_response",
+            },
         )
 
         graph.add_conditional_edges(
@@ -212,17 +214,14 @@ class AgentCortexLangGraphOrchestrator:
                 "adam": "adam",
                 "department": "department_router",
                 "swarm": "specialist_swarm",
-                "complete": "finalize_response"
-            }
+                "complete": "finalize_response",
+            },
         )
 
         graph.add_conditional_edges(
             "adam",
             self._adam_routing_decision,
-            {
-                "department": "department_router",
-                "complete": "finalize_response"
-            }
+            {"department": "department_router", "complete": "finalize_response"},
         )
 
         graph.add_edge("department_router", "finalize_response")
@@ -232,10 +231,14 @@ class AgentCortexLangGraphOrchestrator:
         # Compile with memory
         return graph.compile(checkpointer=self.memory)
 
-    async def _agent_cortex_solomon_node(self, state: BoarderframeState) -> BoarderframeState:
+    async def _agent_cortex_solomon_node(
+        self, state: BoarderframeState
+    ) -> BoarderframeState:
         """Solomon node with Agent Cortex optimization"""
 
-        self.logger.info(f"Processing with Solomon: {state.get('user_request', '')[:100]}")
+        self.logger.info(
+            f"Processing with Solomon: {state.get('user_request', '')[:100]}"
+        )
 
         # Create Agent Cortex request
         cortex_request = AgentRequest(
@@ -244,11 +247,13 @@ class AgentCortexLangGraphOrchestrator:
             context=state,
             complexity=await self._assess_solomon_complexity(state),
             quality_requirements=0.9,
-            conversation_id=state.get("conversation_id")
+            conversation_id=state.get("conversation_id"),
         )
 
         # Get optimal model from Agent Cortex
-        agent_cortex_response = await self.agent_cortex.process_agent_request(cortex_request)
+        agent_cortex_response = await self.agent_cortex.process_agent_request(
+            cortex_request
+        )
 
         # Create strategic analysis prompt for Solomon
         solomon_prompt = f"""
@@ -279,7 +284,7 @@ class AgentCortexLangGraphOrchestrator:
                 agent_cortex_response.tracking_id,
                 agent_name="solomon",
                 response=solomon_response,
-                success=True
+                success=True,
             )
 
         except Exception as e:
@@ -291,18 +296,20 @@ class AgentCortexLangGraphOrchestrator:
                 agent_cortex_response.tracking_id,
                 agent_name="solomon",
                 response=solomon_response,
-                success=False
+                success=False,
             )
 
         # Update state
         state["current_agent"] = "solomon"
         state["agent_chain"] = state.get("agent_chain", []) + ["solomon"]
-        state["reasoning_chain"] = state.get("reasoning_chain", []) + [{
-            "agent": "solomon",
-            "analysis": solomon_response,
-            "agent_cortex_selection": agent_cortex_response.selection.selected_model,
-            "timestamp": datetime.now().isoformat()
-        }]
+        state["reasoning_chain"] = state.get("reasoning_chain", []) + [
+            {
+                "agent": "solomon",
+                "analysis": solomon_response,
+                "agent_cortex_selection": agent_cortex_response.selection.selected_model,
+                "timestamp": datetime.now().isoformat(),
+            }
+        ]
         state["cortex_selections"] = state.get("cortex_selections", []) + [
             agent_cortex_response.selection.__dict__
         ]
@@ -312,10 +319,14 @@ class AgentCortexLangGraphOrchestrator:
 
         return state
 
-    async def _agent_cortex_david_node(self, state: BoarderframeState) -> BoarderframeState:
+    async def _agent_cortex_david_node(
+        self, state: BoarderframeState
+    ) -> BoarderframeState:
         """David node with Agent Cortex optimization"""
 
-        self.logger.info(f"Processing with David: {state.get('user_request', '')[:100]}")
+        self.logger.info(
+            f"Processing with David: {state.get('user_request', '')[:100]}"
+        )
 
         # Create Agent Cortex request
         cortex_request = AgentRequest(
@@ -324,11 +335,13 @@ class AgentCortexLangGraphOrchestrator:
             context=state,
             complexity=await self._assess_david_complexity(state),
             quality_requirements=0.9,
-            conversation_id=state.get("conversation_id")
+            conversation_id=state.get("conversation_id"),
         )
 
         # Get optimal model from Agent Cortex
-        agent_cortex_response = await self.agent_cortex.process_agent_request(cortex_request)
+        agent_cortex_response = await self.agent_cortex.process_agent_request(
+            cortex_request
+        )
 
         # Include Solomon's analysis if available
         solomon_analysis = ""
@@ -377,29 +390,33 @@ class AgentCortexLangGraphOrchestrator:
                 agent_cortex_response.tracking_id,
                 agent_name="david",
                 response=david_response,
-                success=True
+                success=True,
             )
 
         except Exception as e:
             self.logger.error(f"David processing error: {e}")
-            david_response = f"I encountered an issue making the executive decision: {str(e)}"
+            david_response = (
+                f"I encountered an issue making the executive decision: {str(e)}"
+            )
 
             await self._report_agent_cortex_performance(
                 agent_cortex_response.tracking_id,
                 agent_name="david",
                 response=david_response,
-                success=False
+                success=False,
             )
 
         # Update state
         state["current_agent"] = "david"
         state["agent_chain"] = state.get("agent_chain", []) + ["david"]
-        state["reasoning_chain"] = state.get("reasoning_chain", []) + [{
-            "agent": "david",
-            "decision": david_response,
-            "agent_cortex_selection": agent_cortex_response.selection.selected_model,
-            "timestamp": datetime.now().isoformat()
-        }]
+        state["reasoning_chain"] = state.get("reasoning_chain", []) + [
+            {
+                "agent": "david",
+                "decision": david_response,
+                "agent_cortex_selection": agent_cortex_response.selection.selected_model,
+                "timestamp": datetime.now().isoformat(),
+            }
+        ]
         state["cortex_selections"] = state.get("cortex_selections", []) + [
             agent_cortex_response.selection.__dict__
         ]
@@ -409,7 +426,9 @@ class AgentCortexLangGraphOrchestrator:
 
         return state
 
-    async def _agent_cortex_adam_node(self, state: BoarderframeState) -> BoarderframeState:
+    async def _agent_cortex_adam_node(
+        self, state: BoarderframeState
+    ) -> BoarderframeState:
         """Adam node with Agent Cortex optimization for agent creation"""
 
         self.logger.info(f"Processing with Adam: {state.get('user_request', '')[:100]}")
@@ -421,11 +440,13 @@ class AgentCortexLangGraphOrchestrator:
             context=state,
             complexity=9,  # Agent creation is always high complexity
             quality_requirements=0.95,
-            conversation_id=state.get("conversation_id")
+            conversation_id=state.get("conversation_id"),
         )
 
         # Get optimal model from Agent Cortex
-        agent_cortex_response = await self.agent_cortex.process_agent_request(cortex_request)
+        agent_cortex_response = await self.agent_cortex.process_agent_request(
+            cortex_request
+        )
 
         # Create agent creation analysis prompt for Adam
         adam_prompt = f"""
@@ -474,29 +495,33 @@ class AgentCortexLangGraphOrchestrator:
                 agent_cortex_response.tracking_id,
                 agent_name="adam",
                 response=adam_response,
-                success=True
+                success=True,
             )
 
         except Exception as e:
             self.logger.error(f"Adam processing error: {e}")
-            adam_response = f"I encountered an issue with agent creation analysis: {str(e)}"
+            adam_response = (
+                f"I encountered an issue with agent creation analysis: {str(e)}"
+            )
 
             await self._report_agent_cortex_performance(
                 agent_cortex_response.tracking_id,
                 agent_name="adam",
                 response=adam_response,
-                success=False
+                success=False,
             )
 
         # Update state
         state["current_agent"] = "adam"
         state["agent_chain"] = state.get("agent_chain", []) + ["adam"]
-        state["reasoning_chain"] = state.get("reasoning_chain", []) + [{
-            "agent": "adam",
-            "creation_analysis": adam_response,
-            "agent_cortex_selection": agent_cortex_response.selection.selected_model,
-            "timestamp": datetime.now().isoformat()
-        }]
+        state["reasoning_chain"] = state.get("reasoning_chain", []) + [
+            {
+                "agent": "adam",
+                "creation_analysis": adam_response,
+                "agent_cortex_selection": agent_cortex_response.selection.selected_model,
+                "timestamp": datetime.now().isoformat(),
+            }
+        ]
         state["cortex_selections"] = state.get("cortex_selections", []) + [
             agent_cortex_response.selection.__dict__
         ]
@@ -513,15 +538,24 @@ class AgentCortexLangGraphOrchestrator:
         user_request = state.get("user_request", "").lower()
 
         # Direct agent creation requests
-        if any(keyword in user_request for keyword in ["create agent", "new agent", "build agent"]):
+        if any(
+            keyword in user_request
+            for keyword in ["create agent", "new agent", "build agent"]
+        ):
             return "adam"
 
         # Executive-level requests
-        if any(keyword in user_request for keyword in ["strategy", "business", "revenue", "ceo"]):
+        if any(
+            keyword in user_request
+            for keyword in ["strategy", "business", "revenue", "ceo"]
+        ):
             return "david"
 
         # Department-specific requests
-        if any(keyword in user_request for keyword in ["department", "finance", "engineering"]):
+        if any(
+            keyword in user_request
+            for keyword in ["department", "finance", "engineering"]
+        ):
             return "department"
 
         # Default to Solomon for analysis
@@ -539,11 +573,17 @@ class AgentCortexLangGraphOrchestrator:
                 break
 
         # Route to David for executive decisions
-        if any(keyword in solomon_analysis for keyword in ["executive", "ceo", "decision", "strategic"]):
+        if any(
+            keyword in solomon_analysis
+            for keyword in ["executive", "ceo", "decision", "strategic"]
+        ):
             return "david"
 
         # Route to department for specific tasks
-        if any(keyword in solomon_analysis for keyword in ["department", "team", "specialist"]):
+        if any(
+            keyword in solomon_analysis
+            for keyword in ["department", "team", "specialist"]
+        ):
             return "department"
 
         # Complete if Solomon can handle it
@@ -561,15 +601,24 @@ class AgentCortexLangGraphOrchestrator:
                 break
 
         # Route to Adam for agent creation
-        if any(keyword in david_decision for keyword in ["create", "agent", "new capability"]):
+        if any(
+            keyword in david_decision
+            for keyword in ["create", "agent", "new capability"]
+        ):
             return "adam"
 
         # Route to department for implementation
-        if any(keyword in david_decision for keyword in ["department", "implement", "execute"]):
+        if any(
+            keyword in david_decision
+            for keyword in ["department", "implement", "execute"]
+        ):
             return "department"
 
         # Create swarm for complex tasks
-        if any(keyword in david_decision for keyword in ["complex", "multi-agent", "coordination"]):
+        if any(
+            keyword in david_decision
+            for keyword in ["complex", "multi-agent", "coordination"]
+        ):
             return "swarm"
 
         # Complete if David can handle it
@@ -587,14 +636,18 @@ class AgentCortexLangGraphOrchestrator:
                 break
 
         # Route to department if specific department needs the new agent
-        if any(keyword in adam_analysis for keyword in ["department", "team", "deploy"]):
+        if any(
+            keyword in adam_analysis for keyword in ["department", "team", "deploy"]
+        ):
             return "department"
 
         # Complete agent creation process
         return "complete"
 
     # Node implementation functions
-    async def _route_initial_request(self, state: BoarderframeState) -> BoarderframeState:
+    async def _route_initial_request(
+        self, state: BoarderframeState
+    ) -> BoarderframeState:
         """Initial request routing and setup"""
 
         # Initialize workflow metadata
@@ -622,28 +675,36 @@ class AgentCortexLangGraphOrchestrator:
         # Simulate department processing
         department_response = f"Department {department} would handle this request: {state.get('user_request', '')}"
 
-        state["reasoning_chain"] = state.get("reasoning_chain", []) + [{
-            "agent": f"{department}_department",
-            "response": department_response,
-            "timestamp": datetime.now().isoformat()
-        }]
+        state["reasoning_chain"] = state.get("reasoning_chain", []) + [
+            {
+                "agent": f"{department}_department",
+                "response": department_response,
+                "timestamp": datetime.now().isoformat(),
+            }
+        ]
 
         return state
 
-    async def _create_specialist_swarm(self, state: BoarderframeState) -> BoarderframeState:
+    async def _create_specialist_swarm(
+        self, state: BoarderframeState
+    ) -> BoarderframeState:
         """Create and coordinate specialist swarm"""
 
         # Determine required specialists
         specialists_needed = await self._determine_specialists(state)
 
-        swarm_response = f"Specialist swarm created with: {', '.join(specialists_needed)}"
+        swarm_response = (
+            f"Specialist swarm created with: {', '.join(specialists_needed)}"
+        )
 
-        state["reasoning_chain"] = state.get("reasoning_chain", []) + [{
-            "agent": "specialist_swarm",
-            "specialists": specialists_needed,
-            "response": swarm_response,
-            "timestamp": datetime.now().isoformat()
-        }]
+        state["reasoning_chain"] = state.get("reasoning_chain", []) + [
+            {
+                "agent": "specialist_swarm",
+                "specialists": specialists_needed,
+                "response": swarm_response,
+                "timestamp": datetime.now().isoformat(),
+            }
+        ]
 
         return state
 
@@ -661,26 +722,41 @@ class AgentCortexLangGraphOrchestrator:
         for entry in reasoning_chain:
             agent = entry["agent"]
             if "analysis" in entry:
-                response_parts.append(f"\n**{agent.title()} Analysis:**\n{entry['analysis']}")
+                response_parts.append(
+                    f"\n**{agent.title()} Analysis:**\n{entry['analysis']}"
+                )
             elif "decision" in entry:
-                response_parts.append(f"\n**{agent.title()} Decision:**\n{entry['decision']}")
+                response_parts.append(
+                    f"\n**{agent.title()} Decision:**\n{entry['decision']}"
+                )
             elif "creation_analysis" in entry:
-                response_parts.append(f"\n**{agent.title()} Creation Analysis:**\n{entry['creation_analysis']}")
+                response_parts.append(
+                    f"\n**{agent.title()} Creation Analysis:**\n{entry['creation_analysis']}"
+                )
             elif "response" in entry:
-                response_parts.append(f"\n**{agent.title()} Response:**\n{entry['response']}")
+                response_parts.append(
+                    f"\n**{agent.title()} Response:**\n{entry['response']}"
+                )
 
         final_response = "\n".join(response_parts)
 
         # Add Agent Cortex selection summary
         cortex_selections = state.get("cortex_selections", [])
         if cortex_selections:
-            model_summary = [f"{sel['selected_model']} ({sel['provider']})" for sel in cortex_selections]
-            final_response += f"\n\n**Agent Cortex Model Selections:** {', '.join(model_summary)}"
+            model_summary = [
+                f"{sel['selected_model']} ({sel['provider']})"
+                for sel in cortex_selections
+            ]
+            final_response += (
+                f"\n\n**Agent Cortex Model Selections:** {', '.join(model_summary)}"
+            )
 
         state["final_response"] = final_response
         state["completion_status"] = "completed"
         state["quality_score"] = await self._assess_response_quality(state)
-        state["processing_time"] = (datetime.now() - datetime.fromisoformat(state["timestamp"])).total_seconds()
+        state["processing_time"] = (
+            datetime.now() - datetime.fromisoformat(state["timestamp"])
+        ).total_seconds()
 
         return state
 
@@ -692,11 +768,17 @@ class AgentCortexLangGraphOrchestrator:
         complexity = 5  # Base complexity
 
         # Increase complexity for strategic requests
-        if any(keyword in user_request.lower() for keyword in ["strategy", "planning", "analysis"]):
+        if any(
+            keyword in user_request.lower()
+            for keyword in ["strategy", "planning", "analysis"]
+        ):
             complexity += 2
 
         # Increase for business requests
-        if any(keyword in user_request.lower() for keyword in ["business", "revenue", "growth"]):
+        if any(
+            keyword in user_request.lower()
+            for keyword in ["business", "revenue", "growth"]
+        ):
             complexity += 1
 
         return min(complexity, 10)
@@ -708,11 +790,17 @@ class AgentCortexLangGraphOrchestrator:
         complexity = 6  # Base complexity for CEO tasks
 
         # Increase complexity for executive decisions
-        if any(keyword in user_request.lower() for keyword in ["decision", "strategic", "executive"]):
+        if any(
+            keyword in user_request.lower()
+            for keyword in ["decision", "strategic", "executive"]
+        ):
             complexity += 2
 
         # Increase for multi-department coordination
-        if any(keyword in user_request.lower() for keyword in ["department", "coordination", "teams"]):
+        if any(
+            keyword in user_request.lower()
+            for keyword in ["department", "coordination", "teams"]
+        ):
             complexity += 1
 
         return min(complexity, 10)
@@ -721,11 +809,19 @@ class AgentCortexLangGraphOrchestrator:
         """Determine which department should handle the request"""
         user_request = state.get("user_request", "").lower()
 
-        if any(keyword in user_request for keyword in ["finance", "money", "revenue", "cost"]):
+        if any(
+            keyword in user_request
+            for keyword in ["finance", "money", "revenue", "cost"]
+        ):
             return "finance"
-        elif any(keyword in user_request for keyword in ["engineering", "technical", "code", "development"]):
+        elif any(
+            keyword in user_request
+            for keyword in ["engineering", "technical", "code", "development"]
+        ):
             return "engineering"
-        elif any(keyword in user_request for keyword in ["operations", "process", "workflow"]):
+        elif any(
+            keyword in user_request for keyword in ["operations", "process", "workflow"]
+        ):
             return "operations"
         else:
             return "general"
@@ -763,8 +859,9 @@ class AgentCortexLangGraphOrchestrator:
 
         return min(quality_score, 1.0)
 
-    async def _report_agent_cortex_performance(self, tracking_id: str, agent_name: str,
-                                       response: str, success: bool):
+    async def _report_agent_cortex_performance(
+        self, tracking_id: str, agent_name: str, response: str, success: bool
+    ):
         """Report performance back to Agent Cortex"""
 
         from .agent_cortex import PerformanceMetrics
@@ -777,7 +874,7 @@ class AgentCortexLangGraphOrchestrator:
                 actual_cost=0.001,  # Estimated
                 actual_latency=1.5,  # Estimated
                 actual_quality=0.8 if success else 0.3,
-                task_completion=success
+                task_completion=success,
             )
 
             await self.agent_cortex.report_performance(tracking_id, metrics)
@@ -786,8 +883,9 @@ class AgentCortexLangGraphOrchestrator:
             self.logger.error(f"Error reporting Agent Cortex performance: {e}")
 
     # Public interface
-    async def process_user_request(self, user_request: str,
-                                 conversation_id: Optional[str] = None) -> Dict[str, Any]:
+    async def process_user_request(
+        self, user_request: str, conversation_id: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Process user request through Agent Cortex-powered workflow"""
 
         if not self.graph:
@@ -814,7 +912,7 @@ class AgentCortexLangGraphOrchestrator:
             completion_status="pending",
             quality_score=0.0,
             timestamp=datetime.now().isoformat(),
-            processing_time=0.0
+            processing_time=0.0,
         )
 
         # Process through graph
@@ -832,7 +930,7 @@ class AgentCortexLangGraphOrchestrator:
                 "cortex_selections": final_state["cortex_selections"],
                 "quality_score": final_state["quality_score"],
                 "processing_time": final_state["processing_time"],
-                "completion_status": final_state["completion_status"]
+                "completion_status": final_state["completion_status"],
             }
 
         except Exception as e:
@@ -844,7 +942,7 @@ class AgentCortexLangGraphOrchestrator:
                 "cortex_selections": [],
                 "quality_score": 0.0,
                 "processing_time": 0.0,
-                "completion_status": "error"
+                "completion_status": "error",
             }
 
 
@@ -858,4 +956,9 @@ async def get_orchestrator() -> AgentCortexLangGraphOrchestrator:
 
 
 # Export main class
-__all__ = ["AgentCortexLangGraphOrchestrator", "BoarderframeState", "WorkflowType", "get_orchestrator"]
+__all__ = [
+    "AgentCortexLangGraphOrchestrator",
+    "BoarderframeState",
+    "WorkflowType",
+    "get_orchestrator",
+]

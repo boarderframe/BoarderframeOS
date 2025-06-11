@@ -9,19 +9,22 @@ from mcp.server.models import InitializationOptions
 
 server = Server("simple")
 
+
 @server.list_tools()
 async def handle_list_tools() -> list[types.Tool]:
     return [
         types.Tool(
             name="hello",
             description="Say hello",
-            inputSchema={"type": "object", "properties": {}, "required": []}
+            inputSchema={"type": "object", "properties": {}, "required": []},
         )
     ]
+
 
 @server.call_tool()
 async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent]:
     return [types.TextContent(type="text", text="Hello from BoarderframeOS MCP!")]
+
 
 async def main():
     async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
@@ -37,6 +40,7 @@ async def main():
                 ),
             ),
         )
+
 
 if __name__ == "__main__":
     asyncio.run(main())

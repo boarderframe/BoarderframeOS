@@ -11,6 +11,7 @@ import websockets
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("test_chat")
 
+
 async def test_chat():
     """Test the chat interface"""
     uri = "ws://localhost:8889"
@@ -22,7 +23,7 @@ async def test_chat():
             # Send a test message
             test_message = {
                 "type": "user_message",
-                "message": "Hello Solomon! Can you hear me?"
+                "message": "Hello Solomon! Can you hear me?",
             }
 
             await websocket.send(json.dumps(test_message))
@@ -44,6 +45,7 @@ async def test_chat():
 
     except Exception as e:
         logger.error(f"Chat test failed: {e}")
+
 
 if __name__ == "__main__":
     asyncio.run(test_chat())

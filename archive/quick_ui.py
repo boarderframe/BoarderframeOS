@@ -10,11 +10,12 @@ import webbrowser
 
 PORT = 8888  # Different port to avoid conflicts
 
+
 class SimpleHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
-        if self.path == '/' or self.path == '/index.html':
+        if self.path == "/" or self.path == "/index.html":
             self.send_response(200)
-            self.send_header('Content-type', 'text/html')
+            self.send_header("Content-type", "text/html")
             self.end_headers()
 
             html = """<!DOCTYPE html>
@@ -176,9 +177,11 @@ class SimpleHandler(http.server.SimpleHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
 
+
 def open_browser():
     time.sleep(1)  # Wait for server to start
-    webbrowser.open(f'http://localhost:{PORT}')
+    webbrowser.open(f"http://localhost:{PORT}")
+
 
 def main():
     # Start browser in background
@@ -200,6 +203,7 @@ def main():
         print("Try a different port or kill existing processes")
     except KeyboardInterrupt:
         print("\n🛑 Server stopped")
+
 
 if __name__ == "__main__":
     main()

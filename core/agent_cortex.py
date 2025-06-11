@@ -27,14 +27,16 @@ from .message_bus import message_bus
 
 class ModelTier(Enum):
     """Model tiers for intelligent selection"""
-    EXECUTIVE = "executive"        # Solomon, David
-    DEPARTMENT = "department"      # Department heads
-    SPECIALIST = "specialist"      # Specialist agents
-    WORKER = "worker"             # Simple tasks
+
+    EXECUTIVE = "executive"  # Solomon, David
+    DEPARTMENT = "department"  # Department heads
+    SPECIALIST = "specialist"  # Specialist agents
+    WORKER = "worker"  # Simple tasks
 
 
 class SelectionStrategy(Enum):
     """Agent Cortex selection strategies"""
+
     COST_OPTIMIZED = "cost_optimized"
     PERFORMANCE_OPTIMIZED = "performance_optimized"
     BALANCED = "balanced"
@@ -45,11 +47,12 @@ class SelectionStrategy(Enum):
 @dataclass
 class AgentRequest:
     """Request from agent to Agent Cortex"""
+
     agent_name: str
     task_type: str
     context: Dict[str, Any]
     complexity: int = 5  # 1-10 scale
-    urgency: int = 5     # 1-10 scale
+    urgency: int = 5  # 1-10 scale
     quality_requirements: float = 0.85  # 0-1 scale
     max_cost: Optional[float] = None
     max_latency: Optional[float] = None
@@ -59,6 +62,7 @@ class AgentRequest:
 @dataclass
 class ModelSelection:
     """Agent Cortex's model selection result"""
+
     selected_model: str
     provider: str
     reasoning: str
@@ -73,6 +77,7 @@ class ModelSelection:
 @dataclass
 class CortexResponse:
     """Complete Agent Cortex response to agent"""
+
     llm: LLMClient
     selection: ModelSelection
     tracking_id: str
@@ -82,6 +87,7 @@ class CortexResponse:
 @dataclass
 class PerformanceMetrics:
     """Performance tracking for learning"""
+
     tracking_id: str
     agent_name: str
     selected_model: str
@@ -110,127 +116,127 @@ class IntelligentModelSelector:
                     "provider": "anthropic",
                     "cost_per_1k": 0.015,
                     "avg_latency": 3.2,
-                    "quality_score": 0.95
+                    "quality_score": 0.95,
                 },
                 "fallback": {
                     "model": "gpt-4-turbo",
                     "provider": "openai",
                     "cost_per_1k": 0.01,
                     "avg_latency": 2.8,
-                    "quality_score": 0.92
+                    "quality_score": 0.92,
                 },
                 "budget": {
                     "model": "claude-3-sonnet-20240620",
                     "provider": "anthropic",
                     "cost_per_1k": 0.003,
                     "avg_latency": 2.1,
-                    "quality_score": 0.88
+                    "quality_score": 0.88,
                 },
                 "local": {
                     "model": "llama-4-maverick-30b",
                     "provider": "local",
                     "cost_per_1k": 0.0,
                     "avg_latency": 1.5,
-                    "quality_score": 0.90
-                }
+                    "quality_score": 0.90,
+                },
             },
-
             ModelTier.DEPARTMENT.value: {
                 "primary": {
                     "model": "claude-3-sonnet-20240620",
                     "provider": "anthropic",
                     "cost_per_1k": 0.003,
                     "avg_latency": 2.1,
-                    "quality_score": 0.88
+                    "quality_score": 0.88,
                 },
                 "fallback": {
                     "model": "gpt-4o",
                     "provider": "openai",
                     "cost_per_1k": 0.005,
                     "avg_latency": 1.8,
-                    "quality_score": 0.86
+                    "quality_score": 0.86,
                 },
                 "budget": {
                     "model": "claude-3-haiku-20240307",
                     "provider": "anthropic",
                     "cost_per_1k": 0.00025,
                     "avg_latency": 1.2,
-                    "quality_score": 0.82
+                    "quality_score": 0.82,
                 },
                 "local": {
                     "model": "llama-4-scout-17b",
                     "provider": "local",
                     "cost_per_1k": 0.0,
                     "avg_latency": 0.8,
-                    "quality_score": 0.84
-                }
+                    "quality_score": 0.84,
+                },
             },
-
             ModelTier.SPECIALIST.value: {
                 "primary": {
                     "model": "claude-3-haiku-20240307",
                     "provider": "anthropic",
                     "cost_per_1k": 0.00025,
                     "avg_latency": 1.2,
-                    "quality_score": 0.82
+                    "quality_score": 0.82,
                 },
                 "fallback": {
                     "model": "gpt-4o-mini",
                     "provider": "openai",
                     "cost_per_1k": 0.00015,
                     "avg_latency": 1.0,
-                    "quality_score": 0.80
+                    "quality_score": 0.80,
                 },
                 "budget": {
                     "model": "gpt-4o-mini",
                     "provider": "openai",
                     "cost_per_1k": 0.00015,
                     "avg_latency": 1.0,
-                    "quality_score": 0.80
+                    "quality_score": 0.80,
                 },
                 "local": {
                     "model": "llama-3.2-3b",
                     "provider": "local",
                     "cost_per_1k": 0.0,
                     "avg_latency": 0.3,
-                    "quality_score": 0.75
-                }
+                    "quality_score": 0.75,
+                },
             },
-
             ModelTier.WORKER.value: {
                 "primary": {
                     "model": "gpt-4o-mini",
                     "provider": "openai",
                     "cost_per_1k": 0.00015,
                     "avg_latency": 1.0,
-                    "quality_score": 0.80
+                    "quality_score": 0.80,
                 },
                 "fallback": {
                     "model": "claude-3-haiku-20240307",
                     "provider": "anthropic",
                     "cost_per_1k": 0.00025,
                     "avg_latency": 1.2,
-                    "quality_score": 0.82
+                    "quality_score": 0.82,
                 },
                 "budget": {
                     "model": "gpt-4o-mini",
                     "provider": "openai",
                     "cost_per_1k": 0.00015,
                     "avg_latency": 1.0,
-                    "quality_score": 0.80
+                    "quality_score": 0.80,
                 },
                 "local": {
                     "model": "llama-3.2-3b",
                     "provider": "local",
                     "cost_per_1k": 0.0,
                     "avg_latency": 0.3,
-                    "quality_score": 0.75
-                }
-            }
+                    "quality_score": 0.75,
+                },
+            },
         }
 
-    async def select_optimal_model(self, request: AgentRequest,
-                                 strategy: SelectionStrategy = SelectionStrategy.BALANCED) -> ModelSelection:
+    async def select_optimal_model(
+        self,
+        request: AgentRequest,
+        strategy: SelectionStrategy = SelectionStrategy.BALANCED,
+    ) -> ModelSelection:
         """Select optimal model based on request and strategy"""
 
         # Determine agent tier
@@ -252,7 +258,9 @@ class IntelligentModelSelector:
             selected_config = await self._balanced_selection(request, tier_models)
 
         # Generate fallback chain
-        fallback_chain = await self._generate_fallback_chain(tier_models, selected_config)
+        fallback_chain = await self._generate_fallback_chain(
+            tier_models, selected_config
+        )
 
         # Calculate metrics
         expected_cost = await self._estimate_cost(request, selected_config)
@@ -273,7 +281,7 @@ class IntelligentModelSelector:
             expected_latency=expected_latency,
             expected_quality=expected_quality,
             fallback_chain=fallback_chain,
-            optimization_strategy=strategy.value
+            optimization_strategy=strategy.value,
         )
 
     def _get_agent_tier(self, agent_name: str) -> ModelTier:
@@ -290,7 +298,9 @@ class IntelligentModelSelector:
         else:
             return ModelTier.WORKER
 
-    async def _balanced_selection(self, request: AgentRequest, tier_models: Dict) -> Dict:
+    async def _balanced_selection(
+        self, request: AgentRequest, tier_models: Dict
+    ) -> Dict:
         """Balanced selection considering complexity, cost, and quality"""
 
         # High complexity or high quality requirements -> primary model
@@ -303,13 +313,17 @@ class IntelligentModelSelector:
 
         # Check current budget status
         budget_status = await self._check_budget_status(request.agent_name)
-        if budget_status["remaining_percentage"] < 0.2:  # Less than 20% budget remaining
+        if (
+            budget_status["remaining_percentage"] < 0.2
+        ):  # Less than 20% budget remaining
             return tier_models["budget"]
 
         # Default to primary for balanced approach
         return tier_models["primary"]
 
-    async def _generate_fallback_chain(self, tier_models: Dict, selected_config: Dict) -> List[str]:
+    async def _generate_fallback_chain(
+        self, tier_models: Dict, selected_config: Dict
+    ) -> List[str]:
         """Generate intelligent fallback chain"""
         fallback_chain = []
 
@@ -327,9 +341,13 @@ class IntelligentModelSelector:
         cost_per_token = model_config["cost_per_1k"] / 1000
         return estimated_tokens * cost_per_token
 
-    async def _generate_selection_reasoning(self, request: AgentRequest,
-                                          selected_config: Dict, strategy: SelectionStrategy,
-                                          agent_tier: ModelTier) -> str:
+    async def _generate_selection_reasoning(
+        self,
+        request: AgentRequest,
+        selected_config: Dict,
+        strategy: SelectionStrategy,
+        agent_tier: ModelTier,
+    ) -> str:
         """Generate human-readable reasoning for selection"""
 
         reasoning_parts = [
@@ -338,7 +356,7 @@ class IntelligentModelSelector:
             f"Selected: {selected_config['model']} ({selected_config['provider']})",
             f"Strategy: {strategy.value}",
             f"Quality score: {selected_config['quality_score']:.2f}",
-            f"Estimated cost: ${selected_config['cost_per_1k']:.4f}/1k tokens"
+            f"Estimated cost: ${selected_config['cost_per_1k']:.4f}/1k tokens",
         ]
 
         return " | ".join(reasoning_parts)
@@ -349,7 +367,7 @@ class IntelligentModelSelector:
         return {
             "remaining_percentage": 0.7,  # 70% budget remaining
             "daily_spend": 0.15,
-            "monthly_budget": 100.0
+            "monthly_budget": 100.0,
         }
 
 
@@ -361,8 +379,9 @@ class CostOptimizer:
         self.optimization_strategies = {}
         self.logger = logging.getLogger("agent_cortex.cost_optimizer")
 
-    async def optimize_request(self, request: AgentRequest,
-                             initial_selection: ModelSelection) -> ModelSelection:
+    async def optimize_request(
+        self, request: AgentRequest, initial_selection: ModelSelection
+    ) -> ModelSelection:
         """Optimize model selection for cost efficiency"""
 
         # Get agent cost policy
@@ -379,8 +398,9 @@ class CostOptimizer:
 
         return optimized_selection
 
-    def _should_optimize(self, request: AgentRequest, selection: ModelSelection,
-                        cost_policy: Dict) -> bool:
+    def _should_optimize(
+        self, request: AgentRequest, selection: ModelSelection, cost_policy: Dict
+    ) -> bool:
         """Determine if cost optimization is needed"""
 
         # Check if cost exceeds policy limits
@@ -396,9 +416,12 @@ class CostOptimizer:
 
         return False
 
-    async def _apply_cost_optimization(self, request: AgentRequest,
-                                     initial_selection: ModelSelection,
-                                     cost_policy: Dict) -> ModelSelection:
+    async def _apply_cost_optimization(
+        self,
+        request: AgentRequest,
+        initial_selection: ModelSelection,
+        cost_policy: Dict,
+    ) -> ModelSelection:
         """Apply cost optimization strategies"""
 
         # Strategy 1: Downgrade to budget model if quality allows
@@ -432,8 +455,9 @@ class PerformanceAnalyzer:
         self.learning_models = {}
         self.logger = logging.getLogger("agent_cortex.performance_analyzer")
 
-    async def start_tracking(self, request: AgentRequest,
-                           selection: ModelSelection) -> str:
+    async def start_tracking(
+        self, request: AgentRequest, selection: ModelSelection
+    ) -> str:
         """Start tracking a request for performance analysis"""
 
         tracking_id = str(uuid.uuid4())
@@ -442,13 +466,12 @@ class PerformanceAnalyzer:
             "request": request,
             "selection": selection,
             "start_time": time.time(),
-            "status": "in_progress"
+            "status": "in_progress",
         }
 
         return tracking_id
 
-    async def report_performance(self, tracking_id: str,
-                               metrics: PerformanceMetrics):
+    async def report_performance(self, tracking_id: str, metrics: PerformanceMetrics):
         """Report performance metrics for learning"""
 
         if tracking_id not in self.performance_data:
@@ -466,7 +489,8 @@ class PerformanceAnalyzer:
         """Trigger ML learning if enough performance data collected"""
 
         completed_sessions = [
-            data for data in self.performance_data.values()
+            data
+            for data in self.performance_data.values()
             if data["status"] == "completed"
         ]
 
@@ -486,7 +510,7 @@ class MultiProviderOrchestra:
         self.providers = {
             "anthropic": self._create_anthropic_client,
             "openai": self._create_openai_client,
-            "local": self._create_local_client
+            "local": self._create_local_client,
         }
         self.provider_health = {}
         self.logger = logging.getLogger("agent_cortex.multi_provider")
@@ -498,13 +522,17 @@ class MultiProviderOrchestra:
 
         try:
             # Try primary provider
-            llm_client = await self._create_llm_client(selection.selected_model, primary_provider)
+            llm_client = await self._create_llm_client(
+                selection.selected_model, primary_provider
+            )
 
             # Test connection
             if await llm_client.test_connection():
                 return llm_client
             else:
-                self.logger.warning(f"Primary provider {primary_provider} failed health check")
+                self.logger.warning(
+                    f"Primary provider {primary_provider} failed health check"
+                )
 
         except Exception as e:
             self.logger.error(f"Primary provider {primary_provider} failed: {e}")
@@ -513,10 +541,14 @@ class MultiProviderOrchestra:
         for fallback_model in selection.fallback_chain:
             try:
                 fallback_provider = self._get_provider_for_model(fallback_model)
-                llm_client = await self._create_llm_client(fallback_model, fallback_provider)
+                llm_client = await self._create_llm_client(
+                    fallback_model, fallback_provider
+                )
 
                 if await llm_client.test_connection():
-                    self.logger.info(f"Using fallback: {fallback_model} ({fallback_provider})")
+                    self.logger.info(
+                        f"Using fallback: {fallback_model} ({fallback_provider})"
+                    )
                     return llm_client
 
             except Exception as e:
@@ -535,19 +567,17 @@ class MultiProviderOrchestra:
             config = LLMConfig(
                 provider="anthropic",
                 model=model,
-                api_key=None  # Will use environment variable
+                api_key=None,  # Will use environment variable
             )
         elif provider == "openai":
             config = LLMConfig(
                 provider="openai",
                 model=model,
-                api_key=None  # Will use environment variable
+                api_key=None,  # Will use environment variable
             )
         elif provider == "local":
             config = LLMConfig(
-                provider="ollama",
-                model=model,
-                base_url="http://localhost:11434"
+                provider="ollama", model=model, base_url="http://localhost:11434"
             )
         else:
             raise ValueError(f"Unknown provider: {provider}")
@@ -582,7 +612,7 @@ class MultiProviderOrchestra:
         config = LLMConfig(
             provider="openai",
             model="gpt-4o-mini",  # Most reliable fallback
-            api_key=None
+            api_key=None,
         )
         return LLMClient(config)
 
@@ -613,7 +643,9 @@ class AgentCortex:
 
         try:
             # Log request
-            self.logger.info(f"Processing request from {request.agent_name}: {request.task_type}")
+            self.logger.info(
+                f"Processing request from {request.agent_name}: {request.task_type}"
+            )
 
             # 1. Intelligent model selection
             model_selection = await self.model_selector.select_optimal_model(
@@ -626,7 +658,9 @@ class AgentCortex:
             )
 
             # 3. Get LLM instance with fallbacks
-            llm_instance = await self.multi_provider.get_llm_instance(optimized_selection)
+            llm_instance = await self.multi_provider.get_llm_instance(
+                optimized_selection
+            )
 
             # 4. Start performance tracking
             tracking_id = await self.performance_analyzer.start_tracking(
@@ -641,18 +675,20 @@ class AgentCortex:
                 session_context={
                     "strategy": self.current_strategy.value,
                     "system_load": self.system_load,
-                    "timestamp": datetime.now().isoformat()
-                }
+                    "timestamp": datetime.now().isoformat(),
+                },
             )
 
             # 6. Store active session
             self.active_sessions[tracking_id] = {
                 "request": request,
                 "response": response,
-                "start_time": time.time()
+                "start_time": time.time(),
             }
 
-            self.logger.info(f"Agent Cortex selected {optimized_selection.selected_model} for {request.agent_name}")
+            self.logger.info(
+                f"Agent Cortex selected {optimized_selection.selected_model} for {request.agent_name}"
+            )
 
             return response
 
@@ -686,16 +722,13 @@ class AgentCortex:
             "system_load": self.system_load,
             "learning_enabled": self.learning_enabled,
             "provider_health": await self._get_provider_health(),
-            "performance_stats": await self._get_performance_stats()
+            "performance_stats": await self._get_performance_stats(),
         }
 
     async def _create_emergency_response(self, request: AgentRequest) -> CortexResponse:
         """Create emergency response when Agent Cortex fails"""
 
-        emergency_config = LLMConfig(
-            provider="openai",
-            model="gpt-4o-mini"
-        )
+        emergency_config = LLMConfig(provider="openai", model="gpt-4o-mini")
 
         emergency_llm = LLMClient(emergency_config)
 
@@ -706,23 +739,19 @@ class AgentCortex:
             confidence=0.5,
             expected_cost=0.001,
             expected_latency=2.0,
-            expected_quality=0.75
+            expected_quality=0.75,
         )
 
         return CortexResponse(
             llm=emergency_llm,
             selection=emergency_selection,
-            tracking_id="emergency_" + str(uuid.uuid4())
+            tracking_id="emergency_" + str(uuid.uuid4()),
         )
 
     async def _get_provider_health(self) -> Dict[str, str]:
         """Get health status of all providers"""
         # TODO: Implement provider health checking
-        return {
-            "anthropic": "healthy",
-            "openai": "healthy",
-            "local": "unknown"
-        }
+        return {"anthropic": "healthy", "openai": "healthy", "local": "unknown"}
 
     async def _get_performance_stats(self) -> Dict[str, Any]:
         """Get performance statistics"""
@@ -731,7 +760,7 @@ class AgentCortex:
             "total_requests": len(self.performance_analyzer.performance_data),
             "avg_response_time": 2.1,
             "cost_savings": 0.45,
-            "model_accuracy": 0.88
+            "model_accuracy": 0.88,
         }
 
 
@@ -752,5 +781,5 @@ __all__ = [
     "PerformanceMetrics",
     "ModelTier",
     "SelectionStrategy",
-    "get_agent_cortex_instance"
+    "get_agent_cortex_instance",
 ]

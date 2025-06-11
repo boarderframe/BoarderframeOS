@@ -12,7 +12,7 @@ servers = [
     ("database", 8004),
     ("payment", 8006),
     ("analytics", 8007),
-    ("customer", 8008)
+    ("customer", 8008),
 ]
 
 print("🔍 Checking server health endpoints directly...")

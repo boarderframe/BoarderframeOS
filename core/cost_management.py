@@ -7,54 +7,58 @@ Controls API usage, throttling, and cost optimization settings
 API_COST_SETTINGS = {
     # Enable/disable cost optimization features
     "cost_optimization_enabled": True,
-
     # Agent idle behavior
     "idle_mode": {
         "enabled": True,
         "check_interval_seconds": 5,  # How often to check for new work
         "max_idle_time_minutes": 60,  # Max time to stay completely idle
     },
-
     # Message filtering for API calls
     "message_filtering": {
         "enabled": True,
         "urgent_keywords": [
-            "urgent", "critical", "error", "down", "issue", "problem",
-            "revenue", "customer", "strategic", "priority", "ceo", "executive"
+            "urgent",
+            "critical",
+            "error",
+            "down",
+            "issue",
+            "problem",
+            "revenue",
+            "customer",
+            "strategic",
+            "priority",
+            "ceo",
+            "executive",
         ],
         "routine_message_threshold": 5,  # Process routine messages in batches
     },
-
     # API rate limiting
     "rate_limiting": {
         "enabled": True,
-        "max_calls_per_minute": 30,    # Per agent
-        "max_calls_per_hour": 300,     # Per agent
-        "max_calls_per_day": 2000,     # Per agent
+        "max_calls_per_minute": 30,  # Per agent
+        "max_calls_per_hour": 300,  # Per agent
+        "max_calls_per_day": 2000,  # Per agent
     },
-
     # Cost monitoring
     "cost_monitoring": {
         "enabled": True,
         "track_token_usage": True,
-        "daily_budget_usd": 50.0,      # Daily spending limit
+        "daily_budget_usd": 50.0,  # Daily spending limit
         "warning_threshold_usd": 40.0,  # Warning when approaching limit
-        "emergency_stop_usd": 55.0,    # Emergency stop if exceeded
+        "emergency_stop_usd": 55.0,  # Emergency stop if exceeded
     },
-
     # Smart batching
     "smart_batching": {
         "enabled": True,
-        "batch_size": 5,               # Batch multiple messages together
-        "batch_timeout_seconds": 30,   # Max time to wait for batch
+        "batch_size": 5,  # Batch multiple messages together
+        "batch_timeout_seconds": 30,  # Max time to wait for batch
     },
-
     # Emergency cost controls
     "emergency_controls": {
         "auto_shutdown_on_budget_exceeded": True,
         "fallback_to_rule_based": True,  # Use rules instead of LLM when budget low
         "reduced_functionality_mode": True,  # Disable non-essential features
-    }
+    },
 }
 
 # Model-specific cost settings (approximate costs)
@@ -73,7 +77,7 @@ MODEL_COSTS = {
         "input_cost_per_1k_tokens": 0.00025,
         "output_cost_per_1k_tokens": 0.00125,
         "estimated_tokens_per_call": 800,
-    }
+    },
 }
 
 # Agent-specific cost policies
@@ -95,14 +99,18 @@ AGENT_COST_POLICIES = {
         "daily_budget_usd": 10.0,
         "emergency_mode_threshold": 8.0,
         "fallback_strategy": "rule_based_only",
-    }
+    },
 }
+
 
 def get_agent_cost_policy(agent_name: str) -> dict:
     """Get cost policy for specific agent"""
     return AGENT_COST_POLICIES.get(agent_name, AGENT_COST_POLICIES["default"])
 
-def estimate_daily_cost(agent_name: str, calls_per_day: int, model: str = "claude-3-5-sonnet-latest") -> float:
+
+def estimate_daily_cost(
+    agent_name: str, calls_per_day: int, model: str = "claude-3-5-sonnet-latest"
+) -> float:
     """Estimate daily cost for an agent"""
     if model not in MODEL_COSTS:
         model = "claude-3-5-sonnet-latest"
@@ -116,10 +124,13 @@ def estimate_daily_cost(agent_name: str, calls_per_day: int, model: str = "claud
     input_tokens = tokens_per_call * 0.7
     output_tokens = tokens_per_call * 0.3
 
-    cost_per_call = (input_tokens / 1000 * input_cost) + (output_tokens / 1000 * output_cost)
+    cost_per_call = (input_tokens / 1000 * input_cost) + (
+        output_tokens / 1000 * output_cost
+    )
     daily_cost = cost_per_call * calls_per_day
 
     return daily_cost
+
 
 def get_cost_optimization_status() -> dict:
     """Get current cost optimization status"""
@@ -130,8 +141,9 @@ def get_cost_optimization_status() -> dict:
         "rate_limiting_enabled": API_COST_SETTINGS["rate_limiting"]["enabled"],
         "estimated_savings": "99.9% reduction in idle API usage",
         "before_optimization": "~86,400 API calls per day per agent",
-        "after_optimization": "~0-50 API calls per day when idle"
+        "after_optimization": "~0-50 API calls per day when idle",
     }
+
 
 # Example usage and calculations
 if __name__ == "__main__":
@@ -166,7 +178,9 @@ if __name__ == "__main__":
     print(f"  Total: ${cost_after_solomon + cost_after_david:.2f}/day")
 
     # Savings
-    total_savings = (cost_before_solomon + cost_before_david) - (cost_after_solomon + cost_after_david)
+    total_savings = (cost_before_solomon + cost_before_david) - (
+        cost_after_solomon + cost_after_david
+    )
     savings_percent = (total_savings / (cost_before_solomon + cost_before_david)) * 100
 
     print(f"\n💡 Savings:")

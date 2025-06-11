@@ -31,35 +31,55 @@ def register_leaders():
     ORDER BY dl.authority_level DESC, dl.name;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", leaders_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-A",
+            "-F",
+            "|",
+            "-c",
+            leaders_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0 and result.stdout:
         leaders = []
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 9:
-                    leaders.append({
-                        "id": parts[0],
-                        "name": parts[1],
-                        "title": parts[2],
-                        "department_id": parts[3],
-                        "department_name": parts[4],
-                        "authority_level": parts[5] or "5",
-                        "biblical_archetype": parts[6],
-                        "specialization": parts[7],
-                        "is_primary": parts[8] == "t"
-                    })
+                    leaders.append(
+                        {
+                            "id": parts[0],
+                            "name": parts[1],
+                            "title": parts[2],
+                            "department_id": parts[3],
+                            "department_name": parts[4],
+                            "authority_level": parts[5] or "5",
+                            "biblical_archetype": parts[6],
+                            "specialization": parts[7],
+                            "is_primary": parts[8] == "t",
+                        }
+                    )
 
         print(f"\n📝 Found {len(leaders)} leaders to register as agents...")
 
         success_count = 0
         for leader in leaders:
             # Generate a unique UUID for the leader as an agent
-            leader_agent_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"boarderframeos.leader.{leader['id']}"))
+            leader_agent_id = str(
+                uuid.uuid5(uuid.NAMESPACE_DNS, f"boarderframeos.leader.{leader['id']}")
+            )
 
             # First create in agents table
             create_agent_query = f"""
@@ -78,16 +98,30 @@ def register_leaders():
                 updated_at = CURRENT_TIMESTAMP;
             """
 
-            agent_result = subprocess.run([
-                "docker", "exec", "boarderframeos_postgres",
-                "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", create_agent_query
-            ], capture_output=True, text=True)
+            agent_result = subprocess.run(
+                [
+                    "docker",
+                    "exec",
+                    "boarderframeos_postgres",
+                    "psql",
+                    "-U",
+                    "boarderframe",
+                    "-d",
+                    "boarderframeos",
+                    "-c",
+                    create_agent_query,
+                ],
+                capture_output=True,
+                text=True,
+            )
 
             if agent_result.returncode == 0 or "duplicate" in agent_result.stderr:
                 # Now register in agent_registry
                 capabilities = ["leadership", "decision_making", "coordination"]
                 if leader["specialization"]:
-                    capabilities.append(leader["specialization"].lower().replace(" ", "_"))
+                    capabilities.append(
+                        leader["specialization"].lower().replace(" ", "_")
+                    )
 
                 register_query = f"""
                 INSERT INTO agent_registry (
@@ -122,19 +156,35 @@ def register_leaders():
                     updated_at = CURRENT_TIMESTAMP;
                 """
 
-                reg_result = subprocess.run([
-                    "docker", "exec", "boarderframeos_postgres",
-                    "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", register_query
-                ], capture_output=True, text=True)
+                reg_result = subprocess.run(
+                    [
+                        "docker",
+                        "exec",
+                        "boarderframeos_postgres",
+                        "psql",
+                        "-U",
+                        "boarderframe",
+                        "-d",
+                        "boarderframeos",
+                        "-c",
+                        register_query,
+                    ],
+                    capture_output=True,
+                    text=True,
+                )
 
                 if reg_result.returncode == 0:
                     success_count += 1
                     primary_tag = " (Primary)" if leader["is_primary"] else ""
                     print(f"   ✅ {leader['name']} - {leader['title']}{primary_tag}")
                 else:
-                    print(f"   ❌ Failed to register {leader['name']}: {reg_result.stderr[:50]}")
+                    print(
+                        f"   ❌ Failed to register {leader['name']}: {reg_result.stderr[:50]}"
+                    )
 
-        print(f"\n✅ Successfully registered {success_count}/{len(leaders)} leaders as agents")
+        print(
+            f"\n✅ Successfully registered {success_count}/{len(leaders)} leaders as agents"
+        )
 
     # Show summary
     print("\n📊 Leader Registration Summary...")
@@ -162,16 +212,29 @@ def register_leaders():
     ORDER BY metric;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", summary_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-c",
+            summary_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
         print("\nLeader Metrics:")
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 2:
                     metric = parts[0].strip()
                     value = parts[1].strip()
@@ -204,16 +267,29 @@ def register_leaders():
         'Databases' as type, COUNT(*) FROM database_registry;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", final_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-c",
+            final_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
         print("\nComplete Registry:")
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 2:
                     type_name = parts[0].strip()
                     count = parts[1].strip()

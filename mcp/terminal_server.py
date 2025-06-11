@@ -24,16 +24,20 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler(os.path.join(os.path.dirname(__file__), "../logs/terminal_mcp.log")),
-        logging.StreamHandler()
-    ]
+        logging.FileHandler(
+            os.path.join(os.path.dirname(__file__), "../logs/terminal_mcp.log")
+        ),
+        logging.StreamHandler(),
+    ],
 )
 
 logger = logging.getLogger("terminal_server")
 
+
 class CommandOperation(BaseModel):
     method: str
     params: dict
+
 
 class MCPTerminalServer:
     """BoarderframeOS Terminal MCP Server"""
@@ -46,10 +50,36 @@ class MCPTerminalServer:
 
         # SECURITY: Allowed commands (whitelist approach)
         self.allowed_commands = [
-            "ls", "cat", "grep", "find", "pwd", "mkdir", "touch", "rm",
-            "cp", "mv", "echo", "python", "pip", "git", "curl", "wget",
-            "tar", "zip", "unzip", "head", "tail", "wc", "sort",
-            "diff", "chmod", "chown", "ps", "kill", "df", "du"
+            "ls",
+            "cat",
+            "grep",
+            "find",
+            "pwd",
+            "mkdir",
+            "touch",
+            "rm",
+            "cp",
+            "mv",
+            "echo",
+            "python",
+            "pip",
+            "git",
+            "curl",
+            "wget",
+            "tar",
+            "zip",
+            "unzip",
+            "head",
+            "tail",
+            "wc",
+            "sort",
+            "diff",
+            "chmod",
+            "chown",
+            "ps",
+            "kill",
+            "df",
+            "du",
         ]
 
         # For storing long-running processes
@@ -96,7 +126,7 @@ class MCPTerminalServer:
             "status": "healthy",
             "service": "BoarderframeOS Terminal MCP",
             "version": "1.0.0",
-            "active_processes": len(self.running_processes)
+            "active_processes": len(self.running_processes),
         }
 
     async def list_processes(self):
@@ -111,14 +141,16 @@ class MCPTerminalServer:
                 status = "running"
                 exit_code = None
 
-            processes.append({
-                "id": process_id,
-                "command": process_info["command"],
-                "start_time": process_info["start_time"],
-                "working_dir": process_info["working_dir"],
-                "status": status,
-                "exit_code": exit_code
-            })
+            processes.append(
+                {
+                    "id": process_id,
+                    "command": process_info["command"],
+                    "start_time": process_info["start_time"],
+                    "working_dir": process_info["working_dir"],
+                    "status": status,
+                    "exit_code": exit_code,
+                }
+            )
 
         return {"processes": processes, "count": len(processes)}
 
@@ -133,12 +165,11 @@ class MCPTerminalServer:
                 return await self.execute_command(
                     params.get("command"),
                     params.get("working_dir", "."),
-                    params.get("timeout")
+                    params.get("timeout"),
                 )
             elif method == "terminal.exec_background":
                 return await self.execute_background(
-                    params.get("command"),
-                    params.get("working_dir", ".")
+                    params.get("command"), params.get("working_dir", ".")
                 )
             elif method == "terminal.get_output":
                 return await self.get_process_output(params.get("process_id"))
@@ -182,12 +213,20 @@ class MCPTerminalServer:
 
         # Check if command is allowed
         base_command = parts[0]
-        if base_command not in self.allowed_commands and not base_command.startswith('./') and not base_command.startswith('../'):
-            raise ValueError(f"Command '{base_command}' is not allowed for security reasons")
+        if (
+            base_command not in self.allowed_commands
+            and not base_command.startswith("./")
+            and not base_command.startswith("../")
+        ):
+            raise ValueError(
+                f"Command '{base_command}' is not allowed for security reasons"
+            )
 
         return parts
 
-    async def execute_command(self, command: str, working_dir: str = ".", timeout: int = 30) -> dict:
+    async def execute_command(
+        self, command: str, working_dir: str = ".", timeout: int = 30
+    ) -> dict:
         """Execute a command and return the output"""
         try:
             # Validate
@@ -200,7 +239,7 @@ class MCPTerminalServer:
                 cwd=path,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True
+                text=True,
             )
 
             try:
@@ -211,14 +250,14 @@ class MCPTerminalServer:
                     "command": command,
                     "exit_code": process.returncode,
                     "stdout": stdout,
-                    "stderr": stderr
+                    "stderr": stderr,
                 }
             except subprocess.TimeoutExpired:
                 process.kill()
                 return {
                     "success": False,
                     "command": command,
-                    "error": f"Command timed out after {timeout} seconds"
+                    "error": f"Command timed out after {timeout} seconds",
                 }
 
         except ValueError as e:
@@ -245,7 +284,7 @@ class MCPTerminalServer:
                 stderr=subprocess.PIPE,
                 text=True,
                 bufsize=1,
-                universal_newlines=True
+                universal_newlines=True,
             )
 
             # Store process info
@@ -255,17 +294,13 @@ class MCPTerminalServer:
                 "working_dir": str(path),
                 "start_time": datetime.now().isoformat(),
                 "stdout_buffer": [],
-                "stderr_buffer": []
+                "stderr_buffer": [],
             }
 
             # Start background task to collect output
             asyncio.create_task(self._collect_process_output(process_id))
 
-            return {
-                "success": True,
-                "process_id": process_id,
-                "command": command
-            }
+            return {"success": True, "process_id": process_id, "command": command}
 
         except ValueError as e:
             return {"success": False, "command": command, "error": str(e)}
@@ -322,7 +357,7 @@ class MCPTerminalServer:
             "is_running": is_running,
             "exit_code": process.returncode if not is_running else None,
             "stdout": stdout,
-            "stderr": stderr
+            "stderr": stderr,
         }
 
     async def kill_process(self, process_id: str) -> dict:
@@ -340,7 +375,7 @@ class MCPTerminalServer:
                     "success": True,
                     "process_id": process_id,
                     "status": "already_finished",
-                    "exit_code": process.returncode
+                    "exit_code": process.returncode,
                 }
 
             # Kill the process
@@ -357,7 +392,7 @@ class MCPTerminalServer:
                 "success": True,
                 "process_id": process_id,
                 "status": "killed",
-                "exit_code": process.returncode
+                "exit_code": process.returncode,
             }
 
         except Exception as e:
@@ -370,6 +405,7 @@ async def main():
     """Run the server directly"""
     server = MCPTerminalServer()
     await server.start()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -57,7 +57,9 @@ class RegistryAutoRegistration:
             # Register Agents (if running)
             await self.register_running_agents()
 
-            logger.info(f"Registration complete! Registered {len(self.registered_entities)} components")
+            logger.info(
+                f"Registration complete! Registered {len(self.registered_entities)} components"
+            )
 
         except Exception as e:
             logger.error(f"Failed to register components: {e}")
@@ -69,48 +71,79 @@ class RegistryAutoRegistration:
             {
                 "name": "Registry Server",
                 "port": 8009,
-                "capabilities": ["service_discovery", "health_monitoring", "registration"],
-                "description": "Central service registry and discovery"
+                "capabilities": [
+                    "service_discovery",
+                    "health_monitoring",
+                    "registration",
+                ],
+                "description": "Central service registry and discovery",
             },
             {
                 "name": "Filesystem Server",
                 "port": 8001,
-                "capabilities": ["file_operations", "directory_management", "search", "monitoring"],
-                "description": "File system operations and management"
+                "capabilities": [
+                    "file_operations",
+                    "directory_management",
+                    "search",
+                    "monitoring",
+                ],
+                "description": "File system operations and management",
             },
             {
                 "name": "Database Server",
                 "port": 8004,
-                "capabilities": ["sqlite_operations", "query_execution", "data_management"],
-                "description": "SQLite database operations"
+                "capabilities": [
+                    "sqlite_operations",
+                    "query_execution",
+                    "data_management",
+                ],
+                "description": "SQLite database operations",
             },
             {
                 "name": "Analytics Server",
                 "port": 8007,
-                "capabilities": ["data_analytics", "metrics_collection", "reporting", "visualization"],
-                "description": "Analytics and business intelligence"
+                "capabilities": [
+                    "data_analytics",
+                    "metrics_collection",
+                    "reporting",
+                    "visualization",
+                ],
+                "description": "Analytics and business intelligence",
             },
             {
                 "name": "Payment Server",
                 "port": 8006,
-                "capabilities": ["payment_processing", "billing", "invoicing", "revenue_tracking"],
-                "description": "Payment and revenue management"
+                "capabilities": [
+                    "payment_processing",
+                    "billing",
+                    "invoicing",
+                    "revenue_tracking",
+                ],
+                "description": "Payment and revenue management",
             },
             {
                 "name": "Customer Server",
                 "port": 8008,
-                "capabilities": ["customer_management", "crm", "support_tickets", "user_tracking"],
-                "description": "Customer relationship management"
-            }
+                "capabilities": [
+                    "customer_management",
+                    "crm",
+                    "support_tickets",
+                    "user_tracking",
+                ],
+                "description": "Customer relationship management",
+            },
         ]
 
         for server_info in mcp_servers:
             try:
                 # Check if server is running
                 import httpx
+
                 async with httpx.AsyncClient(timeout=2.0) as client:
                     try:
-                        resp = await client.get(f"http://localhost:{server_info['port']}/health")
+                        resp = await client.get(
+                            f"http://localhost:{server_info['port']}/health"
+                        )
                         is_online = resp.status_code == 200
                     except:
                         is_online = False
@@ -125,8 +158,8 @@ class RegistryAutoRegistration:
                     metadata={
                         "description": server_info["description"],
                         "mcp_version": "1.0",
-                        "registered_by": "auto_registration"
-                    }
+                        "registered_by": "auto_registration",
+                    },
                 )
 
                 # Update status if online
@@ -134,7 +167,9 @@ class RegistryAutoRegistration:
                     await self.client.update_status(server.id, ServiceStatus.ONLINE)
 
                 self.registered_entities.add(server.id)
-                logger.info(f"✅ Registered MCP Server: {server_info['name']} (port {server_info['port']})")
+                logger.info(
+                    f"✅ Registered MCP Server: {server_info['name']} (port {server_info['port']})"
+                )
 
             except Exception as e:
                 logger.error(f"Failed to register {server_info['name']}: {e}")
@@ -146,22 +181,33 @@ class RegistryAutoRegistration:
                 "name": "Corporate Headquarters",
                 "port": 8888,
                 "server_type": ServerType.CORE_SYSTEM,
-                "capabilities": ["dashboard", "system_monitoring", "agent_management", "chat_interface"],
-                "description": "Main system dashboard and control center"
+                "capabilities": [
+                    "dashboard",
+                    "system_monitoring",
+                    "agent_management",
+                    "chat_interface",
+                ],
+                "description": "Main system dashboard and control center",
             },
             {
                 "name": "Agent Cortex",
                 "port": 8889,
                 "server_type": ServerType.CORE_SYSTEM,
-                "capabilities": ["llm_orchestration", "model_management", "cost_optimization", "intelligent_routing"],
-                "description": "Intelligent LLM orchestration system"
-            }
+                "capabilities": [
+                    "llm_orchestration",
+                    "model_management",
+                    "cost_optimization",
+                    "intelligent_routing",
+                ],
+                "description": "Intelligent LLM orchestration system",
+            },
         ]
 
         for system in core_systems:
             try:
                 # Check if system is running
                 import httpx
+
                 async with httpx.AsyncClient(timeout=2.0) as client:
                     try:
                         resp = await client.get(f"http://localhost:{system['port']}/")
@@ -179,8 +225,8 @@ class RegistryAutoRegistration:
                     metadata={
                         "description": system["description"],
                         "version": "2.0",
-                        "registered_by": "auto_registration"
-                    }
+                        "registered_by": "auto_registration",
+                    },
                 )
 
                 # Update status if online
@@ -188,7 +234,9 @@ class RegistryAutoRegistration:
                     await self.client.update_status(server.id, ServiceStatus.ONLINE)
 
                 self.registered_entities.add(server.id)
-                logger.info(f"✅ Registered Core System: {system['name']} (port {system['port']})")
+                logger.info(
+                    f"✅ Registered Core System: {system['name']} (port {system['port']})"
+                )
 
             except Exception as e:
                 logger.error(f"Failed to register {system['name']}: {e}")
@@ -203,8 +251,13 @@ class RegistryAutoRegistration:
                 "port": 5434,
                 "database_name": "boarderframeos",
                 "max_connections": 100,
-                "capabilities": ["relational_storage", "json_support", "vector_search", "full_text_search"],
-                "description": "Primary PostgreSQL database with pgvector"
+                "capabilities": [
+                    "relational_storage",
+                    "json_support",
+                    "vector_search",
+                    "full_text_search",
+                ],
+                "description": "Primary PostgreSQL database with pgvector",
             },
             {
                 "name": "Redis Cache",
@@ -212,9 +265,14 @@ class RegistryAutoRegistration:
                 "host": "localhost",
                 "port": 6379,
                 "max_connections": 50,
-                "capabilities": ["caching", "pub_sub", "streams", "real_time_messaging"],
-                "description": "Redis for caching and real-time events"
-            }
+                "capabilities": [
+                    "caching",
+                    "pub_sub",
+                    "streams",
+                    "real_time_messaging",
+                ],
+                "description": "Redis for caching and real-time events",
+            },
         ]
 
         for db_info in databases:
@@ -224,13 +282,14 @@ class RegistryAutoRegistration:
                 if db_info["db_type"] == "postgresql":
                     try:
                         import asyncpg
+
                         conn = await asyncpg.connect(
                             host=db_info["host"],
                             port=db_info["port"],
                             database=db_info.get("database_name", "postgres"),
                             user="boarderframe",
                             password="boarderframe",
-                            timeout=2
+                            timeout=2,
                         )
                         await conn.close()
                         is_online = True
@@ -239,9 +298,9 @@ class RegistryAutoRegistration:
                 elif db_info["db_type"] == "redis":
                     try:
                         import aioredis
+
                         redis = await aioredis.create_redis_pool(
-                            f"redis://{db_info['host']}:{db_info['port']}",
-                            timeout=2
+                            f"redis://{db_info['host']}:{db_info['port']}", timeout=2
                         )
                         await redis.ping()
                         redis.close()
@@ -261,8 +320,8 @@ class RegistryAutoRegistration:
                     capabilities=db_info.get("capabilities", []),
                     metadata={
                         "description": db_info["description"],
-                        "registered_by": "auto_registration"
-                    }
+                        "registered_by": "auto_registration",
+                    },
                 )
 
                 # Update status if online
@@ -270,7 +329,9 @@ class RegistryAutoRegistration:
                     await self.client.update_status(database.id, ServiceStatus.ONLINE)
 
                 self.registered_entities.add(database.id)
-                logger.info(f"✅ Registered Database: {db_info['name']} ({db_info['db_type']} on port {db_info['port']})")
+                logger.info(
+                    f"✅ Registered Database: {db_info['name']} ({db_info['db_type']} on port {db_info['port']})"
+                )
 
             except Exception as e:
                 logger.error(f"Failed to register {db_info['name']}: {e}")
@@ -284,16 +345,41 @@ class RegistryAutoRegistration:
             import psutil
 
             agent_patterns = [
-                (r'agents/solomon/solomon\.py', 'Solomon', 'Chief of Staff', ['coordination', 'leadership', 'decision_making']),
-                (r'agents/david/david\.py', 'David', 'CEO', ['executive', 'strategy', 'vision']),
-                (r'agents/primordials/adam\.py', 'Adam', 'Agent Creator', ['agent_creation', 'automation', 'development']),
-                (r'agents/primordials/eve\.py', 'Eve', 'Agent Evolver', ['agent_evolution', 'optimization', 'adaptation']),
-                (r'agents/primordials/bezalel\.py', 'Bezalel', 'Master Programmer', ['programming', 'architecture', 'craftsmanship'])
+                (
+                    r"agents/solomon/solomon\.py",
+                    "Solomon",
+                    "Chief of Staff",
+                    ["coordination", "leadership", "decision_making"],
+                ),
+                (
+                    r"agents/david/david\.py",
+                    "David",
+                    "CEO",
+                    ["executive", "strategy", "vision"],
+                ),
+                (
+                    r"agents/primordials/adam\.py",
+                    "Adam",
+                    "Agent Creator",
+                    ["agent_creation", "automation", "development"],
+                ),
+                (
+                    r"agents/primordials/eve\.py",
+                    "Eve",
+                    "Agent Evolver",
+                    ["agent_evolution", "optimization", "adaptation"],
+                ),
+                (
+                    r"agents/primordials/bezalel\.py",
+                    "Bezalel",
+                    "Master Programmer",
+                    ["programming", "architecture", "craftsmanship"],
+                ),
             ]
 
-            for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+            for proc in psutil.process_iter(["pid", "name", "cmdline"]):
                 try:
-                    cmdline = ' '.join(proc.info['cmdline'] or [])
+                    cmdline = " ".join(proc.info["cmdline"] or [])
 
                     for pattern, agent_name, role, capabilities in agent_patterns:
                         if re.search(pattern, cmdline):
@@ -303,17 +389,21 @@ class RegistryAutoRegistration:
                                 capabilities=capabilities,
                                 metadata={
                                     "role": role,
-                                    "pid": proc.info['pid'],
+                                    "pid": proc.info["pid"],
                                     "registered_by": "auto_registration",
-                                    "process_detection": True
-                                }
+                                    "process_detection": True,
+                                },
                             )
 
                             # Mark as online
-                            await self.client.update_status(agent.id, ServiceStatus.ONLINE)
+                            await self.client.update_status(
+                                agent.id, ServiceStatus.ONLINE
+                            )
 
                             self.registered_entities.add(agent.id)
-                            logger.info(f"✅ Registered Agent: {agent_name} ({role}) - PID {proc.info['pid']}")
+                            logger.info(
+                                f"✅ Registered Agent: {agent_name} ({role}) - PID {proc.info['pid']}"
+                            )
                             break
 
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
@@ -365,7 +455,7 @@ if __name__ == "__main__":
     # Configure logging
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
     # Run auto-registration

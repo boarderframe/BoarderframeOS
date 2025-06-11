@@ -24,7 +24,9 @@ async def main():
 
     # Find best model for coding
     print("\n🔍 Finding best model for coding...")
-    coding_models = sdk.registry.get_models_by_capability(ModelCapability.CODE_GENERATION)
+    coding_models = sdk.registry.get_models_by_capability(
+        ModelCapability.CODE_GENERATION
+    )
     best_coding = coding_models[0] if coding_models else None
     if best_coding:
         print(f"  ✅ Recommended: {best_coding.provider}/{best_coding.model_name}")
@@ -51,9 +53,10 @@ async def main():
         name="test_coder",
         template=AgentTemplate.CODER,
         department="Engineering",
-        goals=["Write clean code", "Debug issues"]
+        goals=["Write clean code", "Debug issues"],
     )
     print(f"✅ Created agent: {coder.name}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

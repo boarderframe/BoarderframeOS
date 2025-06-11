@@ -23,10 +23,10 @@ original_path = sys.path.copy()
 # Remove current and parent directories to avoid local mcp module conflicts
 current_dir = str(Path(__file__).parent)
 parent_dir = str(Path(__file__).parent.parent)
-sys.path = [p for p in sys.path if p not in (current_dir, parent_dir, '')]
+sys.path = [p for p in sys.path if p not in (current_dir, parent_dir, "")]
 
 # Clear any cached local mcp modules
-local_mcp_modules = [name for name in sys.modules.keys() if name.startswith('mcp')]
+local_mcp_modules = [name for name in sys.modules.keys() if name.startswith("mcp")]
 for module_name in local_mcp_modules:
     del sys.modules[module_name]
 
@@ -45,7 +45,7 @@ log_file = Path(__file__).parent / "payment_stdio.log"
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler(log_file)]
+    handlers=[logging.FileHandler(log_file)],
 )
 logger = logging.getLogger("payment_stdio")
 
@@ -56,6 +56,7 @@ transactions = []
 subscriptions = {}
 customers = {}
 invoices = []
+
 
 @server.list_tools()
 async def handle_list_tools() -> List[types.Tool]:
@@ -69,28 +70,25 @@ async def handle_list_tools() -> List[types.Tool]:
                 "properties": {
                     "customer_id": {
                         "type": "string",
-                        "description": "Customer identifier"
+                        "description": "Customer identifier",
                     },
-                    "amount": {
-                        "type": "number",
-                        "description": "Payment amount"
-                    },
+                    "amount": {"type": "number", "description": "Payment amount"},
                     "currency": {
                         "type": "string",
                         "description": "Payment currency",
-                        "default": "usd"
+                        "default": "usd",
                     },
                     "description": {
                         "type": "string",
-                        "description": "Payment description (optional)"
+                        "description": "Payment description (optional)",
                     },
                     "metadata": {
                         "type": "object",
-                        "description": "Additional metadata (optional)"
-                    }
+                        "description": "Additional metadata (optional)",
+                    },
                 },
-                "required": ["customer_id", "amount"]
-            }
+                "required": ["customer_id", "amount"],
+            },
         ),
         types.Tool(
             name="create_subscription",
@@ -100,24 +98,24 @@ async def handle_list_tools() -> List[types.Tool]:
                 "properties": {
                     "customer_id": {
                         "type": "string",
-                        "description": "Customer identifier"
+                        "description": "Customer identifier",
                     },
                     "plan_id": {
                         "type": "string",
-                        "description": "Subscription plan ID"
+                        "description": "Subscription plan ID",
                     },
                     "billing_cycle": {
                         "type": "string",
                         "description": "Billing cycle: monthly, quarterly, yearly",
-                        "default": "monthly"
+                        "default": "monthly",
                     },
                     "metadata": {
                         "type": "object",
-                        "description": "Additional metadata (optional)"
-                    }
+                        "description": "Additional metadata (optional)",
+                    },
                 },
-                "required": ["customer_id", "plan_id"]
-            }
+                "required": ["customer_id", "plan_id"],
+            },
         ),
         types.Tool(
             name="get_subscription",
@@ -127,11 +125,11 @@ async def handle_list_tools() -> List[types.Tool]:
                 "properties": {
                     "customer_id": {
                         "type": "string",
-                        "description": "Customer identifier"
+                        "description": "Customer identifier",
                     }
                 },
-                "required": ["customer_id"]
-            }
+                "required": ["customer_id"],
+            },
         ),
         types.Tool(
             name="generate_invoice",
@@ -141,33 +139,33 @@ async def handle_list_tools() -> List[types.Tool]:
                 "properties": {
                     "customer_id": {
                         "type": "string",
-                        "description": "Customer identifier"
+                        "description": "Customer identifier",
                     },
                     "items": {
                         "type": "array",
                         "items": {"type": "object"},
-                        "description": "Invoice items"
+                        "description": "Invoice items",
                     },
                     "due_date": {
                         "type": "string",
-                        "description": "Invoice due date (optional)"
-                    }
+                        "description": "Invoice due date (optional)",
+                    },
                 },
-                "required": ["customer_id", "items"]
-            }
+                "required": ["customer_id", "items"],
+            },
         ),
         types.Tool(
             name="get_payment_stats",
             description="Get payment statistics",
-            inputSchema={
-                "type": "object",
-                "properties": {}
-            }
-        )
+            inputSchema={"type": "object", "properties": {}},
+        ),
     ]
 
+
 @server.call_tool()
-async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_call_tool(
+    name: str, arguments: Dict[str, Any]
+) -> List[types.TextContent]:
     """Handle tool calls."""
     try:
         if name == "process_payment":
@@ -186,6 +184,7 @@ async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[types.T
         logger.error(f"Tool {name} failed: {e}")
         return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
+
 async def process_payment(args: Dict[str, Any]) -> List[types.TextContent]:
     """Process a payment."""
     try:
@@ -200,7 +199,7 @@ async def process_payment(args: Dict[str, Any]) -> List[types.TextContent]:
             "status": "completed",  # Mock successful payment
             "processor": "mock",
             "created_at": datetime.now().isoformat(),
-            "metadata": args.get("metadata", {})
+            "metadata": args.get("metadata", {}),
         }
 
         transactions.append(transaction)
@@ -212,13 +211,16 @@ async def process_payment(args: Dict[str, Any]) -> List[types.TextContent]:
             "customer_id": args["customer_id"],
             "amount": args["amount"],
             "currency": args.get("currency", "usd"),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error processing payment: {str(e)}")]
+        return [
+            types.TextContent(type="text", text=f"Error processing payment: {str(e)}")
+        ]
+
 
 async def create_subscription(args: Dict[str, Any]) -> List[types.TextContent]:
     """Create a new subscription."""
@@ -234,7 +236,7 @@ async def create_subscription(args: Dict[str, Any]) -> List[types.TextContent]:
             "processor": "mock",
             "created_at": datetime.now().isoformat(),
             "next_billing_date": None,  # Would calculate based on billing cycle
-            "metadata": args.get("metadata", {})
+            "metadata": args.get("metadata", {}),
         }
 
         subscriptions[subscription_id] = subscription
@@ -247,13 +249,18 @@ async def create_subscription(args: Dict[str, Any]) -> List[types.TextContent]:
             "customer_id": args["customer_id"],
             "plan_id": args["plan_id"],
             "billing_cycle": args.get("billing_cycle", "monthly"),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error creating subscription: {str(e)}")]
+        return [
+            types.TextContent(
+                type="text", text=f"Error creating subscription: {str(e)}"
+            )
+        ]
+
 
 async def get_subscription(args: Dict[str, Any]) -> List[types.TextContent]:
     """Get subscription details for a customer."""
@@ -264,7 +271,7 @@ async def get_subscription(args: Dict[str, Any]) -> List[types.TextContent]:
             result = {
                 "success": False,
                 "error": "No subscription found for customer",
-                "customer_id": customer_id
+                "customer_id": customer_id,
             }
         else:
             subscription_id = customers[customer_id]
@@ -274,13 +281,16 @@ async def get_subscription(args: Dict[str, Any]) -> List[types.TextContent]:
                 "success": True,
                 "subscription": subscription,
                 "customer_id": customer_id,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error getting subscription: {str(e)}")]
+        return [
+            types.TextContent(type="text", text=f"Error getting subscription: {str(e)}")
+        ]
+
 
 async def generate_invoice(args: Dict[str, Any]) -> List[types.TextContent]:
     """Generate an invoice."""
@@ -297,7 +307,7 @@ async def generate_invoice(args: Dict[str, Any]) -> List[types.TextContent]:
             "total": total,
             "status": "pending",
             "created_at": datetime.now().isoformat(),
-            "due_date": args.get("due_date")
+            "due_date": args.get("due_date"),
         }
 
         invoices.append(invoice)
@@ -309,19 +319,26 @@ async def generate_invoice(args: Dict[str, Any]) -> List[types.TextContent]:
             "total": total,
             "status": "pending",
             "due_date": args.get("due_date"),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error generating invoice: {str(e)}")]
+        return [
+            types.TextContent(type="text", text=f"Error generating invoice: {str(e)}")
+        ]
+
 
 async def get_payment_stats() -> List[types.TextContent]:
     """Get payment statistics."""
     try:
-        total_revenue = sum(t["amount"] for t in transactions if t["status"] == "completed")
-        active_subscriptions = len([s for s in subscriptions.values() if s["status"] == "active"])
+        total_revenue = sum(
+            t["amount"] for t in transactions if t["status"] == "completed"
+        )
+        active_subscriptions = len(
+            [s for s in subscriptions.values() if s["status"] == "active"]
+        )
 
         result = {
             "success": True,
@@ -330,15 +347,22 @@ async def get_payment_stats() -> List[types.TextContent]:
                 "total_revenue": total_revenue,
                 "active_customers": len(customers),
                 "active_subscriptions": active_subscriptions,
-                "pending_invoices": len([i for i in invoices if i["status"] == "pending"])
+                "pending_invoices": len(
+                    [i for i in invoices if i["status"] == "pending"]
+                ),
             },
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error getting payment stats: {str(e)}")]
+        return [
+            types.TextContent(
+                type="text", text=f"Error getting payment stats: {str(e)}"
+            )
+        ]
+
 
 async def main():
     """Main entry point."""
@@ -355,6 +379,7 @@ async def main():
                 ),
             ),
         )
+
 
 if __name__ == "__main__":
     asyncio.run(main())

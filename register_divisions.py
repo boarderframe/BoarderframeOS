@@ -41,10 +41,22 @@ def register_divisions():
     CREATE INDEX IF NOT EXISTS idx_division_registry_priority ON division_registry(priority);
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", create_table_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-c",
+            create_table_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0 or "already exists" in result.stderr:
         print("   ✅ Division registry table ready")
@@ -75,30 +87,48 @@ def register_divisions():
     ORDER BY d.priority;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", division_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-A",
+            "-F",
+            "|",
+            "-c",
+            division_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     divisions = []
     if result.returncode == 0 and result.stdout:
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 11:
-                    divisions.append({
-                        "id": parts[0],
-                        "name": parts[1],
-                        "key": parts[2],
-                        "priority": parts[3],
-                        "is_active": parts[4] == "t",
-                        "dept_count": int(parts[5] or 0),
-                        "leader_count": int(parts[6] or 0),
-                        "agent_count": int(parts[7] or 0),
-                        "operational_count": int(parts[8] or 0),
-                        "total_capacity": int(parts[9] or 0),
-                        "dept_names": parts[10].split('|') if parts[10] else []
-                    })
+                    divisions.append(
+                        {
+                            "id": parts[0],
+                            "name": parts[1],
+                            "key": parts[2],
+                            "priority": parts[3],
+                            "is_active": parts[4] == "t",
+                            "dept_count": int(parts[5] or 0),
+                            "leader_count": int(parts[6] or 0),
+                            "agent_count": int(parts[7] or 0),
+                            "operational_count": int(parts[8] or 0),
+                            "total_capacity": int(parts[9] or 0),
+                            "dept_names": parts[10].split("|") if parts[10] else [],
+                        }
+                    )
 
     print(f"   Found {len(divisions)} divisions to register")
 
@@ -124,37 +154,89 @@ def register_divisions():
             GROUP BY dept.id, dept.name, dept.operational_status;
             """
 
-            dept_result = subprocess.run([
-                "docker", "exec", "boarderframeos_postgres",
-                "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-A", "-F", "|", "-c", dept_detail_query
-            ], capture_output=True, text=True)
+            dept_result = subprocess.run(
+                [
+                    "docker",
+                    "exec",
+                    "boarderframeos_postgres",
+                    "psql",
+                    "-U",
+                    "boarderframe",
+                    "-d",
+                    "boarderframeos",
+                    "-t",
+                    "-A",
+                    "-F",
+                    "|",
+                    "-c",
+                    dept_detail_query,
+                ],
+                capture_output=True,
+                text=True,
+            )
 
             if dept_result.returncode == 0 and dept_result.stdout:
-                for line in dept_result.stdout.strip().split('\n'):
-                    if '|' in line:
-                        parts = line.split('|')
+                for line in dept_result.stdout.strip().split("\n"):
+                    if "|" in line:
+                        parts = line.split("|")
                         if len(parts) >= 4:
-                            departments.append({
-                                "id": parts[0],
-                                "name": parts[1],
-                                "status": parts[2],
-                                "agents": int(parts[3] or 0)
-                            })
+                            departments.append(
+                                {
+                                    "id": parts[0],
+                                    "name": parts[1],
+                                    "status": parts[2],
+                                    "agents": int(parts[3] or 0),
+                                }
+                            )
 
         # Define division objectives based on key
         objectives_map = {
-            "executive": ["Strategic leadership", "Organizational governance", "Vision setting"],
-            "programming_development": ["Agent creation", "System architecture", "Code excellence"],
-            "information_technology": ["Infrastructure management", "Security", "System reliability"],
-            "product_operations": ["Product delivery", "Quality assurance", "Customer satisfaction"],
-            "revenue_generation": ["Revenue growth", "Sales excellence", "Market expansion"],
-            "business_operations": ["Operational efficiency", "Process optimization", "Resource management"],
-            "customer_experience": ["Customer satisfaction", "Support excellence", "Retention"],
-            "content_generation": ["Content creation", "Brand messaging", "Media production"],
-            "continuous_improvement": ["Innovation", "Learning", "Process improvement"]
+            "executive": [
+                "Strategic leadership",
+                "Organizational governance",
+                "Vision setting",
+            ],
+            "programming_development": [
+                "Agent creation",
+                "System architecture",
+                "Code excellence",
+            ],
+            "information_technology": [
+                "Infrastructure management",
+                "Security",
+                "System reliability",
+            ],
+            "product_operations": [
+                "Product delivery",
+                "Quality assurance",
+                "Customer satisfaction",
+            ],
+            "revenue_generation": [
+                "Revenue growth",
+                "Sales excellence",
+                "Market expansion",
+            ],
+            "business_operations": [
+                "Operational efficiency",
+                "Process optimization",
+                "Resource management",
+            ],
+            "customer_experience": [
+                "Customer satisfaction",
+                "Support excellence",
+                "Retention",
+            ],
+            "content_generation": [
+                "Content creation",
+                "Brand messaging",
+                "Media production",
+            ],
+            "continuous_improvement": ["Innovation", "Learning", "Process improvement"],
         }
 
-        objectives = objectives_map.get(div["key"], ["Divisional excellence", "Team collaboration"])
+        objectives = objectives_map.get(
+            div["key"], ["Divisional excellence", "Team collaboration"]
+        )
 
         # Register the division
         register_query = f"""
@@ -191,14 +273,28 @@ def register_divisions():
             updated_at = CURRENT_TIMESTAMP;
         """
 
-        result = subprocess.run([
-            "docker", "exec", "boarderframeos_postgres",
-            "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", register_query
-        ], capture_output=True, text=True)
+        result = subprocess.run(
+            [
+                "docker",
+                "exec",
+                "boarderframeos_postgres",
+                "psql",
+                "-U",
+                "boarderframe",
+                "-d",
+                "boarderframeos",
+                "-c",
+                register_query,
+            ],
+            capture_output=True,
+            text=True,
+        )
 
         if result.returncode == 0:
             status_icon = "🟢" if div["is_active"] else "🟡"
-            print(f"   {status_icon} {div['name']} - {div['dept_count']} depts, {div['agent_count']} agents")
+            print(
+                f"   {status_icon} {div['name']} - {div['dept_count']} depts, {div['agent_count']} agents"
+            )
         else:
             print(f"   ❌ Failed to register {div['name']}: {result.stderr[:50]}")
 
@@ -232,16 +328,29 @@ def register_divisions():
     FROM division_registry;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", summary_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-c",
+            summary_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
         print("\nRegistry Metrics:")
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 2:
                     metric = parts[0].strip()
                     value = parts[1].strip() or "0"
@@ -266,16 +375,29 @@ def register_divisions():
     ORDER BY type;
     """
 
-    result = subprocess.run([
-        "docker", "exec", "boarderframeos_postgres",
-        "psql", "-U", "boarderframe", "-d", "boarderframeos", "-t", "-c", final_query
-    ], capture_output=True, text=True)
+    result = subprocess.run(
+        [
+            "docker",
+            "exec",
+            "boarderframeos_postgres",
+            "psql",
+            "-U",
+            "boarderframe",
+            "-d",
+            "boarderframeos",
+            "-t",
+            "-c",
+            final_query,
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
         print("\nComplete Registry:")
-        for line in result.stdout.strip().split('\n'):
-            if '|' in line:
-                parts = line.split('|')
+        for line in result.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
                 if len(parts) >= 2:
                     type_name = parts[0].strip()
                     count = parts[1].strip()

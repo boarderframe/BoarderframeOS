@@ -29,15 +29,17 @@ def setup_environment():
         print("✅ .env file already exists")
     else:
         print("⚠️  No .env.example found, creating basic .env file...")
-        with open(env_file, 'w') as f:
-            f.write("""# BoarderframeOS Environment Configuration
+        with open(env_file, "w") as f:
+            f.write(
+                """# BoarderframeOS Environment Configuration
 POSTGRES_PASSWORD=boarderframe_secure_2025
 POSTGRES_PORT=5434
 DATABASE_URL=postgresql://boarderframe:boarderframe_secure_2025@localhost:5434/boarderframeos
 REDIS_PORT=6379
 REDIS_URL=redis://localhost:6379
 ENVIRONMENT=development
-""")
+"""
+            )
         print("✅ Basic .env file created")
 
     # Check Docker
@@ -55,7 +57,9 @@ ENVIRONMENT=development
 
     # Check docker-compose
     try:
-        result = subprocess.run(["docker-compose", "--version"], capture_output=True, text=True)
+        result = subprocess.run(
+            ["docker-compose", "--version"], capture_output=True, text=True
+        )
         if result.returncode == 0:
             print("✅ Docker Compose is available")
         else:
@@ -67,6 +71,7 @@ ENVIRONMENT=development
 
     print("✅ Environment setup complete!")
     return True
+
 
 def ensure_database_setup():
     """Ensure database containers are running and initialized"""
@@ -81,7 +86,7 @@ def ensure_database_setup():
             ["docker-compose", "up", "-d", "postgresql", "redis"],
             cwd=project_root,
             capture_output=True,
-            text=True
+            text=True,
         )
 
         if result.returncode == 0:
@@ -96,12 +101,22 @@ def ensure_database_setup():
     # Wait for PostgreSQL to be ready
     print("⏳ Waiting for PostgreSQL to be ready...")
     import time
+
     for i in range(30):
         try:
             result = subprocess.run(
-                ["docker", "exec", "boarderframeos_postgres", "pg_isready", "-U", "boarderframe", "-d", "boarderframeos"],
+                [
+                    "docker",
+                    "exec",
+                    "boarderframeos_postgres",
+                    "pg_isready",
+                    "-U",
+                    "boarderframe",
+                    "-d",
+                    "boarderframeos",
+                ],
                 capture_output=True,
-                text=True
+                text=True,
             )
             if result.returncode == 0:
                 print("✅ PostgreSQL is ready")
@@ -116,9 +131,20 @@ def ensure_database_setup():
     print("🧪 Testing database connectivity...")
     try:
         result = subprocess.run(
-            ["docker", "exec", "boarderframeos_postgres", "psql", "-U", "boarderframe", "-d", "boarderframeos", "-c", "SELECT 1;"],
+            [
+                "docker",
+                "exec",
+                "boarderframeos_postgres",
+                "psql",
+                "-U",
+                "boarderframe",
+                "-d",
+                "boarderframeos",
+                "-c",
+                "SELECT 1;",
+            ],
             capture_output=True,
-            text=True
+            text=True,
         )
         if result.returncode == 0:
             print("✅ Database connectivity confirmed")
@@ -129,6 +155,7 @@ def ensure_database_setup():
     except Exception as e:
         print(f"❌ Database test error: {e}")
         return False
+
 
 if __name__ == "__main__":
     if not setup_environment():

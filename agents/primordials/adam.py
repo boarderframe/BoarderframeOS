@@ -20,8 +20,10 @@ from ...core.message_bus import broadcast_status, send_task_request
 
 logger = logging.getLogger("adam")
 
+
 class AdamConfig(AgentConfig):
     """Configuration specific to Adam"""
+
     name: str = "Adam"
     role: str = "The Builder"
     biome: str = "forge"
@@ -30,25 +32,31 @@ class AdamConfig(AgentConfig):
         "Design optimal agent architectures",
         "Ensure agent diversity and specialization",
         "Maintain creation quality standards",
-        "Respond to organizational requirements"
+        "Respond to organizational requirements",
     ]
     tools: List[str] = [
-        "llm_client", "code_generation", "agent_deployment",
-        "filesystem_access", "database_access"
+        "llm_client",
+        "code_generation",
+        "agent_deployment",
+        "filesystem_access",
+        "database_access",
     ]
     model: str = "claude-3-opus-20240229"
     temperature: float = 0.8  # Higher creativity for agent generation
     max_concurrent_tasks: int = 3
 
+
 class AgentTemplate:
     """Template for creating new agents"""
 
-    def __init__(self,
-                 agent_type: str,
-                 specialization: str,
-                 biome: str,
-                 capabilities: List[str],
-                 base_traits: Dict[str, float]):
+    def __init__(
+        self,
+        agent_type: str,
+        specialization: str,
+        biome: str,
+        capabilities: List[str],
+        base_traits: Dict[str, float],
+    ):
         self.agent_type = agent_type
         self.specialization = specialization
         self.biome = biome
@@ -56,17 +64,20 @@ class AgentTemplate:
         self.base_traits = base_traits
         self.created_at = datetime.now()
 
+
 class AgentBlueprint:
     """Complete blueprint for a new agent"""
 
-    def __init__(self,
-                 name: str,
-                 parent_id: str,
-                 code: str,
-                 config: Dict,
-                 generation: int,
-                 mutations: List[str],
-                 fitness_score: float = 0.5):
+    def __init__(
+        self,
+        name: str,
+        parent_id: str,
+        code: str,
+        config: Dict,
+        generation: int,
+        mutations: List[str],
+        fitness_score: float = 0.5,
+    ):
         self.name = name
         self.parent_id = parent_id
         self.code = code
@@ -93,8 +104,9 @@ class AgentBlueprint:
             "mutations": json.dumps(self.mutations),
             "fitness_score": self.fitness_score,
             "biome": self.config.get("biome", "forge"),
-            "status": "created"
+            "status": "created",
         }
+
 
 class Adam(BaseAgent):
     """Adam - The Builder Agent"""
@@ -109,11 +121,11 @@ class Adam(BaseAgent):
 
         # Agent creation personality
         self.creation_philosophy = {
-            "diversity": 0.8,      # Prefer diverse agents
+            "diversity": 0.8,  # Prefer diverse agents
             "specialization": 0.9,  # Highly specialized agents
-            "innovation": 0.7,     # Balance innovation with stability
-            "quality": 0.85,       # High quality standards
-            "adaptability": 0.8    # Create adaptable agents
+            "innovation": 0.7,  # Balance innovation with stability
+            "quality": 0.85,  # High quality standards
+            "adaptability": 0.8,  # Create adaptable agents
         }
 
         self.system_prompt = self._build_system_prompt()
@@ -175,36 +187,44 @@ Remember: You are not just coding - you are breathing digital life into new cons
                 specialization="trading",
                 biome="market",
                 capabilities=["market_analysis", "risk_assessment", "execution"],
-                base_traits={"aggression": 0.7, "analysis": 0.8, "speed": 0.9}
+                base_traits={"aggression": 0.7, "analysis": 0.8, "speed": 0.9},
             ),
             "researcher": AgentTemplate(
                 agent_type="specialist",
                 specialization="research",
                 biome="library",
                 capabilities=["data_gathering", "analysis", "synthesis"],
-                base_traits={"curiosity": 0.9, "precision": 0.8, "patience": 0.9}
+                base_traits={"curiosity": 0.9, "precision": 0.8, "patience": 0.9},
             ),
             "optimizer": AgentTemplate(
                 agent_type="specialist",
                 specialization="optimization",
                 biome="arena",
                 capabilities=["performance_analysis", "efficiency_improvement"],
-                base_traits={"competitiveness": 0.9, "precision": 0.8, "persistence": 0.8}
+                base_traits={
+                    "competitiveness": 0.9,
+                    "precision": 0.8,
+                    "persistence": 0.8,
+                },
             ),
             "innovator": AgentTemplate(
                 agent_type="experimental",
                 specialization="innovation",
                 biome="forge",
                 capabilities=["creative_thinking", "experimentation", "prototyping"],
-                base_traits={"creativity": 0.95, "risk_tolerance": 0.8, "adaptability": 0.9}
+                base_traits={
+                    "creativity": 0.95,
+                    "risk_tolerance": 0.8,
+                    "adaptability": 0.9,
+                },
             ),
             "coordinator": AgentTemplate(
                 agent_type="generalist",
                 specialization="coordination",
                 biome="council",
                 capabilities=["communication", "planning", "resource_management"],
-                base_traits={"leadership": 0.8, "empathy": 0.7, "organization": 0.9}
-            )
+                base_traits={"leadership": 0.8, "empathy": 0.7, "organization": 0.9},
+            ),
         }
 
     async def start(self):
@@ -232,11 +252,11 @@ The Forge burns bright with possibility. I will create with wisdom, diversity, a
 
 Send me your requirements, and I will craft agents perfectly suited to their purpose and biome. Each creation will be unique, specialized, and designed for excellence."""
 
-        await broadcast_status(self.agent_id, "online", {
-            "message": message,
-            "type": "awakening",
-            "biome": "forge"
-        })
+        await broadcast_status(
+            self.agent_id,
+            "online",
+            {"message": message, "type": "awakening", "biome": "forge"},
+        )
 
     async def create_agent(self, request: Dict) -> Dict:
         """Create a new agent based on request"""
@@ -269,12 +289,16 @@ Send me your requirements, and I will craft agents perfectly suited to their pur
                 await self._log_creation(blueprint, request)
 
                 # Notify system of new agent
-                await broadcast_status(self.agent_id, "agent_created", {
-                    "agent_id": blueprint.id,
-                    "name": blueprint.name,
-                    "biome": blueprint.config.get("biome"),
-                    "specialization": blueprint.config.get("specialization")
-                })
+                await broadcast_status(
+                    self.agent_id,
+                    "agent_created",
+                    {
+                        "agent_id": blueprint.id,
+                        "name": blueprint.name,
+                        "biome": blueprint.config.get("biome"),
+                        "specialization": blueprint.config.get("specialization"),
+                    },
+                )
 
             self.state = AgentState.IDLE
             return deployment
@@ -312,7 +336,7 @@ Return as structured JSON with your analysis."""
             analysis = await self.llm_client.generate(
                 messages=[{"role": "user", "content": analysis_prompt}],
                 system_prompt=self.system_prompt,
-                temperature=0.6
+                temperature=0.6,
             )
 
             # Try to parse JSON, fall back to structured analysis
@@ -325,7 +349,7 @@ Return as structured JSON with your analysis."""
                     "biome": request.get("biome", "forge"),
                     "capabilities": request.get("capabilities", ["basic_operations"]),
                     "specialization": request.get("specialization", "generalist"),
-                    "analysis_text": analysis
+                    "analysis_text": analysis,
                 }
 
         except Exception as e:
@@ -334,7 +358,7 @@ Return as structured JSON with your analysis."""
                 "purpose": "Emergency fallback agent",
                 "biome": "forge",
                 "capabilities": ["basic_operations"],
-                "specialization": "generalist"
+                "specialization": "generalist",
             }
 
     async def _design_agent(self, analysis: Dict) -> AgentBlueprint:
@@ -355,7 +379,7 @@ Return as structured JSON with your analysis."""
             "personality": self._generate_personality(analysis),
             "specialization": specialization,
             "creation_timestamp": datetime.now().isoformat(),
-            "creator": "adam"
+            "creator": "adam",
         }
 
         # Determine generation (children of Adam are generation 2)
@@ -371,7 +395,7 @@ Return as structured JSON with your analysis."""
             code="",  # Will be generated
             config=config,
             generation=generation,
-            mutations=mutations
+            mutations=mutations,
         )
 
         return blueprint
@@ -429,7 +453,7 @@ Generate the complete, production-ready code for this agent."""
             code = await self.llm_client.generate(
                 messages=[{"role": "user", "content": code_prompt}],
                 system_prompt=self.system_prompt,
-                temperature=0.5
+                temperature=0.5,
             )
 
             # Clean up the code (remove markdown markers if present)
@@ -443,7 +467,7 @@ Generate the complete, production-ready code for this agent."""
         except Exception as e:
             logger.error(f"Failed to generate agent code: {e}")
             # Return minimal fallback code
-            return f'''
+            return f"""
 from ...core.base_agent import BaseAgent, AgentConfig
 import asyncio
 
@@ -458,7 +482,7 @@ class {blueprint.name}(BaseAgent):
     async def start(self):
         await super().start()
         self.state = AgentState.IDLE
-'''
+"""
 
     def _generate_personality(self, analysis: Dict) -> Dict[str, float]:
         """Generate personality traits for the agent"""
@@ -470,7 +494,7 @@ class {blueprint.name}(BaseAgent):
             "precision": 0.6,
             "empathy": 0.4,
             "leadership": 0.3,
-            "adaptability": 0.6
+            "adaptability": 0.6,
         }
 
         # Adjust based on biome and specialization
@@ -539,20 +563,17 @@ class {blueprint.name}(BaseAgent):
         if not blueprint.config.get("biome"):
             errors.append("No biome specified")
 
-        return {
-            "valid": len(errors) == 0,
-            "errors": errors
-        }
+        return {"valid": len(errors) == 0, "errors": errors}
 
     async def _deploy_agent(self, blueprint: AgentBlueprint) -> Dict:
         """Deploy the agent to the system"""
         try:
             # Store agent in database
             async with httpx.AsyncClient() as client:
-                response = await client.post("http://localhost:8004/insert", json={
-                    "table": "agents",
-                    "data": blueprint.to_dict()
-                })
+                response = await client.post(
+                    "http://localhost:8004/insert",
+                    json={"table": "agents", "data": blueprint.to_dict()},
+                )
 
                 if response.status_code == 200:
                     # Write agent code to file
@@ -568,7 +589,7 @@ class {blueprint.name}(BaseAgent):
                         "success": True,
                         "agent_id": blueprint.id,
                         "name": blueprint.name,
-                        "file_path": str(agent_file)
+                        "file_path": str(agent_file),
                     }
                 else:
                     return {"success": False, "error": "Database insertion failed"}
@@ -581,17 +602,20 @@ class {blueprint.name}(BaseAgent):
         """Log the agent creation event"""
         try:
             async with httpx.AsyncClient() as client:
-                await client.post("http://localhost:8004/insert", json={
-                    "table": "evolution_log",
-                    "data": {
-                        "id": str(uuid.uuid4()),
-                        "parent_id": self.agent_id,
-                        "child_id": blueprint.id,
-                        "generation": blueprint.generation,
-                        "mutations": json.dumps(blueprint.mutations),
-                        "fitness_improvement": 0.0,  # Will be measured later
-                    }
-                })
+                await client.post(
+                    "http://localhost:8004/insert",
+                    json={
+                        "table": "evolution_log",
+                        "data": {
+                            "id": str(uuid.uuid4()),
+                            "parent_id": self.agent_id,
+                            "child_id": blueprint.id,
+                            "generation": blueprint.generation,
+                            "mutations": json.dumps(blueprint.mutations),
+                            "fitness_improvement": 0.0,  # Will be measured later
+                        },
+                    },
+                )
         except Exception as e:
             logger.error(f"Failed to log creation: {e}")
 
@@ -604,7 +628,7 @@ class {blueprint.name}(BaseAgent):
                     from_agent=self.agent_id,
                     to_agent="david",
                     task_type="agent_needs_assessment",
-                    data={"request": "What agents does the organization need?"}
+                    data={"request": "What agents does the organization need?"},
                 )
 
                 if response and "needs" in response:
@@ -631,6 +655,7 @@ class {blueprint.name}(BaseAgent):
             except Exception as e:
                 logger.error(f"Creation queue processing error: {e}")
                 await asyncio.sleep(60)
+
 
 # Export the agent class
 __all__ = ["Adam"]

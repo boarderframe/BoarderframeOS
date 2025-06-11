@@ -17,9 +17,10 @@ def load_boarderframe_config():
     """Load BoarderframeOS configuration"""
     config_path = Path(__file__).parent.parent / "boarderframe.yaml"
     if config_path.exists():
-        with open(config_path, 'r') as f:
+        with open(config_path, "r") as f:
             return yaml.safe_load(f)
     return {}
+
 
 def update_mcp_server_config(config: dict):
     """Update MCP server configuration in boarderframe.yaml"""
@@ -41,7 +42,7 @@ def update_mcp_server_config(config: dict):
             "vector_embeddings": True,
             "real_time_monitoring": True,
             "version_control": True,
-            "integrity_checking": True
+            "integrity_checking": True,
         },
         "dependencies": [
             "aiofiles",
@@ -50,15 +51,16 @@ def update_mcp_server_config(config: dict):
             "aiosqlite",
             "watchdog",
             "tiktoken",
-            "pygments"
-        ]
+            "pygments",
+        ],
     }
 
     # Write back to config
-    with open(config_path, 'w') as f:
+    with open(config_path, "w") as f:
         yaml.dump(config, f, default_flow_style=False, indent=2)
 
     print("✅ Updated BoarderframeOS configuration with MCP filesystem server")
+
 
 async def test_integration():
     """Test integration with BoarderframeOS"""
@@ -66,9 +68,13 @@ async def test_integration():
 
     # Test if server can start
     try:
-        proc = subprocess.Popen([
-            sys.executable, "start_filesystem_server.py", "--health-check"
-        ], cwd=Path(__file__).parent, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        proc = subprocess.Popen(
+            [sys.executable, "start_filesystem_server.py", "--health-check"],
+            cwd=Path(__file__).parent,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+        )
 
         stdout, stderr = proc.communicate(timeout=10)
 
@@ -84,13 +90,16 @@ async def test_integration():
     except Exception as e:
         print(f"❌ Integration test failed: {e}")
 
+
 def main():
     print("🔧 BoarderframeOS MCP Filesystem Server Integration")
     print("=" * 50)
 
     # Load current config
     config = load_boarderframe_config()
-    print(f"📄 Loaded config from: {Path(__file__).parent.parent / 'boarderframe.yaml'}")
+    print(
+        f"📄 Loaded config from: {Path(__file__).parent.parent / 'boarderframe.yaml'}"
+    )
 
     # Update MCP server configuration
     update_mcp_server_config(config)
@@ -104,6 +113,7 @@ def main():
     print("2. Monitor server health: python mcp/monitor_filesystem_server.py")
     print("3. Run tests: python mcp/test_filesystem_server.py")
     print("4. Check dashboard: http://localhost:8888")
+
 
 if __name__ == "__main__":
     main()

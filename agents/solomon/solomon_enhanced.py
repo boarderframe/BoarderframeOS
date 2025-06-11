@@ -14,11 +14,12 @@ from typing import Any, Dict, List, Optional
 # Load environment variables from .env file
 try:
     from dotenv import load_dotenv
-    load_dotenv(Path(__file__).parent.parent.parent / '.env')
+
+    load_dotenv(Path(__file__).parent.parent.parent / ".env")
 except ImportError:
     pass
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from langgraph.graph import END, START, StateGraph
 
@@ -46,12 +47,12 @@ class EnhancedSolomon(EnhancedBaseAgent):
                 "business_intelligence",
                 "system_coordination",
                 "intelligent_routing",
-                "executive_advisory"
+                "executive_advisory",
             ],
             tools=["analytics", "customer", "registry"],
             model="claude-3-opus-20240229",  # Will be optimized by Brain
             temperature=0.3,  # Lower temperature for more focused analysis
-            max_concurrent_tasks=10
+            max_concurrent_tasks=10,
         )
 
         super().__init__(config)
@@ -62,7 +63,7 @@ class EnhancedSolomon(EnhancedBaseAgent):
             "maximize": ["freedom", "wellbeing", "wealth", "autonomy"],
             "protect": ["user_benefits", "work_life_balance", "system_integrity"],
             "target": "15k_monthly_revenue",
-            "principles": ["data_driven", "strategic_thinking", "long_term_vision"]
+            "principles": ["data_driven", "strategic_thinking", "long_term_vision"],
         }
 
         # Business intelligence tracking
@@ -72,14 +73,22 @@ class EnhancedSolomon(EnhancedBaseAgent):
             "agents_active": 0,
             "system_efficiency": 0.85,
             "cost_optimization": 0.0,
-            "user_satisfaction": 0.0
+            "user_satisfaction": 0.0,
         }
 
         # Strategic context
         self.strategic_context = {
             "current_phase": "foundation_building",
-            "next_milestones": ["agent_scaling", "department_deployment", "revenue_optimization"],
-            "focus_areas": ["brain_integration", "multi_agent_coordination", "cost_efficiency"]
+            "next_milestones": [
+                "agent_scaling",
+                "department_deployment",
+                "revenue_optimization",
+            ],
+            "focus_areas": [
+                "brain_integration",
+                "multi_agent_coordination",
+                "cost_efficiency",
+            ],
         }
 
     def _load_solomon_knowledge(self) -> Dict[str, Any]:
@@ -88,25 +97,43 @@ class EnhancedSolomon(EnhancedBaseAgent):
             "user_preferences": {
                 "communication_style": "direct_and_strategic",
                 "work_approach": "systems_thinking",
-                "decision_priorities": ["revenue", "autonomy", "scalability", "efficiency"]
+                "decision_priorities": [
+                    "revenue",
+                    "autonomy",
+                    "scalability",
+                    "efficiency",
+                ],
             },
             "boarderframeos_expertise": {
                 "architecture": "multi_agent_system_with_brain_orchestration",
                 "current_agents": ["solomon", "david", "adam", "eve", "bezalel"],
-                "infrastructure": ["postgresql", "redis", "mcp_servers", "brain_system"],
-                "revenue_model": "agent_as_a_service_plus_api_gateway"
+                "infrastructure": [
+                    "postgresql",
+                    "redis",
+                    "mcp_servers",
+                    "brain_system",
+                ],
+                "revenue_model": "agent_as_a_service_plus_api_gateway",
             },
             "strategic_insights": {
                 "market_opportunity": "ai_agent_orchestration_platform",
-                "competitive_advantage": ["local_deployment", "cost_optimization", "intelligence_routing"],
-                "success_metrics": ["monthly_revenue", "agent_efficiency", "user_adoption"]
+                "competitive_advantage": [
+                    "local_deployment",
+                    "cost_optimization",
+                    "intelligence_routing",
+                ],
+                "success_metrics": [
+                    "monthly_revenue",
+                    "agent_efficiency",
+                    "user_adoption",
+                ],
             },
             "business_context": {
                 "target_revenue": 15000,  # Monthly
                 "agent_capacity": 120,
                 "departments": 24,
-                "infrastructure_status": "operational"
-            }
+                "infrastructure_status": "operational",
+            },
         }
 
     async def _add_specialized_nodes(self, graph: StateGraph):
@@ -136,11 +163,11 @@ class EnhancedSolomon(EnhancedBaseAgent):
                 "user_request": state.get("user_request", ""),
                 "business_context": self.business_kpis,
                 "strategic_framework": self.decision_framework,
-                "current_phase": self.strategic_context["current_phase"]
+                "current_phase": self.strategic_context["current_phase"],
             },
             complexity=8,  # High complexity for strategic work
             quality_requirements=0.95,  # Highest quality for strategic decisions
-            conversation_id=state.get("conversation_id")
+            conversation_id=state.get("conversation_id"),
         )
 
         # Get optimal model from Brain for strategic analysis
@@ -178,17 +205,13 @@ class EnhancedSolomon(EnhancedBaseAgent):
 
             # Report success to Brain
             await self._report_brain_performance(
-                brain_response.tracking_id,
-                strategic_analysis,
-                success=True
+                brain_response.tracking_id, strategic_analysis, success=True
             )
 
         except Exception as e:
             strategic_analysis = f"Strategic analysis encountered an issue: {str(e)}"
             await self._report_brain_performance(
-                brain_response.tracking_id,
-                strategic_analysis,
-                success=False
+                brain_response.tracking_id, strategic_analysis, success=False
             )
 
         # Update state with analysis
@@ -198,7 +221,9 @@ class EnhancedSolomon(EnhancedBaseAgent):
 
         return state
 
-    async def _business_intelligence_node(self, state: Dict[str, Any]) -> Dict[str, Any]:
+    async def _business_intelligence_node(
+        self, state: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Solomon's business intelligence processing"""
 
         # Gather business intelligence
@@ -211,10 +236,10 @@ class EnhancedSolomon(EnhancedBaseAgent):
             context={
                 "strategic_analysis": state.get("strategic_analysis", ""),
                 "business_intel": business_intel,
-                "kpis": self.business_kpis
+                "kpis": self.business_kpis,
             },
             complexity=7,
-            quality_requirements=0.9
+            quality_requirements=0.9,
         )
 
         brain_response = await self.brain.process_agent_request(brain_request)
@@ -243,10 +268,14 @@ class EnhancedSolomon(EnhancedBaseAgent):
 
         try:
             bi_analysis = await brain_response.llm.generate(bi_prompt)
-            await self._report_brain_performance(brain_response.tracking_id, bi_analysis, True)
+            await self._report_brain_performance(
+                brain_response.tracking_id, bi_analysis, True
+            )
         except Exception as e:
             bi_analysis = f"BI analysis error: {str(e)}"
-            await self._report_brain_performance(brain_response.tracking_id, bi_analysis, False)
+            await self._report_brain_performance(
+                brain_response.tracking_id, bi_analysis, False
+            )
 
         state["business_intelligence"] = bi_analysis
         state["bi_brain_model"] = brain_response.selection.selected_model
@@ -291,7 +320,7 @@ class EnhancedSolomon(EnhancedBaseAgent):
             task_type="strategic_thinking",
             context=context,
             complexity=urgent_indicators["complexity"],
-            quality_requirements=0.9
+            quality_requirements=0.9,
         )
 
         brain_response = await self.brain.process_agent_request(brain_request)
@@ -320,11 +349,15 @@ class EnhancedSolomon(EnhancedBaseAgent):
 
         try:
             thoughts = await brain_response.llm.generate(thinking_prompt)
-            await self._report_brain_performance(brain_response.tracking_id, thoughts, True)
+            await self._report_brain_performance(
+                brain_response.tracking_id, thoughts, True
+            )
             return thoughts
         except Exception as e:
             error_thoughts = f"Strategic thinking encountered an issue: {str(e)}"
-            await self._report_brain_performance(brain_response.tracking_id, error_thoughts, False)
+            await self._report_brain_performance(
+                brain_response.tracking_id, error_thoughts, False
+            )
             return error_thoughts
 
     async def act(self, action: Dict[str, Any]) -> Dict[str, Any]:
@@ -344,7 +377,9 @@ class EnhancedSolomon(EnhancedBaseAgent):
         else:
             return await self._execute_general_action(action)
 
-    async def handle_user_chat(self, message: str, conversation_id: Optional[str] = None) -> str:
+    async def handle_user_chat(
+        self, message: str, conversation_id: Optional[str] = None
+    ) -> str:
         """Enhanced chat handling with strategic intelligence"""
 
         self.logger.info(f"Solomon processing strategic request: {message[:100]}...")
@@ -352,10 +387,14 @@ class EnhancedSolomon(EnhancedBaseAgent):
         # For now, use the orchestrator for all requests to avoid state conflicts
         # TODO: Fix agent-specific graph state management
         try:
-            result = await self.orchestrator.process_user_request(message, conversation_id)
+            result = await self.orchestrator.process_user_request(
+                message, conversation_id
+            )
 
             # Add Solomon's strategic context to the response
-            enhanced_response = await self._add_strategic_context(result["response"], message)
+            enhanced_response = await self._add_strategic_context(
+                result["response"], message
+            )
             return enhanced_response
 
         except Exception as e:
@@ -367,14 +406,26 @@ class EnhancedSolomon(EnhancedBaseAgent):
     async def _assess_urgency(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """Assess urgency and complexity of strategic situation"""
 
-        new_messages = context.get('new_messages', [])
-        user_input = context.get('user_input', '')
+        new_messages = context.get("new_messages", [])
+        user_input = context.get("user_input", "")
 
         # Urgency keywords
         urgent_keywords = [
-            'urgent', 'critical', 'emergency', 'immediate', 'asap',
-            'revenue', 'down', 'error', 'failure', 'issue', 'problem',
-            'strategic', 'decision', 'opportunity', 'competitive'
+            "urgent",
+            "critical",
+            "emergency",
+            "immediate",
+            "asap",
+            "revenue",
+            "down",
+            "error",
+            "failure",
+            "issue",
+            "problem",
+            "strategic",
+            "decision",
+            "opportunity",
+            "competitive",
         ]
 
         # Check for urgent content
@@ -385,15 +436,20 @@ class EnhancedSolomon(EnhancedBaseAgent):
 
         # Complexity assessment
         complexity = 5  # Base complexity
-        if has_urgent_content: complexity += 2
-        if len(new_messages) > 3: complexity += 1
-        if any(word in user_input.lower() for word in ['strategy', 'business', 'revenue']): complexity += 2
+        if has_urgent_content:
+            complexity += 2
+        if len(new_messages) > 3:
+            complexity += 1
+        if any(
+            word in user_input.lower() for word in ["strategy", "business", "revenue"]
+        ):
+            complexity += 2
 
         return {
             "has_urgent_items": has_urgent_content or len(new_messages) > 0,
             "urgency_level": 8 if has_urgent_content else 5,
             "complexity": min(complexity, 10),
-            "message_count": len(new_messages)
+            "message_count": len(new_messages),
         }
 
     async def _gather_business_intelligence(self) -> Dict[str, Any]:
@@ -404,20 +460,20 @@ class EnhancedSolomon(EnhancedBaseAgent):
                 "brain_active": True,
                 "langgraph_operational": True,
                 "mcp_servers": await self._get_mcp_server_status(),
-                "agent_count": len(await self._get_active_agents())
+                "agent_count": len(await self._get_active_agents()),
             },
             "performance_metrics": {
                 "response_time": self.metrics.avg_response_time,
                 "quality_score": self.metrics.quality_score,
                 "cost_efficiency": 0.85,  # TODO: Get real cost efficiency
-                "uptime": 0.99  # TODO: Get real uptime
+                "uptime": 0.99,  # TODO: Get real uptime
             },
             "business_metrics": self.business_kpis,
             "strategic_progress": {
                 "current_phase": self.strategic_context["current_phase"],
                 "milestone_completion": 0.6,  # TODO: Calculate real completion
-                "next_priorities": self.strategic_context["next_milestones"][:3]
-            }
+                "next_priorities": self.strategic_context["next_milestones"][:3],
+            },
         }
 
     async def _analyze_routing_needs(self, state: Dict[str, Any]) -> Dict[str, Any]:
@@ -430,32 +486,47 @@ class EnhancedSolomon(EnhancedBaseAgent):
             "requires_routing": False,
             "target_agent": None,
             "target_department": None,
-            "reasoning": ""
+            "reasoning": "",
         }
 
         # Check for agent creation needs
-        if any(keyword in user_request for keyword in ["create agent", "new agent", "agent development"]):
-            routing_needs.update({
-                "requires_routing": True,
-                "target_agent": "adam",
-                "reasoning": "Request involves agent creation - routing to Adam"
-            })
+        if any(
+            keyword in user_request
+            for keyword in ["create agent", "new agent", "agent development"]
+        ):
+            routing_needs.update(
+                {
+                    "requires_routing": True,
+                    "target_agent": "adam",
+                    "reasoning": "Request involves agent creation - routing to Adam",
+                }
+            )
 
         # Check for executive decision needs
-        elif any(keyword in strategic_analysis for keyword in ["executive decision", "ceo approval", "leadership"]):
-            routing_needs.update({
-                "requires_routing": True,
-                "target_agent": "david",
-                "reasoning": "Strategic analysis indicates need for executive decision - routing to David"
-            })
+        elif any(
+            keyword in strategic_analysis
+            for keyword in ["executive decision", "ceo approval", "leadership"]
+        ):
+            routing_needs.update(
+                {
+                    "requires_routing": True,
+                    "target_agent": "david",
+                    "reasoning": "Strategic analysis indicates need for executive decision - routing to David",
+                }
+            )
 
         # Check for department-specific needs
-        elif any(keyword in user_request for keyword in ["finance", "engineering", "operations"]):
-            routing_needs.update({
-                "requires_routing": True,
-                "target_department": self._determine_department(user_request),
-                "reasoning": "Request is department-specific"
-            })
+        elif any(
+            keyword in user_request
+            for keyword in ["finance", "engineering", "operations"]
+        ):
+            routing_needs.update(
+                {
+                    "requires_routing": True,
+                    "target_department": self._determine_department(user_request),
+                    "reasoning": "Request is department-specific",
+                }
+            )
 
         return routing_needs
 
@@ -470,7 +541,9 @@ class EnhancedSolomon(EnhancedBaseAgent):
 
         # Business Intelligence Summary
         if state.get("business_intelligence"):
-            components.append(f"**Business Intelligence:**\n{state['business_intelligence']}")
+            components.append(
+                f"**Business Intelligence:**\n{state['business_intelligence']}"
+            )
 
         # Routing Decision
         routing = state.get("routing_decision", {})
@@ -493,19 +566,29 @@ class EnhancedSolomon(EnhancedBaseAgent):
 
         if "revenue" in user_request:
             recommendations.append("• Focus on revenue optimization strategies")
-            recommendations.append("• Consider scaling high-performing agent capabilities")
+            recommendations.append(
+                "• Consider scaling high-performing agent capabilities"
+            )
 
         if "agent" in user_request:
-            recommendations.append("• Evaluate agent performance and optimization opportunities")
+            recommendations.append(
+                "• Evaluate agent performance and optimization opportunities"
+            )
             recommendations.append("• Consider expanding successful agent patterns")
 
         if "strategy" in user_request:
-            recommendations.append("• Align tactical execution with strategic objectives")
+            recommendations.append(
+                "• Align tactical execution with strategic objectives"
+            )
             recommendations.append("• Monitor KPIs for strategic initiative success")
 
         if not recommendations:
-            recommendations.append("• Continue monitoring system performance and optimization opportunities")
-            recommendations.append("• Maintain focus on revenue growth and operational efficiency")
+            recommendations.append(
+                "• Continue monitoring system performance and optimization opportunities"
+            )
+            recommendations.append(
+                "• Maintain focus on revenue growth and operational efficiency"
+            )
 
         return "\n".join(recommendations)
 
@@ -513,9 +596,17 @@ class EnhancedSolomon(EnhancedBaseAgent):
         """Determine if request requires complex multi-agent orchestration"""
 
         complex_indicators = [
-            "comprehensive", "complete", "full analysis", "detailed strategy",
-            "business plan", "multi-department", "coordination", "complex",
-            "create and deploy", "end-to-end", "comprehensive analysis"
+            "comprehensive",
+            "complete",
+            "full analysis",
+            "detailed strategy",
+            "business plan",
+            "multi-department",
+            "coordination",
+            "complex",
+            "create and deploy",
+            "end-to-end",
+            "comprehensive analysis",
         ]
 
         return any(indicator in message.lower() for indicator in complex_indicators)
@@ -535,7 +626,9 @@ class EnhancedSolomon(EnhancedBaseAgent):
         return response + strategic_addendum
 
     # Action execution methods
-    async def _execute_strategic_analysis(self, action: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_strategic_analysis(
+        self, action: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute strategic analysis action"""
 
         analysis_result = await self._gather_business_intelligence()
@@ -544,10 +637,12 @@ class EnhancedSolomon(EnhancedBaseAgent):
             "action_type": "strategic_analysis",
             "result": "Strategic analysis completed",
             "analysis": analysis_result,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
-    async def _execute_business_intelligence(self, action: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_business_intelligence(
+        self, action: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute business intelligence action"""
 
         bi_data = await self._gather_business_intelligence()
@@ -556,7 +651,7 @@ class EnhancedSolomon(EnhancedBaseAgent):
             "action_type": "business_intelligence",
             "result": "Business intelligence gathered",
             "intelligence": bi_data,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     async def _execute_routing_decision(self, action: Dict[str, Any]) -> Dict[str, Any]:
@@ -568,10 +663,12 @@ class EnhancedSolomon(EnhancedBaseAgent):
             "action_type": "routing_decision",
             "result": "Routing decision executed",
             "routing": routing_result,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
-    async def _execute_executive_advisory(self, action: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_executive_advisory(
+        self, action: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute executive advisory action"""
 
         advisory_result = "Executive advisory completed with strategic recommendations"
@@ -580,7 +677,7 @@ class EnhancedSolomon(EnhancedBaseAgent):
             "action_type": "executive_advisory",
             "result": advisory_result,
             "recommendations": await self._generate_executive_recommendations(action),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     async def _execute_general_action(self, action: Dict[str, Any]) -> Dict[str, Any]:
@@ -590,7 +687,7 @@ class EnhancedSolomon(EnhancedBaseAgent):
             "action_type": "general",
             "result": f"Solomon executed general action: {action.get('description', 'strategic oversight')}",
             "strategic_context": self.strategic_context,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     async def _handle_direct_brain_interaction(self, message: str) -> str:
@@ -607,10 +704,10 @@ class EnhancedSolomon(EnhancedBaseAgent):
                     "user_message": message,
                     "fallback_mode": True,
                     "strategic_context": self.strategic_context,
-                    "business_kpis": self.business_kpis
+                    "business_kpis": self.business_kpis,
                 },
                 complexity=6,  # Medium complexity for direct chat
-                quality_requirements=0.85
+                quality_requirements=0.85,
             )
 
             # Get Brain response
@@ -637,9 +734,7 @@ class EnhancedSolomon(EnhancedBaseAgent):
 
             # Report performance to Brain
             await self._report_brain_performance(
-                brain_response.tracking_id,
-                response,
-                success=True
+                brain_response.tracking_id, response, success=True
             )
 
             # Add strategic context
@@ -673,18 +768,25 @@ class EnhancedSolomon(EnhancedBaseAgent):
         return {
             "registry": "operational",
             "analytics": "operational",
-            "customer": "operational"
+            "customer": "operational",
         }
 
     def _determine_department(self, request: str) -> str:
         """Determine target department for request"""
         request_lower = request.lower()
 
-        if any(word in request_lower for word in ["finance", "money", "revenue", "cost"]):
+        if any(
+            word in request_lower for word in ["finance", "money", "revenue", "cost"]
+        ):
             return "finance"
-        elif any(word in request_lower for word in ["engineering", "code", "technical", "development"]):
+        elif any(
+            word in request_lower
+            for word in ["engineering", "code", "technical", "development"]
+        ):
             return "engineering"
-        elif any(word in request_lower for word in ["operations", "process", "workflow"]):
+        elif any(
+            word in request_lower for word in ["operations", "process", "workflow"]
+        ):
             return "operations"
         else:
             return "general"

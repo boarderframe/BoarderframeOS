@@ -3,6 +3,7 @@
 Force fix tabs by adding more explicit JavaScript
 """
 
+
 def force_fix_tabs():
     """Add more explicit tab handling"""
     print("🔧 Force Fixing Tab Display")
@@ -10,16 +11,16 @@ def force_fix_tabs():
 
     file_path = "/Users/cosburn/BoarderframeOS/corporate_headquarters.py"
 
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         content = f.read()
 
     # Find the showTab function
     import re
 
     # Replace the entire showTab function with a more explicit version
-    old_function = r'function showTab\(tabName\) \{[^}]+\}'
+    old_function = r"function showTab\(tabName\) \{[^}]+\}"
 
-    new_function = '''function showTab(tabName) {
+    new_function = """function showTab(tabName) {
             console.log('Switching to tab:', tabName);
 
             // Hide all tab contents with explicit style
@@ -48,13 +49,13 @@ def force_fix_tabs():
             if (clickedLink) {
                 clickedLink.classList.add('active');
             }
-        }'''
+        }"""
 
     # Replace the function
     content = re.sub(old_function, new_function, content, flags=re.DOTALL)
 
     # Also add a debug function and auto-init
-    debug_code = '''
+    debug_code = """
 
         // Debug function to check tab states
         function debugTabs() {
@@ -84,17 +85,17 @@ def force_fix_tabs():
             });
 
             console.log('Tabs initialized. Use Ctrl+1 through Ctrl+9 to switch tabs.');
-        });'''
+        });"""
 
     # Find where to insert (after showTab function)
-    insert_point = content.find('        }', content.find('function showTab'))
+    insert_point = content.find("        }", content.find("function showTab"))
     if insert_point > 0:
-        insert_point = content.find('\n', insert_point) + 1
+        insert_point = content.find("\n", insert_point) + 1
         content = content[:insert_point] + debug_code + content[insert_point:]
         print("✅ Added debug code and initialization")
 
     # Write back
-    with open(file_path, 'w') as f:
+    with open(file_path, "w") as f:
         f.write(content)
 
     print("\n✅ Force fix applied!")

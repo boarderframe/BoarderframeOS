@@ -6,7 +6,7 @@ Minimal test of the coordination demo to identify issues
 import os
 import sys
 
-sys.path.insert(0, 'boarderframeos')
+sys.path.insert(0, "boarderframeos")
 
 import asyncio
 import logging
@@ -14,6 +14,7 @@ import logging
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("minimal_demo")
+
 
 async def test_basic_functionality():
     """Test basic AgentController functionality"""
@@ -44,7 +45,9 @@ async def test_basic_functionality():
     except Exception as e:
         logger.error(f"❌ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
+
 
 if __name__ == "__main__":
     asyncio.run(test_basic_functionality())

@@ -7,7 +7,7 @@ Tests the enhanced coordination features
 import os
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'boarderframeos'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "boarderframeos"))
 
 import asyncio
 import logging
@@ -15,8 +15,11 @@ from datetime import datetime
 from typing import Dict, List
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger("message_bus_test")
+
 
 async def test_enhanced_message_bus():
     """Test the enhanced message bus features"""
@@ -45,13 +48,15 @@ async def test_enhanced_message_bus():
             message_type=MessageType.TASK_REQUEST,
             content={"task": "analyze_data", "priority": "high"},
             routing_strategy=RoutingStrategy.CAPABILITY_BASED,
-            required_capabilities=["data_analysis"]
+            required_capabilities=["data_analysis"],
         )
         logger.info(f"Created message: {message.message_id}")
 
         # Test 2: Register agent capabilities
         logger.info("Test 2: Registering agent capabilities...")
-        await bus.register_agent_capabilities("test_agent", ["data_analysis", "reporting"])
+        await bus.register_agent_capabilities(
+            "test_agent", ["data_analysis", "reporting"]
+        )
 
         # Test 3: Capability-based discovery
         logger.info("Test 3: Testing capability discovery...")
@@ -80,6 +85,7 @@ async def test_enhanced_message_bus():
         logger.error(f"Test failed: {e}")
         return False
 
+
 async def test_coordination_manager():
     """Test the coordination manager features"""
     logger.info("=== Testing Coordination Manager ===")
@@ -104,8 +110,8 @@ async def test_coordination_manager():
             tasks=[
                 {"step": 1, "agent": "agent1", "action": "analyze"},
                 {"step": 2, "agent": "agent2", "action": "process"},
-                {"step": 3, "agent": "agent3", "action": "report"}
-            ]
+                {"step": 3, "agent": "agent3", "action": "report"},
+            ],
         )
         logger.info(f"Created workflow: {workflow_id}")
 
@@ -114,8 +120,11 @@ async def test_coordination_manager():
         consensus_result = await manager.consensus_manager.request_consensus(
             proposal_id="test_decision_001",
             participants=["agent1", "agent2", "agent3"],
-            proposal={"decision": "Should we proceed with project X?", "options": ["yes", "no"]},
-            voting_method="majority"
+            proposal={
+                "decision": "Should we proceed with project X?",
+                "options": ["yes", "no"],
+            },
+            voting_method="majority",
         )
         logger.info(f"Consensus result: {consensus_result}")
 
@@ -125,7 +134,7 @@ async def test_coordination_manager():
             auction_id="test_auction_001",
             task={"description": "Analyze market data", "complexity": "medium"},
             participants=["agent1", "agent2"],
-            duration_seconds=30
+            duration_seconds=30,
         )
         logger.info(f"Auction result: {auction_result}")
 
@@ -139,6 +148,7 @@ async def test_coordination_manager():
     except Exception as e:
         logger.error(f"Test failed: {e}")
         return False
+
 
 async def test_agent_controller_coordination():
     """Test the agent controller coordination features"""
@@ -154,9 +164,10 @@ async def test_agent_controller_coordination():
         # Test capability registration
         logger.info("Test: Registering agent capabilities...")
         from core.agent_registry import AgentCapability
+
         capabilities = [
             AgentCapability(name="data_analysis", description="Analyze data"),
-            AgentCapability(name="reporting", description="Generate reports")
+            AgentCapability(name="reporting", description="Generate reports"),
         ]
         await controller.register_agent_capabilities("test_agent", capabilities)
 
@@ -170,10 +181,7 @@ async def test_agent_controller_coordination():
         workflow_id = await controller.create_agent_workflow(
             workflow_type="sequential",
             participants=["agent1", "agent2"],
-            tasks=[
-                {"step": 1, "action": "analyze"},
-                {"step": 2, "action": "report"}
-            ]
+            tasks=[{"step": 1, "action": "analyze"}, {"step": 2, "action": "report"}],
         )
         logger.info(f"Created workflow: {workflow_id}")
 
@@ -192,6 +200,7 @@ async def test_agent_controller_coordination():
     except Exception as e:
         logger.error(f"Test failed: {e}")
         return False
+
 
 async def main():
     """Run all coordination tests"""
@@ -219,6 +228,8 @@ async def main():
         logger.error("❌ Some tests failed")
         return 1
 
+
 if __name__ == "__main__":
     import sys
+
     sys.exit(asyncio.run(main()))

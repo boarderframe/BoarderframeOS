@@ -34,7 +34,7 @@ async def integrate_configs():
             "provider": "anthropic",
             "model": "claude-opus-4-20250514",
             "temperature": 0.7,
-            "max_tokens": 4000
+            "max_tokens": 4000,
         },
         {
             "name": "solomon",
@@ -44,8 +44,8 @@ async def integrate_configs():
             "provider": "anthropic",
             "model": "claude-opus-4-20250514",
             "temperature": 0.3,  # Lower for more focused reasoning
-            "max_tokens": 4000
-        }
+            "max_tokens": 4000,
+        },
     ]
 
     print("\n📝 Updating agent LLM assignments:")
@@ -64,14 +64,14 @@ async def integrate_configs():
         # Update config file
         config_path = Path(f"configs/agents/{agent_name}.json")
         if config_path.exists():
-            with open(config_path, 'r') as f:
+            with open(config_path, "r") as f:
                 config = json.load(f)
 
             config["model"] = agent_data["model"]
             config["temperature"] = agent_data["temperature"]
             config["provider"] = agent_data["provider"]
 
-            with open(config_path, 'w') as f:
+            with open(config_path, "w") as f:
                 json.dump(config, f, indent=2)
 
             print(f"     ✅ Config file updated")
@@ -86,7 +86,7 @@ async def integrate_configs():
             "provider": "anthropic",
             "model": "claude-4-sonnet-20250514",
             "temperature": 0.8,  # Higher for creativity
-            "max_tokens": 2000
+            "max_tokens": 2000,
         },
         {
             "name": "eve",
@@ -96,7 +96,7 @@ async def integrate_configs():
             "provider": "anthropic",
             "model": "claude-4-sonnet-20250514",
             "temperature": 0.7,
-            "max_tokens": 2000
+            "max_tokens": 2000,
         },
         {
             "name": "bezalel",
@@ -106,8 +106,8 @@ async def integrate_configs():
             "provider": "anthropic",
             "model": "claude-4-sonnet-20250514",
             "temperature": 0.5,  # Lower for precise coding
-            "max_tokens": 3000
-        }
+            "max_tokens": 3000,
+        },
     ]
 
     print("\n\n📝 Adding primordial agent configurations:")
@@ -127,12 +127,15 @@ async def integrate_configs():
 
     # Get updated stats
     import aiosqlite
+
     async with aiosqlite.connect(panel.db_path) as db:
         cursor = await db.execute("SELECT COUNT(*) FROM agent_llm_assignments")
         count = await cursor.fetchone()
         print(f"   - Total agents configured: {count[0]}")
 
-        cursor = await db.execute("SELECT COUNT(*) FROM llm_providers WHERE is_active = 1")
+        cursor = await db.execute(
+            "SELECT COUNT(*) FROM llm_providers WHERE is_active = 1"
+        )
         provider_count = await cursor.fetchone()
         print(f"   - Active LLM providers: {provider_count[0]}")
 
@@ -152,5 +155,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ Integration failed: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

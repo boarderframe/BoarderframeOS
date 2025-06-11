@@ -23,10 +23,10 @@ original_path = sys.path.copy()
 # Remove current and parent directories to avoid local mcp module conflicts
 current_dir = str(Path(__file__).parent)
 parent_dir = str(Path(__file__).parent.parent)
-sys.path = [p for p in sys.path if p not in (current_dir, parent_dir, '')]
+sys.path = [p for p in sys.path if p not in (current_dir, parent_dir, "")]
 
 # Clear any cached local mcp modules
-local_mcp_modules = [name for name in sys.modules.keys() if name.startswith('mcp')]
+local_mcp_modules = [name for name in sys.modules.keys() if name.startswith("mcp")]
 for module_name in local_mcp_modules:
     del sys.modules[module_name]
 
@@ -45,7 +45,7 @@ log_file = Path(__file__).parent / "analytics_stdio.log"
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler(log_file)]
+    handlers=[logging.FileHandler(log_file)],
 )
 logger = logging.getLogger("analytics_stdio")
 
@@ -58,8 +58,9 @@ metrics = {
     "total_revenue": 0,
     "churn_count": 0,
     "revenue_per_agent": {},
-    "api_usage": {}
+    "api_usage": {},
 }
+
 
 @server.list_tools()
 async def handle_list_tools() -> List[types.Tool]:
@@ -73,27 +74,24 @@ async def handle_list_tools() -> List[types.Tool]:
                 "properties": {
                     "event_type": {
                         "type": "string",
-                        "description": "Type of event to track"
+                        "description": "Type of event to track",
                     },
                     "agent_id": {
                         "type": "string",
-                        "description": "Agent ID (optional)"
+                        "description": "Agent ID (optional)",
                     },
                     "customer_id": {
                         "type": "string",
-                        "description": "Customer ID (optional)"
+                        "description": "Customer ID (optional)",
                     },
-                    "data": {
-                        "type": "object",
-                        "description": "Event data"
-                    },
+                    "data": {"type": "object", "description": "Event data"},
                     "metadata": {
                         "type": "object",
-                        "description": "Additional metadata (optional)"
-                    }
+                        "description": "Additional metadata (optional)",
+                    },
                 },
-                "required": ["event_type", "data"]
-            }
+                "required": ["event_type", "data"],
+            },
         ),
         types.Tool(
             name="get_customer_acquisition_cost",
@@ -104,10 +102,10 @@ async def handle_list_tools() -> List[types.Tool]:
                     "timeframe": {
                         "type": "string",
                         "description": "Timeframe: day, week, month",
-                        "default": "month"
+                        "default": "month",
                     }
-                }
-            }
+                },
+            },
         ),
         types.Tool(
             name="get_customer_lifetime_value",
@@ -118,10 +116,10 @@ async def handle_list_tools() -> List[types.Tool]:
                     "timeframe": {
                         "type": "string",
                         "description": "Timeframe: day, week, month",
-                        "default": "month"
+                        "default": "month",
                     }
-                }
-            }
+                },
+            },
         ),
         types.Tool(
             name="get_churn_rate",
@@ -132,39 +130,33 @@ async def handle_list_tools() -> List[types.Tool]:
                     "timeframe": {
                         "type": "string",
                         "description": "Timeframe: day, week, month",
-                        "default": "month"
+                        "default": "month",
                     }
-                }
-            }
+                },
+            },
         ),
         types.Tool(
             name="get_revenue_per_agent",
             description="Get revenue generated per agent",
-            inputSchema={
-                "type": "object",
-                "properties": {}
-            }
+            inputSchema={"type": "object", "properties": {}},
         ),
         types.Tool(
             name="get_api_usage_metrics",
             description="Get API usage metrics",
-            inputSchema={
-                "type": "object",
-                "properties": {}
-            }
+            inputSchema={"type": "object", "properties": {}},
         ),
         types.Tool(
             name="get_dashboard_data",
             description="Get comprehensive dashboard data",
-            inputSchema={
-                "type": "object",
-                "properties": {}
-            }
-        )
+            inputSchema={"type": "object", "properties": {}},
+        ),
     ]
 
+
 @server.call_tool()
-async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextContent]:
+async def handle_call_tool(
+    name: str, arguments: Dict[str, Any]
+) -> List[types.TextContent]:
     """Handle tool calls."""
     try:
         if name == "track_event":
@@ -187,6 +179,7 @@ async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[types.T
         logger.error(f"Tool {name} failed: {e}")
         return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
+
 async def track_event(args: Dict[str, Any]) -> List[types.TextContent]:
     """Track an analytics event."""
     try:
@@ -199,7 +192,7 @@ async def track_event(args: Dict[str, Any]) -> List[types.TextContent]:
             "customer_id": args.get("customer_id"),
             "data": args["data"],
             "metadata": args.get("metadata", {}),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         events.append(event_data)
@@ -211,13 +204,14 @@ async def track_event(args: Dict[str, Any]) -> List[types.TextContent]:
             "success": True,
             "event_id": event_id,
             "status": "recorded",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error tracking event: {str(e)}")]
+
 
 async def update_metrics(event_data: Dict[str, Any]):
     """Update metrics based on new event."""
@@ -235,7 +229,9 @@ async def update_metrics(event_data: Dict[str, Any]):
             agent_id = event_data["agent_id"]
             if "revenue_per_agent" not in metrics:
                 metrics["revenue_per_agent"] = {}
-            metrics["revenue_per_agent"][agent_id] = metrics["revenue_per_agent"].get(agent_id, 0) + amount
+            metrics["revenue_per_agent"][agent_id] = (
+                metrics["revenue_per_agent"].get(agent_id, 0) + amount
+            )
 
     elif event_type == "churn":
         metrics["churn_count"] += 1
@@ -250,7 +246,10 @@ async def update_metrics(event_data: Dict[str, Any]):
             metrics["api_usage"][endpoint] = 0
         metrics["api_usage"][endpoint] += tokens
 
-async def get_customer_acquisition_cost(args: Dict[str, Any]) -> List[types.TextContent]:
+
+async def get_customer_acquisition_cost(
+    args: Dict[str, Any]
+) -> List[types.TextContent]:
     """Calculate customer acquisition cost."""
     try:
         timeframe = args.get("timeframe", "month")
@@ -272,13 +271,14 @@ async def get_customer_acquisition_cost(args: Dict[str, Any]) -> List[types.Text
             "timeframe": timeframe,
             "customers_acquired": customers_acquired,
             "marketing_spend": marketing_spend,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error calculating CAC: {str(e)}")]
+
 
 async def get_customer_lifetime_value(args: Dict[str, Any]) -> List[types.TextContent]:
     """Calculate customer lifetime value."""
@@ -298,13 +298,14 @@ async def get_customer_lifetime_value(args: Dict[str, Any]) -> List[types.TextCo
             "timeframe": timeframe,
             "avg_revenue_per_customer": avg_revenue_per_customer,
             "avg_customer_lifespan": avg_customer_lifespan,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error calculating CLV: {str(e)}")]
+
 
 async def get_churn_rate(args: Dict[str, Any]) -> List[types.TextContent]:
     """Calculate churn rate."""
@@ -328,13 +329,18 @@ async def get_churn_rate(args: Dict[str, Any]) -> List[types.TextContent]:
             "timeframe": timeframe,
             "total_customers_start": total_customers_start,
             "churned_customers": churned_customers,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error calculating churn rate: {str(e)}")]
+        return [
+            types.TextContent(
+                type="text", text=f"Error calculating churn rate: {str(e)}"
+            )
+        ]
+
 
 async def get_revenue_per_agent() -> List[types.TextContent]:
     """Get revenue generated per agent."""
@@ -343,9 +349,7 @@ async def get_revenue_per_agent() -> List[types.TextContent]:
 
         # Sort agents by revenue (highest first)
         sorted_agents = sorted(
-            revenue_per_agent.items(),
-            key=lambda x: x[1],
-            reverse=True
+            revenue_per_agent.items(), key=lambda x: x[1], reverse=True
         )
 
         results = [
@@ -359,13 +363,18 @@ async def get_revenue_per_agent() -> List[types.TextContent]:
             "data": results,
             "currency": "usd",
             "total_agents": len(results),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error getting revenue per agent: {str(e)}")]
+        return [
+            types.TextContent(
+                type="text", text=f"Error getting revenue per agent: {str(e)}"
+            )
+        ]
+
 
 async def get_api_usage_metrics() -> List[types.TextContent]:
     """Get API usage metrics."""
@@ -375,11 +384,7 @@ async def get_api_usage_metrics() -> List[types.TextContent]:
         total_tokens = sum(api_usage.values())
 
         # Sort endpoints by usage (highest first)
-        sorted_usage = sorted(
-            api_usage.items(),
-            key=lambda x: x[1],
-            reverse=True
-        )
+        sorted_usage = sorted(api_usage.items(), key=lambda x: x[1], reverse=True)
 
         results = [
             {"endpoint": endpoint, "tokens": tokens}
@@ -392,13 +397,18 @@ async def get_api_usage_metrics() -> List[types.TextContent]:
             "data": results,
             "total_tokens": total_tokens,
             "endpoints_count": len(results),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error getting API usage metrics: {str(e)}")]
+        return [
+            types.TextContent(
+                type="text", text=f"Error getting API usage metrics: {str(e)}"
+            )
+        ]
+
 
 async def get_dashboard_data() -> List[types.TextContent]:
     """Get comprehensive dashboard data."""
@@ -418,7 +428,9 @@ async def get_dashboard_data() -> List[types.TextContent]:
         api_data = json.loads(api_result[0].text)
 
         # Calculate additional metrics
-        clv_cac_ratio = clv_data["value"] / cac_data["value"] if cac_data["value"] > 0 else 0
+        clv_cac_ratio = (
+            clv_data["value"] / cac_data["value"] if cac_data["value"] > 0 else 0
+        )
 
         result = {
             "success": True,
@@ -429,19 +441,24 @@ async def get_dashboard_data() -> List[types.TextContent]:
                     "churn_rate": churn_data["value"],
                     "clv_cac_ratio": clv_cac_ratio,
                     "customer_acquisition_cost": cac_data["value"],
-                    "customer_lifetime_value": clv_data["value"]
+                    "customer_lifetime_value": clv_data["value"],
                 },
                 "revenue_per_agent": revenue_data["data"],
                 "api_usage": api_data["data"],
-                "events_tracked": len(events)
+                "events_tracked": len(events),
             },
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
-        return [types.TextContent(type="text", text=f"Error getting dashboard data: {str(e)}")]
+        return [
+            types.TextContent(
+                type="text", text=f"Error getting dashboard data: {str(e)}"
+            )
+        ]
+
 
 async def main():
     """Main entry point."""
@@ -458,6 +475,7 @@ async def main():
                 ),
             ),
         )
+
 
 if __name__ == "__main__":
     asyncio.run(main())

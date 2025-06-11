@@ -7,7 +7,7 @@ Tests the core message bus functionality without requiring actual agents
 import os
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'boarderframeos'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "boarderframeos"))
 
 import asyncio
 import logging
@@ -24,6 +24,7 @@ from core.message_bus import MessagePriority, MessageType
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("message_bus_test")
 
+
 async def test_enhanced_message_bus():
     """Test the enhanced message bus without actual agent processes"""
 
@@ -39,8 +40,12 @@ async def test_enhanced_message_bus():
 
         # Register capabilities
         await bus.register_agent_capabilities("test_agent_1", ["analysis", "research"])
-        await bus.register_agent_capabilities("test_agent_2", ["planning", "coordination"])
-        await bus.register_agent_capabilities("test_agent_3", ["analysis", "monitoring"])
+        await bus.register_agent_capabilities(
+            "test_agent_2", ["planning", "coordination"]
+        )
+        await bus.register_agent_capabilities(
+            "test_agent_3", ["analysis", "monitoring"]
+        )
 
         logger.info("✅ Registered test agents and capabilities")
 
@@ -50,7 +55,7 @@ async def test_enhanced_message_bus():
             to_agent="test_agent_2",
             message_type=MessageType.TASK_REQUEST,
             content={"action": "analyze_data", "data": "sample.csv"},
-            routing_strategy=RoutingStrategy.DIRECT
+            routing_strategy=RoutingStrategy.DIRECT,
         )
 
         success = await bus.send_enhanced_message(message1)
@@ -63,7 +68,7 @@ async def test_enhanced_message_bus():
             message_type=MessageType.COORDINATION,
             content={"action": "coordinate_task", "task_id": "123"},
             routing_strategy=RoutingStrategy.CAPABILITY_BASED,
-            required_capabilities=["analysis"]
+            required_capabilities=["analysis"],
         )
 
         success = await bus.send_enhanced_message(message2)
@@ -72,7 +77,9 @@ async def test_enhanced_message_bus():
         # Test 3: Get performance metrics
         metrics = await bus.get_performance_metrics()
         logger.info(f"✅ Performance metrics retrieved")
-        logger.info(f"   Total messages sent: {metrics['delivery_metrics']['total_messages_sent']}")
+        logger.info(
+            f"   Total messages sent: {metrics['delivery_metrics']['total_messages_sent']}"
+        )
         logger.info(f"   Active agents: {metrics['delivery_metrics']['active_agents']}")
         logger.info(f"   Agent capabilities: {metrics['agent_capabilities']}")
 
@@ -86,8 +93,8 @@ async def test_enhanced_message_bus():
             steps=[
                 {"agent": "test_agent_1", "action": "analyze"},
                 {"agent": "test_agent_2", "action": "plan"},
-                {"agent": "test_agent_3", "action": "monitor"}
-            ]
+                {"agent": "test_agent_3", "action": "monitor"},
+            ],
         )
         logger.info(f"✅ Workflow created: {workflow_id}")
 
@@ -96,6 +103,7 @@ async def test_enhanced_message_bus():
     except Exception as e:
         logger.error(f"❌ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
 
     finally:
@@ -103,6 +111,7 @@ async def test_enhanced_message_bus():
         # Clean up test database
         if os.path.exists("test_message_bus.db"):
             os.remove("test_message_bus.db")
+
 
 if __name__ == "__main__":
     asyncio.run(test_enhanced_message_bus())

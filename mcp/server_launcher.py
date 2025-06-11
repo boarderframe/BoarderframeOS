@@ -27,32 +27,65 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler(os.path.join(os.path.dirname(__file__), "../logs/mcp_launcher.log")),
-        logging.StreamHandler()
-    ]
+        logging.FileHandler(
+            os.path.join(os.path.dirname(__file__), "../logs/mcp_launcher.log")
+        ),
+        logging.StreamHandler(),
+    ],
 )
 
 logger = logging.getLogger("mcp_launcher")
 
+
 async def main():
     """Run the servers"""
     parser = argparse.ArgumentParser(description="BoarderframeOS MCP Server Launcher")
-    parser.add_argument("--servers", "-s", nargs="+", default=["all"],
-                       help="Servers to start (filesystem, git, terminal, payment, analytics, customer, screenshot, or all)")
-    parser.add_argument("--port-fs", type=int, default=8001,
-                       help="Port for filesystem server (default: 8001)")
-    parser.add_argument("--port-git", type=int, default=8002,
-                       help="Port for git server (default: 8002)")
-    parser.add_argument("--port-terminal", type=int, default=8003,
-                       help="Port for terminal server (default: 8003)")
-    parser.add_argument("--port-payment", type=int, default=8006,
-                       help="Port for payment server (default: 8006)")
-    parser.add_argument("--port-analytics", type=int, default=8007,
-                       help="Port for analytics server (default: 8007)")
-    parser.add_argument("--port-customer", type=int, default=8008,
-                       help="Port for customer server (default: 8008)")
-    parser.add_argument("--port-screenshot", type=int, default=8011,
-                       help="Port for screenshot server (default: 8011)")
+    parser.add_argument(
+        "--servers",
+        "-s",
+        nargs="+",
+        default=["all"],
+        help="Servers to start (filesystem, git, terminal, payment, analytics, customer, screenshot, or all)",
+    )
+    parser.add_argument(
+        "--port-fs",
+        type=int,
+        default=8001,
+        help="Port for filesystem server (default: 8001)",
+    )
+    parser.add_argument(
+        "--port-git", type=int, default=8002, help="Port for git server (default: 8002)"
+    )
+    parser.add_argument(
+        "--port-terminal",
+        type=int,
+        default=8003,
+        help="Port for terminal server (default: 8003)",
+    )
+    parser.add_argument(
+        "--port-payment",
+        type=int,
+        default=8006,
+        help="Port for payment server (default: 8006)",
+    )
+    parser.add_argument(
+        "--port-analytics",
+        type=int,
+        default=8007,
+        help="Port for analytics server (default: 8007)",
+    )
+    parser.add_argument(
+        "--port-customer",
+        type=int,
+        default=8008,
+        help="Port for customer server (default: 8008)",
+    )
+    parser.add_argument(
+        "--port-screenshot",
+        type=int,
+        default=8011,
+        help="Port for screenshot server (default: 8011)",
+    )
 
     args = parser.parse_args()
 
@@ -114,6 +147,7 @@ async def main():
         await asyncio.gather(*tasks)
     else:
         logger.warning("No servers specified to start")
+
 
 if __name__ == "__main__":
     try:

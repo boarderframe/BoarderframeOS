@@ -22,10 +22,10 @@ from pydantic import BaseModel, validator
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger("mcp_payment")
+
 
 class PaymentRequest(BaseModel):
     customer_id: str
@@ -115,7 +115,7 @@ class MCPPaymentServer:
             "stripe_integration": stripe_status,
             "transactions": len(self.transactions),
             "active_subscriptions": len(self.subscriptions),
-            "server": "mcp_payment"
+            "server": "mcp_payment",
         }
 
     async def process_payment(self, request: PaymentRequest):
@@ -133,7 +133,7 @@ class MCPPaymentServer:
                 "description": request.description,
                 "status": "pending",
                 "created_at": datetime.now().isoformat(),
-                "metadata": request.metadata or {}
+                "metadata": request.metadata or {},
             }
 
             # If Stripe is enabled, process with Stripe API
@@ -159,12 +159,14 @@ class MCPPaymentServer:
                 "status": transaction["status"],
                 "customer_id": request.customer_id,
                 "amount": request.amount,
-                "currency": request.currency
+                "currency": request.currency,
             }
 
         except Exception as e:
             logger.error(f"Payment processing error: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Payment processing error: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Payment processing error: {str(e)}"
+            )
 
     async def create_subscription(self, request: SubscriptionRequest):
         """Create a new subscription"""
@@ -181,7 +183,7 @@ class MCPPaymentServer:
                 "status": "active",
                 "created_at": datetime.now().isoformat(),
                 "next_billing_date": None,  # Would calculate based on billing cycle
-                "metadata": request.metadata or {}
+                "metadata": request.metadata or {},
             }
 
             # If Stripe is enabled, create subscription with Stripe API
@@ -205,12 +207,14 @@ class MCPPaymentServer:
                 "status": "active",
                 "customer_id": request.customer_id,
                 "plan_id": request.plan_id,
-                "billing_cycle": request.billing_cycle
+                "billing_cycle": request.billing_cycle,
             }
 
         except Exception as e:
             logger.error(f"Subscription creation error: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Subscription creation error: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Subscription creation error: {str(e)}"
+            )
 
     async def get_subscription(self, customer_id: str):
         """Get subscription details for a customer"""
@@ -248,12 +252,14 @@ class MCPPaymentServer:
                 "customer_id": request.customer_id,
                 "total": total,
                 "status": "pending",
-                "due_date": request.due_date
+                "due_date": request.due_date,
             }
 
         except Exception as e:
             logger.error(f"Invoice generation error: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Invoice generation error: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Invoice generation error: {str(e)}"
+            )
 
     async def get_invoice(self, invoice_id: str):
         """Get invoice details"""
@@ -294,14 +300,18 @@ class MCPPaymentServer:
 
     async def get_stats(self):
         """Get payment statistics"""
-        total_revenue = sum(t["amount"] for t in self.transactions if t["status"] == "completed")
-        active_subscriptions = len([s for s in self.subscriptions.values() if s["status"] == "active"])
+        total_revenue = sum(
+            t["amount"] for t in self.transactions if t["status"] == "completed"
+        )
+        active_subscriptions = len(
+            [s for s in self.subscriptions.values() if s["status"] == "active"]
+        )
 
         return {
             "total_transactions": len(self.transactions),
             "total_revenue": total_revenue,
             "active_customers": len(self.customers),
-            "active_subscriptions": active_subscriptions
+            "active_subscriptions": active_subscriptions,
         }
 
     async def store_transaction(self, transaction):
@@ -309,6 +319,7 @@ class MCPPaymentServer:
         # This would make an RPC call to the database server
         # to store the transaction in the revenue_transactions table
         pass
+
 
 async def main():
     """Run the server directly"""
@@ -327,6 +338,7 @@ async def main():
     # Create and start the server
     server = MCPPaymentServer()
     await server.start(port)
+
 
 if __name__ == "__main__":
     try:

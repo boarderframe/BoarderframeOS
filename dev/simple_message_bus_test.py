@@ -28,6 +28,7 @@ from boarderframeos.core.message_bus import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("simple_message_test")
 
+
 class TestAgent:
     """Simple test agent for message bus testing"""
 
@@ -40,6 +41,7 @@ class TestAgent:
         logger.info(f"Agent {self.name} received: {message.content}")
         self.received_messages.append(message)
         return {"status": "received", "agent": self.name}
+
 
 async def test_basic_message_bus():
     """Test basic message bus functionality"""
@@ -67,7 +69,7 @@ async def test_basic_message_bus():
             to_agent="agent_b",
             message_type=MessageType.COORDINATION,
             content={"action": "hello", "data": "test message"},
-            priority=MessagePriority.NORMAL
+            priority=MessagePriority.NORMAL,
         )
 
         response = await bus.send_message(message)
@@ -75,10 +77,9 @@ async def test_basic_message_bus():
 
         # Test topic subscription
         await bus.subscribe_to_topic("agent_a", "test_topic")
-        await bus.publish_to_topic("test_topic", {
-            "message": "topic broadcast",
-            "sender": "system"
-        })
+        await bus.publish_to_topic(
+            "test_topic", {"message": "topic broadcast", "sender": "system"}
+        )
 
         logger.info("✅ Basic message bus test completed")
         return True
@@ -86,8 +87,10 @@ async def test_basic_message_bus():
     except Exception as e:
         logger.error(f"❌ Basic message bus test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 async def test_enhanced_message_bus():
     """Test enhanced message bus functionality"""
@@ -98,8 +101,12 @@ async def test_enhanced_message_bus():
         await enhanced_message_bus.start()
 
         # Register test agents
-        await enhanced_message_bus.register_agent("test_agent_1", ["coordination", "analysis"])
-        await enhanced_message_bus.register_agent("test_agent_2", ["research", "communication"])
+        await enhanced_message_bus.register_agent(
+            "test_agent_1", ["coordination", "analysis"]
+        )
+        await enhanced_message_bus.register_agent(
+            "test_agent_2", ["research", "communication"]
+        )
 
         # Create enhanced message
         message = EnhancedAgentMessage(
@@ -108,7 +115,7 @@ async def test_enhanced_message_bus():
             message_type=MessageType.TASK_REQUEST,
             content={"task": "analyze_data", "priority": "high"},
             routing_strategy=RoutingStrategy.DIRECT,
-            priority=MessagePriority.HIGH
+            priority=MessagePriority.HIGH,
         )
 
         # Send enhanced message
@@ -116,7 +123,9 @@ async def test_enhanced_message_bus():
         logger.info(f"✅ Enhanced message sent: {success}")
 
         # Test capability-based discovery
-        agents = await enhanced_message_bus.discover_agents_by_capability("coordination")
+        agents = await enhanced_message_bus.discover_agents_by_capability(
+            "coordination"
+        )
         logger.info(f"✅ Agents with coordination capability: {agents}")
 
         # Stop enhanced message bus
@@ -128,8 +137,10 @@ async def test_enhanced_message_bus():
     except Exception as e:
         logger.error(f"❌ Enhanced message bus test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 async def test_message_routing():
     """Test different message routing strategies"""
@@ -147,7 +158,7 @@ async def test_message_routing():
         routing_strategies = [
             RoutingStrategy.DIRECT,
             RoutingStrategy.ROUND_ROBIN,
-            RoutingStrategy.LOAD_BALANCED
+            RoutingStrategy.LOAD_BALANCED,
         ]
 
         for strategy in routing_strategies:
@@ -156,7 +167,7 @@ async def test_message_routing():
                 to_agent="router_agent_1",  # Will be routed based on strategy
                 message_type=MessageType.TASK_REQUEST,
                 content={"test": f"routing_test_{strategy.value}"},
-                routing_strategy=strategy
+                routing_strategy=strategy,
             )
 
             success = await enhanced_message_bus.send_enhanced_message(message)
@@ -170,8 +181,10 @@ async def test_message_routing():
     except Exception as e:
         logger.error(f"❌ Message routing test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 async def test_message_persistence():
     """Test message persistence features"""
@@ -187,7 +200,7 @@ async def test_message_persistence():
             message_type=MessageType.COORDINATION,
             content={"persistent": True, "data": "test_persistence"},
             persistent=True,
-            ttl_seconds=3600
+            ttl_seconds=3600,
         )
 
         success = await enhanced_message_bus.send_enhanced_message(message)
@@ -205,8 +218,10 @@ async def test_message_persistence():
     except Exception as e:
         logger.error(f"❌ Message persistence test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 async def main():
     """Run all message bus tests"""
@@ -253,6 +268,7 @@ async def main():
         logger.error("❌ Some message bus tests FAILED!")
         return 1
 
+
 if __name__ == "__main__":
     try:
         exit_code = asyncio.run(main())
@@ -260,5 +276,6 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(f"💥 Fatal error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

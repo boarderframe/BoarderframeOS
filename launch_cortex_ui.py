@@ -24,11 +24,12 @@ def run_in_thread(panel):
     from werkzeug.serving import make_server
 
     # Create a server that we can control
-    server = make_server('localhost', 8890, panel.app, threaded=True)
+    server = make_server("localhost", 8890, panel.app, threaded=True)
     print("✅ Server created successfully")
 
     # Start serving
     server.serve_forever()
+
 
 async def main():
     print("\n🚀 Launching Agent Cortex Management Panel...")
@@ -62,8 +63,9 @@ async def main():
     # Test the server
     print("\n🧪 Testing server connection...")
     import requests
+
     try:
-        response = requests.get('http://localhost:8890/api/cortex/overview', timeout=5)
+        response = requests.get("http://localhost:8890/api/cortex/overview", timeout=5)
         if response.status_code == 200:
             data = response.json()
             print("✅ Server is working correctly!")
@@ -73,7 +75,7 @@ async def main():
 
             # Try to open browser
             print("\n🌐 Opening browser...")
-            webbrowser.open('http://localhost:8890')
+            webbrowser.open("http://localhost:8890")
 
         else:
             print(f"⚠️  Server returned status: {response.status_code}")
@@ -96,11 +98,13 @@ async def main():
         print("\n\n✅ Server stopped by user")
         print("👋 Goodbye!")
 
+
 if __name__ == "__main__":
     try:
         asyncio.run(main())
     except Exception as e:
         print(f"\n❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

@@ -15,21 +15,21 @@ def kill_boarderframe_processes():
 
     # Keywords to search for in process names/commands
     keywords = [
-        'boarderframe',
-        'corporate_headquarters',
-        'startup.py',
-        'solomon',
-        'david',
-        'mcp',
-        'registry_server',
-        'filesystem_server',
-        'database_server',
-        'payment_server',
-        'analytics_server',
-        'customer_server',
-        'agent_cortex',
-        'message_bus',
-        'boarderframeos'
+        "boarderframe",
+        "corporate_headquarters",
+        "startup.py",
+        "solomon",
+        "david",
+        "mcp",
+        "registry_server",
+        "filesystem_server",
+        "database_server",
+        "payment_server",
+        "analytics_server",
+        "customer_server",
+        "agent_cortex",
+        "message_bus",
+        "boarderframeos",
     ]
 
     killed_processes = []
@@ -37,16 +37,19 @@ def kill_boarderframe_processes():
     print("🔍 Searching for BoarderframeOS processes...")
 
     # First, try to find processes by name
-    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+    for proc in psutil.process_iter(["pid", "name", "cmdline"]):
         try:
             # Get process info
-            pid = proc.info['pid']
-            name = proc.info['name']
-            cmdline = ' '.join(proc.info['cmdline'] or [])
+            pid = proc.info["pid"]
+            name = proc.info["name"]
+            cmdline = " ".join(proc.info["cmdline"] or [])
 
             # Check if any keyword matches
             for keyword in keywords:
-                if keyword.lower() in name.lower() or keyword.lower() in cmdline.lower():
+                if (
+                    keyword.lower() in name.lower()
+                    or keyword.lower() in cmdline.lower()
+                ):
                     # Skip this script itself
                     if pid == os.getpid():
                         continue
@@ -79,7 +82,7 @@ def kill_boarderframe_processes():
         8007,  # Analytics
         8008,  # Customer
         5434,  # PostgreSQL
-        6379   # Redis
+        6379,  # Redis
     ]
 
     print(f"\n🔍 Checking processes on BoarderframeOS ports...")
@@ -88,13 +91,11 @@ def kill_boarderframe_processes():
         try:
             # Find process using the port
             result = subprocess.run(
-                ['lsof', '-ti', f':{port}'],
-                capture_output=True,
-                text=True
+                ["lsof", "-ti", f":{port}"], capture_output=True, text=True
             )
 
             if result.stdout.strip():
-                pids = result.stdout.strip().split('\n')
+                pids = result.stdout.strip().split("\n")
                 for pid in pids:
                     try:
                         pid_int = int(pid)
@@ -126,14 +127,10 @@ def kill_boarderframe_processes():
     print(f"\n🔍 Checking for stray Python processes...")
 
     try:
-        result = subprocess.run(
-            ['ps', 'aux'],
-            capture_output=True,
-            text=True
-        )
+        result = subprocess.run(["ps", "aux"], capture_output=True, text=True)
 
-        for line in result.stdout.split('\n'):
-            if 'python' in line and any(kw in line.lower() for kw in keywords):
+        for line in result.stdout.split("\n"):
+            if "python" in line and any(kw in line.lower() for kw in keywords):
                 parts = line.split()
                 if len(parts) > 1:
                     pid = parts[1]
@@ -142,7 +139,9 @@ def kill_boarderframe_processes():
                         if pid_int != os.getpid():  # Don't kill self
                             print(f"  Found stray process: PID {pid_int}")
                             os.kill(pid_int, signal.SIGTERM)
-                            killed_processes.append((pid_int, "Python BoarderframeOS process"))
+                            killed_processes.append(
+                                (pid_int, "Python BoarderframeOS process")
+                            )
                             print(f"  ✅ Killed PID {pid_int}")
                     except (ValueError, ProcessLookupError, PermissionError):
                         pass
@@ -163,7 +162,9 @@ def kill_boarderframe_processes():
             except ProcessLookupError:
                 pass  # Already dead
             except PermissionError:
-                print(f"  ❌ Could not force kill PID {pid} - {name} (permission denied)")
+                print(
+                    f"  ❌ Could not force kill PID {pid} - {name} (permission denied)"
+                )
 
     # Summary
     print(f"\n{'='*50}")
@@ -177,6 +178,7 @@ def kill_boarderframe_processes():
 
     print(f"\n💡 You can now run: python startup.py")
     print("{'='*50}\n")
+
 
 if __name__ == "__main__":
     kill_boarderframe_processes()

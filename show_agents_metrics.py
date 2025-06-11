@@ -21,10 +21,10 @@ def show_agents_metrics():
             return
 
         html = response.text
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = BeautifulSoup(html, "html.parser")
 
         # Find the Agents tab section
-        agents_tab = soup.find('div', {'id': 'agents', 'class': 'tab-content'})
+        agents_tab = soup.find("div", {"id": "agents", "class": "tab-content"})
         if not agents_tab:
             print("❌ Could not find Agents tab")
             return
@@ -32,13 +32,13 @@ def show_agents_metrics():
         print("\n🎯 Agent Metrics (as displayed on the page):\n")
 
         # Find all metric widgets in the agents tab
-        widgets = agents_tab.find_all('div', class_='widget')
+        widgets = agents_tab.find_all("div", class_="widget")
 
         metric_count = 0
         for widget in widgets[:5]:  # Look at first 5 widgets
-            title_elem = widget.find('span')
-            value_elem = widget.find('div', class_='widget-value')
-            subtitle_elem = widget.find('div', class_='widget-subtitle')
+            title_elem = widget.find("span")
+            value_elem = widget.find("div", class_="widget-value")
+            subtitle_elem = widget.find("div", class_="widget-subtitle")
 
             if title_elem and value_elem:
                 metric_count += 1
@@ -54,19 +54,19 @@ def show_agents_metrics():
         print(f"📐 Total Metrics Shown: {metric_count}")
 
         # Check grid layout
-        grid_div = agents_tab.find('div', style=re.compile(r'grid-template-columns'))
+        grid_div = agents_tab.find("div", style=re.compile(r"grid-template-columns"))
         if grid_div:
-            style = grid_div.get('style', '')
-            columns_match = re.search(r'repeat\((\d+)', style)
+            style = grid_div.get("style", "")
+            columns_match = re.search(r"repeat\((\d+)", style)
             if columns_match:
                 columns = columns_match.group(1)
                 print(f"\n📏 Grid Layout: {columns} columns")
 
         # Check Overall Status
         overall_status_text = None
-        for div in agents_tab.find_all('div'):
+        for div in agents_tab.find_all("div"):
             if div.text.strip() == "Overall Status":
-                next_div = div.find_next_sibling('div')
+                next_div = div.find_next_sibling("div")
                 if next_div:
                     overall_status_text = next_div.text.strip()
                     break
@@ -75,7 +75,7 @@ def show_agents_metrics():
             print(f"\n📈 Overall Status: {overall_status_text}")
 
         # Check agent count display
-        agent_status_p = agents_tab.find('p', style=re.compile(r'agents active'))
+        agent_status_p = agents_tab.find("p", style=re.compile(r"agents active"))
         if agent_status_p:
             print(f"\n📊 Status Bar: {agent_status_p.text.strip()}")
 
@@ -86,7 +86,9 @@ def show_agents_metrics():
         print("   - Using a 3-column grid layout")
 
         if metric_count == 3:
-            print("\n✅ SUCCESS: The Agents page is displaying correctly with 3 metrics!")
+            print(
+                "\n✅ SUCCESS: The Agents page is displaying correctly with 3 metrics!"
+            )
 
     except Exception as e:
         print(f"❌ Error: {e}")

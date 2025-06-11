@@ -23,6 +23,7 @@ try:
     from langchain_community.embeddings import OllamaEmbeddings
     from langchain_community.llms import Ollama
     from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+
     LANGCHAIN_AVAILABLE = True
 except ImportError:
     LANGCHAIN_AVAILABLE = False
@@ -40,6 +41,7 @@ try:
     from langchain_community.llms import HuggingFaceHub, Replicate
     from langchain_google_genai import ChatGoogleGenerativeAI
     from langchain_groq import ChatGroq
+
     EXTENDED_PROVIDERS = True
 except ImportError:
     EXTENDED_PROVIDERS = False
@@ -56,6 +58,7 @@ from core.llm_client import LLMConfig, LLMProvider
 
 class ModelCapability(Enum):
     """Model capabilities for routing decisions"""
+
     CHAT = "chat"
     COMPLETION = "completion"
     EMBEDDINGS = "embeddings"
@@ -71,6 +74,7 @@ class ModelCapability(Enum):
 @dataclass
 class ModelProfile:
     """Detailed model profile for intelligent routing"""
+
     provider: str
     model_name: str
     capabilities: List[ModelCapability]
@@ -103,9 +107,12 @@ class ProviderRegistry:
                 provider="anthropic",
                 model_name="claude-opus-4-20250514",
                 capabilities=[
-                    ModelCapability.CHAT, ModelCapability.REASONING,
-                    ModelCapability.CODE_GENERATION, ModelCapability.LONG_CONTEXT,
-                    ModelCapability.VISION, ModelCapability.FUNCTION_CALLING
+                    ModelCapability.CHAT,
+                    ModelCapability.REASONING,
+                    ModelCapability.CODE_GENERATION,
+                    ModelCapability.LONG_CONTEXT,
+                    ModelCapability.VISION,
+                    ModelCapability.FUNCTION_CALLING,
                 ],
                 context_window=200000,
                 max_output_tokens=4096,
@@ -113,15 +120,17 @@ class ProviderRegistry:
                 cost_per_1k_output=0.075,
                 latency_ms=2000,
                 quality_score=0.98,
-                specialties=["reasoning", "coding", "analysis", "creative"]
+                specialties=["reasoning", "coding", "analysis", "creative"],
             ),
             "claude-4-sonnet-20250514": ModelProfile(
                 provider="anthropic",
                 model_name="claude-4-sonnet-20250514",
                 capabilities=[
-                    ModelCapability.CHAT, ModelCapability.CODE_GENERATION,
-                    ModelCapability.LONG_CONTEXT, ModelCapability.VISION,
-                    ModelCapability.FUNCTION_CALLING
+                    ModelCapability.CHAT,
+                    ModelCapability.CODE_GENERATION,
+                    ModelCapability.LONG_CONTEXT,
+                    ModelCapability.VISION,
+                    ModelCapability.FUNCTION_CALLING,
                 ],
                 context_window=200000,
                 max_output_tokens=4096,
@@ -129,7 +138,7 @@ class ProviderRegistry:
                 cost_per_1k_output=0.015,
                 latency_ms=1200,
                 quality_score=0.95,
-                specialties=["balanced", "coding", "analysis"]
+                specialties=["balanced", "coding", "analysis"],
             ),
             "claude-3-haiku-20240307": ModelProfile(
                 provider="anthropic",
@@ -141,8 +150,8 @@ class ProviderRegistry:
                 cost_per_1k_output=0.00125,
                 latency_ms=500,
                 quality_score=0.85,
-                specialties=["fast", "efficient"]
-            )
+                specialties=["fast", "efficient"],
+            ),
         }
 
         # OpenAI Models
@@ -151,8 +160,10 @@ class ProviderRegistry:
                 provider="openai",
                 model_name="gpt-4o",
                 capabilities=[
-                    ModelCapability.CHAT, ModelCapability.VISION,
-                    ModelCapability.FUNCTION_CALLING, ModelCapability.CODE_GENERATION
+                    ModelCapability.CHAT,
+                    ModelCapability.VISION,
+                    ModelCapability.FUNCTION_CALLING,
+                    ModelCapability.CODE_GENERATION,
                 ],
                 context_window=128000,
                 max_output_tokens=4096,
@@ -160,14 +171,15 @@ class ProviderRegistry:
                 cost_per_1k_output=0.015,
                 latency_ms=1500,
                 quality_score=0.94,
-                specialties=["multimodal", "coding", "analysis"]
+                specialties=["multimodal", "coding", "analysis"],
             ),
             "gpt-4o-mini": ModelProfile(
                 provider="openai",
                 model_name="gpt-4o-mini",
                 capabilities=[
-                    ModelCapability.CHAT, ModelCapability.VISION,
-                    ModelCapability.FUNCTION_CALLING
+                    ModelCapability.CHAT,
+                    ModelCapability.VISION,
+                    ModelCapability.FUNCTION_CALLING,
                 ],
                 context_window=128000,
                 max_output_tokens=16384,
@@ -175,14 +187,16 @@ class ProviderRegistry:
                 cost_per_1k_output=0.0006,
                 latency_ms=800,
                 quality_score=0.88,
-                specialties=["fast", "efficient", "multimodal"]
+                specialties=["fast", "efficient", "multimodal"],
             ),
             "gpt-4-turbo": ModelProfile(
                 provider="openai",
                 model_name="gpt-4-turbo",
                 capabilities=[
-                    ModelCapability.CHAT, ModelCapability.CODE_GENERATION,
-                    ModelCapability.FUNCTION_CALLING, ModelCapability.LONG_CONTEXT
+                    ModelCapability.CHAT,
+                    ModelCapability.CODE_GENERATION,
+                    ModelCapability.FUNCTION_CALLING,
+                    ModelCapability.LONG_CONTEXT,
                 ],
                 context_window=128000,
                 max_output_tokens=4096,
@@ -190,8 +204,8 @@ class ProviderRegistry:
                 cost_per_1k_output=0.03,
                 latency_ms=2000,
                 quality_score=0.93,
-                specialties=["reasoning", "coding"]
-            )
+                specialties=["reasoning", "coding"],
+            ),
         }
 
         # Google Models
@@ -201,8 +215,10 @@ class ProviderRegistry:
                     provider="google",
                     model_name="gemini-1.5-pro",
                     capabilities=[
-                        ModelCapability.CHAT, ModelCapability.VISION,
-                        ModelCapability.LONG_CONTEXT, ModelCapability.CODE_GENERATION
+                        ModelCapability.CHAT,
+                        ModelCapability.VISION,
+                        ModelCapability.LONG_CONTEXT,
+                        ModelCapability.CODE_GENERATION,
                     ],
                     context_window=2000000,  # 2M tokens!
                     max_output_tokens=8192,
@@ -210,14 +226,15 @@ class ProviderRegistry:
                     cost_per_1k_output=0.0105,
                     latency_ms=1800,
                     quality_score=0.92,
-                    specialties=["ultra-long-context", "multimodal"]
+                    specialties=["ultra-long-context", "multimodal"],
                 ),
                 "gemini-1.5-flash": ModelProfile(
                     provider="google",
                     model_name="gemini-1.5-flash",
                     capabilities=[
-                        ModelCapability.CHAT, ModelCapability.VISION,
-                        ModelCapability.LONG_CONTEXT
+                        ModelCapability.CHAT,
+                        ModelCapability.VISION,
+                        ModelCapability.LONG_CONTEXT,
                     ],
                     context_window=1000000,  # 1M tokens
                     max_output_tokens=8192,
@@ -225,8 +242,8 @@ class ProviderRegistry:
                     cost_per_1k_output=0.00105,
                     latency_ms=600,
                     quality_score=0.86,
-                    specialties=["fast", "long-context"]
-                )
+                    specialties=["fast", "long-context"],
+                ),
             }
 
         # Groq Models (Ultra-fast inference)
@@ -235,27 +252,33 @@ class ProviderRegistry:
                 "llama-3.3-70b-versatile": ModelProfile(
                     provider="groq",
                     model_name="llama-3.3-70b-versatile",
-                    capabilities=[ModelCapability.CHAT, ModelCapability.CODE_GENERATION],
+                    capabilities=[
+                        ModelCapability.CHAT,
+                        ModelCapability.CODE_GENERATION,
+                    ],
                     context_window=8192,
                     max_output_tokens=8192,
                     cost_per_1k_input=0.00059,
                     cost_per_1k_output=0.00079,
                     latency_ms=200,  # Ultra-fast!
                     quality_score=0.90,
-                    specialties=["ultra-fast", "coding"]
+                    specialties=["ultra-fast", "coding"],
                 ),
                 "mixtral-8x7b-32768": ModelProfile(
                     provider="groq",
                     model_name="mixtral-8x7b-32768",
-                    capabilities=[ModelCapability.CHAT, ModelCapability.CODE_GENERATION],
+                    capabilities=[
+                        ModelCapability.CHAT,
+                        ModelCapability.CODE_GENERATION,
+                    ],
                     context_window=32768,
                     max_output_tokens=32768,
                     cost_per_1k_input=0.00024,
                     cost_per_1k_output=0.00024,
                     latency_ms=150,
                     quality_score=0.88,
-                    specialties=["ultra-fast", "efficient"]
-                )
+                    specialties=["ultra-fast", "efficient"],
+                ),
             }
 
         # Local/Ollama Models
@@ -272,7 +295,7 @@ class ProviderRegistry:
                 quality_score=0.85,
                 specialties=["local", "private"],
                 requires_api_key=False,
-                base_url="http://localhost:11434"
+                base_url="http://localhost:11434",
             ),
             "mistral": ModelProfile(
                 provider="ollama",
@@ -286,7 +309,7 @@ class ProviderRegistry:
                 quality_score=0.82,
                 specialties=["local", "efficient"],
                 requires_api_key=False,
-                base_url="http://localhost:11434"
+                base_url="http://localhost:11434",
             ),
             "deepseek-coder-v2": ModelProfile(
                 provider="ollama",
@@ -300,8 +323,8 @@ class ProviderRegistry:
                 quality_score=0.88,
                 specialties=["coding", "local"],
                 requires_api_key=False,
-                base_url="http://localhost:11434"
-            )
+                base_url="http://localhost:11434",
+            ),
         }
 
         # Perplexity Models (Internet-connected)
@@ -317,7 +340,7 @@ class ProviderRegistry:
                     cost_per_1k_output=0.001,
                     latency_ms=2000,
                     quality_score=0.89,
-                    specialties=["internet-search", "real-time-info"]
+                    specialties=["internet-search", "real-time-info"],
                 )
             }
 
@@ -325,20 +348,26 @@ class ProviderRegistry:
         """Get specific model profile"""
         return self.providers.get(provider, {}).get(model_name)
 
-    def get_models_by_capability(self, capability: ModelCapability) -> List[ModelProfile]:
+    def get_models_by_capability(
+        self, capability: ModelCapability
+    ) -> List[ModelProfile]:
         """Get all models with a specific capability"""
         models = []
         for provider_models in self.providers.values():
             for model in provider_models.values():
                 if capability in model.capabilities and model.is_available:
                     models.append(model)
-        return sorted(models, key=lambda m: (m.quality_score, -m.latency_ms), reverse=True)
+        return sorted(
+            models, key=lambda m: (m.quality_score, -m.latency_ms), reverse=True
+        )
 
-    def get_best_model_for_task(self,
-                                task_type: str,
-                                max_cost_per_1k: Optional[float] = None,
-                                max_latency_ms: Optional[int] = None,
-                                min_quality: float = 0.8) -> Optional[ModelProfile]:
+    def get_best_model_for_task(
+        self,
+        task_type: str,
+        max_cost_per_1k: Optional[float] = None,
+        max_latency_ms: Optional[int] = None,
+        min_quality: float = 0.8,
+    ) -> Optional[ModelProfile]:
         """Get best model for a specific task type"""
         specialty_models = []
 
@@ -361,9 +390,11 @@ class ProviderRegistry:
 
         # Sort by quality score and latency
         if specialty_models:
-            return sorted(specialty_models,
-                         key=lambda m: (m.quality_score, -m.latency_ms),
-                         reverse=True)[0]
+            return sorted(
+                specialty_models,
+                key=lambda m: (m.quality_score, -m.latency_ms),
+                reverse=True,
+            )[0]
 
         return None
 
@@ -375,12 +406,14 @@ class LangChainProviderAdapter:
         self.registry = registry
         self.logger = logging.getLogger("langchain_adapter")
 
-    def create_chat_model(self,
-                         provider: str,
-                         model_name: str,
-                         temperature: float = 0.7,
-                         max_tokens: Optional[int] = None,
-                         **kwargs) -> Optional[BaseChatModel]:
+    def create_chat_model(
+        self,
+        provider: str,
+        model_name: str,
+        temperature: float = 0.7,
+        max_tokens: Optional[int] = None,
+        **kwargs,
+    ) -> Optional[BaseChatModel]:
         """Create LangChain chat model instance"""
 
         if not LANGCHAIN_AVAILABLE:
@@ -399,7 +432,7 @@ class LangChainProviderAdapter:
                     model=model_name,
                     anthropic_api_key=api_key,
                     temperature=temperature,
-                    max_tokens=max_tokens or model_profile.max_output_tokens
+                    max_tokens=max_tokens or model_profile.max_output_tokens,
                 )
 
             elif provider == "openai":
@@ -408,7 +441,7 @@ class LangChainProviderAdapter:
                     model=model_name,
                     openai_api_key=api_key,
                     temperature=temperature,
-                    max_tokens=max_tokens
+                    max_tokens=max_tokens,
                 )
 
             elif provider == "ollama":
@@ -417,7 +450,7 @@ class LangChainProviderAdapter:
                     model=model_name,
                     base_url=base_url,
                     temperature=temperature,
-                    num_predict=max_tokens
+                    num_predict=max_tokens,
                 )
 
             elif provider == "google" and EXTENDED_PROVIDERS:
@@ -426,7 +459,7 @@ class LangChainProviderAdapter:
                     model=model_name,
                     google_api_key=api_key,
                     temperature=temperature,
-                    max_output_tokens=max_tokens
+                    max_output_tokens=max_tokens,
                 )
 
             elif provider == "groq" and EXTENDED_PROVIDERS:
@@ -435,7 +468,7 @@ class LangChainProviderAdapter:
                     model=model_name,
                     groq_api_key=api_key,
                     temperature=temperature,
-                    max_tokens=max_tokens
+                    max_tokens=max_tokens,
                 )
 
             elif provider == "cohere" and EXTENDED_PROVIDERS:
@@ -444,7 +477,7 @@ class LangChainProviderAdapter:
                     model=model_name,
                     cohere_api_key=api_key,
                     temperature=temperature,
-                    max_tokens=max_tokens
+                    max_tokens=max_tokens,
                 )
 
             elif provider == "perplexity" and EXTENDED_PROVIDERS:
@@ -453,7 +486,7 @@ class LangChainProviderAdapter:
                     model=model_name,
                     pplx_api_key=api_key,
                     temperature=temperature,
-                    max_tokens=max_tokens
+                    max_tokens=max_tokens,
                 )
 
             else:
@@ -475,14 +508,13 @@ class LangChainProviderAdapter:
                 api_key = kwargs.get("api_key") or os.getenv("OPENAI_API_KEY")
                 return OpenAIEmbeddings(
                     openai_api_key=api_key,
-                    model=kwargs.get("model", "text-embedding-3-small")
+                    model=kwargs.get("model", "text-embedding-3-small"),
                 )
 
             elif provider == "ollama":
                 base_url = kwargs.get("base_url", "http://localhost:11434")
                 return OllamaEmbeddings(
-                    base_url=base_url,
-                    model=kwargs.get("model", "nomic-embed-text")
+                    base_url=base_url, model=kwargs.get("model", "nomic-embed-text")
                 )
 
             # Add more embedding providers as needed
@@ -499,11 +531,13 @@ class ModelRouter:
         self.registry = registry
         self.logger = logging.getLogger("model_router")
 
-    async def route_request(self,
-                          task_type: str,
-                          input_tokens: int,
-                          required_capabilities: List[ModelCapability],
-                          constraints: Optional[Dict[str, Any]] = None) -> Optional[ModelProfile]:
+    async def route_request(
+        self,
+        task_type: str,
+        input_tokens: int,
+        required_capabilities: List[ModelCapability],
+        constraints: Optional[Dict[str, Any]] = None,
+    ) -> Optional[ModelProfile]:
         """Route request to best available model"""
 
         constraints = constraints or {}
@@ -556,10 +590,9 @@ class ModelRouter:
         scored_models.sort(key=lambda x: x[0], reverse=True)
         return scored_models[0][1] if scored_models else None
 
-    def _calculate_model_score(self,
-                              model: ModelProfile,
-                              task_type: str,
-                              constraints: Dict[str, Any]) -> float:
+    def _calculate_model_score(
+        self, model: ModelProfile, task_type: str, constraints: Dict[str, Any]
+    ) -> float:
         """Calculate model fitness score for task"""
 
         score = 0.0
@@ -620,11 +653,13 @@ class LLMProviderSDK:
         """Get detailed information about a model"""
         return self.registry.get_model(provider, model_name)
 
-    async def create_optimized_chain(self,
-                                   task_type: str,
-                                   required_capabilities: List[ModelCapability],
-                                   constraints: Optional[Dict[str, Any]] = None,
-                                   **model_kwargs) -> Optional[BaseChatModel]:
+    async def create_optimized_chain(
+        self,
+        task_type: str,
+        required_capabilities: List[ModelCapability],
+        constraints: Optional[Dict[str, Any]] = None,
+        **model_kwargs,
+    ) -> Optional[BaseChatModel]:
         """Create optimized LangChain model for task"""
 
         # Route to best model
@@ -632,27 +667,27 @@ class LLMProviderSDK:
             task_type=task_type,
             input_tokens=constraints.get("estimated_input_tokens", 1000),
             required_capabilities=required_capabilities,
-            constraints=constraints
+            constraints=constraints,
         )
 
         if not model_profile:
             self.logger.error("No suitable model found")
             return None
 
-        self.logger.info(f"Selected model: {model_profile.provider}/{model_profile.model_name}")
+        self.logger.info(
+            f"Selected model: {model_profile.provider}/{model_profile.model_name}"
+        )
 
         # Create LangChain model
         return self.adapter.create_chat_model(
             provider=model_profile.provider,
             model_name=model_profile.model_name,
-            **model_kwargs
+            **model_kwargs,
         )
 
-    def estimate_cost(self,
-                     provider: str,
-                     model_name: str,
-                     input_tokens: int,
-                     output_tokens: int) -> float:
+    def estimate_cost(
+        self, provider: str, model_name: str, input_tokens: int, output_tokens: int
+    ) -> float:
         """Estimate cost for a request"""
 
         model = self.registry.get_model(provider, model_name)
@@ -675,15 +710,15 @@ class LLMProviderSDK:
             "total_models": len(models),
             "available_models": len(available_models),
             "requires_api_key": any(m.requires_api_key for m in models.values()),
-            "capabilities": list(set(
-                cap for m in models.values()
-                for cap in m.capabilities
-            ))
+            "capabilities": list(
+                set(cap for m in models.values() for cap in m.capabilities)
+            ),
         }
 
 
 # Singleton instance
 _sdk_instance = None
+
 
 def get_llm_sdk() -> LLMProviderSDK:
     """Get singleton LLM Provider SDK instance"""
@@ -714,9 +749,9 @@ async def example_usage():
         constraints={
             "max_cost_per_1k": 0.01,
             "max_latency_ms": 2000,
-            "quality_weight": 0.6
+            "quality_weight": 0.6,
         },
-        temperature=0.5
+        temperature=0.5,
     )
 
     if code_model and LANGCHAIN_AVAILABLE:

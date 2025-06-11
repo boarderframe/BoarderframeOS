@@ -26,10 +26,12 @@ class AgentState(Enum):
     ERROR = "error"
     TERMINATED = "terminated"
 
+
 # Agent Message Types
 @dataclass
 class AgentMessage:
     """Messages passed between agents"""
+
     from_agent: str
     to_agent: str
     message_type: str
@@ -38,16 +40,18 @@ class AgentMessage:
     requires_response: bool = False
     correlation_id: Optional[str] = None
 
+
 @dataclass
 class AgentMemory:
     """Short and long-term memory storage"""
+
     short_term: List[Dict[str, Any]] = field(default_factory=list)
     long_term: List[Dict[str, Any]] = field(default_factory=list)
     max_short_term: int = 100
 
     def add(self, memory: Dict[str, Any], permanent: bool = False):
         """Add a memory"""
-        memory['timestamp'] = datetime.now().isoformat()
+        memory["timestamp"] = datetime.now().isoformat()
 
         if permanent:
             self.long_term.append(memory)
@@ -72,9 +76,11 @@ class AgentMemory:
 
         return results
 
+
 @dataclass
 class AgentConfig:
     """Configuration for an agent"""
+
     name: str
     role: str
     goals: List[str]
@@ -85,6 +91,7 @@ class AgentConfig:
     model: str = "llama-maverick-30b"  # Which LLM to use
     temperature: float = 0.7
     max_concurrent_tasks: int = 5
+
 
 class BaseAgent(ABC):
     """Base class for all BoarderframeOS agents"""
@@ -100,10 +107,10 @@ class BaseAgent(ABC):
 
         # Performance metrics
         self.metrics = {
-            'thoughts_processed': 0,
-            'actions_taken': 0,
-            'errors': 0,
-            'start_time': datetime.now()
+            "thoughts_processed": 0,
+            "actions_taken": 0,
+            "errors": 0,
+            "start_time": datetime.now(),
         }
 
         # Initialize tools
@@ -114,7 +121,7 @@ class BaseAgent(ABC):
         logger = logging.getLogger(f"agent.{self.config.name}")
         handler = logging.FileHandler(f"logs/agents/{self.config.name}.log")
         formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
         handler.setFormatter(formatter)
         logger.addHandler(handler)
@@ -137,10 +144,7 @@ class BaseAgent(ABC):
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 "http://localhost:8001/rpc",
-                json={
-                    "method": f"filesystem.{action}",
-                    "params": params
-                }
+                json={"method": f"filesystem.{action}", "params": params},
             )
             return response.json()
 
@@ -149,10 +153,7 @@ class BaseAgent(ABC):
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 "http://localhost:8002/rpc",
-                json={
-                    "method": f"git.{action}",
-                    "params": params
-                }
+                json={"method": f"git.{action}", "params": params},
             )
             return response.json()
 
@@ -161,10 +162,7 @@ class BaseAgent(ABC):
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 "http://localhost:8003/rpc",
-                json={
-                    "method": f"browser.{action}",
-                    "params": params
-                }
+                json={"method": f"browser.{action}", "params": params},
             )
             return response.json()
 
@@ -187,14 +185,14 @@ class BaseAgent(ABC):
     async def perceive(self) -> Dict[str, Any]:
         """Gather context from environment and memory"""
         context = {
-            'current_time': datetime.now().isoformat(),
-            'agent_name': self.config.name,
-            'agent_role': self.config.role,
-            'current_goals': self.config.goals,
-            'available_tools': list(self.tools.keys()),
-            'recent_memories': self.memory.short_term[-10:],
-            'message_queue_size': self.message_queue.qsize(),
-            'active_tasks': len(self.active_tasks)
+            "current_time": datetime.now().isoformat(),
+            "agent_name": self.config.name,
+            "agent_role": self.config.role,
+            "current_goals": self.config.goals,
+            "available_tools": list(self.tools.keys()),
+            "recent_memories": self.memory.short_term[-10:],
+            "message_queue_size": self.message_queue.qsize(),
+            "active_tasks": len(self.active_tasks),
         }
 
         # Check for new messages
@@ -207,7 +205,7 @@ class BaseAgent(ABC):
                 break
 
         if messages:
-            context['new_messages'] = messages
+            context["new_messages"] = messages
 
         return context
 
@@ -224,19 +222,17 @@ class BaseAgent(ABC):
                 # Think
                 self.state = AgentState.THINKING
                 thought = await self.think(context)
-                self.metrics['thoughts_processed'] += 1
+                self.metrics["thoughts_processed"] += 1
 
                 # Act
                 self.state = AgentState.ACTING
                 result = await self.act(thought, context)
-                self.metrics['actions_taken'] += 1
+                self.metrics["actions_taken"] += 1
 
                 # Remember
-                self.memory.add({
-                    'thought': thought,
-                    'action': result,
-                    'context': context
-                })
+                self.memory.add(
+                    {"thought": thought, "action": result, "context": context}
+                )
 
                 # Log
                 self.log(f"Thought: {thought[:100]}...")
@@ -248,19 +244,24 @@ class BaseAgent(ABC):
 
         except Exception as e:
             self.state = AgentState.ERROR
-            self.metrics['errors'] += 1
+            self.metrics["errors"] += 1
             self.log(f"Error in main loop: {e}", level="error")
             raise
 
-    async def send_message(self, to_agent: str, message_type: str,
-                          content: Dict[str, Any], requires_response: bool = False):
+    async def send_message(
+        self,
+        to_agent: str,
+        message_type: str,
+        content: Dict[str, Any],
+        requires_response: bool = False,
+    ):
         """Send a message to another agent"""
         message = AgentMessage(
             from_agent=self.config.name,
             to_agent=to_agent,
             message_type=message_type,
             content=content,
-            requires_response=requires_response
+            requires_response=requires_response,
         )
 
         # TODO: Implement actual message routing
@@ -280,16 +281,17 @@ class BaseAgent(ABC):
 
     def get_metrics(self) -> Dict[str, Any]:
         """Get agent performance metrics"""
-        uptime = (datetime.now() - self.metrics['start_time']).total_seconds()
+        uptime = (datetime.now() - self.metrics["start_time"]).total_seconds()
         return {
             **self.metrics,
-            'uptime_seconds': uptime,
-            'thoughts_per_minute': (self.metrics['thoughts_processed'] / uptime) * 60,
-            'actions_per_minute': (self.metrics['actions_taken'] / uptime) * 60,
-            'error_rate': self.metrics['errors'] / max(self.metrics['thoughts_processed'], 1)
+            "uptime_seconds": uptime,
+            "thoughts_per_minute": (self.metrics["thoughts_processed"] / uptime) * 60,
+            "actions_per_minute": (self.metrics["actions_taken"] / uptime) * 60,
+            "error_rate": self.metrics["errors"]
+            / max(self.metrics["thoughts_processed"], 1),
         }
 
-    async def spawn_sub_agent(self, name: str, role: str, goal: str) -> 'BaseAgent':
+    async def spawn_sub_agent(self, name: str, role: str, goal: str) -> "BaseAgent":
         """Spawn a temporary sub-agent for specific tasks"""
         # TODO: Implement sub-agent spawning
         self.log(f"Spawning sub-agent: {name} for {goal}")
@@ -306,12 +308,16 @@ class BaseAgent(ABC):
         memory_file = Path(f"data/agents/{self.config.name}_memory.json")
         memory_file.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(memory_file, 'w') as f:
-            json.dump({
-                'short_term': self.memory.short_term,
-                'long_term': self.memory.long_term,
-                'metrics': self.get_metrics()
-            }, f, default=str)
+        with open(memory_file, "w") as f:
+            json.dump(
+                {
+                    "short_term": self.memory.short_term,
+                    "long_term": self.memory.long_term,
+                    "metrics": self.get_metrics(),
+                },
+                f,
+                default=str,
+            )
 
         self.state = AgentState.TERMINATED
         self.log(f"{self.config.name} terminated successfully")
@@ -356,14 +362,14 @@ class AgentOrchestrator:
             return {}
 
         metrics = {
-            'zone': zone_name,
-            'agent_count': len(self.zones[zone_name]),
-            'agents': {}
+            "zone": zone_name,
+            "agent_count": len(self.zones[zone_name]),
+            "agents": {},
         }
 
         for agent_name in self.zones[zone_name]:
             if agent_name in self.agents:
-                metrics['agents'][agent_name] = self.agents[agent_name].get_metrics()
+                metrics["agents"][agent_name] = self.agents[agent_name].get_metrics()
 
         return metrics
 
@@ -395,9 +401,9 @@ class JarvisAgent(BaseAgent):
         # response = await self.llm_call(prompt)
 
         # Simulated response
-        if context['message_queue_size'] > 0:
+        if context["message_queue_size"] > 0:
             return "Process pending messages from other agents"
-        elif context['active_tasks'] == 0:
+        elif context["active_tasks"] == 0:
             return "Check for new tasks in the task queue"
         else:
             return "Monitor active tasks and prepare status report"
@@ -407,7 +413,7 @@ class JarvisAgent(BaseAgent):
 
         if "Process pending messages" in thought:
             # Process messages
-            messages = context.get('new_messages', [])
+            messages = context.get("new_messages", [])
             results = []
 
             for msg in messages:
@@ -418,12 +424,18 @@ class JarvisAgent(BaseAgent):
                 elif msg.message_type == "status_query":
                     results.append(await self._handle_status_query(msg))
 
-            return {"action": "processed_messages", "count": len(messages), "results": results}
+            return {
+                "action": "processed_messages",
+                "count": len(messages),
+                "results": results,
+            }
 
         elif "Check for new tasks" in thought:
             # Check filesystem for new tasks
-            tasks = await self.tools['filesystem']('list_directory', path='tasks/pending')
-            return {"action": "checked_tasks", "found": len(tasks.get('files', []))}
+            tasks = await self.tools["filesystem"](
+                "list_directory", path="tasks/pending"
+            )
+            return {"action": "checked_tasks", "found": len(tasks.get("files", []))}
 
         else:
             # Default: generate status report
@@ -431,12 +443,14 @@ class JarvisAgent(BaseAgent):
                 "timestamp": datetime.now().isoformat(),
                 "system_status": "operational",
                 "active_agents": len(self.active_tasks),
-                "metrics": self.get_metrics()
+                "metrics": self.get_metrics(),
             }
 
-            await self.tools['filesystem']('write_file',
-                                         path=f"reports/status_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-                                         content=json.dumps(report, indent=2))
+            await self.tools["filesystem"](
+                "write_file",
+                path=f"reports/status_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                content=json.dumps(report, indent=2),
+            )
 
             return {"action": "generated_report", "report": report}
 
@@ -445,7 +459,7 @@ class JarvisAgent(BaseAgent):
         task = message.content
 
         # Validate task
-        if 'goal' not in task:
+        if "goal" not in task:
             return {"status": "error", "message": "Task missing goal"}
 
         # Assign task or spawn sub-agent
@@ -459,5 +473,5 @@ class JarvisAgent(BaseAgent):
         return {
             "agent": self.config.name,
             "status": self.state.value,
-            "metrics": self.get_metrics()
+            "metrics": self.get_metrics(),
         }
