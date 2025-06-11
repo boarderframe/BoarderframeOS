@@ -1,0 +1,29 @@
+# BoarderframeOS Code Owners
+# These owners will be the default owners for everything in the repo
+
+# Global owners
+* @boarderframe
+
+# Core system components
+/core/ @boarderframe
+/agents/ @boarderframe
+
+# MCP servers
+/mcp/ @boarderframe
+
+# UI components
+/ui/ @boarderframe
+/corporate_headquarters.py @boarderframe
+
+# Infrastructure
+/docker-compose.yml @boarderframe
+/Dockerfile @boarderframe
+/migrations/ @boarderframe
+
+# Documentation
+/docs/ @boarderframe
+*.md @boarderframe
+
+# Configuration
+/configs/ @boarderframe
+/.github/ @boarderframe
