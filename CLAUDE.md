@@ -429,12 +429,16 @@ curl http://localhost:8001/health  # Filesystem server
 11. **Agent Cortex UI startup failures**: Added multiple fallback methods including manual start attempt with proper PYTHONPATH
 12. **Filesystem Server timeout issues**: Enhanced process management and HTTP endpoint binding verification
 13. **Corporate HQ server status display**: Fixed status reporting mechanism to show real-time server health instead of stale startup data
+14. **Agent Cortex async/subprocess conflicts**: Created simple launcher that avoids event loop conflicts by using lazy initialization
+15. **Flask debug mode subprocess issues**: Disabled debug mode and reloader when launched from startup.py to prevent process forking issues
 
 ### Enhanced Startup Features (June 2025)
 - **Automatic Server Status Refresh**: Startup now includes real-time health checks at completion
-- **Agent Cortex Enhanced Startup**: Multiple retry methods ensure Agent Cortex UI starts reliably
+- **Agent Cortex Enhanced Startup**: Simple launcher with lazy initialization ensures reliable startup
 - **Improved Error Recovery**: Better error messages and automatic retry for common import/environment issues
 - **Real-time Status Tools**: Created `fix_server_status.py` and `check_startup_health.py` for accurate system monitoring
+- **Process Isolation**: Subprocess launches use `start_new_session=True` and `close_fds=True` to prevent state inheritance
+- **Lazy Initialization**: Agent Cortex components initialize on first API request to avoid startup conflicts
 
 ### Enhanced Diagnostic Tools
 ```bash

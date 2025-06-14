@@ -434,6 +434,9 @@ class EnhancedSystemStartup:
             )
 
             enhanced_env = self._create_enhanced_subprocess_env()
+            
+            # Mark this as a subprocess launch for Agent Cortex
+            enhanced_env["BOARDERFRAME_STARTUP"] = "1"
 
             # Kill any existing Agent Cortex UI processes first
             try:
@@ -442,16 +445,32 @@ class EnhancedSystemStartup:
                     capture_output=True,
                     check=False,
                 )
+                subprocess.run(
+                    ["pkill", "-f", "agent_cortex_launcher.py"],
+                    capture_output=True,
+                    check=False,
+                )
+                subprocess.run(
+                    ["pkill", "-f", "agent_cortex_simple_launcher.py"],
+                    capture_output=True,
+                    check=False,
+                )
                 await asyncio.sleep(1)  # Give processes time to die
             except:
                 pass
 
+            # Set environment to indicate subprocess launch
+            enhanced_env["BOARDERFRAME_STARTUP"] = "1"
+
+            # Use the simple launcher to avoid async conflicts
             cortex_ui_process = subprocess.Popen(
-                [self.venv_python, "ui/agent_cortex_management.py"],
+                [self.venv_python, "ui/agent_cortex_simple_launcher.py"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 cwd=str(Path(__file__).parent),
                 env=enhanced_env,
+                start_new_session=True,  # Create new process group
+                close_fds=True,  # Close inherited file descriptors
             )
 
             self.processes["cortex_ui"] = cortex_ui_process
@@ -488,11 +507,13 @@ class EnhancedSystemStartup:
                         enhanced_env["PYTHONPATH"] = str(Path(__file__).parent)
 
                         cortex_ui_process = subprocess.Popen(
-                            [self.venv_python, "ui/agent_cortex_management.py"],
+                            [self.venv_python, "ui/agent_cortex_simple_launcher.py"],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             cwd=str(Path(__file__).parent),
                             env=enhanced_env,
+                            start_new_session=True,
+                            close_fds=True,
                         )
                         self.processes["cortex_ui"] = cortex_ui_process
                         continue
@@ -540,19 +561,19 @@ class EnhancedSystemStartup:
                 self.print_step(
                     "Agent Cortex UI startup timeout - will try manual start", "warning"
                 )
-                # Try a final manual start attempt
+                # Try a final manual start attempt with the launcher
                 try:
+                    # Set explicit subprocess environment
+                    manual_env = enhanced_env.copy()
+                    manual_env["FLASK_DEBUG"] = "0"
+                    manual_env["WERKZEUG_RUN_MAIN"] = "true"
+                    
                     manual_process = subprocess.Popen(
-                        [
-                            self.venv_python,
-                            "-c",
-                            f"import sys; sys.path.insert(0, '{Path(__file__).parent}'); "
-                            "from ui.agent_cortex_management import app; app.run(host='0.0.0.0', port=8889, debug=False)",
-                        ],
+                        [self.venv_python, "ui/agent_cortex_launcher.py"],
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                         cwd=str(Path(__file__).parent),
-                        env=enhanced_env,
+                        env=manual_env,
                     )
                     self.processes["cortex_ui"] = manual_process
                     await asyncio.sleep(2)

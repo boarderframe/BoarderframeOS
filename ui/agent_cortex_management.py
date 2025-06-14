@@ -37,6 +37,9 @@ class AgentCortexManagementUI:
         self.port = port
         self.cortex = None
         self.registry = None
+        self._initialized = False
+        self._initializing = False
+        self._init_lock = asyncio.Lock()
 
         # Agent Cortex management data
         self.cortex_config = {
@@ -62,6 +65,36 @@ class AgentCortexManagementUI:
 
         # Initialize variable inspector with current global settings
         self._sync_global_settings_to_inspector()
+        
+        # Mark as initialized
+        self._initialized = True
+        self._initializing = False
+    
+    async def ensure_initialized(self):
+        """Ensure Agent Cortex is initialized (lazy initialization)"""
+        if self._initialized:
+            return
+        
+        async with self._init_lock:
+            # Double-check after acquiring lock
+            if self._initialized:
+                return
+            
+            if self._initializing:
+                # Wait for ongoing initialization
+                while self._initializing:
+                    await asyncio.sleep(0.1)
+                return
+            
+            try:
+                self._initializing = True
+                print("🔄 Lazy initialization of Agent Cortex...")
+                await self.initialize()
+                print("✅ Agent Cortex initialized successfully")
+            except Exception as e:
+                print(f"❌ Agent Cortex initialization failed: {e}")
+                self._initializing = False
+                raise
 
     async def _setup_database(self):
         """Setup Agent Cortex configuration database"""
@@ -210,12 +243,29 @@ class AgentCortexManagementUI:
         else:
             return ModelTier.WORKER.value
 
+    def _ensure_initialized_sync(self, func):
+        """Decorator to ensure initialization before handling requests"""
+        def wrapper(*args, **kwargs):
+            # Run lazy initialization in a new event loop if needed
+            if not self._initialized:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    loop.run_until_complete(self.ensure_initialized())
+                finally:
+                    loop.close()
+                    asyncio.set_event_loop(None)
+            return func(*args, **kwargs)
+        wrapper.__name__ = func.__name__
+        return wrapper
+
     def _setup_routes(self):
         """Setup Flask routes"""
 
         @self.app.route("/")
         def index():
             """Main Agent Cortex Management dashboard"""
+            # No initialization needed for static page
             return render_template("agent_cortex_management.html")
 
         @self.app.route("/test")
@@ -224,6 +274,7 @@ class AgentCortexManagementUI:
             return send_from_directory(".", "test_variables_ui.html")
 
         @self.app.route("/api/agent-cortex/status")
+        @self._ensure_initialized_sync
         def cortex_status():
             """Get current Agent Cortex status"""
             loop = asyncio.new_event_loop()
@@ -1128,10 +1179,24 @@ class AgentCortexManagementUI:
 
         return alerts
 
-    def run(self):
+    def run(self, debug=None):
         """Run the Agent Cortex Management UI"""
+        # Determine debug mode based on environment or parameter
+        if debug is None:
+            # If launched from startup.py, disable debug mode
+            debug = os.environ.get("BOARDERFRAME_STARTUP") != "1"
+        
         print(f"🧠 Starting Agent Cortex Management UI on http://localhost:{self.port}")
-        self.app.run(host="0.0.0.0", port=self.port, debug=True)
+        if not self._initialized:
+            print("📍 Agent Cortex will be initialized on first API request")
+        
+        # Run with appropriate settings
+        self.app.run(
+            host="0.0.0.0", 
+            port=self.port, 
+            debug=debug,
+            use_reloader=debug  # Only use reloader in debug mode
+        )
 
 
 # Create and run the UI
