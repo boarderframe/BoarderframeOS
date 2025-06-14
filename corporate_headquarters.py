@@ -2075,47 +2075,78 @@ class DashboardData:
                         for server_name, server_info in startup_data[
                             "mcp_servers"
                         ].items():
-                            if server_info.get("status") == "running":
-                                # Add to unified data
-                                self.unified_data["services_status"][server_name] = {
-                                    "status": "healthy",
-                                    "port": server_info.get("details", {}).get(
-                                        "port", 0
-                                    ),
-                                    "pid": server_info.get("details", {}).get("pid"),
-                                    "name": server_name.replace("_", " ").title(),
-                                    "category": "MCP Servers",
-                                    "last_check": server_info.get(
-                                        "last_update", datetime.now().isoformat()
-                                    ),
-                                }
-                                # Also add to legacy for compatibility
-                                self.services_status[server_name] = self.unified_data[
-                                    "services_status"
-                                ][server_name]
-                                print(
-                                    f"  ✅ Loaded {server_name} as healthy on port {server_info.get('details', {}).get('port', 0)}"
-                                )
+                            # Load all server statuses, not just "running" ones
+                            raw_status = server_info.get("status", "unknown")
+                            
+                            # Map statuses appropriately
+                            if raw_status == "running":
+                                display_status = "healthy"
+                            elif raw_status == "starting":
+                                display_status = "starting"
+                            elif raw_status == "offline":
+                                display_status = "offline"
+                            else:
+                                display_status = raw_status
+                            
+                            # Add to unified data
+                            self.unified_data["services_status"][server_name] = {
+                                "status": display_status,
+                                "port": server_info.get("details", {}).get("port", 0),
+                                "pid": server_info.get("details", {}).get("pid"),
+                                "name": server_name.replace("_", " ").title(),
+                                "category": "MCP Servers",
+                                "last_check": server_info.get(
+                                    "last_update", datetime.now().isoformat()
+                                ),
+                                "raw_status": raw_status,
+                                "details": server_info.get("details", {})
+                            }
+                            # Also add to legacy for compatibility
+                            self.services_status[server_name] = self.unified_data[
+                                "services_status"
+                            ][server_name]
+                            
+                            status_icon = "✅" if display_status == "healthy" else "⚠️" if display_status == "starting" else "❌"
+                            print(
+                                f"  {status_icon} Loaded {server_name} as {display_status} on port {server_info.get('details', {}).get('port', 0)}"
+                            )
 
                     # Load other services status
                     if "services" in startup_data:
                         for service_name, service_info in startup_data[
                             "services"
                         ].items():
-                            if service_info.get("status") == "running":
-                                self.unified_data["services_status"][service_name] = {
-                                    "status": "healthy",
-                                    "port": service_info.get("details", {}).get(
-                                        "port", 0
-                                    ),
-                                    "category": "Core Services",
-                                    "last_check": service_info.get(
-                                        "last_update", datetime.now().isoformat()
-                                    ),
-                                }
-                                self.services_status[service_name] = self.unified_data[
-                                    "services_status"
-                                ][service_name]
+                            # Load all service statuses, not just "running" ones
+                            raw_status = service_info.get("status", "unknown")
+                            
+                            # Map statuses appropriately
+                            if raw_status == "running":
+                                display_status = "healthy"
+                            elif raw_status == "starting":
+                                display_status = "starting"
+                            elif raw_status == "offline":
+                                display_status = "offline"
+                            else:
+                                display_status = raw_status
+                            
+                            self.unified_data["services_status"][service_name] = {
+                                "status": display_status,
+                                "port": service_info.get("details", {}).get("port", 0),
+                                "category": "Core Services",
+                                "last_check": service_info.get(
+                                    "last_update", datetime.now().isoformat()
+                                ),
+                                "raw_status": raw_status,
+                                "details": service_info.get("details", {})
+                            }
+                            self.services_status[service_name] = self.unified_data[
+                                "services_status"
+                            ][service_name]
+                            
+                            status_icon = "✅" if display_status == "healthy" else "⚠️" if display_status == "starting" else "❌"
+                            print(
+                                f"  {status_icon} Loaded service {service_name} as {display_status}"
+                            )
 
                     # Load agents status
                     if "agents" in startup_data:
@@ -14966,6 +14997,43 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 self.end_headers()
 
                 error_response = {"status": "error", "message": str(e)}
+                self.wfile.write(json.dumps(error_response).encode("utf-8"))
+        elif self.path == "/api/reload/status":
+            # Handle status file reload request
+            try:
+                print("🔄 Reloading server status from status file...")
+                
+                # Reload the persistent status data
+                dashboard_data._load_persistent_status()
+                
+                # Also run a quick health check to update current status
+                dashboard_data._run_initial_health_check()
+                
+                self.send_response(200)
+                self.send_header("Content-type", "application/json")
+                self.end_headers()
+
+                response = {
+                    "status": "success",
+                    "message": "Server status reloaded successfully",
+                    "timestamp": datetime.now().isoformat(),
+                    "servers_loaded": len(dashboard_data.unified_data.get("services_status", {}))
+                }
+                self.wfile.write(json.dumps(response).encode("utf-8"))
+                
+                print(f"✅ Status reload complete - {response['servers_loaded']} servers loaded")
+
+            except Exception as e:
+                print(f"❌ Status reload failed: {e}")
+                self.send_response(500)
+                self.send_header("Content-type", "application/json")
+                self.end_headers()
+
+                error_response = {
+                    "status": "error",
+                    "message": str(e),
+                    "timestamp": datetime.now().isoformat()
+                }
                 self.wfile.write(json.dumps(error_response).encode("utf-8"))
         else:
             super().do_POST()

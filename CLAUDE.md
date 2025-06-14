@@ -425,6 +425,33 @@ curl http://localhost:8001/health  # Filesystem server
 7. **Database port mismatch**: Updated all references from port 8004 (SQLite) to 8010 (PostgreSQL)
 8. **Server status inconsistencies**: Fixed server name mismatches and ensured single source of truth flows from startup → Corporate HQ → Metrics Layer
 9. **"No server status override" warning**: Changed log level from warning to debug in hq_metrics_layer.py
+10. **Agent Cortex "No module named 'litellm'" error**: Fixed with enhanced subprocess environment setup and automatic retry logic
+11. **Agent Cortex UI startup failures**: Added multiple fallback methods including manual start attempt with proper PYTHONPATH
+12. **Filesystem Server timeout issues**: Enhanced process management and HTTP endpoint binding verification
+13. **Corporate HQ server status display**: Fixed status reporting mechanism to show real-time server health instead of stale startup data
+
+### Enhanced Startup Features (June 2025)
+- **Automatic Server Status Refresh**: Startup now includes real-time health checks at completion
+- **Agent Cortex Enhanced Startup**: Multiple retry methods ensure Agent Cortex UI starts reliably
+- **Improved Error Recovery**: Better error messages and automatic retry for common import/environment issues
+- **Real-time Status Tools**: Created `fix_server_status.py` and `check_startup_health.py` for accurate system monitoring
+
+### Enhanced Diagnostic Tools
+```bash
+# Real-time system health check
+python check_startup_health.py          # Comprehensive health monitoring
+
+# Server status refresh and fixes
+python fix_server_status.py             # Update status with real-time health checks
+python fix_startup_issues.py            # Automated issue resolution
+
+# Corporate HQ status refresh
+curl -X POST http://localhost:8888/api/global/refresh  # Manual HQ refresh
+
+# Individual component testing
+python test_infrastructure.py           # Test core infrastructure
+python system_status.py                # Overall system status
+```
 
 ### Debug Commands
 ```bash
@@ -434,10 +461,19 @@ ps aux | grep python
 # Check ports
 lsof -i :5434  # PostgreSQL
 lsof -i :8888  # Corporate HQ
+lsof -i :8889  # Agent Cortex
+lsof -i :8890  # Agent Communication Center
 
 # View logs
 tail -f logs/[component].log
 tail -f /tmp/corp_hq*.log  # Corporate HQ logs
+
+# Check server health endpoints
+curl http://localhost:8000/health       # Registry server
+curl http://localhost:8001/health       # Filesystem server
+curl http://localhost:8010/health       # Database server
+curl http://localhost:8888/            # Corporate HQ
+curl http://localhost:8889/            # Agent Cortex UI
 ```
 
 ## Development Guidelines
