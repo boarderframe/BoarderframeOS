@@ -62,7 +62,7 @@ pyyaml==6.0.1
 jsonschema==4.19.2
 click==8.1.7
 rich==13.7.0
-typer==0.9.0
+typer==0.16.0
 psutil==5.9.6
 
 # Monitoring and Logging
