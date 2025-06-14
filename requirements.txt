@@ -37,7 +37,7 @@ crewai==0.1.0
 # Extended LLM Provider Support
 langchain-google-genai==2.0.0
 langchain-cohere==0.3.0
-langchain-groq==0.2.0
+langchain-groq==0.3.2
 langchain-huggingface==0.1.0
 
 # The Brain Dependencies
