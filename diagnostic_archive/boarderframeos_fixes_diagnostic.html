@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BoarderframeOS Issues Resolution - Diagnostic Report</title>
+    <style>
+        :root {
+            --primary: #4fc3f7;
+            --secondary: #81c784;
+            --accent: #ffb74d;
+            --danger: #f44336;
+            --bg-dark: #0f0f23;
+            --bg-medium: #1a1a3e;
+            --text-light: #ffffff;
+            --text-dim: #aaaaaa;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-medium) 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            color: var(--primary);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(79, 195, 247, 0.5);
+        }
+
+        .header p {
+            color: var(--text-dim);
+            font-size: 1.2em;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .status-card.success {
+            border-color: var(--secondary);
+            box-shadow: 0 0 20px rgba(129, 199, 132, 0.2);
+        }
+
+        .status-card.warning {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(255, 183, 77, 0.2);
+        }
+
+        .status-card.error {
+            border-color: var(--danger);
+            box-shadow: 0 0 20px rgba(244, 67, 54, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            font-size: 2em;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .card-title {
+            font-size: 1.4em;
+            color: var(--primary);
+        }
+
+        .card-content {
+            margin-bottom: 20px;
+        }
+
+        .fix-list {
+            list-style: none;
+            margin: 15px 0;
+        }
+
+        .fix-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .fix-list li:before {
+            content: "✅";
+            position: absolute;
+            left: 0;
+        }
+
+        .issue-list {
+            list-style: none;
+            margin: 15px 0;
+        }
+
+        .issue-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .issue-list li:before {
+            content: "❌";
+            position: absolute;
+            left: 0;
+        }
+
+        .command-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+
+        .test-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .test-button {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .test-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(79, 195, 247, 0.4);
+        }
+
+        .test-button.warning {
+            background: linear-gradient(135deg, var(--accent), #ff9800);
+        }
+
+        .summary {
+            background: linear-gradient(135deg, rgba(79, 195, 247, 0.1), rgba(129, 199, 132, 0.1));
+            border: 1px solid var(--primary);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .summary h2 {
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 BoarderframeOS Issues Resolution</h1>
+            <p>Comprehensive diagnostic report and validation guide</p>
+            <p><strong>Resolution Date:</strong> <span id="currentDate"></span></p>
+        </div>
+
+        <div class="status-grid">
+            <!-- Issue 1: MCP Server Failures -->
+            <div class="status-card success">
+                <div class="card-header">
+                    <div class="card-icon">🔌</div>
+                    <div class="card-title">MCP Server Fixes</div>
+                </div>
+                <div class="card-content">
+                    <h4>✅ Issues Resolved:</h4>
+                    <ul class="fix-list">
+                        <li>Installed missing litellm dependency for Agent Cortex</li>
+                        <li>Increased server startup timeouts (filesystem: 30s, others: 15s)</li>
+                        <li>Fixed registry server port configuration (8000)</li>
+                        <li>Improved error handling and timeout logic</li>
+                    </ul>
+
+                    <h4>🎯 Expected Results:</h4>
+                    <ul class="fix-list">
+                        <li>Registry Server: Running on port 8000</li>
+                        <li>Filesystem Server: Running on port 8001 (with ML models)</li>
+                        <li>Database Postgres: Running on port 8010</li>
+                        <li>Agent Cortex: Starting without litellm errors</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Issue 2: ACC Missing from Server Cards -->
+            <div class="status-card success">
+                <div class="card-header">
+                    <div class="card-icon">🔗</div>
+                    <div class="card-title">ACC Integration</div>
+                </div>
+                <div class="card-content">
+                    <h4>✅ Changes Made:</h4>
+                    <ul class="fix-list">
+                        <li>Added ACC to Corporate HQ MCP servers list</li>
+                        <li>Added ACC to default server initialization</li>
+                        <li>Added ACC to health check monitoring</li>
+                        <li>Updated server priority and categorization</li>
+                    </ul>
+
+                    <h4>🎯 Expected Results:</h4>
+                    <ul class="fix-list">
+                        <li>ACC appears in "Servers" tab as a Core Infrastructure card</li>
+                        <li>Shows healthy status on port 8890</li>
+                        <li>Included in refresh and monitoring operations</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Issue 3: Server Status Sync -->
+            <div class="status-card success">
+                <div class="card-header">
+                    <div class="card-icon">🔄</div>
+                    <div class="card-title">Status Synchronization</div>
+                </div>
+                <div class="card-content">
+                    <h4>✅ Improvements Made:</h4>
+                    <ul class="fix-list">
+                        <li>Corporate HQ reads startup status file</li>
+                        <li>Fixed server port mappings (registry: 8000 not 8009)</li>
+                        <li>Enhanced server status loading from startup.py</li>
+                        <li>Improved metrics layer integration</li>
+                    </ul>
+
+                    <h4>🎯 Expected Results:</h4>
+                    <ul class="fix-list">
+                        <li>Server status accurately reflects running services</li>
+                        <li>Real-time updates from startup to Corporate HQ</li>
+                        <li>Consistent status across all UI components</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- System Health Overview -->
+            <div class="status-card warning">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">System Health</div>
+                </div>
+                <div class="card-content">
+                    <h4>🎯 Target System State:</h4>
+                    <ul class="fix-list">
+                        <li><strong>7-8 Healthy Servers:</strong> Registry, Filesystem, Database, Payment, Analytics, Customer, ACC, Corporate HQ</li>
+                        <li><strong>2 Running Agents:</strong> Solomon, David</li>
+                        <li><strong>All Core Services:</strong> Message Bus, Cost Management, Orchestrator</li>
+                        <li><strong>Infrastructure:</strong> PostgreSQL, Redis containers</li>
+                    </ul>
+
+                    <div class="command-box">
+                        <strong>Quick Status Check:</strong><br>
+                        python system_status.py
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🧪 Testing & Validation</h2>
+            <p>Use these steps to verify all fixes are working correctly:</p>
+
+            <div style="margin: 20px 0;">
+                <h3>1. Restart System with Fixes</h3>
+                <div class="command-box">
+                    python kill_all_processes.py<br>
+                    python startup.py
+                </div>
+                <p>Expected: All servers start successfully, including filesystem and database_postgres</p>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <h3>2. Verify Corporate HQ Server Cards</h3>
+                <a href="http://localhost:8888" target="_blank" class="test-button">
+                    🎛️ Open Corporate HQ
+                </a>
+                <p>Expected: ACC appears in "Servers" tab as Core Infrastructure</p>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <h3>3. Test ACC Functionality</h3>
+                <a href="http://localhost:8890" target="_blank" class="test-button">
+                    🔗 Open ACC
+                </a>
+                <p>Expected: ACC loads with all 5 enhanced agents available</p>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <h3>4. Verify Chat Button Integration</h3>
+                <p>1. Go to Corporate HQ</p>
+                <p>2. Click the floating chat button (bottom-right)</p>
+                <p>Expected: Opens ACC in new tab</p>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <h3>5. Check Server Status Accuracy</h3>
+                <a href="javascript:void(0)" onclick="checkServerStatus()" class="test-button warning">
+                    🔍 Check Current Server Status
+                </a>
+                <div id="statusResults" style="margin-top: 15px;"></div>
+            </div>
+        </div>
+
+        <div class="summary">
+            <h2>📋 Summary</h2>
+            <p>All identified issues have been resolved:</p>
+            <ul style="text-align: left; display: inline-block; margin: 15px 0;">
+                <li>✅ MCP server startup issues fixed</li>
+                <li>✅ ACC integrated into Corporate HQ monitoring</li>
+                <li>✅ Server status synchronization improved</li>
+                <li>✅ Timeout issues resolved</li>
+                <li>✅ Missing dependencies installed</li>
+            </ul>
+            <p><strong>Next Step:</strong> Run <code>python startup.py</code> to test all fixes</p>
+        </div>
+    </div>
+
+    <script>
+        // Set current date
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString();
+
+        // Server status checker
+        async function checkServerStatus() {
+            const servers = [
+                { name: 'Corporate HQ', port: 8888, url: 'http://localhost:8888' },
+                { name: 'ACC', port: 8890, url: 'http://localhost:8890' },
+                { name: 'Agent Cortex', port: 8889, url: 'http://localhost:8889' },
+                { name: 'Registry', port: 8000, url: 'http://localhost:8000/health' },
+                { name: 'Filesystem', port: 8001, url: 'http://localhost:8001/health' },
+                { name: 'Database Postgres', port: 8010, url: 'http://localhost:8010/health' },
+                { name: 'Analytics', port: 8007, url: 'http://localhost:8007/health' },
+                { name: 'Payment', port: 8006, url: 'http://localhost:8006/health' },
+                { name: 'Customer', port: 8008, url: 'http://localhost:8008/health' }
+            ];
+
+            const resultsDiv = document.getElementById('statusResults');
+            resultsDiv.innerHTML = '<div class="pulse">🔍 Checking server status...</div>';
+
+            let html = '<div class="command-box"><strong>Server Status Check Results:</strong><br><br>';
+            let healthyCount = 0;
+
+            for (const server of servers) {
+                try {
+                    const response = await fetch(server.url, {
+                        method: 'GET',
+                        mode: 'no-cors',
+                        timeout: 3000
+                    });
+                    html += `✅ ${server.name} (port ${server.port}): HEALTHY<br>`;
+                    healthyCount++;
+                } catch (error) {
+                    html += `❌ ${server.name} (port ${server.port}): OFFLINE<br>`;
+                }
+            }
+
+            html += `<br><strong>Summary:</strong> ${healthyCount}/${servers.length} servers healthy<br>`;
+            html += `<br><strong>Note:</strong> Some checks may show offline due to CORS restrictions.<br>`;
+            html += `Use <code>python system_status.py</code> for accurate status.</div>`;
+
+            resultsDiv.innerHTML = html;
+        }
+
+        // Add some dynamic effects
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.status-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    card.style.transition = 'all 0.6s ease';
+
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 100);
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,3938 @@
+{
+  ".class": "MypyFile",
+  "_fullname": "core.hq_metrics_layer",
+  "future_import_flags": [],
+  "is_partial_stub_package": false,
+  "is_stub": false,
+  "names": {
+    ".class": "SymbolTable",
+    "Any": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Any",
+      "kind": "Gdef"
+    },
+    "BFColors": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "builtins.object"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "core.hq_metrics_layer.BFColors",
+          "name": "BFColors",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "core.hq_metrics_layer.BFColors",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {},
+        "module_name": "core.hq_metrics_layer",
+        "mro": [
+          "core.hq_metrics_layer.BFColors",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "DANGER": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.DANGER",
+              "name": "DANGER",
+              "type": "builtins.str"
+            }
+          },
+          "DEVELOPMENT": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.DEVELOPMENT",
+              "name": "DEVELOPMENT",
+              "type": "builtins.str"
+            }
+          },
+          "DIVISION_1": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.DIVISION_1",
+              "name": "DIVISION_1",
+              "type": "builtins.str"
+            }
+          },
+          "DIVISION_2": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.DIVISION_2",
+              "name": "DIVISION_2",
+              "type": "builtins.str"
+            }
+          },
+          "DIVISION_3": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.DIVISION_3",
+              "name": "DIVISION_3",
+              "type": "builtins.str"
+            }
+          },
+          "DIVISION_4": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.DIVISION_4",
+              "name": "DIVISION_4",
+              "type": "builtins.str"
+            }
+          },
+          "DIVISION_5": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.DIVISION_5",
+              "name": "DIVISION_5",
+              "type": "builtins.str"
+            }
+          },
+          "DIVISION_6": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.DIVISION_6",
+              "name": "DIVISION_6",
+              "type": "builtins.str"
+            }
+          },
+          "DIVISION_7": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.DIVISION_7",
+              "name": "DIVISION_7",
+              "type": "builtins.str"
+            }
+          },
+          "DIVISION_8": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.DIVISION_8",
+              "name": "DIVISION_8",
+              "type": "builtins.str"
+            }
+          },
+          "DIVISION_9": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.DIVISION_9",
+              "name": "DIVISION_9",
+              "type": "builtins.str"
+            }
+          },
+          "ENGINEERING": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.ENGINEERING",
+              "name": "ENGINEERING",
+              "type": "builtins.str"
+            }
+          },
+          "EXECUTIVE": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.EXECUTIVE",
+              "name": "EXECUTIVE",
+              "type": "builtins.str"
+            }
+          },
+          "INFO": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.INFO",
+              "name": "INFO",
+              "type": "builtins.str"
+            }
+          },
+          "INFRASTRUCTURE": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.INFRASTRUCTURE",
+              "name": "INFRASTRUCTURE",
+              "type": "builtins.str"
+            }
+          },
+          "INNOVATION": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.INNOVATION",
+              "name": "INNOVATION",
+              "type": "builtins.str"
+            }
+          },
+          "INTELLIGENCE": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.INTELLIGENCE",
+              "name": "INTELLIGENCE",
+              "type": "builtins.str"
+            }
+          },
+          "LEADERSHIP": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.LEADERSHIP",
+              "name": "LEADERSHIP",
+              "type": "builtins.str"
+            }
+          },
+          "NEUTRAL": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.NEUTRAL",
+              "name": "NEUTRAL",
+              "type": "builtins.str"
+            }
+          },
+          "OPERATIONS": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.OPERATIONS",
+              "name": "OPERATIONS",
+              "type": "builtins.str"
+            }
+          },
+          "RESEARCH": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.RESEARCH",
+              "name": "RESEARCH",
+              "type": "builtins.str"
+            }
+          },
+          "SUCCESS": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.SUCCESS",
+              "name": "SUCCESS",
+              "type": "builtins.str"
+            }
+          },
+          "WARNING": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFColors.WARNING",
+              "name": "WARNING",
+              "type": "builtins.str"
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "core.hq_metrics_layer.BFColors.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "core.hq_metrics_layer.BFColors",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "BFIcons": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "builtins.object"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "core.hq_metrics_layer.BFIcons",
+          "name": "BFIcons",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "core.hq_metrics_layer.BFIcons",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {},
+        "module_name": "core.hq_metrics_layer",
+        "mro": [
+          "core.hq_metrics_layer.BFIcons",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "ACTIVE": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFIcons.ACTIVE",
+              "name": "ACTIVE",
+              "type": "builtins.str"
+            }
+          },
+          "AGENT": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFIcons.AGENT",
+              "name": "AGENT",
+              "type": "builtins.str"
+            }
+          },
+          "DATABASE": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFIcons.DATABASE",
+              "name": "DATABASE",
+              "type": "builtins.str"
+            }
+          },
+          "DEPARTMENT": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFIcons.DEPARTMENT",
+              "name": "DEPARTMENT",
+              "type": "builtins.str"
+            }
+          },
+          "DIVISION": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFIcons.DIVISION",
+              "name": "DIVISION",
+              "type": "builtins.str"
+            }
+          },
+          "ENGINEERING_DEPT": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFIcons.ENGINEERING_DEPT",
+              "name": "ENGINEERING_DEPT",
+              "type": "builtins.str"
+            }
+          },
+          "ERROR": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFIcons.ERROR",
+              "name": "ERROR",
+              "type": "builtins.str"
+            }
+          },
+          "EXECUTIVE_DEPT": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFIcons.EXECUTIVE_DEPT",
+              "name": "EXECUTIVE_DEPT",
+              "type": "builtins.str"
+            }
+          },
+          "INACTIVE": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFIcons.INACTIVE",
+              "name": "INACTIVE",
+              "type": "builtins.str"
+            }
+          },
+          "INFRASTRUCTURE_DEPT": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFIcons.INFRASTRUCTURE_DEPT",
+              "name": "INFRASTRUCTURE_DEPT",
+              "type": "builtins.str"
+            }
+          },
+          "INNOVATION_DEPT": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFIcons.INNOVATION_DEPT",
+              "name": "INNOVATION_DEPT",
+              "type": "builtins.str"
+            }
+          },
+          "INTELLIGENCE_DEPT": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFIcons.INTELLIGENCE_DEPT",
+              "name": "INTELLIGENCE_DEPT",
+              "type": "builtins.str"
+            }
+          },
+          "LEADER": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFIcons.LEADER",
+              "name": "LEADER",
+              "type": "builtins.str"
+            }
+          },
+          "LOADING": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFIcons.LOADING",
+              "name": "LOADING",
+              "type": "builtins.str"
+            }
+          },
+          "OPERATIONS_DEPT": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFIcons.OPERATIONS_DEPT",
+              "name": "OPERATIONS_DEPT",
+              "type": "builtins.str"
+            }
+          },
+          "REGISTRY": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFIcons.REGISTRY",
+              "name": "REGISTRY",
+              "type": "builtins.str"
+            }
+          },
+          "RESEARCH_DEPT": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFIcons.RESEARCH_DEPT",
+              "name": "RESEARCH_DEPT",
+              "type": "builtins.str"
+            }
+          },
+          "SERVER": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFIcons.SERVER",
+              "name": "SERVER",
+              "type": "builtins.str"
+            }
+          },
+          "WARNING": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.BFIcons.WARNING",
+              "name": "WARNING",
+              "type": "builtins.str"
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "core.hq_metrics_layer.BFIcons.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "core.hq_metrics_layer.BFIcons",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "CardRenderer": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "builtins.object"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "core.hq_metrics_layer.CardRenderer",
+          "name": "CardRenderer",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "core.hq_metrics_layer.CardRenderer",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {},
+        "module_name": "core.hq_metrics_layer",
+        "mro": [
+          "core.hq_metrics_layer.CardRenderer",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "render_agent_card": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Decorator",
+              "func": {
+                ".class": "FuncDef",
+                "abstract_status": 0,
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "agent"
+                ],
+                "dataclass_transform_spec": null,
+                "deprecated": null,
+                "flags": [
+                  "is_static",
+                  "is_decorated"
+                ],
+                "fullname": "core.hq_metrics_layer.CardRenderer.render_agent_card",
+                "name": "render_agent_card",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    0
+                  ],
+                  "arg_names": [
+                    "agent"
+                  ],
+                  "arg_types": [
+                    "core.hq_metrics_layer.EntityMetrics"
+                  ],
+                  "bound_args": [],
+                  "def_extras": {
+                    "first_arg": null
+                  },
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "render_agent_card of CardRenderer",
+                  "ret_type": "builtins.str",
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              },
+              "is_overload": false,
+              "var": {
+                ".class": "Var",
+                "flags": [
+                  "is_initialized_in_class",
+                  "is_staticmethod",
+                  "is_ready",
+                  "is_inferred"
+                ],
+                "fullname": "core.hq_metrics_layer.CardRenderer.render_agent_card",
+                "name": "render_agent_card",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    0
+                  ],
+                  "arg_names": [
+                    "agent"
+                  ],
+                  "arg_types": [
+                    "core.hq_metrics_layer.EntityMetrics"
+                  ],
+                  "bound_args": [],
+                  "def_extras": {
+                    "first_arg": null
+                  },
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "render_agent_card of CardRenderer",
+                  "ret_type": "builtins.str",
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              }
+            }
+          },
+          "render_department_card": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Decorator",
+              "func": {
+                ".class": "FuncDef",
+                "abstract_status": 0,
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "dept"
+                ],
+                "dataclass_transform_spec": null,
+                "deprecated": null,
+                "flags": [
+                  "is_static",
+                  "is_decorated"
+                ],
+                "fullname": "core.hq_metrics_layer.CardRenderer.render_department_card",
+                "name": "render_department_card",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    0
+                  ],
+                  "arg_names": [
+                    "dept"
+                  ],
+                  "arg_types": [
+                    "core.hq_metrics_layer.EntityMetrics"
+                  ],
+                  "bound_args": [],
+                  "def_extras": {
+                    "first_arg": null
+                  },
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "render_department_card of CardRenderer",
+                  "ret_type": "builtins.str",
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              },
+              "is_overload": false,
+              "var": {
+                ".class": "Var",
+                "flags": [
+                  "is_initialized_in_class",
+                  "is_staticmethod",
+                  "is_ready",
+                  "is_inferred"
+                ],
+                "fullname": "core.hq_metrics_layer.CardRenderer.render_department_card",
+                "name": "render_department_card",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    0
+                  ],
+                  "arg_names": [
+                    "dept"
+                  ],
+                  "arg_types": [
+                    "core.hq_metrics_layer.EntityMetrics"
+                  ],
+                  "bound_args": [],
+                  "def_extras": {
+                    "first_arg": null
+                  },
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "render_department_card of CardRenderer",
+                  "ret_type": "builtins.str",
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              }
+            }
+          },
+          "render_metric_card": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Decorator",
+              "func": {
+                ".class": "FuncDef",
+                "abstract_status": 0,
+                "arg_kinds": [
+                  0,
+                  1
+                ],
+                "arg_names": [
+                  "metric",
+                  "size"
+                ],
+                "dataclass_transform_spec": null,
+                "deprecated": null,
+                "flags": [
+                  "is_static",
+                  "is_decorated"
+                ],
+                "fullname": "core.hq_metrics_layer.CardRenderer.render_metric_card",
+                "name": "render_metric_card",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    0,
+                    1
+                  ],
+                  "arg_names": [
+                    "metric",
+                    "size"
+                  ],
+                  "arg_types": [
+                    "core.hq_metrics_layer.MetricValue",
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 1
+                    }
+                  ],
+                  "bound_args": [],
+                  "def_extras": {
+                    "first_arg": null
+                  },
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "render_metric_card of CardRenderer",
+                  "ret_type": "builtins.str",
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              },
+              "is_overload": false,
+              "var": {
+                ".class": "Var",
+                "flags": [
+                  "is_initialized_in_class",
+                  "is_staticmethod",
+                  "is_ready",
+                  "is_inferred"
+                ],
+                "fullname": "core.hq_metrics_layer.CardRenderer.render_metric_card",
+                "name": "render_metric_card",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    0,
+                    1
+                  ],
+                  "arg_names": [
+                    "metric",
+                    "size"
+                  ],
+                  "arg_types": [
+                    "core.hq_metrics_layer.MetricValue",
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 1
+                    }
+                  ],
+                  "bound_args": [],
+                  "def_extras": {
+                    "first_arg": null
+                  },
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "render_metric_card of CardRenderer",
+                  "ret_type": "builtins.str",
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              }
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "core.hq_metrics_layer.CardRenderer.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "core.hq_metrics_layer.CardRenderer",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "Dict": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Dict",
+      "kind": "Gdef"
+    },
+    "EntityMetrics": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "builtins.object"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "core.hq_metrics_layer.EntityMetrics",
+          "name": "EntityMetrics",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "core.hq_metrics_layer.EntityMetrics",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {
+          "dataclass": {
+            "attributes": [
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": false,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 110,
+                "name": "entity_id",
+                "type": "builtins.str"
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": false,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 111,
+                "name": "entity_type",
+                "type": "builtins.str"
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": false,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 112,
+                "name": "name",
+                "type": "builtins.str"
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": false,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 113,
+                "name": "metrics",
+                "type": {
+                  ".class": "Instance",
+                  "args": [
+                    "builtins.str",
+                    "core.hq_metrics_layer.MetricValue"
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.dict"
+                }
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 114,
+                "name": "metadata",
+                "type": {
+                  ".class": "Instance",
+                  "args": [
+                    "builtins.str",
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.dict"
+                }
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 115,
+                "name": "color",
+                "type": {
+                  ".class": "UnionType",
+                  "items": [
+                    "builtins.str",
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "uses_pep604_syntax": false
+                }
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 116,
+                "name": "icon",
+                "type": {
+                  ".class": "UnionType",
+                  "items": [
+                    "builtins.str",
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "uses_pep604_syntax": false
+                }
+              }
+            ],
+            "frozen": false
+          },
+          "dataclass_tag": {}
+        },
+        "module_name": "core.hq_metrics_layer",
+        "mro": [
+          "core.hq_metrics_layer.EntityMetrics",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "__dataclass_fields__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_classvar",
+                "is_ready"
+              ],
+              "fullname": "core.hq_metrics_layer.EntityMetrics.__dataclass_fields__",
+              "name": "__dataclass_fields__",
+              "type": {
+                ".class": "Instance",
+                "args": [
+                  "builtins.str",
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 2
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "dataclasses.Field"
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            },
+            "plugin_generated": true
+          },
+          "__init__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1
+              ],
+              "arg_names": [
+                "self",
+                "entity_id",
+                "entity_type",
+                "name",
+                "metrics",
+                "metadata",
+                "color",
+                "icon"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.hq_metrics_layer.EntityMetrics.__init__",
+              "name": "__init__",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1
+                ],
+                "arg_names": [
+                  "self",
+                  "entity_id",
+                  "entity_type",
+                  "name",
+                  "metrics",
+                  "metadata",
+                  "color",
+                  "icon"
+                ],
+                "arg_types": [
+                  "core.hq_metrics_layer.EntityMetrics",
+                  "builtins.str",
+                  "builtins.str",
+                  "builtins.str",
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      "builtins.str",
+                      "core.hq_metrics_layer.MetricValue"
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "builtins.dict"
+                  },
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      "builtins.str",
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 2
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "builtins.dict"
+                  },
+                  {
+                    ".class": "UnionType",
+                    "items": [
+                      "builtins.str",
+                      {
+                        ".class": "NoneType"
+                      }
+                    ],
+                    "uses_pep604_syntax": false
+                  },
+                  {
+                    ".class": "UnionType",
+                    "items": [
+                      "builtins.str",
+                      {
+                        ".class": "NoneType"
+                      }
+                    ],
+                    "uses_pep604_syntax": false
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {},
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "__init__ of EntityMetrics",
+                "ret_type": {
+                  ".class": "NoneType"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            },
+            "plugin_generated": true
+          },
+          "__match_args__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_ready",
+                "allow_incompatible_override"
+              ],
+              "fullname": "core.hq_metrics_layer.EntityMetrics.__match_args__",
+              "name": "__match_args__",
+              "type": {
+                ".class": "TupleType",
+                "implicit": false,
+                "items": [
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "entity_id"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "entity_type"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "name"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "metrics"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "metadata"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "color"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "icon"
+                  }
+                ],
+                "partial_fallback": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.tuple"
+                }
+              }
+            },
+            "plugin_generated": true
+          },
+          "__mypy-replace": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Decorator",
+              "func": {
+                ".class": "FuncDef",
+                "abstract_status": 0,
+                "arg_kinds": [
+                  5,
+                  5,
+                  5,
+                  5,
+                  5,
+                  5,
+                  5
+                ],
+                "arg_names": [
+                  "entity_id",
+                  "entity_type",
+                  "name",
+                  "metrics",
+                  "metadata",
+                  "color",
+                  "icon"
+                ],
+                "dataclass_transform_spec": null,
+                "deprecated": null,
+                "flags": [
+                  "is_static",
+                  "is_decorated"
+                ],
+                "fullname": "core.hq_metrics_layer.EntityMetrics.__mypy-replace",
+                "name": "__mypy-replace",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5
+                  ],
+                  "arg_names": [
+                    "entity_id",
+                    "entity_type",
+                    "name",
+                    "metrics",
+                    "metadata",
+                    "color",
+                    "icon"
+                  ],
+                  "arg_types": [
+                    "builtins.str",
+                    "builtins.str",
+                    "builtins.str",
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.str",
+                        "core.hq_metrics_layer.MetricValue"
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.dict"
+                    },
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.str",
+                        {
+                          ".class": "AnyType",
+                          "missing_import_name": null,
+                          "source_any": null,
+                          "type_of_any": 2
+                        }
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.dict"
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.str",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.str",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    }
+                  ],
+                  "bound_args": [],
+                  "def_extras": {},
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "__mypy-replace of EntityMetrics",
+                  "ret_type": {
+                    ".class": "NoneType"
+                  },
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              },
+              "is_overload": false,
+              "var": {
+                ".class": "Var",
+                "flags": [
+                  "is_staticmethod",
+                  "is_ready"
+                ],
+                "fullname": "core.hq_metrics_layer.EntityMetrics.__mypy-replace",
+                "name": "__mypy-replace",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5
+                  ],
+                  "arg_names": [
+                    "entity_id",
+                    "entity_type",
+                    "name",
+                    "metrics",
+                    "metadata",
+                    "color",
+                    "icon"
+                  ],
+                  "arg_types": [
+                    "builtins.str",
+                    "builtins.str",
+                    "builtins.str",
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.str",
+                        "core.hq_metrics_layer.MetricValue"
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.dict"
+                    },
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.str",
+                        {
+                          ".class": "AnyType",
+                          "missing_import_name": null,
+                          "source_any": null,
+                          "type_of_any": 2
+                        }
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.dict"
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.str",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.str",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    }
+                  ],
+                  "bound_args": [],
+                  "def_extras": {},
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "__mypy-replace of EntityMetrics",
+                  "ret_type": {
+                    ".class": "NoneType"
+                  },
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              }
+            },
+            "plugin_generated": true
+          },
+          "color": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.EntityMetrics.color",
+              "name": "color",
+              "type": {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.str",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            }
+          },
+          "entity_id": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready"
+              ],
+              "fullname": "core.hq_metrics_layer.EntityMetrics.entity_id",
+              "name": "entity_id",
+              "type": "builtins.str"
+            }
+          },
+          "entity_type": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready"
+              ],
+              "fullname": "core.hq_metrics_layer.EntityMetrics.entity_type",
+              "name": "entity_type",
+              "type": "builtins.str"
+            }
+          },
+          "icon": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.EntityMetrics.icon",
+              "name": "icon",
+              "type": {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.str",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            }
+          },
+          "metadata": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.EntityMetrics.metadata",
+              "name": "metadata",
+              "type": {
+                ".class": "Instance",
+                "args": [
+                  "builtins.str",
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 2
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            }
+          },
+          "metrics": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready"
+              ],
+              "fullname": "core.hq_metrics_layer.EntityMetrics.metrics",
+              "name": "metrics",
+              "type": {
+                ".class": "Instance",
+                "args": [
+                  "builtins.str",
+                  "core.hq_metrics_layer.MetricValue"
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            }
+          },
+          "name": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready"
+              ],
+              "fullname": "core.hq_metrics_layer.EntityMetrics.name",
+              "name": "name",
+              "type": "builtins.str"
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "core.hq_metrics_layer.EntityMetrics.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "core.hq_metrics_layer.EntityMetrics",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "Enum": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "enum.Enum",
+      "kind": "Gdef"
+    },
+    "List": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.List",
+      "kind": "Gdef"
+    },
+    "MetricValue": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "builtins.object"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "core.hq_metrics_layer.MetricValue",
+          "name": "MetricValue",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "core.hq_metrics_layer.MetricValue",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {
+          "dataclass": {
+            "attributes": [
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": false,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 96,
+                "name": "value",
+                "type": {
+                  ".class": "AnyType",
+                  "missing_import_name": null,
+                  "source_any": null,
+                  "type_of_any": 2
+                }
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": false,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 97,
+                "name": "label",
+                "type": "builtins.str"
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 98,
+                "name": "unit",
+                "type": {
+                  ".class": "UnionType",
+                  "items": [
+                    "builtins.str",
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "uses_pep604_syntax": false
+                }
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 99,
+                "name": "trend",
+                "type": {
+                  ".class": "UnionType",
+                  "items": [
+                    "builtins.str",
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "uses_pep604_syntax": false
+                }
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 100,
+                "name": "change_percent",
+                "type": {
+                  ".class": "UnionType",
+                  "items": [
+                    "builtins.float",
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "uses_pep604_syntax": false
+                }
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 101,
+                "name": "color",
+                "type": {
+                  ".class": "UnionType",
+                  "items": [
+                    "builtins.str",
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "uses_pep604_syntax": false
+                }
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 102,
+                "name": "icon",
+                "type": {
+                  ".class": "UnionType",
+                  "items": [
+                    "builtins.str",
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "uses_pep604_syntax": false
+                }
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 103,
+                "name": "timestamp",
+                "type": "datetime.datetime"
+              }
+            ],
+            "frozen": false
+          },
+          "dataclass_tag": {}
+        },
+        "module_name": "core.hq_metrics_layer",
+        "mro": [
+          "core.hq_metrics_layer.MetricValue",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "__dataclass_fields__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_classvar",
+                "is_ready"
+              ],
+              "fullname": "core.hq_metrics_layer.MetricValue.__dataclass_fields__",
+              "name": "__dataclass_fields__",
+              "type": {
+                ".class": "Instance",
+                "args": [
+                  "builtins.str",
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 2
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "dataclasses.Field"
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            },
+            "plugin_generated": true
+          },
+          "__init__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              "arg_names": [
+                "self",
+                "value",
+                "label",
+                "unit",
+                "trend",
+                "change_percent",
+                "color",
+                "icon",
+                "timestamp"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.hq_metrics_layer.MetricValue.__init__",
+              "name": "__init__",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "arg_names": [
+                  "self",
+                  "value",
+                  "label",
+                  "unit",
+                  "trend",
+                  "change_percent",
+                  "color",
+                  "icon",
+                  "timestamp"
+                ],
+                "arg_types": [
+                  "core.hq_metrics_layer.MetricValue",
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 2
+                  },
+                  "builtins.str",
+                  {
+                    ".class": "UnionType",
+                    "items": [
+                      "builtins.str",
+                      {
+                        ".class": "NoneType"
+                      }
+                    ],
+                    "uses_pep604_syntax": false
+                  },
+                  {
+                    ".class": "UnionType",
+                    "items": [
+                      "builtins.str",
+                      {
+                        ".class": "NoneType"
+                      }
+                    ],
+                    "uses_pep604_syntax": false
+                  },
+                  {
+                    ".class": "UnionType",
+                    "items": [
+                      "builtins.float",
+                      {
+                        ".class": "NoneType"
+                      }
+                    ],
+                    "uses_pep604_syntax": false
+                  },
+                  {
+                    ".class": "UnionType",
+                    "items": [
+                      "builtins.str",
+                      {
+                        ".class": "NoneType"
+                      }
+                    ],
+                    "uses_pep604_syntax": false
+                  },
+                  {
+                    ".class": "UnionType",
+                    "items": [
+                      "builtins.str",
+                      {
+                        ".class": "NoneType"
+                      }
+                    ],
+                    "uses_pep604_syntax": false
+                  },
+                  "datetime.datetime"
+                ],
+                "bound_args": [],
+                "def_extras": {},
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "__init__ of MetricValue",
+                "ret_type": {
+                  ".class": "NoneType"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            },
+            "plugin_generated": true
+          },
+          "__match_args__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_ready",
+                "allow_incompatible_override"
+              ],
+              "fullname": "core.hq_metrics_layer.MetricValue.__match_args__",
+              "name": "__match_args__",
+              "type": {
+                ".class": "TupleType",
+                "implicit": false,
+                "items": [
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "value"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "label"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "unit"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "trend"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "change_percent"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "color"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "icon"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "timestamp"
+                  }
+                ],
+                "partial_fallback": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.tuple"
+                }
+              }
+            },
+            "plugin_generated": true
+          },
+          "__mypy-replace": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Decorator",
+              "func": {
+                ".class": "FuncDef",
+                "abstract_status": 0,
+                "arg_kinds": [
+                  5,
+                  5,
+                  5,
+                  5,
+                  5,
+                  5,
+                  5,
+                  5
+                ],
+                "arg_names": [
+                  "value",
+                  "label",
+                  "unit",
+                  "trend",
+                  "change_percent",
+                  "color",
+                  "icon",
+                  "timestamp"
+                ],
+                "dataclass_transform_spec": null,
+                "deprecated": null,
+                "flags": [
+                  "is_static",
+                  "is_decorated"
+                ],
+                "fullname": "core.hq_metrics_layer.MetricValue.__mypy-replace",
+                "name": "__mypy-replace",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5
+                  ],
+                  "arg_names": [
+                    "value",
+                    "label",
+                    "unit",
+                    "trend",
+                    "change_percent",
+                    "color",
+                    "icon",
+                    "timestamp"
+                  ],
+                  "arg_types": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    },
+                    "builtins.str",
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.str",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.str",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.float",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.str",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.str",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    "datetime.datetime"
+                  ],
+                  "bound_args": [],
+                  "def_extras": {},
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "__mypy-replace of MetricValue",
+                  "ret_type": {
+                    ".class": "NoneType"
+                  },
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              },
+              "is_overload": false,
+              "var": {
+                ".class": "Var",
+                "flags": [
+                  "is_staticmethod",
+                  "is_ready"
+                ],
+                "fullname": "core.hq_metrics_layer.MetricValue.__mypy-replace",
+                "name": "__mypy-replace",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5
+                  ],
+                  "arg_names": [
+                    "value",
+                    "label",
+                    "unit",
+                    "trend",
+                    "change_percent",
+                    "color",
+                    "icon",
+                    "timestamp"
+                  ],
+                  "arg_types": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    },
+                    "builtins.str",
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.str",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.str",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.float",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.str",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.str",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    "datetime.datetime"
+                  ],
+                  "bound_args": [],
+                  "def_extras": {},
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "__mypy-replace of MetricValue",
+                  "ret_type": {
+                    ".class": "NoneType"
+                  },
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              }
+            },
+            "plugin_generated": true
+          },
+          "change_percent": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.MetricValue.change_percent",
+              "name": "change_percent",
+              "type": {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.float",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            }
+          },
+          "color": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.MetricValue.color",
+              "name": "color",
+              "type": {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.str",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            }
+          },
+          "icon": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.MetricValue.icon",
+              "name": "icon",
+              "type": {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.str",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            }
+          },
+          "label": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready"
+              ],
+              "fullname": "core.hq_metrics_layer.MetricValue.label",
+              "name": "label",
+              "type": "builtins.str"
+            }
+          },
+          "timestamp": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.MetricValue.timestamp",
+              "name": "timestamp",
+              "type": "datetime.datetime"
+            }
+          },
+          "trend": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.MetricValue.trend",
+              "name": "trend",
+              "type": {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.str",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            }
+          },
+          "unit": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.hq_metrics_layer.MetricValue.unit",
+              "name": "unit",
+              "type": {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.str",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            }
+          },
+          "value": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready"
+              ],
+              "fullname": "core.hq_metrics_layer.MetricValue.value",
+              "name": "value",
+              "type": {
+                ".class": "AnyType",
+                "missing_import_name": null,
+                "source_any": null,
+                "type_of_any": 2
+              }
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "core.hq_metrics_layer.MetricValue.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "core.hq_metrics_layer.MetricValue",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "MetricsCalculator": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "builtins.object"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "core.hq_metrics_layer.MetricsCalculator",
+          "name": "MetricsCalculator",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "core.hq_metrics_layer.MetricsCalculator",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {},
+        "module_name": "core.hq_metrics_layer",
+        "mro": [
+          "core.hq_metrics_layer.MetricsCalculator",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "__init__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "db_config"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.hq_metrics_layer.MetricsCalculator.__init__",
+              "name": "__init__",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "db_config"
+                ],
+                "arg_types": [
+                  "core.hq_metrics_layer.MetricsCalculator",
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      "builtins.str",
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 2
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "builtins.dict"
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "__init__ of MetricsCalculator",
+                "ret_type": {
+                  ".class": "NoneType"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "_cache": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred",
+                "invalid_partial_type"
+              ],
+              "fullname": "core.hq_metrics_layer.MetricsCalculator._cache",
+              "name": "_cache",
+              "type": {
+                ".class": "Instance",
+                "args": [
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 1
+                  },
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 1
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            }
+          },
+          "_cache_ttl": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.hq_metrics_layer.MetricsCalculator._cache_ttl",
+              "name": "_cache_ttl",
+              "type": "builtins.int"
+            }
+          },
+          "_get_db_connection": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.hq_metrics_layer.MetricsCalculator._get_db_connection",
+              "name": "_get_db_connection",
+              "type": null
+            }
+          },
+          "_get_department_color": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "dept_name"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.hq_metrics_layer.MetricsCalculator._get_department_color",
+              "name": "_get_department_color",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "dept_name"
+                ],
+                "arg_types": [
+                  "core.hq_metrics_layer.MetricsCalculator",
+                  "builtins.str"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "_get_department_color of MetricsCalculator",
+                "ret_type": "builtins.str",
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "_get_department_icon": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "dept_name"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.hq_metrics_layer.MetricsCalculator._get_department_icon",
+              "name": "_get_department_icon",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "dept_name"
+                ],
+                "arg_types": [
+                  "core.hq_metrics_layer.MetricsCalculator",
+                  "builtins.str"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "_get_department_icon of MetricsCalculator",
+                "ret_type": "builtins.str",
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "_server_status_override": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.hq_metrics_layer.MetricsCalculator._server_status_override",
+              "name": "_server_status_override",
+              "type": {
+                ".class": "NoneType"
+              }
+            }
+          },
+          "_visual_cache": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.hq_metrics_layer.MetricsCalculator._visual_cache",
+              "name": "_visual_cache",
+              "type": "scripts.enhance.enhance_metrics_visual_integration.VisualMetadataCache"
+            }
+          },
+          "calculate_agent_metrics": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.hq_metrics_layer.MetricsCalculator.calculate_agent_metrics",
+              "name": "calculate_agent_metrics",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "arg_types": [
+                  "core.hq_metrics_layer.MetricsCalculator"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "calculate_agent_metrics of MetricsCalculator",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    "builtins.str",
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.dict"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "calculate_database_metrics": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.hq_metrics_layer.MetricsCalculator.calculate_database_metrics",
+              "name": "calculate_database_metrics",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "arg_types": [
+                  "core.hq_metrics_layer.MetricsCalculator"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "calculate_database_metrics of MetricsCalculator",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    "builtins.str",
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.dict"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "calculate_department_metrics": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.hq_metrics_layer.MetricsCalculator.calculate_department_metrics",
+              "name": "calculate_department_metrics",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "arg_types": [
+                  "core.hq_metrics_layer.MetricsCalculator"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "calculate_department_metrics of MetricsCalculator",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    "builtins.str",
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.dict"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "calculate_division_metrics": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.hq_metrics_layer.MetricsCalculator.calculate_division_metrics",
+              "name": "calculate_division_metrics",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "arg_types": [
+                  "core.hq_metrics_layer.MetricsCalculator"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "calculate_division_metrics of MetricsCalculator",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    "builtins.str",
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.dict"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "calculate_leader_metrics": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.hq_metrics_layer.MetricsCalculator.calculate_leader_metrics",
+              "name": "calculate_leader_metrics",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "arg_types": [
+                  "core.hq_metrics_layer.MetricsCalculator"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "calculate_leader_metrics of MetricsCalculator",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    "builtins.str",
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.dict"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "calculate_server_metrics": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.hq_metrics_layer.MetricsCalculator.calculate_server_metrics",
+              "name": "calculate_server_metrics",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "arg_types": [
+                  "core.hq_metrics_layer.MetricsCalculator"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "calculate_server_metrics of MetricsCalculator",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    "builtins.str",
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.dict"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "db_config": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.hq_metrics_layer.MetricsCalculator.db_config",
+              "name": "db_config",
+              "type": {
+                ".class": "Instance",
+                "args": [
+                  "builtins.str",
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 2
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            }
+          },
+          "refresh_all_metrics": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.hq_metrics_layer.MetricsCalculator.refresh_all_metrics",
+              "name": "refresh_all_metrics",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "arg_types": [
+                  "core.hq_metrics_layer.MetricsCalculator"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "refresh_all_metrics of MetricsCalculator",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    "builtins.str",
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.dict"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "set_server_status": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "server_status"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.hq_metrics_layer.MetricsCalculator.set_server_status",
+              "name": "set_server_status",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "server_status"
+                ],
+                "arg_types": [
+                  "core.hq_metrics_layer.MetricsCalculator",
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      "builtins.str",
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 2
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "builtins.dict"
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "set_server_status of MetricsCalculator",
+                "ret_type": {
+                  ".class": "AnyType",
+                  "missing_import_name": null,
+                  "source_any": null,
+                  "type_of_any": 1
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "core.hq_metrics_layer.MetricsCalculator.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "core.hq_metrics_layer.MetricsCalculator",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "Optional": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Optional",
+      "kind": "Gdef"
+    },
+    "Tuple": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Tuple",
+      "kind": "Gdef"
+    },
+    "__annotations__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.hq_metrics_layer.__annotations__",
+        "name": "__annotations__",
+        "type": {
+          ".class": "Instance",
+          "args": [
+            "builtins.str",
+            {
+              ".class": "AnyType",
+              "missing_import_name": null,
+              "source_any": null,
+              "type_of_any": 6
+            }
+          ],
+          "extra_attrs": null,
+          "type_ref": "builtins.dict"
+        }
+      }
+    },
+    "__doc__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.hq_metrics_layer.__doc__",
+        "name": "__doc__",
+        "type": "builtins.str"
+      }
+    },
+    "__file__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.hq_metrics_layer.__file__",
+        "name": "__file__",
+        "type": "builtins.str"
+      }
+    },
+    "__name__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.hq_metrics_layer.__name__",
+        "name": "__name__",
+        "type": "builtins.str"
+      }
+    },
+    "__package__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.hq_metrics_layer.__package__",
+        "name": "__package__",
+        "type": "builtins.str"
+      }
+    },
+    "__spec__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.hq_metrics_layer.__spec__",
+        "name": "__spec__",
+        "type": "_frozen_importlib.ModuleSpec"
+      }
+    },
+    "_card_renderer": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.hq_metrics_layer._card_renderer",
+        "name": "_card_renderer",
+        "type": {
+          ".class": "NoneType"
+        }
+      }
+    },
+    "_metrics_calculator": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.hq_metrics_layer._metrics_calculator",
+        "name": "_metrics_calculator",
+        "type": {
+          ".class": "NoneType"
+        }
+      }
+    },
+    "asyncio": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "asyncio",
+      "kind": "Gdef"
+    },
+    "dataclass": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "dataclasses.dataclass",
+      "kind": "Gdef"
+    },
+    "datetime": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "datetime.datetime",
+      "kind": "Gdef"
+    },
+    "field": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "dataclasses.field",
+      "kind": "Gdef"
+    },
+    "get_card_renderer": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "FuncDef",
+        "abstract_status": 0,
+        "arg_kinds": [],
+        "arg_names": [],
+        "dataclass_transform_spec": null,
+        "deprecated": null,
+        "flags": [],
+        "fullname": "core.hq_metrics_layer.get_card_renderer",
+        "name": "get_card_renderer",
+        "type": {
+          ".class": "CallableType",
+          "arg_kinds": [],
+          "arg_names": [],
+          "arg_types": [],
+          "bound_args": [],
+          "def_extras": {
+            "first_arg": null
+          },
+          "fallback": "builtins.function",
+          "from_concatenate": false,
+          "implicit": false,
+          "imprecise_arg_kinds": false,
+          "is_ellipsis_args": false,
+          "name": "get_card_renderer",
+          "ret_type": "core.hq_metrics_layer.CardRenderer",
+          "type_guard": null,
+          "type_is": null,
+          "unpack_kwargs": false,
+          "variables": []
+        }
+      }
+    },
+    "get_metrics_calculator": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "FuncDef",
+        "abstract_status": 0,
+        "arg_kinds": [
+          1
+        ],
+        "arg_names": [
+          "db_config"
+        ],
+        "dataclass_transform_spec": null,
+        "deprecated": null,
+        "flags": [],
+        "fullname": "core.hq_metrics_layer.get_metrics_calculator",
+        "name": "get_metrics_calculator",
+        "type": {
+          ".class": "CallableType",
+          "arg_kinds": [
+            1
+          ],
+          "arg_names": [
+            "db_config"
+          ],
+          "arg_types": [
+            {
+              ".class": "UnionType",
+              "items": [
+                {
+                  ".class": "Instance",
+                  "args": [
+                    "builtins.str",
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.dict"
+                },
+                {
+                  ".class": "NoneType"
+                }
+              ],
+              "uses_pep604_syntax": false
+            }
+          ],
+          "bound_args": [],
+          "def_extras": {
+            "first_arg": null
+          },
+          "fallback": "builtins.function",
+          "from_concatenate": false,
+          "implicit": false,
+          "imprecise_arg_kinds": false,
+          "is_ellipsis_args": false,
+          "name": "get_metrics_calculator",
+          "ret_type": "core.hq_metrics_layer.MetricsCalculator",
+          "type_guard": null,
+          "type_is": null,
+          "unpack_kwargs": false,
+          "variables": []
+        }
+      }
+    },
+    "json": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "json",
+      "kind": "Gdef"
+    },
+    "logger": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.hq_metrics_layer.logger",
+        "name": "logger",
+        "type": "logging.Logger"
+      }
+    },
+    "logging": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "logging",
+      "kind": "Gdef"
+    },
+    "psycopg2": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_suppressed_import",
+          "is_ready",
+          "is_inferred"
+        ],
+        "fullname": "core.hq_metrics_layer.psycopg2",
+        "name": "psycopg2",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "core.hq_metrics_layer.psycopg2",
+          "source_any": null,
+          "type_of_any": 3
+        }
+      }
+    },
+    "timedelta": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "datetime.timedelta",
+      "kind": "Gdef"
+    }
+  },
+  "path": "/Users/cosburn/BoarderframeOS/core/hq_metrics_layer.py"
+}

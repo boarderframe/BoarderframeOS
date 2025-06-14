@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Navigation</title>
+    <style>
+        body {
+            background: #0a0e27;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #333;
+            color: white;
+            border: 1px solid #666;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #444;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 20px;
+            background: #1a1a1a;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug Corporate HQ Navigation</h1>
+
+    <h2>Test Functions:</h2>
+    <button onclick="testShowTab()">Test showTab Function</button>
+    <button onclick="testNavButtons()">Test Nav Buttons</button>
+    <button onclick="checkForBlockingElements()">Check for Blocking Elements</button>
+    <button onclick="injectFixedShowTab()">Inject Fixed showTab</button>
+
+    <h2>Output:</h2>
+    <div id="output">Click a button to test...</div>
+
+    <script>
+        const output = document.getElementById('output');
+
+        function log(msg) {
+            output.textContent += msg + '\n';
+        }
+
+        function clear() {
+            output.textContent = '';
+        }
+
+        async function testShowTab() {
+            clear();
+            log('Testing showTab function in Corporate HQ...\n');
+
+            try {
+                // Load the page in an iframe
+                const iframe = document.createElement('iframe');
+                iframe.src = 'http://localhost:8888';
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+
+                iframe.onload = () => {
+                    try {
+                        const iframeWindow = iframe.contentWindow;
+
+                        // Check if showTab exists
+                        if (typeof iframeWindow.showTab === 'function') {
+                            log('✅ showTab function exists');
+
+                            // Try calling it
+                            iframeWindow.showTab('agents');
+                            log('✅ Called showTab("agents") without error');
+
+                            // Check if tab changed
+                            const agentsTab = iframeWindow.document.getElementById('agents');
+                            if (agentsTab && agentsTab.classList.contains('active')) {
+                                log('✅ Agents tab is now active');
+                            } else {
+                                log('❌ Agents tab did not become active');
+                            }
+                        } else {
+                            log('❌ showTab function does not exist');
+                            log('Available functions: ' + Object.keys(iframeWindow).filter(k => typeof iframeWindow[k] === 'function').slice(0, 10).join(', '));
+                        }
+                    } catch (e) {
+                        log('❌ Error accessing iframe: ' + e.message);
+                    }
+
+                    document.body.removeChild(iframe);
+                };
+            } catch (e) {
+                log('❌ Error: ' + e.message);
+            }
+        }
+
+        async function testNavButtons() {
+            clear();
+            log('Testing nav buttons...\n');
+
+            try {
+                const response = await fetch('http://localhost:8888');
+                const html = await response.text();
+
+                // Count nav buttons
+                const navButtonMatches = html.match(/class="nav-link"/g);
+                log(`Found ${navButtonMatches ? navButtonMatches.length : 0} nav buttons`);
+
+                // Check onclick handlers
+                const onclickMatches = html.match(/onclick="showTab\('([^']+)'\)"/g);
+                log(`Found ${onclickMatches ? onclickMatches.length : 0} onclick handlers`);
+
+                if (onclickMatches) {
+                    log('\nOnclick handlers found:');
+                    onclickMatches.forEach(match => {
+                        log('  ' + match);
+                    });
+                }
+
+                // Check for blocking CSS
+                if (html.includes('pointer-events: none') && html.includes('nav-link')) {
+                    log('\n⚠️ Warning: Found pointer-events: none that might affect nav links');
+                }
+
+                // Check z-index
+                const navZIndex = html.match(/\.navigation-container[^{]*{[^}]*z-index:\s*(\d+)/);
+                if (navZIndex) {
+                    log(`\nNavigation z-index: ${navZIndex[1]}`);
+                }
+            } catch (e) {
+                log('❌ Error: ' + e.message);
+            }
+        }
+
+        function checkForBlockingElements() {
+            clear();
+            log('Checking for elements that might block navigation...\n');
+
+            const iframe = document.createElement('iframe');
+            iframe.src = 'http://localhost:8888';
+            iframe.style.width = '100%';
+            iframe.style.height = '600px';
+            document.body.appendChild(iframe);
+
+            iframe.onload = () => {
+                try {
+                    const iframeDoc = iframe.contentDocument;
+
+                    // Get all elements with high z-index
+                    const allElements = iframeDoc.querySelectorAll('*');
+                    const highZIndexElements = [];
+
+                    allElements.forEach(el => {
+                        const style = window.getComputedStyle(el);
+                        const zIndex = parseInt(style.zIndex);
+                        if (zIndex > 999) {
+                            highZIndexElements.push({
+                                element: el,
+                                zIndex: zIndex,
+                                tag: el.tagName,
+                                id: el.id,
+                                class: el.className
+                            });
+                        }
+                    });
+
+                    log(`Found ${highZIndexElements.length} elements with z-index > 999:\n`);
+                    highZIndexElements.sort((a, b) => b.zIndex - a.zIndex);
+                    highZIndexElements.forEach(item => {
+                        log(`  ${item.tag} #${item.id} .${item.class} - z-index: ${item.zIndex}`);
+                    });
+
+                    // Check nav buttons specifically
+                    const navButtons = iframeDoc.querySelectorAll('.nav-link');
+                    log(`\nFound ${navButtons.length} nav buttons`);
+
+                    if (navButtons.length > 0) {
+                        const firstButton = navButtons[0];
+                        const rect = firstButton.getBoundingClientRect();
+                        log(`\nFirst nav button position:`);
+                        log(`  Top: ${rect.top}, Left: ${rect.left}`);
+                        log(`  Width: ${rect.width}, Height: ${rect.height}`);
+
+                        // Check what element is at that position
+                        const elementAtPoint = iframeDoc.elementFromPoint(rect.left + rect.width/2, rect.top + rect.height/2);
+                        log(`\nElement at nav button center: ${elementAtPoint.tagName} #${elementAtPoint.id} .${elementAtPoint.className}`);
+
+                        if (elementAtPoint !== firstButton) {
+                            log('⚠️ WARNING: Nav button is being covered by another element!');
+                        }
+                    }
+
+                } catch (e) {
+                    log('❌ Error: ' + e.message);
+                }
+
+                setTimeout(() => document.body.removeChild(iframe), 3000);
+            };
+        }
+
+        function injectFixedShowTab() {
+            clear();
+            log('Injecting fixed showTab function...\n');
+
+            const fixCode = `
+// Fixed showTab function
+window.showTab = function(tabName) {
+    console.log('[FIXED] Switching to tab:', tabName);
+
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+        tab.style.display = 'none';
+    });
+
+    // Show selected tab
+    const selectedTab = document.getElementById(tabName);
+    if (selectedTab) {
+        selectedTab.classList.add('active');
+        selectedTab.style.display = 'block';
+        console.log('[FIXED] Tab shown:', tabName);
+    }
+
+    // Update nav links
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+    });
+
+    const activeLink = document.querySelector(\`.nav-link[data-tab="\${tabName}"]\`);
+    if (activeLink) {
+        activeLink.classList.add('active');
+    }
+};
+
+// Re-attach all click handlers
+document.querySelectorAll('.nav-link').forEach(link => {
+    link.onclick = function() {
+        const tab = this.getAttribute('data-tab');
+        console.log('[FIXED] Nav clicked:', tab);
+        window.showTab(tab);
+        return false;
+    };
+});
+
+console.log('[FIXED] showTab function and handlers installed');
+`;
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(fixCode).then(() => {
+                log('✅ Fix code copied to clipboard!');
+                log('\nInstructions:');
+                log('1. Open http://localhost:8888 in your browser');
+                log('2. Open the browser console (F12)');
+                log('3. Paste the code and press Enter');
+                log('4. Try clicking the nav buttons');
+                log('\nThe fixed code will:');
+                log('- Replace the showTab function');
+                log('- Re-attach all click handlers');
+                log('- Add console logging');
+                log('- Force display: block/none for tabs');
+            }).catch(err => {
+                log('❌ Failed to copy to clipboard: ' + err);
+                log('\nHere is the fix code to copy manually:\n');
+                log(fixCode);
+            });
+        }
+    </script>
+</body>
+</html>

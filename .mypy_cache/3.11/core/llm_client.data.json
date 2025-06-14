@@ -1,0 +1,3116 @@
+{
+  ".class": "MypyFile",
+  "_fullname": "core.llm_client",
+  "future_import_flags": [],
+  "is_partial_stub_package": false,
+  "is_stub": false,
+  "names": {
+    ".class": "SymbolTable",
+    "ABC": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "abc.ABC",
+      "kind": "Gdef"
+    },
+    "ANTHROPIC_CONFIG": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.llm_client.ANTHROPIC_CONFIG",
+        "name": "ANTHROPIC_CONFIG",
+        "type": "core.llm_client.LLMConfig"
+      }
+    },
+    "AnthropicProvider": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "core.llm_client.LLMProvider"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "core.llm_client.AnthropicProvider",
+          "name": "AnthropicProvider",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "core.llm_client.AnthropicProvider",
+        "has_param_spec_type": false,
+        "metaclass_type": "abc.ABCMeta",
+        "metadata": {},
+        "module_name": "core.llm_client",
+        "mro": [
+          "core.llm_client.AnthropicProvider",
+          "core.llm_client.LLMProvider",
+          "abc.ABC",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "__init__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "config"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.llm_client.AnthropicProvider.__init__",
+              "name": "__init__",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "config"
+                ],
+                "arg_types": [
+                  "core.llm_client.AnthropicProvider",
+                  "core.llm_client.LLMConfig"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "__init__ of AnthropicProvider",
+                "ret_type": {
+                  ".class": "NoneType"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "client": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.llm_client.AnthropicProvider.client",
+              "name": "client",
+              "type": "anthropic._client.AsyncAnthropic"
+            }
+          },
+          "config": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.llm_client.AnthropicProvider.config",
+              "name": "config",
+              "type": "core.llm_client.LLMConfig"
+            }
+          },
+          "embed": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "text"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.llm_client.AnthropicProvider.embed",
+              "name": "embed",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "text"
+                ],
+                "arg_types": [
+                  "core.llm_client.AnthropicProvider",
+                  "builtins.str"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "embed of AnthropicProvider",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.float"
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.list"
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "generate": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                4
+              ],
+              "arg_names": [
+                "self",
+                "prompt",
+                "kwargs"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.llm_client.AnthropicProvider.generate",
+              "name": "generate",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  4
+                ],
+                "arg_names": [
+                  "self",
+                  "prompt",
+                  "kwargs"
+                ],
+                "arg_types": [
+                  "core.llm_client.AnthropicProvider",
+                  "builtins.str",
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 1
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "generate of AnthropicProvider",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    "builtins.str"
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "logger": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.llm_client.AnthropicProvider.logger",
+              "name": "logger",
+              "type": "logging.Logger"
+            }
+          },
+          "think_with_tools": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                0,
+                4
+              ],
+              "arg_names": [
+                "self",
+                "prompt",
+                "tools",
+                "kwargs"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.llm_client.AnthropicProvider.think_with_tools",
+              "name": "think_with_tools",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  0,
+                  4
+                ],
+                "arg_names": [
+                  "self",
+                  "prompt",
+                  "tools",
+                  "kwargs"
+                ],
+                "arg_types": [
+                  "core.llm_client.AnthropicProvider",
+                  "builtins.str",
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      {
+                        ".class": "Instance",
+                        "args": [
+                          {
+                            ".class": "AnyType",
+                            "missing_import_name": null,
+                            "source_any": null,
+                            "type_of_any": 4
+                          },
+                          {
+                            ".class": "AnyType",
+                            "missing_import_name": null,
+                            "source_any": null,
+                            "type_of_any": 4
+                          }
+                        ],
+                        "extra_attrs": null,
+                        "type_ref": "builtins.dict"
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "builtins.list"
+                  },
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 1
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "think_with_tools of AnthropicProvider",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.str",
+                        {
+                          ".class": "AnyType",
+                          "missing_import_name": null,
+                          "source_any": null,
+                          "type_of_any": 2
+                        }
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.dict"
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "core.llm_client.AnthropicProvider.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "core.llm_client.AnthropicProvider",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "Any": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Any",
+      "kind": "Gdef"
+    },
+    "CLAUDE_OPUS_CONFIG": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.llm_client.CLAUDE_OPUS_CONFIG",
+        "name": "CLAUDE_OPUS_CONFIG",
+        "type": "core.llm_client.LLMConfig"
+      }
+    },
+    "Dict": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Dict",
+      "kind": "Gdef"
+    },
+    "LLMClient": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "builtins.object"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "core.llm_client.LLMClient",
+          "name": "LLMClient",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "core.llm_client.LLMClient",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {},
+        "module_name": "core.llm_client",
+        "mro": [
+          "core.llm_client.LLMClient",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "__init__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "config"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.llm_client.LLMClient.__init__",
+              "name": "__init__",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "config"
+                ],
+                "arg_types": [
+                  "core.llm_client.LLMClient",
+                  "core.llm_client.LLMConfig"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "__init__ of LLMClient",
+                "ret_type": {
+                  ".class": "NoneType"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "_create_provider": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.llm_client.LLMClient._create_provider",
+              "name": "_create_provider",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "arg_types": [
+                  "core.llm_client.LLMClient"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "_create_provider of LLMClient",
+                "ret_type": "core.llm_client.LLMProvider",
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "config": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.llm_client.LLMClient.config",
+              "name": "config",
+              "type": "core.llm_client.LLMConfig"
+            }
+          },
+          "embed": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "text"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.llm_client.LLMClient.embed",
+              "name": "embed",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "text"
+                ],
+                "arg_types": [
+                  "core.llm_client.LLMClient",
+                  "builtins.str"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "embed of LLMClient",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.float"
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.list"
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "generate": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                4
+              ],
+              "arg_names": [
+                "self",
+                "prompt",
+                "kwargs"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.llm_client.LLMClient.generate",
+              "name": "generate",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  4
+                ],
+                "arg_names": [
+                  "self",
+                  "prompt",
+                  "kwargs"
+                ],
+                "arg_types": [
+                  "core.llm_client.LLMClient",
+                  "builtins.str",
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 1
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "generate of LLMClient",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    "builtins.str"
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "logger": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.llm_client.LLMClient.logger",
+              "name": "logger",
+              "type": "logging.Logger"
+            }
+          },
+          "provider": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.llm_client.LLMClient.provider",
+              "name": "provider",
+              "type": "core.llm_client.LLMProvider"
+            }
+          },
+          "test_connection": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.llm_client.LLMClient.test_connection",
+              "name": "test_connection",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "arg_types": [
+                  "core.llm_client.LLMClient"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "test_connection of LLMClient",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    "builtins.bool"
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "think": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "agent_name",
+                "role",
+                "context",
+                "goals"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.llm_client.LLMClient.think",
+              "name": "think",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "agent_name",
+                  "role",
+                  "context",
+                  "goals"
+                ],
+                "arg_types": [
+                  "core.llm_client.LLMClient",
+                  "builtins.str",
+                  "builtins.str",
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      "builtins.str",
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 2
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "builtins.dict"
+                  },
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      "builtins.str"
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "builtins.list"
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "think of LLMClient",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    "builtins.str"
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "core.llm_client.LLMClient.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "core.llm_client.LLMClient",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "LLMConfig": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "builtins.object"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "core.llm_client.LLMConfig",
+          "name": "LLMConfig",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "core.llm_client.LLMConfig",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {
+          "dataclass": {
+            "attributes": [
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 26,
+                "name": "provider",
+                "type": "builtins.str"
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 27,
+                "name": "model",
+                "type": "builtins.str"
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 28,
+                "name": "base_url",
+                "type": "builtins.str"
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 29,
+                "name": "api_key",
+                "type": {
+                  ".class": "UnionType",
+                  "items": [
+                    "builtins.str",
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "uses_pep604_syntax": false
+                }
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 30,
+                "name": "temperature",
+                "type": "builtins.float"
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 31,
+                "name": "max_tokens",
+                "type": "builtins.int"
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 32,
+                "name": "timeout",
+                "type": "builtins.int"
+              }
+            ],
+            "frozen": false
+          },
+          "dataclass_tag": {}
+        },
+        "module_name": "core.llm_client",
+        "mro": [
+          "core.llm_client.LLMConfig",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "__dataclass_fields__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_classvar",
+                "is_ready"
+              ],
+              "fullname": "core.llm_client.LLMConfig.__dataclass_fields__",
+              "name": "__dataclass_fields__",
+              "type": {
+                ".class": "Instance",
+                "args": [
+                  "builtins.str",
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 2
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "dataclasses.Field"
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            },
+            "plugin_generated": true
+          },
+          "__init__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              "arg_names": [
+                "self",
+                "provider",
+                "model",
+                "base_url",
+                "api_key",
+                "temperature",
+                "max_tokens",
+                "timeout"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.llm_client.LLMConfig.__init__",
+              "name": "__init__",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "arg_names": [
+                  "self",
+                  "provider",
+                  "model",
+                  "base_url",
+                  "api_key",
+                  "temperature",
+                  "max_tokens",
+                  "timeout"
+                ],
+                "arg_types": [
+                  "core.llm_client.LLMConfig",
+                  "builtins.str",
+                  "builtins.str",
+                  "builtins.str",
+                  {
+                    ".class": "UnionType",
+                    "items": [
+                      "builtins.str",
+                      {
+                        ".class": "NoneType"
+                      }
+                    ],
+                    "uses_pep604_syntax": false
+                  },
+                  "builtins.float",
+                  "builtins.int",
+                  "builtins.int"
+                ],
+                "bound_args": [],
+                "def_extras": {},
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "__init__ of LLMConfig",
+                "ret_type": {
+                  ".class": "NoneType"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            },
+            "plugin_generated": true
+          },
+          "__match_args__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_ready",
+                "allow_incompatible_override"
+              ],
+              "fullname": "core.llm_client.LLMConfig.__match_args__",
+              "name": "__match_args__",
+              "type": {
+                ".class": "TupleType",
+                "implicit": false,
+                "items": [
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "provider"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "model"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "base_url"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "api_key"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "temperature"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "max_tokens"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "timeout"
+                  }
+                ],
+                "partial_fallback": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.tuple"
+                }
+              }
+            },
+            "plugin_generated": true
+          },
+          "__mypy-replace": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Decorator",
+              "func": {
+                ".class": "FuncDef",
+                "abstract_status": 0,
+                "arg_kinds": [
+                  5,
+                  5,
+                  5,
+                  5,
+                  5,
+                  5,
+                  5
+                ],
+                "arg_names": [
+                  "provider",
+                  "model",
+                  "base_url",
+                  "api_key",
+                  "temperature",
+                  "max_tokens",
+                  "timeout"
+                ],
+                "dataclass_transform_spec": null,
+                "deprecated": null,
+                "flags": [
+                  "is_static",
+                  "is_decorated"
+                ],
+                "fullname": "core.llm_client.LLMConfig.__mypy-replace",
+                "name": "__mypy-replace",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5
+                  ],
+                  "arg_names": [
+                    "provider",
+                    "model",
+                    "base_url",
+                    "api_key",
+                    "temperature",
+                    "max_tokens",
+                    "timeout"
+                  ],
+                  "arg_types": [
+                    "builtins.str",
+                    "builtins.str",
+                    "builtins.str",
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.str",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    "builtins.float",
+                    "builtins.int",
+                    "builtins.int"
+                  ],
+                  "bound_args": [],
+                  "def_extras": {},
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "__mypy-replace of LLMConfig",
+                  "ret_type": {
+                    ".class": "NoneType"
+                  },
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              },
+              "is_overload": false,
+              "var": {
+                ".class": "Var",
+                "flags": [
+                  "is_staticmethod",
+                  "is_ready"
+                ],
+                "fullname": "core.llm_client.LLMConfig.__mypy-replace",
+                "name": "__mypy-replace",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5
+                  ],
+                  "arg_names": [
+                    "provider",
+                    "model",
+                    "base_url",
+                    "api_key",
+                    "temperature",
+                    "max_tokens",
+                    "timeout"
+                  ],
+                  "arg_types": [
+                    "builtins.str",
+                    "builtins.str",
+                    "builtins.str",
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.str",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    "builtins.float",
+                    "builtins.int",
+                    "builtins.int"
+                  ],
+                  "bound_args": [],
+                  "def_extras": {},
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "__mypy-replace of LLMConfig",
+                  "ret_type": {
+                    ".class": "NoneType"
+                  },
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              }
+            },
+            "plugin_generated": true
+          },
+          "api_key": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.llm_client.LLMConfig.api_key",
+              "name": "api_key",
+              "type": {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.str",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            }
+          },
+          "base_url": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.llm_client.LLMConfig.base_url",
+              "name": "base_url",
+              "type": "builtins.str"
+            }
+          },
+          "max_tokens": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.llm_client.LLMConfig.max_tokens",
+              "name": "max_tokens",
+              "type": "builtins.int"
+            }
+          },
+          "model": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.llm_client.LLMConfig.model",
+              "name": "model",
+              "type": "builtins.str"
+            }
+          },
+          "provider": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.llm_client.LLMConfig.provider",
+              "name": "provider",
+              "type": "builtins.str"
+            }
+          },
+          "temperature": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.llm_client.LLMConfig.temperature",
+              "name": "temperature",
+              "type": "builtins.float"
+            }
+          },
+          "timeout": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.llm_client.LLMConfig.timeout",
+              "name": "timeout",
+              "type": "builtins.int"
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "core.llm_client.LLMConfig.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "core.llm_client.LLMConfig",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "LLMProvider": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [
+          [
+            "embed",
+            1
+          ],
+          [
+            "generate",
+            1
+          ]
+        ],
+        "alt_promote": null,
+        "bases": [
+          "abc.ABC"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "core.llm_client.LLMProvider",
+          "name": "LLMProvider",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [
+          "is_abstract"
+        ],
+        "fullname": "core.llm_client.LLMProvider",
+        "has_param_spec_type": false,
+        "metaclass_type": "abc.ABCMeta",
+        "metadata": {},
+        "module_name": "core.llm_client",
+        "mro": [
+          "core.llm_client.LLMProvider",
+          "abc.ABC",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "embed": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Decorator",
+              "func": {
+                ".class": "FuncDef",
+                "abstract_status": 1,
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "text"
+                ],
+                "dataclass_transform_spec": null,
+                "deprecated": null,
+                "flags": [
+                  "is_coroutine",
+                  "is_decorated",
+                  "is_trivial_body"
+                ],
+                "fullname": "core.llm_client.LLMProvider.embed",
+                "name": "embed",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    0,
+                    0
+                  ],
+                  "arg_names": [
+                    "self",
+                    "text"
+                  ],
+                  "arg_types": [
+                    "core.llm_client.LLMProvider",
+                    "builtins.str"
+                  ],
+                  "bound_args": [],
+                  "def_extras": {
+                    "first_arg": "self"
+                  },
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "embed of LLMProvider",
+                  "ret_type": {
+                    ".class": "Instance",
+                    "args": [
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 6
+                      },
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 6
+                      },
+                      {
+                        ".class": "Instance",
+                        "args": [
+                          "builtins.float"
+                        ],
+                        "extra_attrs": null,
+                        "type_ref": "builtins.list"
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "typing.Coroutine"
+                  },
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              },
+              "is_overload": false,
+              "var": {
+                ".class": "Var",
+                "flags": [
+                  "is_initialized_in_class",
+                  "is_ready",
+                  "is_inferred"
+                ],
+                "fullname": "core.llm_client.LLMProvider.embed",
+                "name": "embed",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    0,
+                    0
+                  ],
+                  "arg_names": [
+                    "self",
+                    "text"
+                  ],
+                  "arg_types": [
+                    "core.llm_client.LLMProvider",
+                    "builtins.str"
+                  ],
+                  "bound_args": [],
+                  "def_extras": {
+                    "first_arg": "self"
+                  },
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "embed of LLMProvider",
+                  "ret_type": {
+                    ".class": "Instance",
+                    "args": [
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 6
+                      },
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 6
+                      },
+                      {
+                        ".class": "Instance",
+                        "args": [
+                          "builtins.float"
+                        ],
+                        "extra_attrs": null,
+                        "type_ref": "builtins.list"
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "typing.Coroutine"
+                  },
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              }
+            }
+          },
+          "generate": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Decorator",
+              "func": {
+                ".class": "FuncDef",
+                "abstract_status": 1,
+                "arg_kinds": [
+                  0,
+                  0,
+                  4
+                ],
+                "arg_names": [
+                  "self",
+                  "prompt",
+                  "kwargs"
+                ],
+                "dataclass_transform_spec": null,
+                "deprecated": null,
+                "flags": [
+                  "is_coroutine",
+                  "is_decorated",
+                  "is_trivial_body"
+                ],
+                "fullname": "core.llm_client.LLMProvider.generate",
+                "name": "generate",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    0,
+                    0,
+                    4
+                  ],
+                  "arg_names": [
+                    "self",
+                    "prompt",
+                    "kwargs"
+                  ],
+                  "arg_types": [
+                    "core.llm_client.LLMProvider",
+                    "builtins.str",
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 1
+                    }
+                  ],
+                  "bound_args": [],
+                  "def_extras": {
+                    "first_arg": "self"
+                  },
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "generate of LLMProvider",
+                  "ret_type": {
+                    ".class": "Instance",
+                    "args": [
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 6
+                      },
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 6
+                      },
+                      "builtins.str"
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "typing.Coroutine"
+                  },
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              },
+              "is_overload": false,
+              "var": {
+                ".class": "Var",
+                "flags": [
+                  "is_initialized_in_class",
+                  "is_ready",
+                  "is_inferred"
+                ],
+                "fullname": "core.llm_client.LLMProvider.generate",
+                "name": "generate",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    0,
+                    0,
+                    4
+                  ],
+                  "arg_names": [
+                    "self",
+                    "prompt",
+                    "kwargs"
+                  ],
+                  "arg_types": [
+                    "core.llm_client.LLMProvider",
+                    "builtins.str",
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 1
+                    }
+                  ],
+                  "bound_args": [],
+                  "def_extras": {
+                    "first_arg": "self"
+                  },
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "generate of LLMProvider",
+                  "ret_type": {
+                    ".class": "Instance",
+                    "args": [
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 6
+                      },
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 6
+                      },
+                      "builtins.str"
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "typing.Coroutine"
+                  },
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              }
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "core.llm_client.LLMProvider.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "core.llm_client.LLMProvider",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "LOCAL_CONFIG": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.llm_client.LOCAL_CONFIG",
+        "name": "LOCAL_CONFIG",
+        "type": "core.llm_client.LLMConfig"
+      }
+    },
+    "List": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.List",
+      "kind": "Gdef"
+    },
+    "LocalProvider": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "core.llm_client.LLMProvider"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "core.llm_client.LocalProvider",
+          "name": "LocalProvider",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "core.llm_client.LocalProvider",
+        "has_param_spec_type": false,
+        "metaclass_type": "abc.ABCMeta",
+        "metadata": {},
+        "module_name": "core.llm_client",
+        "mro": [
+          "core.llm_client.LocalProvider",
+          "core.llm_client.LLMProvider",
+          "abc.ABC",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "__init__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "config"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.llm_client.LocalProvider.__init__",
+              "name": "__init__",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "config"
+                ],
+                "arg_types": [
+                  "core.llm_client.LocalProvider",
+                  "core.llm_client.LLMConfig"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "__init__ of LocalProvider",
+                "ret_type": {
+                  ".class": "NoneType"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "client": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.llm_client.LocalProvider.client",
+              "name": "client",
+              "type": "httpx._client.AsyncClient"
+            }
+          },
+          "config": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.llm_client.LocalProvider.config",
+              "name": "config",
+              "type": "core.llm_client.LLMConfig"
+            }
+          },
+          "embed": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "text"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.llm_client.LocalProvider.embed",
+              "name": "embed",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "text"
+                ],
+                "arg_types": [
+                  "core.llm_client.LocalProvider",
+                  "builtins.str"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "embed of LocalProvider",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.float"
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.list"
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "generate": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                4
+              ],
+              "arg_names": [
+                "self",
+                "prompt",
+                "kwargs"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.llm_client.LocalProvider.generate",
+              "name": "generate",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  4
+                ],
+                "arg_names": [
+                  "self",
+                  "prompt",
+                  "kwargs"
+                ],
+                "arg_types": [
+                  "core.llm_client.LocalProvider",
+                  "builtins.str",
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 1
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "generate of LocalProvider",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    "builtins.str"
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "core.llm_client.LocalProvider.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "core.llm_client.LocalProvider",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "OLLAMA_CONFIG": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.llm_client.OLLAMA_CONFIG",
+        "name": "OLLAMA_CONFIG",
+        "type": "core.llm_client.LLMConfig"
+      }
+    },
+    "OPENAI_CONFIG": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.llm_client.OPENAI_CONFIG",
+        "name": "OPENAI_CONFIG",
+        "type": "core.llm_client.LLMConfig"
+      }
+    },
+    "OllamaProvider": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "core.llm_client.LLMProvider"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "core.llm_client.OllamaProvider",
+          "name": "OllamaProvider",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "core.llm_client.OllamaProvider",
+        "has_param_spec_type": false,
+        "metaclass_type": "abc.ABCMeta",
+        "metadata": {},
+        "module_name": "core.llm_client",
+        "mro": [
+          "core.llm_client.OllamaProvider",
+          "core.llm_client.LLMProvider",
+          "abc.ABC",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "__init__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "config"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.llm_client.OllamaProvider.__init__",
+              "name": "__init__",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "config"
+                ],
+                "arg_types": [
+                  "core.llm_client.OllamaProvider",
+                  "core.llm_client.LLMConfig"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "__init__ of OllamaProvider",
+                "ret_type": {
+                  ".class": "NoneType"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "client": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.llm_client.OllamaProvider.client",
+              "name": "client",
+              "type": "httpx._client.AsyncClient"
+            }
+          },
+          "config": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.llm_client.OllamaProvider.config",
+              "name": "config",
+              "type": "core.llm_client.LLMConfig"
+            }
+          },
+          "embed": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "text"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.llm_client.OllamaProvider.embed",
+              "name": "embed",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "text"
+                ],
+                "arg_types": [
+                  "core.llm_client.OllamaProvider",
+                  "builtins.str"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "embed of OllamaProvider",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.float"
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.list"
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "generate": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                4
+              ],
+              "arg_names": [
+                "self",
+                "prompt",
+                "kwargs"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.llm_client.OllamaProvider.generate",
+              "name": "generate",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  4
+                ],
+                "arg_names": [
+                  "self",
+                  "prompt",
+                  "kwargs"
+                ],
+                "arg_types": [
+                  "core.llm_client.OllamaProvider",
+                  "builtins.str",
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 1
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "generate of OllamaProvider",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    "builtins.str"
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "logger": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.llm_client.OllamaProvider.logger",
+              "name": "logger",
+              "type": "logging.Logger"
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "core.llm_client.OllamaProvider.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "core.llm_client.OllamaProvider",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "OpenAIProvider": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "core.llm_client.LLMProvider"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "core.llm_client.OpenAIProvider",
+          "name": "OpenAIProvider",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "core.llm_client.OpenAIProvider",
+        "has_param_spec_type": false,
+        "metaclass_type": "abc.ABCMeta",
+        "metadata": {},
+        "module_name": "core.llm_client",
+        "mro": [
+          "core.llm_client.OpenAIProvider",
+          "core.llm_client.LLMProvider",
+          "abc.ABC",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "__init__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "config"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.llm_client.OpenAIProvider.__init__",
+              "name": "__init__",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "config"
+                ],
+                "arg_types": [
+                  "core.llm_client.OpenAIProvider",
+                  "core.llm_client.LLMConfig"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "__init__ of OpenAIProvider",
+                "ret_type": {
+                  ".class": "NoneType"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "client": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.llm_client.OpenAIProvider.client",
+              "name": "client",
+              "type": "httpx._client.AsyncClient"
+            }
+          },
+          "config": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.llm_client.OpenAIProvider.config",
+              "name": "config",
+              "type": "core.llm_client.LLMConfig"
+            }
+          },
+          "embed": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "text"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.llm_client.OpenAIProvider.embed",
+              "name": "embed",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "text"
+                ],
+                "arg_types": [
+                  "core.llm_client.OpenAIProvider",
+                  "builtins.str"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "embed of OpenAIProvider",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.float"
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.list"
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "generate": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                4
+              ],
+              "arg_names": [
+                "self",
+                "prompt",
+                "kwargs"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.llm_client.OpenAIProvider.generate",
+              "name": "generate",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  4
+                ],
+                "arg_names": [
+                  "self",
+                  "prompt",
+                  "kwargs"
+                ],
+                "arg_types": [
+                  "core.llm_client.OpenAIProvider",
+                  "builtins.str",
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 1
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "generate of OpenAIProvider",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    "builtins.str"
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "core.llm_client.OpenAIProvider.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "core.llm_client.OpenAIProvider",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "Optional": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Optional",
+      "kind": "Gdef"
+    },
+    "__annotations__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.llm_client.__annotations__",
+        "name": "__annotations__",
+        "type": {
+          ".class": "Instance",
+          "args": [
+            "builtins.str",
+            {
+              ".class": "AnyType",
+              "missing_import_name": null,
+              "source_any": null,
+              "type_of_any": 6
+            }
+          ],
+          "extra_attrs": null,
+          "type_ref": "builtins.dict"
+        }
+      }
+    },
+    "__doc__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.llm_client.__doc__",
+        "name": "__doc__",
+        "type": "builtins.str"
+      }
+    },
+    "__file__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.llm_client.__file__",
+        "name": "__file__",
+        "type": "builtins.str"
+      }
+    },
+    "__name__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.llm_client.__name__",
+        "name": "__name__",
+        "type": "builtins.str"
+      }
+    },
+    "__package__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.llm_client.__package__",
+        "name": "__package__",
+        "type": "builtins.str"
+      }
+    },
+    "__spec__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.llm_client.__spec__",
+        "name": "__spec__",
+        "type": "_frozen_importlib.ModuleSpec"
+      }
+    },
+    "abstractmethod": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "abc.abstractmethod",
+      "kind": "Gdef"
+    },
+    "anthropic": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "anthropic",
+      "kind": "Gdef"
+    },
+    "asyncio": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "asyncio",
+      "kind": "Gdef"
+    },
+    "dataclass": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "dataclasses.dataclass",
+      "kind": "Gdef"
+    },
+    "httpx": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "httpx",
+      "kind": "Gdef"
+    },
+    "json": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "json",
+      "kind": "Gdef"
+    },
+    "logging": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "logging",
+      "kind": "Gdef"
+    },
+    "os": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "os",
+      "kind": "Gdef"
+    }
+  },
+  "path": "/Users/cosburn/BoarderframeOS/core/llm_client.py"
+}

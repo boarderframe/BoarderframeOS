@@ -612,7 +612,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Department Management MCP Server")
     parser.add_argument("--host", default="localhost", help="Host to bind to")
-    parser.add_argument("--port", type=int, default=8010, help="Port to bind to")
+    parser.add_argument("--port", type=int, default=8009, help="Port to bind to")
     parser.add_argument("--reload", action="store_true", help="Enable auto-reload")
 
     args = parser.parse_args()

@@ -1,0 +1,279 @@
+{
+  ".class": "MypyFile",
+  "_fullname": "qdrant_client.grpc.collections_service_pb2",
+  "future_import_flags": [],
+  "is_partial_stub_package": false,
+  "is_stub": false,
+  "names": {
+    ".class": "SymbolTable",
+    "DESCRIPTOR": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.collections_service_pb2.DESCRIPTOR",
+        "name": "DESCRIPTOR",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.collections_service_pb2._descriptor_pool",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.collections_service_pb2._descriptor_pool",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "_COLLECTIONS": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.collections_service_pb2._COLLECTIONS",
+        "name": "_COLLECTIONS",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.collections_service_pb2._descriptor_pool",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.collections_service_pb2._descriptor_pool",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "__annotations__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.grpc.collections_service_pb2.__annotations__",
+        "name": "__annotations__",
+        "type": {
+          ".class": "Instance",
+          "args": [
+            "builtins.str",
+            {
+              ".class": "AnyType",
+              "missing_import_name": null,
+              "source_any": null,
+              "type_of_any": 6
+            }
+          ],
+          "extra_attrs": null,
+          "type_ref": "builtins.dict"
+        }
+      }
+    },
+    "__doc__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.grpc.collections_service_pb2.__doc__",
+        "name": "__doc__",
+        "type": "builtins.str"
+      }
+    },
+    "__file__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.grpc.collections_service_pb2.__file__",
+        "name": "__file__",
+        "type": "builtins.str"
+      }
+    },
+    "__name__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.grpc.collections_service_pb2.__name__",
+        "name": "__name__",
+        "type": "builtins.str"
+      }
+    },
+    "__package__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.grpc.collections_service_pb2.__package__",
+        "name": "__package__",
+        "type": "builtins.str"
+      }
+    },
+    "__spec__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.grpc.collections_service_pb2.__spec__",
+        "name": "__spec__",
+        "type": "_frozen_importlib.ModuleSpec"
+      }
+    },
+    "_descriptor": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_suppressed_import",
+          "is_ready",
+          "is_inferred"
+        ],
+        "fullname": "qdrant_client.grpc.collections_service_pb2._descriptor",
+        "name": "_descriptor",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.collections_service_pb2._descriptor",
+          "source_any": null,
+          "type_of_any": 3
+        }
+      }
+    },
+    "_descriptor_pool": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_suppressed_import",
+          "is_ready",
+          "is_inferred"
+        ],
+        "fullname": "qdrant_client.grpc.collections_service_pb2._descriptor_pool",
+        "name": "_descriptor_pool",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.collections_service_pb2._descriptor_pool",
+          "source_any": null,
+          "type_of_any": 3
+        }
+      }
+    },
+    "_message": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_suppressed_import",
+          "is_ready",
+          "is_inferred"
+        ],
+        "fullname": "qdrant_client.grpc.collections_service_pb2._message",
+        "name": "_message",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.collections_service_pb2._message",
+          "source_any": null,
+          "type_of_any": 3
+        }
+      }
+    },
+    "_reflection": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_suppressed_import",
+          "is_ready",
+          "is_inferred"
+        ],
+        "fullname": "qdrant_client.grpc.collections_service_pb2._reflection",
+        "name": "_reflection",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.collections_service_pb2._reflection",
+          "source_any": null,
+          "type_of_any": 3
+        }
+      }
+    },
+    "_sym_db": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.collections_service_pb2._sym_db",
+        "name": "_sym_db",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.collections_service_pb2._symbol_database",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.collections_service_pb2._symbol_database",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "_symbol_database": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_suppressed_import",
+          "is_ready",
+          "is_inferred"
+        ],
+        "fullname": "qdrant_client.grpc.collections_service_pb2._symbol_database",
+        "name": "_symbol_database",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.collections_service_pb2._symbol_database",
+          "source_any": null,
+          "type_of_any": 3
+        }
+      }
+    },
+    "collections__pb2": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2",
+      "kind": "Gdef"
+    }
+  },
+  "path": "/Users/cosburn/BoarderframeOS/.venv/lib/python3.13/site-packages/qdrant_client/grpc/collections_service_pb2.py"
+}

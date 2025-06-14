@@ -1,0 +1,1839 @@
+{
+  ".class": "MypyFile",
+  "_fullname": "qdrant_client.conversions.common_types",
+  "future_import_flags": [],
+  "is_partial_stub_package": false,
+  "is_stub": false,
+  "names": {
+    ".class": "SymbolTable",
+    "AliasOperations": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.AliasOperations",
+        "line": 86,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            "qdrant_client.http.models.models.CreateAliasOperation",
+            "qdrant_client.http.models.models.RenameAliasOperation",
+            "qdrant_client.http.models.models.DeleteAliasOperation",
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.collections_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "Batch": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.Batch",
+        "line": 67,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.Batch"
+      }
+    },
+    "CollectionInfo": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.CollectionInfo",
+        "line": 98,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.CollectionInfo"
+      }
+    },
+    "CollectionParamsDiff": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.CollectionParamsDiff",
+        "line": 56,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            "qdrant_client.http.models.models.CollectionParamsDiff",
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.collections_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "CollectionsAliasesResponse": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.CollectionsAliasesResponse",
+        "line": 112,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.CollectionsAliasesResponse"
+      }
+    },
+    "CollectionsResponse": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.CollectionsResponse",
+        "line": 97,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.CollectionsResponse"
+      }
+    },
+    "ContextExamplePair": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.ContextExamplePair",
+        "line": 80,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            "qdrant_client.http.models.models.ContextExamplePair",
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.points_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "CountResult": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.CountResult",
+        "line": 99,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.CountResult"
+      }
+    },
+    "DiscoverRequest": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.DiscoverRequest",
+        "line": 124,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            "qdrant_client.http.models.models.DiscoverRequest",
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.points_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "Distance": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.Distance",
+        "line": 51,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            "qdrant_client.http.models.models.Distance",
+            "builtins.int"
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "Document": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.Document",
+        "line": 117,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.Document"
+      }
+    },
+    "FacetResponse": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.FacetResponse",
+        "line": 135,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.FacetResponse"
+      }
+    },
+    "FacetValue": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.FacetValue",
+        "line": 134,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "TypeAliasType",
+          "args": [],
+          "type_ref": "qdrant_client.http.models.models.FacetValue"
+        }
+      }
+    },
+    "Filter": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.Filter",
+        "line": 48,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            "qdrant_client.http.models.models.Filter",
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.points_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "GroupsResult": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.GroupsResult",
+        "line": 131,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.GroupsResult"
+      }
+    },
+    "HnswConfigDiff": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.HnswConfigDiff",
+        "line": 52,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            "qdrant_client.http.models.models.HnswConfigDiff",
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.collections_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "Image": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.Image",
+        "line": 118,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.Image"
+      }
+    },
+    "InferenceObject": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.InferenceObject",
+        "line": 119,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.InferenceObject"
+      }
+    },
+    "InitFrom": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.InitFrom",
+        "line": 113,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            "qdrant_client.http.models.models.InitFrom",
+            "builtins.str"
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "LocksOption": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.LocksOption",
+        "line": 110,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.LocksOption"
+      }
+    },
+    "LookupLocation": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.LookupLocation",
+        "line": 76,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            "qdrant_client.http.models.models.LookupLocation",
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.points_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "NamedSparseVector": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.NamedSparseVector",
+        "line": 102,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.NamedSparseVector"
+      }
+    },
+    "NamedVector": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.NamedVector",
+        "line": 101,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.NamedVector"
+      }
+    },
+    "NumpyArray": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.NumpyArray",
+        "line": 163,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "TypeAliasType",
+          "args": [
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "qdrant_client.conversions.common_types._np_numeric"
+            }
+          ],
+          "type_ref": "numpy._typing._array_like.NDArray"
+        }
+      }
+    },
+    "OptimizersConfigDiff": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.OptimizersConfigDiff",
+        "line": 55,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            "qdrant_client.http.models.models.OptimizersConfigDiff",
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.collections_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "OrderBy": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.OrderBy",
+        "line": 81,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "qdrant_client.http.models.models.OrderByInterface"
+            },
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.points_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "Payload": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.Payload",
+        "line": 92,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "TypeAliasType",
+          "args": [],
+          "type_ref": "qdrant_client.http.models.models.Payload"
+        }
+      }
+    },
+    "PayloadSchemaType": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.PayloadSchemaType",
+        "line": 60,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            "qdrant_client.http.models.models.PayloadSchemaType",
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "qdrant_client.http.models.models.PayloadSchemaParams"
+            },
+            "builtins.int",
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.collections_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "PayloadSelector": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.PayloadSelector",
+        "line": 50,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "qdrant_client.http.models.models.PayloadSelector"
+            },
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.points_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "PointId": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.PointId",
+        "line": 59,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            "builtins.int",
+            "builtins.str",
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.points_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "PointStruct": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.PointStruct",
+        "line": 66,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.PointStruct"
+      }
+    },
+    "PointVectors": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.PointVectors",
+        "line": 104,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.PointVectors"
+      }
+    },
+    "Points": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.Points",
+        "line": 68,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            "qdrant_client.http.models.models.Batch",
+            {
+              ".class": "Instance",
+              "args": [
+                {
+                  ".class": "UnionType",
+                  "items": [
+                    "qdrant_client.http.models.models.PointStruct",
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": "qdrant_client.grpc.points_pb2._reflection",
+                      "source_any": null,
+                      "type_of_any": 3
+                    }
+                  ],
+                  "uses_pep604_syntax": false
+                }
+              ],
+              "extra_attrs": null,
+              "type_ref": "typing.Sequence"
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "PointsSelector": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.PointsSelector",
+        "line": 69,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            {
+              ".class": "Instance",
+              "args": [
+                {
+                  ".class": "TypeAliasType",
+                  "args": [],
+                  "type_ref": "qdrant_client.conversions.common_types.PointId"
+                }
+              ],
+              "extra_attrs": null,
+              "type_ref": "builtins.list"
+            },
+            "qdrant_client.http.models.models.Filter",
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.points_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            },
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "qdrant_client.http.models.models.PointsSelector"
+            },
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.points_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "Prefetch": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.Prefetch",
+        "line": 116,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.Prefetch"
+      }
+    },
+    "QuantizationConfig": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.QuantizationConfig",
+        "line": 58,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "qdrant_client.http.models.models.QuantizationConfig"
+            },
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.collections_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "QuantizationConfigDiff": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.QuantizationConfigDiff",
+        "line": 54,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "qdrant_client.http.models.models.QuantizationConfigDiff"
+            },
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.collections_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "Query": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.Query",
+        "line": 115,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "TypeAliasType",
+          "args": [],
+          "type_ref": "qdrant_client.http.models.models.Query"
+        }
+      }
+    },
+    "QueryRequest": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.QueryRequest",
+        "line": 125,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            "qdrant_client.http.models.models.QueryRequest",
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.points_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "QueryResponse": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.QueryResponse",
+        "line": 132,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.QueryResponse"
+      }
+    },
+    "ReadConsistency": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.ReadConsistency",
+        "line": 127,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "TypeAliasType",
+          "args": [],
+          "type_ref": "qdrant_client.http.models.models.ReadConsistency"
+        }
+      }
+    },
+    "RecommendExample": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.RecommendExample",
+        "line": 78,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "TypeAliasType",
+          "args": [],
+          "type_ref": "qdrant_client.http.models.models.RecommendExample"
+        }
+      }
+    },
+    "RecommendRequest": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.RecommendRequest",
+        "line": 123,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            "qdrant_client.http.models.models.RecommendRequest",
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.points_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "RecommendStrategy": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.RecommendStrategy",
+        "line": 77,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.RecommendStrategy"
+      }
+    },
+    "Record": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.Record",
+        "line": 96,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.Record"
+      }
+    },
+    "ScoredPoint": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.ScoredPoint",
+        "line": 94,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.ScoredPoint"
+      }
+    },
+    "SearchMatrixOffsetsResponse": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.SearchMatrixOffsetsResponse",
+        "line": 137,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.SearchMatrixOffsetsResponse"
+      }
+    },
+    "SearchMatrixPair": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.SearchMatrixPair",
+        "line": 139,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.SearchMatrixPair"
+      }
+    },
+    "SearchMatrixPairsResponse": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.SearchMatrixPairsResponse",
+        "line": 138,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.SearchMatrixPairsResponse"
+      }
+    },
+    "SearchMatrixRequest": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.SearchMatrixRequest",
+        "line": 136,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            "qdrant_client.http.models.models.SearchMatrixRequest",
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.points_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "SearchParams": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.SearchParams",
+        "line": 49,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            "qdrant_client.http.models.models.SearchParams",
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.points_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "SearchRequest": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.SearchRequest",
+        "line": 122,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            "qdrant_client.http.models.models.SearchRequest",
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.points_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "Sequence": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Sequence",
+      "kind": "Gdef"
+    },
+    "ShardKey": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.ShardKey",
+        "line": 83,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "TypeAliasType",
+          "args": [],
+          "type_ref": "qdrant_client.http.models.models.ShardKey"
+        }
+      }
+    },
+    "ShardKeySelector": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.ShardKeySelector",
+        "line": 84,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "TypeAliasType",
+          "args": [],
+          "type_ref": "qdrant_client.http.models.models.ShardKeySelector"
+        }
+      }
+    },
+    "ShardingMethod": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.ShardingMethod",
+        "line": 82,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.ShardingMethod"
+      }
+    },
+    "SnapshotDescription": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.SnapshotDescription",
+        "line": 100,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.SnapshotDescription"
+      }
+    },
+    "SnapshotPriority": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.SnapshotPriority",
+        "line": 111,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.SnapshotPriority"
+      }
+    },
+    "SparseVector": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.SparseVector",
+        "line": 103,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.SparseVector"
+      }
+    },
+    "SparseVectorParams": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.SparseVectorParams",
+        "line": 109,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.SparseVectorParams"
+      }
+    },
+    "StrictModeConfig": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.StrictModeConfig",
+        "line": 120,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.StrictModeConfig"
+      }
+    },
+    "TargetVector": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.TargetVector",
+        "line": 79,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "qdrant_client.http.models.models.RecommendExample"
+            },
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.points_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "TypeAlias": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.TypeAlias",
+      "kind": "Gdef"
+    },
+    "Union": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Union",
+      "kind": "Gdef"
+    },
+    "UpdateOperation": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.UpdateOperation",
+        "line": 114,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "TypeAliasType",
+          "args": [],
+          "type_ref": "qdrant_client.http.models.models.UpdateOperation"
+        }
+      }
+    },
+    "UpdateResult": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.UpdateResult",
+        "line": 95,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.UpdateResult"
+      }
+    },
+    "Vector": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.Vector",
+        "line": 105,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "TypeAliasType",
+          "args": [],
+          "type_ref": "qdrant_client.http.models.models.Vector"
+        }
+      }
+    },
+    "VectorInput": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.VectorInput",
+        "line": 106,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "TypeAliasType",
+          "args": [],
+          "type_ref": "qdrant_client.http.models.models.VectorInput"
+        }
+      }
+    },
+    "VectorParams": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.VectorParams",
+        "line": 108,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.VectorParams"
+      }
+    },
+    "VectorStruct": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.VectorStruct",
+        "line": 107,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "TypeAliasType",
+          "args": [],
+          "type_ref": "qdrant_client.http.models.models.VectorStruct"
+        }
+      }
+    },
+    "VectorsConfigDiff": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.VectorsConfigDiff",
+        "line": 53,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "qdrant_client.http.models.models.VectorsConfigDiff"
+            },
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.collections_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "VersionInfo": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.VersionInfo",
+        "line": 141,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.VersionInfo"
+      }
+    },
+    "WalConfigDiff": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.WalConfigDiff",
+        "line": 57,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            "qdrant_client.http.models.models.WalConfigDiff",
+            {
+              ".class": "AnyType",
+              "missing_import_name": "qdrant_client.grpc.collections_pb2._reflection",
+              "source_any": null,
+              "type_of_any": 3
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "WithLookupInterface": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.WithLookupInterface",
+        "line": 129,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "TypeAliasType",
+          "args": [],
+          "type_ref": "qdrant_client.http.models.models.WithLookupInterface"
+        }
+      }
+    },
+    "WriteOrdering": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types.WriteOrdering",
+        "line": 128,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "qdrant_client.http.models.models.WriteOrdering"
+      }
+    },
+    "__annotations__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.conversions.common_types.__annotations__",
+        "name": "__annotations__",
+        "type": {
+          ".class": "Instance",
+          "args": [
+            "builtins.str",
+            {
+              ".class": "AnyType",
+              "missing_import_name": null,
+              "source_any": null,
+              "type_of_any": 6
+            }
+          ],
+          "extra_attrs": null,
+          "type_ref": "builtins.dict"
+        }
+      }
+    },
+    "__doc__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.conversions.common_types.__doc__",
+        "name": "__doc__",
+        "type": "builtins.str"
+      }
+    },
+    "__file__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.conversions.common_types.__file__",
+        "name": "__file__",
+        "type": "builtins.str"
+      }
+    },
+    "__name__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.conversions.common_types.__name__",
+        "name": "__name__",
+        "type": "builtins.str"
+      }
+    },
+    "__package__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.conversions.common_types.__package__",
+        "name": "__package__",
+        "type": "builtins.str"
+      }
+    },
+    "__spec__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.conversions.common_types.__spec__",
+        "name": "__spec__",
+        "type": "_frozen_importlib.ModuleSpec"
+      }
+    },
+    "_np_numeric": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "qdrant_client.conversions.common_types._np_numeric",
+        "line": 145,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            {
+              ".class": "Instance",
+              "args": [
+                "builtins.bool"
+              ],
+              "extra_attrs": null,
+              "type_ref": "numpy.bool"
+            },
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "numpy.int8"
+            },
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "numpy.int16"
+            },
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "numpy.int32"
+            },
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "numpy.int64"
+            },
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "numpy.uint8"
+            },
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "numpy.uint16"
+            },
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "numpy.uint32"
+            },
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "numpy.uint64"
+            },
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "numpy.intp"
+            },
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "numpy.uintp"
+            },
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "numpy.float16"
+            },
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "numpy.float32"
+            },
+            "numpy.float64",
+            {
+              ".class": "TypeAliasType",
+              "args": [],
+              "type_ref": "numpy.longdouble"
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "get_args": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.get_args",
+      "kind": "Gdef"
+    },
+    "get_args_subscribed": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "FuncDef",
+        "abstract_status": 0,
+        "arg_kinds": [
+          0
+        ],
+        "arg_names": [
+          "tp"
+        ],
+        "dataclass_transform_spec": null,
+        "deprecated": null,
+        "flags": [],
+        "fullname": "qdrant_client.conversions.common_types.get_args_subscribed",
+        "name": "get_args_subscribed",
+        "type": null
+      }
+    },
+    "grpc": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc",
+      "kind": "Gdef"
+    },
+    "np": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "numpy",
+      "kind": "Gdef"
+    },
+    "npt": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "numpy.typing",
+      "kind": "Gdef"
+    },
+    "remap_type": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "FuncDef",
+        "abstract_status": 0,
+        "arg_kinds": [
+          0
+        ],
+        "arg_names": [
+          "tp"
+        ],
+        "dataclass_transform_spec": null,
+        "deprecated": null,
+        "flags": [],
+        "fullname": "qdrant_client.conversions.common_types.remap_type",
+        "name": "remap_type",
+        "type": {
+          ".class": "CallableType",
+          "arg_kinds": [
+            0
+          ],
+          "arg_names": [
+            "tp"
+          ],
+          "arg_types": [
+            "builtins.type"
+          ],
+          "bound_args": [],
+          "def_extras": {
+            "first_arg": null
+          },
+          "fallback": "builtins.function",
+          "from_concatenate": false,
+          "implicit": false,
+          "imprecise_arg_kinds": false,
+          "is_ellipsis_args": false,
+          "name": "remap_type",
+          "ret_type": "builtins.type",
+          "type_guard": null,
+          "type_is": null,
+          "unpack_kwargs": false,
+          "variables": []
+        }
+      }
+    },
+    "rest": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.http.models.models",
+      "kind": "Gdef"
+    },
+    "sys": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "sys",
+      "kind": "Gdef"
+    },
+    "typing_remap": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.conversions.common_types.typing_remap",
+        "name": "typing_remap",
+        "type": {
+          ".class": "Instance",
+          "args": [
+            "builtins.type",
+            "builtins.type"
+          ],
+          "extra_attrs": null,
+          "type_ref": "builtins.dict"
+        }
+      }
+    }
+  },
+  "path": "/Users/cosburn/BoarderframeOS/.venv/lib/python3.13/site-packages/qdrant_client/conversions/common_types.py"
+}

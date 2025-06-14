@@ -740,7 +740,10 @@ class EnhancedSystemStartup:
             # First run environment setup
             self.print_step("Running environment setup...", "starting")
             try:
-                from setup_environment import ensure_database_setup, setup_environment
+                from scripts.setup_environment import (
+                    ensure_database_setup,
+                    setup_environment,
+                )
 
                 if not setup_environment():
                     self.print_step("Environment setup failed", "error")
@@ -855,20 +858,34 @@ class EnhancedSystemStartup:
             if name == "database_postgres":
                 cmd.extend(["--port", str(port)])
 
+            # Ensure virtual environment is properly set up
+            env = os.environ.copy()
+            env["PYTHONPATH"] = str(Path(__file__).parent)
+
+            # Ensure we're using the right Python executable from virtual env
+            venv_python = sys.executable
+            if not venv_python.endswith("/.venv/bin/python"):
+                # Fallback to ensure we use venv python
+                venv_path = Path(__file__).parent / ".venv" / "bin" / "python"
+                if venv_path.exists():
+                    venv_python = str(venv_path)
+
+            cmd[0] = venv_python  # Use the correct Python executable
+
             process = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 cwd=str(Path(__file__).parent),
-                env={**os.environ, "PYTHONPATH": str(Path(__file__).parent)},
+                env=env,
             )
 
             self.processes[f"mcp_{name}"] = process
 
             # Wait for startup with timeout (longer for filesystem server)
             timeout_iterations = (
-                30 if name == "filesystem" else 15
-            )  # 15s for filesystem, 7.5s for others
+                60 if name == "filesystem" else 30
+            )  # 30s for filesystem, 15s for others
             for i in range(timeout_iterations):
                 await asyncio.sleep(0.5)
                 if process.poll() is not None:
@@ -1063,6 +1080,12 @@ class EnhancedSystemStartup:
                 "script": "customer_server.py",
                 "category": "Services",
             },
+            {
+                "name": "screenshot",
+                "port": 8011,
+                "script": "screenshot_server.py",
+                "category": "Services",
+            },
         ]
 
         # Note: Corporate Headquarters is started separately
@@ -1116,6 +1139,162 @@ class EnhancedSystemStartup:
         print(f"  ✅ {healthy_count}/{total} servers healthy")
 
         return healthy_count == total
+
+    async def start_agent_communication_center(self):
+        """Start the Agent Communication Center (ACC)"""
+        self.print_section("Agent Communication Center (ACC)", "🔗")
+        self.status_data["startup_phase"] = "starting_acc"
+
+        try:
+            self.print_step(
+                "Starting Agent Communication Center on port 8890",
+                "starting",
+            )
+
+            # Start the ACC
+            acc_process = subprocess.Popen(
+                [sys.executable, "agent_communication_center.py"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                cwd=str(Path(__file__).parent),
+                env={**os.environ, "PYTHONPATH": str(Path(__file__).parent)},
+            )
+
+            self.processes["agent_communication_center"] = acc_process
+
+            # Wait for startup
+            for attempt in range(15):  # Try for 15 seconds
+                await asyncio.sleep(1)
+
+                # Check if process died
+                if acc_process.poll() is not None:
+                    try:
+                        stdout, _ = acc_process.communicate(timeout=1)
+                        error_msg = (
+                            stdout.decode()
+                            if stdout
+                            else "Process exited without output"
+                        )
+                    except subprocess.TimeoutExpired:
+                        error_msg = "Process communication timeout"
+                    except Exception as e:
+                        error_msg = f"Communication error: {str(e)}"
+
+                    self.print_step(f"ACC failed: {error_msg[:100]}", "error")
+                    self.update_component_status(
+                        "services",
+                        "agent_communication_center",
+                        "failed",
+                        {"error": error_msg[:200]},
+                    )
+                    return False
+
+                # Check if port 8890 is responding
+                try:
+                    import socket
+
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    sock.settimeout(1)
+                    result = sock.connect_ex(("localhost", 8890))
+                    sock.close()
+                    if result == 0:
+                        self.print_step(
+                            "Agent Communication Center started successfully",
+                            "success",
+                        )
+                        self.update_component_status(
+                            "services",
+                            "agent_communication_center",
+                            "running",
+                            {
+                                "port": 8890,
+                                "pid": acc_process.pid,
+                                "url": "http://localhost:8890",
+                                "type": "core_service",
+                                "description": "Claude-powered agent communications",
+                            },
+                        )
+
+                        # Update metrics layer with ACC status
+                        if hasattr(self, "hq_metrics") and hasattr(
+                            self.hq_metrics, "metrics_calculator"
+                        ):
+                            # Get current server status
+                            server_status = {}
+                            if "mcp_servers" in self.status_data:
+                                for server_name, server_info in self.status_data[
+                                    "mcp_servers"
+                                ].items():
+                                    if server_info.get("status") == "running":
+                                        server_status[server_name] = {
+                                            "status": "healthy",
+                                            "port": server_info.get("port", 0),
+                                            "name": server_name.replace(
+                                                "_", " "
+                                            ).title(),
+                                            "category": "MCP Servers",
+                                        }
+
+                            # Add ACC
+                            server_status["agent_communication_center"] = {
+                                "status": "healthy",
+                                "port": 8890,
+                                "name": "Agent Communication Center",
+                                "category": "Core Services",
+                            }
+
+                            # Update the metrics layer
+                            self.hq_metrics.metrics_calculator.set_server_status(
+                                server_status
+                            )
+
+                        # Register ACC with database registry
+                        # Note: Temporarily disabled due to missing module
+                        # await self.register_acc_with_registry()
+
+                        return True
+                except Exception as e:
+                    # Continue trying
+                    pass
+
+            # Timeout reached
+            self.print_step("ACC startup timeout (15s)", "warning")
+            return False
+
+        except Exception as e:
+            self.print_step(f"ACC error: {str(e)[:100]}", "error")
+            self.update_component_status(
+                "services", "agent_communication_center", "error", {"error": str(e)}
+            )
+            return False
+
+    async def register_acc_with_registry(self):
+        """Register ACC with the database registry"""
+        try:
+            # Import here to avoid circular dependencies
+            from core.database_service_registry import ServiceRegistry
+
+            registry = ServiceRegistry()
+
+            # Register ACC as a core service
+            await registry.register_service(
+                name="agent_communication_center",
+                host="localhost",
+                port=8890,
+                service_type="core_service",
+                metadata={
+                    "description": "Agent Communication Center - Claude-powered agent chat",
+                    "version": "1.0.0",
+                    "api_docs": "http://localhost:8890/docs",
+                    "features": ["claude-3", "voice", "multi-agent"],
+                    "category": "Core Services",
+                },
+            )
+
+            self.log_status("ACC registered with database registry", "acc", "success")
+
+        except Exception as e:
+            self.log_status(f"Failed to register ACC: {str(e)}", "acc", "warning")
 
     async def start_corporate_headquarters(self):
         """Start the BoarderframeOS Corporate Headquarters"""
@@ -1457,7 +1636,7 @@ class EnhancedSystemStartup:
         self.save_status()
 
         success_count = 0
-        total_steps = 11  # Updated with all new components
+        total_steps = 12  # Updated with ACC and all new components
 
         # Phase 1: Infrastructure Setup
         print("🔧 Phase 1: Infrastructure Setup")
@@ -1518,7 +1697,11 @@ class EnhancedSystemStartup:
         if await self.start_agents():
             success_count += 1
 
-        # Step 11: Corporate Headquarters (must be the very last step)
+        # Step 11: Agent Communication Center (ACC) - Claude-powered communications
+        if await self.start_agent_communication_center():
+            success_count += 1
+
+        # Step 12: Corporate Headquarters (must be the very last step)
         if await self.start_corporate_headquarters():
             success_count += 1
 
@@ -1538,6 +1721,7 @@ class EnhancedSystemStartup:
             print("🎭 Agent Orchestrator managing sophisticated lifecycles")
             print()
             print("🎛️  Corporate Headquarters: http://localhost:8888")
+            print("🔗 Agent Communication Center: http://localhost:8890")
             print("🧠 Agent Cortex Management: http://localhost:8889")
             print("💬 Ready for advanced agent conversations")
 

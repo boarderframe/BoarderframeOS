@@ -7,6 +7,15 @@ uvicorn[standard]==0.24.0
 pydantic==2.5.0
 httpx==0.25.2
 
+# Voice Integration
+pyttsx3==2.90
+SpeechRecognition==3.10.1
+pyaudio==0.2.14
+# Optional cloud TTS/STT providers
+# azure-cognitiveservices-speech==1.37.0
+# elevenlabs==1.2.2
+# openai-whisper==20231117
+
 # Database
 asyncpg==0.29.0
 pgvector==0.2.4
@@ -78,6 +87,7 @@ celery==5.3.4
 # File Processing
 pillow==10.1.0
 python-magic==0.4.27
+pyautogui==0.9.54  # Screenshot capture capabilities
 
 # SQLite compatibility (for migration)
 aiosqlite==0.19.0

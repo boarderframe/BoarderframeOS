@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Navigation Fix</title>
+    <style>
+        body { background: #222; color: white; font-family: Arial; padding: 20px; }
+        button { padding: 10px; margin: 5px; }
+        pre { background: #333; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Testing Corporate HQ Navigation Fix</h1>
+
+    <button onclick="testNav()">Test Navigation</button>
+    <button onclick="showFix()">Show Console Fix</button>
+
+    <pre id="output">Click "Test Navigation" to check if the fix worked...</pre>
+
+    <script>
+        async function testNav() {
+            const output = document.getElementById('output');
+            output.textContent = 'Testing navigation...\n\n';
+
+            try {
+                const response = await fetch('http://localhost:8888');
+                const html = await response.text();
+
+                // Check if showTab function is properly defined
+                const showTabMatch = html.match(/window\.showTab = function\(tabName\) \{([\s\S]*?)\n        \}\}/);
+
+                if (showTabMatch) {
+                    output.textContent += '✅ showTab function found and appears to be properly formatted\n';
+
+                    // Count opening and closing braces
+                    const funcBody = showTabMatch[1];
+                    const openBraces = (funcBody.match(/\{/g) || []).length;
+                    const closeBraces = (funcBody.match(/\}/g) || []).length;
+
+                    output.textContent += `   Opening braces: ${openBraces}\n`;
+                    output.textContent += `   Closing braces: ${closeBraces}\n`;
+
+                    if (openBraces === closeBraces) {
+                        output.textContent += '   ✅ Braces are balanced!\n';
+                    } else {
+                        output.textContent += '   ❌ Braces are NOT balanced!\n';
+                    }
+
+                    // Check if metrics code is inside the function
+                    if (funcBody.includes("if (tabName === 'metrics')")) {
+                        output.textContent += '   ✅ Metrics auto-load code is inside showTab\n';
+                    } else {
+                        output.textContent += '   ❌ Metrics auto-load code is NOT inside showTab\n';
+                    }
+                } else {
+                    output.textContent += '❌ showTab function not found or malformed\n';
+                }
+
+                output.textContent += '\n🎉 The navigation should now be working!\n';
+                output.textContent += '\nTry refreshing http://localhost:8888 and clicking the menu items.\n';
+
+            } catch (e) {
+                output.textContent += `Error: ${e.message}\n`;
+            }
+        }
+
+        function showFix() {
+            const output = document.getElementById('output');
+            output.textContent = `If navigation still doesn't work, paste this in the browser console:\n\n`;
+            output.textContent += `// Quick test\nif (typeof showTab === 'function') {\n`;
+            output.textContent += `    console.log('✅ showTab exists');\n`;
+            output.textContent += `    showTab('agents');\n`;
+            output.textContent += `} else {\n`;
+            output.textContent += `    console.log('❌ showTab not found');\n`;
+            output.textContent += `}\n\n`;
+            output.textContent += `// Check for errors\nconsole.log('Checking for JS errors...');\n`;
+            output.textContent += `document.querySelectorAll('.nav-link').forEach(link => {\n`;
+            output.textContent += `    console.log(link.textContent.trim() + ':', link.onclick);\n`;
+            output.textContent += `});`;
+        }
+    </script>
+</body>
+</html>

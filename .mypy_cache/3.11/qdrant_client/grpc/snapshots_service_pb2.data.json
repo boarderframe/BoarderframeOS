@@ -1,0 +1,774 @@
+{
+  ".class": "MypyFile",
+  "_fullname": "qdrant_client.grpc.snapshots_service_pb2",
+  "future_import_flags": [],
+  "is_partial_stub_package": false,
+  "is_stub": false,
+  "names": {
+    ".class": "SymbolTable",
+    "CreateFullSnapshotRequest": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2.CreateFullSnapshotRequest",
+        "name": "CreateFullSnapshotRequest",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "CreateSnapshotRequest": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2.CreateSnapshotRequest",
+        "name": "CreateSnapshotRequest",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "CreateSnapshotResponse": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2.CreateSnapshotResponse",
+        "name": "CreateSnapshotResponse",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "DESCRIPTOR": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2.DESCRIPTOR",
+        "name": "DESCRIPTOR",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "DeleteFullSnapshotRequest": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2.DeleteFullSnapshotRequest",
+        "name": "DeleteFullSnapshotRequest",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "DeleteSnapshotRequest": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2.DeleteSnapshotRequest",
+        "name": "DeleteSnapshotRequest",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "DeleteSnapshotResponse": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2.DeleteSnapshotResponse",
+        "name": "DeleteSnapshotResponse",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "ListFullSnapshotsRequest": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2.ListFullSnapshotsRequest",
+        "name": "ListFullSnapshotsRequest",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "ListSnapshotsRequest": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2.ListSnapshotsRequest",
+        "name": "ListSnapshotsRequest",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "ListSnapshotsResponse": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2.ListSnapshotsResponse",
+        "name": "ListSnapshotsResponse",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "SnapshotDescription": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2.SnapshotDescription",
+        "name": "SnapshotDescription",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "_CREATEFULLSNAPSHOTREQUEST": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2._CREATEFULLSNAPSHOTREQUEST",
+        "name": "_CREATEFULLSNAPSHOTREQUEST",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "_CREATESNAPSHOTREQUEST": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2._CREATESNAPSHOTREQUEST",
+        "name": "_CREATESNAPSHOTREQUEST",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "_CREATESNAPSHOTRESPONSE": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2._CREATESNAPSHOTRESPONSE",
+        "name": "_CREATESNAPSHOTRESPONSE",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "_DELETEFULLSNAPSHOTREQUEST": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2._DELETEFULLSNAPSHOTREQUEST",
+        "name": "_DELETEFULLSNAPSHOTREQUEST",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "_DELETESNAPSHOTREQUEST": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2._DELETESNAPSHOTREQUEST",
+        "name": "_DELETESNAPSHOTREQUEST",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "_DELETESNAPSHOTRESPONSE": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2._DELETESNAPSHOTRESPONSE",
+        "name": "_DELETESNAPSHOTRESPONSE",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "_LISTFULLSNAPSHOTSREQUEST": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2._LISTFULLSNAPSHOTSREQUEST",
+        "name": "_LISTFULLSNAPSHOTSREQUEST",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "_LISTSNAPSHOTSREQUEST": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2._LISTSNAPSHOTSREQUEST",
+        "name": "_LISTSNAPSHOTSREQUEST",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "_LISTSNAPSHOTSRESPONSE": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2._LISTSNAPSHOTSRESPONSE",
+        "name": "_LISTSNAPSHOTSRESPONSE",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "_SNAPSHOTDESCRIPTION": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2._SNAPSHOTDESCRIPTION",
+        "name": "_SNAPSHOTDESCRIPTION",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "_SNAPSHOTS": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2._SNAPSHOTS",
+        "name": "_SNAPSHOTS",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "__annotations__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2.__annotations__",
+        "name": "__annotations__",
+        "type": {
+          ".class": "Instance",
+          "args": [
+            "builtins.str",
+            {
+              ".class": "AnyType",
+              "missing_import_name": null,
+              "source_any": null,
+              "type_of_any": 6
+            }
+          ],
+          "extra_attrs": null,
+          "type_ref": "builtins.dict"
+        }
+      }
+    },
+    "__doc__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2.__doc__",
+        "name": "__doc__",
+        "type": "builtins.str"
+      }
+    },
+    "__file__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2.__file__",
+        "name": "__file__",
+        "type": "builtins.str"
+      }
+    },
+    "__name__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2.__name__",
+        "name": "__name__",
+        "type": "builtins.str"
+      }
+    },
+    "__package__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2.__package__",
+        "name": "__package__",
+        "type": "builtins.str"
+      }
+    },
+    "__spec__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2.__spec__",
+        "name": "__spec__",
+        "type": "_frozen_importlib.ModuleSpec"
+      }
+    },
+    "_descriptor": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_suppressed_import",
+          "is_ready",
+          "is_inferred"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2._descriptor",
+        "name": "_descriptor",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor",
+          "source_any": null,
+          "type_of_any": 3
+        }
+      }
+    },
+    "_descriptor_pool": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_suppressed_import",
+          "is_ready",
+          "is_inferred"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+        "name": "_descriptor_pool",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._descriptor_pool",
+          "source_any": null,
+          "type_of_any": 3
+        }
+      }
+    },
+    "_message": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_suppressed_import",
+          "is_ready",
+          "is_inferred"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2._message",
+        "name": "_message",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._message",
+          "source_any": null,
+          "type_of_any": 3
+        }
+      }
+    },
+    "_reflection": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_suppressed_import",
+          "is_ready",
+          "is_inferred"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+        "name": "_reflection",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._reflection",
+          "source_any": null,
+          "type_of_any": 3
+        }
+      }
+    },
+    "_sym_db": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2._sym_db",
+        "name": "_sym_db",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._symbol_database",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._symbol_database",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "_symbol_database": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_suppressed_import",
+          "is_ready",
+          "is_inferred"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2._symbol_database",
+        "name": "_symbol_database",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2._symbol_database",
+          "source_any": null,
+          "type_of_any": 3
+        }
+      }
+    },
+    "google_dot_protobuf_dot_timestamp__pb2": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_suppressed_import",
+          "is_ready",
+          "is_inferred"
+        ],
+        "fullname": "qdrant_client.grpc.snapshots_service_pb2.google_dot_protobuf_dot_timestamp__pb2",
+        "name": "google_dot_protobuf_dot_timestamp__pb2",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "qdrant_client.grpc.snapshots_service_pb2.google_dot_protobuf_dot_timestamp__pb2",
+          "source_any": null,
+          "type_of_any": 3
+        }
+      }
+    }
+  },
+  "path": "/Users/cosburn/BoarderframeOS/.venv/lib/python3.13/site-packages/qdrant_client/grpc/snapshots_service_pb2.py"
+}

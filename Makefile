@@ -33,10 +33,10 @@ format:
 	isort .
 
 test:
-	pytest
+	./scripts/run/run_tests.sh
 
 test-cov:
-	pytest --cov=. --cov-report=html --cov-report=term
+	pytest --cov=core --cov=agents --cov=mcp --cov=ui --cov-report=html --cov-report=term
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +

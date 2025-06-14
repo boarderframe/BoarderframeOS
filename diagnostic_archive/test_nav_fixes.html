@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nav Menu Fix Test</title>
+    <style>
+        body {
+            background: #0a0e27;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        pre {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Testing Corporate HQ Navigation Fixes</h1>
+
+    <h2>What was fixed:</h2>
+    <ul>
+        <li>✅ Nav links now use flexbox for better alignment</li>
+        <li>✅ Added proper padding (20px horizontal) to nav links</li>
+        <li>✅ Icons increased to 16px for better visibility</li>
+        <li>✅ Added hover and active state backgrounds</li>
+        <li>✅ Added event listener fallback for clicks</li>
+        <li>✅ Added console logging for debugging</li>
+        <li>✅ Fixed gap between icon and text</li>
+    </ul>
+
+    <h2>Test Instructions:</h2>
+    <ol>
+        <li>Open <a href="http://localhost:8888" target="_blank">http://localhost:8888</a></li>
+        <li>Click on different menu items (Agents, Leaders, Departments, etc.)</li>
+        <li>Open browser console (F12) and look for messages like:
+            <pre>[BoarderframeOS] Switching to tab: agents
+[BoarderframeOS] Found X tab contents
+[BoarderframeOS] Activated tab: agents</pre>
+        </li>
+        <li>Check that:
+            <ul>
+                <li>Menu items are properly sized and spaced</li>
+                <li>Clicking switches tabs correctly</li>
+                <li>Active tab has blue background</li>
+                <li>Hover shows light blue background</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h2>CSS Changes Applied:</h2>
+    <pre>
+.nav-link {
+    display: inline-flex;        /* Changed from inline-block */
+    align-items: center;         /* Centers content vertically */
+    justify-content: center;     /* Centers content horizontally */
+    padding: 0 20px;            /* Added horizontal padding */
+    margin: 0 5px;              /* Reduced margin */
+    font-size: 14px;            /* Increased from 13px */
+    gap: 6px;                   /* Space between icon and text */
+    white-space: nowrap;        /* Prevents text wrapping */
+}
+
+.nav-link:hover {
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 6px;
+}
+
+.nav-link.active {
+    background: rgba(99, 102, 241, 0.15);
+    border-radius: 6px;
+}
+
+.nav-link i {
+    font-size: 16px;            /* Increased from 14px */
+}
+    </pre>
+
+    <h2>JavaScript Enhancements:</h2>
+    <pre>
+// Added debugging
+console.log('[BoarderframeOS] Switching to tab:', tabName);
+
+// Added event listener fallback
+document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const tabName = this.getAttribute('data-tab');
+        if (tabName) {
+            showTab(tabName);
+        }
+    });
+});
+    </pre>
+
+    <p>If menu items still don't work, check the browser console for any JavaScript errors.</p>
+</body>
+</html>

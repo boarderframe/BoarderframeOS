@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BoarderframeOS Corporate HQ Screenshot Capture</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            background: linear-gradient(to right, #fff, #e0e0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            opacity: 0.8;
+            margin-bottom: 40px;
+        }
+
+        .status-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .status-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .status-item.error {
+            border-left-color: #f44336;
+        }
+
+        .status-item.warning {
+            border-left-color: #ff9800;
+        }
+
+        .control-panel {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .screenshot-preview {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        #screenshotImage {
+            max-width: 100%;
+            max-height: 600px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            margin-top: 20px;
+            display: none;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .message.success {
+            background: rgba(76, 175, 80, 0.2);
+            border-left: 4px solid #4CAF50;
+        }
+
+        .message.error {
+            background: rgba(244, 67, 54, 0.2);
+            border-left: 4px solid #f44336;
+        }
+
+        .message.info {
+            background: rgba(33, 150, 243, 0.2);
+            border-left: 4px solid #2196F3;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏢 BoarderframeOS Corporate HQ Screenshot Capture</h1>
+        <p class="subtitle">Capture screenshots of the Corporate Headquarters UI</p>
+
+        <div class="status-section">
+            <h2>📊 System Status</h2>
+            <div class="status-grid">
+                <div class="status-item" id="corpHqStatus">
+                    <strong>Corporate HQ:</strong> <span id="corpHqStatusText">Checking...</span>
+                </div>
+                <div class="status-item" id="screenshotServerStatus">
+                    <strong>Screenshot Server:</strong> <span id="screenshotServerStatusText">Checking...</span>
+                </div>
+                <div class="status-item" id="lastCaptureStatus">
+                    <strong>Last Capture:</strong> <span id="lastCaptureText">None</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <h2>🎮 Screenshot Controls</h2>
+            <div class="button-grid">
+                <button id="captureFullBtn" onclick="captureScreenshot('full')">
+                    📸 Capture Full Screen
+                </button>
+                <button id="captureCorpHqBtn" onclick="captureCorpHqWindow()">
+                    🏢 Capture Corporate HQ Window
+                </button>
+                <button id="openCorpHqBtn" onclick="openCorpHq()">
+                    🌐 Open Corporate HQ
+                </button>
+                <button id="startScreenshotServerBtn" onclick="startScreenshotServer()">
+                    🚀 Start Screenshot Server
+                </button>
+            </div>
+        </div>
+
+        <div id="messageArea"></div>
+
+        <div class="screenshot-preview">
+            <h2>🖼️ Screenshot Preview</h2>
+            <p id="previewMessage">No screenshot captured yet</p>
+            <img id="screenshotImage" alt="Screenshot preview">
+        </div>
+
+        <div class="status-section">
+            <h2>📝 Manual Instructions</h2>
+            <ol>
+                <li>Ensure the system is running: <code>python startup.py</code></li>
+                <li>The screenshot server should start automatically on port 8011</li>
+                <li>Corporate HQ should be accessible at <a href="http://localhost:8888" target="_blank" style="color: #64b5f6;">http://localhost:8888</a></li>
+                <li>Click "Capture Corporate HQ Window" to take a screenshot</li>
+            </ol>
+
+            <h3>Alternative Manual Commands:</h3>
+            <pre style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; overflow-x: auto;">
+# Start screenshot server manually
+python mcp/screenshot_server.py
+
+# Capture screenshot using curl
+curl -X POST http://localhost:8011/capture \
+  -H "Content-Type: application/json" \
+  -d '{"format": "png", "return_base64": true}'
+
+# List captured screenshots
+curl http://localhost:8011/screenshots
+            </pre>
+        </div>
+    </div>
+
+    <script>
+        let screenshotServerAvailable = false;
+        let corpHqAvailable = false;
+
+        // Check system status on load
+        window.addEventListener('load', () => {
+            checkSystemStatus();
+            setInterval(checkSystemStatus, 5000); // Check every 5 seconds
+        });
+
+        async function checkSystemStatus() {
+            // Check Corporate HQ
+            try {
+                const response = await fetch('http://localhost:8888/health', {
+                    method: 'GET',
+                    mode: 'no-cors'
+                });
+                corpHqAvailable = true;
+                updateStatus('corpHqStatus', 'Running on port 8888', 'success');
+            } catch (e) {
+                corpHqAvailable = false;
+                updateStatus('corpHqStatus', 'Not accessible', 'error');
+            }
+
+            // Check Screenshot Server
+            try {
+                const response = await fetch('http://localhost:8011/health');
+                const data = await response.json();
+                screenshotServerAvailable = true;
+                updateStatus('screenshotServerStatus', 'Running on port 8011', 'success');
+            } catch (e) {
+                screenshotServerAvailable = false;
+                updateStatus('screenshotServerStatus', 'Not running', 'error');
+            }
+
+            // Update button states
+            document.getElementById('captureFullBtn').disabled = !screenshotServerAvailable;
+            document.getElementById('captureCorpHqBtn').disabled = !screenshotServerAvailable;
+            document.getElementById('startScreenshotServerBtn').disabled = screenshotServerAvailable;
+        }
+
+        function updateStatus(elementId, text, status) {
+            const element = document.getElementById(elementId);
+            const textElement = document.getElementById(elementId + 'Text');
+            textElement.textContent = text;
+
+            element.classList.remove('error', 'warning');
+            if (status === 'error') element.classList.add('error');
+            if (status === 'warning') element.classList.add('warning');
+        }
+
+        function showMessage(message, type = 'info') {
+            const messageArea = document.getElementById('messageArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = message;
+            messageArea.appendChild(messageDiv);
+
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+
+        async function captureScreenshot(mode = 'full') {
+            if (!screenshotServerAvailable) {
+                showMessage('Screenshot server is not running. Please start it first.', 'error');
+                return;
+            }
+
+            showMessage('Capturing screenshot...', 'info');
+
+            try {
+                const payload = {
+                    format: 'png',
+                    return_base64: true,
+                    save_to_disk: true
+                };
+
+                if (mode === 'region') {
+                    // For Corporate HQ, we could specify a region if we knew the window position
+                    // For now, we'll capture full screen
+                }
+
+                const response = await fetch('http://localhost:8011/capture', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.base64_data) {
+                    showMessage('Screenshot captured successfully!', 'success');
+                    displayScreenshot(data.base64_data);
+                    updateStatus('lastCaptureStatus', new Date().toLocaleTimeString(), 'success');
+                } else {
+                    showMessage('Failed to capture screenshot: ' + (data.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                showMessage('Error capturing screenshot: ' + error.message, 'error');
+            }
+        }
+
+        function displayScreenshot(base64Data) {
+            const img = document.getElementById('screenshotImage');
+            const previewMessage = document.getElementById('previewMessage');
+
+            img.src = 'data:image/png;base64,' + base64Data;
+            img.style.display = 'block';
+            previewMessage.textContent = 'Screenshot captured at ' + new Date().toLocaleTimeString();
+        }
+
+        function captureCorpHqWindow() {
+            if (!corpHqAvailable) {
+                showMessage('Corporate HQ is not running. Opening it now...', 'info');
+                openCorpHq();
+                setTimeout(() => captureScreenshot('full'), 3000);
+            } else {
+                captureScreenshot('full');
+            }
+        }
+
+        function openCorpHq() {
+            window.open('http://localhost:8888', '_blank');
+            showMessage('Opening Corporate HQ in a new tab...', 'info');
+        }
+
+        function startScreenshotServer() {
+            showMessage('To start the screenshot server, run: python mcp/screenshot_server.py', 'info');
+            showMessage('Or restart the system with: python startup.py', 'info');
+        }
+    </script>
+</body>
+</html>

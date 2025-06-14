@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BoarderframeOS HQ System Diagnostic Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .timestamp {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .status-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #4ecdc4;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-indicator {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-healthy {
+            background: #4ecdc4;
+            color: #000;
+        }
+
+        .status-warning {
+            background: #ffa726;
+            color: #000;
+        }
+
+        .status-error {
+            background: #ef5350;
+            color: #fff;
+        }
+
+        .issues-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .issues-section h2 {
+            color: #ff6b6b;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+
+        .issue-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .fix-plan {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+        }
+
+        .fix-plan h2 {
+            color: #4ecdc4;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+
+        .fix-step {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #4ecdc4;
+        }
+
+        .fix-step h4 {
+            color: #4ecdc4;
+            margin-bottom: 0.5rem;
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0.5rem;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .priority-high {
+            border-left-color: #ef5350;
+        }
+
+        .priority-medium {
+            border-left-color: #ffa726;
+        }
+
+        .priority-low {
+            border-left-color: #66bb6a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏰 BoarderframeOS HQ System Diagnostic Report</h1>
+            <p class="timestamp">Generated: June 14, 2025 at 04:12 AM</p>
+        </div>
+
+        <div class="status-grid">
+            <div class="status-card">
+                <h3>🎯 System Status</h3>
+                <div class="status-item">
+                    <span>Corporate HQ</span>
+                    <span class="status-indicator status-healthy">HEALTHY</span>
+                </div>
+                <div class="status-item">
+                    <span>Database (PostgreSQL)</span>
+                    <span class="status-indicator status-healthy">HEALTHY</span>
+                </div>
+                <div class="status-item">
+                    <span>Redis Cache</span>
+                    <span class="status-indicator status-healthy">HEALTHY</span>
+                </div>
+                <div class="status-item">
+                    <span>Docker Containers</span>
+                    <span class="status-indicator status-healthy">HEALTHY</span>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <h3>🔌 MCP Servers</h3>
+                <div class="status-item">
+                    <span>Registry (8000)</span>
+                    <span class="status-indicator status-healthy">HEALTHY</span>
+                </div>
+                <div class="status-item">
+                    <span>Filesystem (8001)</span>
+                    <span class="status-indicator status-healthy">HEALTHY</span>
+                </div>
+                <div class="status-item">
+                    <span>Payment (8006)</span>
+                    <span class="status-indicator status-healthy">HEALTHY</span>
+                </div>
+                <div class="status-item">
+                    <span>Analytics (8007)</span>
+                    <span class="status-indicator status-healthy">HEALTHY</span>
+                </div>
+                <div class="status-item">
+                    <span>Customer (8008)</span>
+                    <span class="status-indicator status-healthy">HEALTHY</span>
+                </div>
+                <div class="status-item">
+                    <span>Database Postgres (8010)</span>
+                    <span class="status-indicator status-warning">MISSING</span>
+                </div>
+                <div class="status-item">
+                    <span>Screenshot (8011)</span>
+                    <span class="status-indicator status-error">FAILING</span>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <h3>👥 Agents</h3>
+                <div class="status-item">
+                    <span>Total Agents</span>
+                    <span class="status-indicator status-healthy">5 Running</span>
+                </div>
+                <div class="status-item">
+                    <span>Solomon (Chief of Staff)</span>
+                    <span class="status-indicator status-healthy">RUNNING</span>
+                </div>
+                <div class="status-item">
+                    <span>David (CEO)</span>
+                    <span class="status-indicator status-healthy">RUNNING</span>
+                </div>
+                <div class="status-item">
+                    <span>Adam (Agent Creator)</span>
+                    <span class="status-indicator status-healthy">RUNNING</span>
+                </div>
+                <div class="status-item">
+                    <span>Eve (Agent Evolver)</span>
+                    <span class="status-indicator status-healthy">RUNNING</span>
+                </div>
+                <div class="status-item">
+                    <span>Bezalel (Master Programmer)</span>
+                    <span class="status-indicator status-healthy">RUNNING</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="issues-section">
+            <h2>⚠️ Identified Issues</h2>
+
+            <div class="issue-item priority-high">
+                <h4>1. Startup Process Incomplete</h4>
+                <p><strong>Issue:</strong> The startup.py process timed out during system boot, leaving some services in an incomplete state.</p>
+                <p><strong>Impact:</strong> Registry server was not properly started during initial boot.</p>
+                <p><strong>Evidence:</strong> Registry system failed with Docker API connection error during startup.</p>
+            </div>
+
+            <div class="issue-item priority-high">
+                <h4>2. Screenshot Server Failing</h4>
+                <p><strong>Issue:</strong> Screenshot capture functionality is not working properly.</p>
+                <p><strong>Impact:</strong> Cannot capture system state for documentation and debugging.</p>
+                <p><strong>Evidence:</strong> Screenshot API returns failure with "Failed to capture screenshot" error.</p>
+            </div>
+
+            <div class="issue-item priority-medium">
+                <h4>3. Database Postgres MCP Server Missing</h4>
+                <p><strong>Issue:</strong> PostgreSQL MCP server (port 8010) is not running despite being configured.</p>
+                <p><strong>Impact:</strong> Some database operations through MCP protocol may fail.</p>
+                <p><strong>Evidence:</strong> Port 8010 not responding to health checks.</p>
+            </div>
+
+            <div class="issue-item priority-medium">
+                <h4>4. Department Data Empty</h4>
+                <p><strong>Issue:</strong> No departments or leaders are showing in the HQ dashboard metrics.</p>
+                <p><strong>Impact:</strong> Organizational structure is not properly displayed.</p>
+                <p><strong>Evidence:</strong> API responses show 0 departments, 0 leaders in organizational data.</p>
+            </div>
+
+            <div class="issue-item priority-low">
+                <h4>5. Filesystem Server Watchdog Error</h4>
+                <p><strong>Issue:</strong> File system monitoring has ValueError in watchdog thread.</p>
+                <p><strong>Impact:</strong> File change notifications may not work correctly.</p>
+                <p><strong>Evidence:</strong> ValueError: no path specified in filesystem_server.py:422</p>
+            </div>
+        </div>
+
+        <div class="fix-plan">
+            <h2>🔧 Comprehensive Fix Plan</h2>
+
+            <div class="fix-step priority-high">
+                <h4>Phase 1: Core System Stabilization</h4>
+                <p><strong>Goal:</strong> Ensure all core services are running properly</p>
+                <div class="code-block">
+# 1. Start missing PostgreSQL MCP server
+python mcp/database_server_postgres.py &
+
+# 2. Verify all MCP servers are running
+for port in 8000 8001 8006 8007 8008 8010 8011; do
+    curl -s http://localhost:$port/health || echo "Port $port not responding"
+done
+
+# 3. Check processes and restart if needed
+ps aux | grep python | grep mcp
+                </div>
+            </div>
+
+            <div class="fix-step priority-high">
+                <h4>Phase 2: Screenshot Service Fix</h4>
+                <p><strong>Goal:</strong> Repair screenshot capture functionality</p>
+                <div class="code-block">
+# 1. Check screenshot dependencies
+python -c "import PIL, pyautogui; print('Dependencies OK')"
+
+# 2. Test screenshot manually
+python -c "
+import pyautogui
+import os
+screenshot = pyautogui.screenshot()
+screenshot.save('test_screenshot.png')
+print('Manual screenshot saved')
+"
+
+# 3. Debug screenshot server
+tail -f logs/screenshot_server.log  # Check for errors
+                </div>
+            </div>
+
+            <div class="fix-step priority-medium">
+                <h4>Phase 3: Database Population</h4>
+                <p><strong>Goal:</strong> Populate departments and organizational data</p>
+                <div class="code-block">
+# 1. Run database migrations that were skipped
+python migrations/populate_divisions_departments.py
+python migrations/migrate_departments.py
+
+# 2. Verify data population
+python -c "
+import asyncio
+from core.database import get_db_connection
+async def check_data():
+    conn = await get_db_connection()
+    result = await conn.fetch('SELECT COUNT(*) FROM departments')
+    print(f'Departments: {result[0][0]}')
+asyncio.run(check_data())
+"
+                </div>
+            </div>
+
+            <div class="fix-step priority-medium">
+                <h4>Phase 4: Startup Process Enhancement</h4>
+                <p><strong>Goal:</strong> Improve startup reliability and error handling</p>
+                <div class="code-block">
+# 1. Create enhanced startup script with better error handling
+# 2. Add timeout management for each startup phase
+# 3. Implement service dependency checking
+# 4. Add automatic retry logic for failed services
+                </div>
+            </div>
+
+            <div class="fix-step priority-low">
+                <h4>Phase 5: Monitoring and Maintenance</h4>
+                <p><strong>Goal:</strong> Set up ongoing system health monitoring</p>
+                <div class="code-block">
+# 1. Create health check script
+# 2. Set up automated service recovery
+# 3. Implement comprehensive logging
+# 4. Add performance monitoring
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <button class="btn" onclick="window.location.href='http://localhost:8888'">
+                🏰 Go to Corporate HQ
+            </button>
+            <button class="btn" onclick="window.location.reload()">
+                🔄 Refresh Report
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Auto-refresh every 30 seconds
+        setTimeout(() => {
+            window.location.reload();
+        }, 30000);
+
+        // Add click handlers for interactive elements
+        document.querySelectorAll('.code-block').forEach(block => {
+            block.addEventListener('click', () => {
+                navigator.clipboard.writeText(block.textContent);
+                const originalText = block.textContent;
+                block.textContent = 'Copied to clipboard!';
+                setTimeout(() => {
+                    block.textContent = originalText;
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,799 @@
+{
+  ".class": "MypyFile",
+  "_fullname": "langgraph._api.deprecation",
+  "future_import_flags": [],
+  "is_partial_stub_package": false,
+  "is_stub": false,
+  "names": {
+    ".class": "SymbolTable",
+    "Any": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Any",
+      "kind": "Gdef"
+    },
+    "C": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeVarExpr",
+        "default": {
+          ".class": "AnyType",
+          "missing_import_name": null,
+          "source_any": null,
+          "type_of_any": 4
+        },
+        "fullname": "langgraph._api.deprecation.C",
+        "name": "C",
+        "upper_bound": {
+          ".class": "TypeType",
+          "item": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 2
+          }
+        },
+        "values": [],
+        "variance": 0
+      }
+    },
+    "Callable": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Callable",
+      "kind": "Gdef"
+    },
+    "F": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeVarExpr",
+        "default": {
+          ".class": "AnyType",
+          "missing_import_name": null,
+          "source_any": null,
+          "type_of_any": 4
+        },
+        "fullname": "langgraph._api.deprecation.F",
+        "name": "F",
+        "upper_bound": {
+          ".class": "CallableType",
+          "arg_kinds": [
+            2,
+            4
+          ],
+          "arg_names": [
+            null,
+            null
+          ],
+          "arg_types": [
+            {
+              ".class": "AnyType",
+              "missing_import_name": null,
+              "source_any": null,
+              "type_of_any": 2
+            },
+            {
+              ".class": "AnyType",
+              "missing_import_name": null,
+              "source_any": null,
+              "type_of_any": 2
+            }
+          ],
+          "bound_args": [],
+          "def_extras": {},
+          "fallback": "builtins.function",
+          "from_concatenate": false,
+          "implicit": false,
+          "imprecise_arg_kinds": false,
+          "is_ellipsis_args": true,
+          "name": null,
+          "ret_type": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 2
+          },
+          "type_guard": null,
+          "type_is": null,
+          "unpack_kwargs": false,
+          "variables": []
+        },
+        "values": [],
+        "variance": 0
+      }
+    },
+    "LangGraphDeprecationWarning": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "builtins.DeprecationWarning"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "langgraph._api.deprecation.LangGraphDeprecationWarning",
+          "name": "LangGraphDeprecationWarning",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "langgraph._api.deprecation.LangGraphDeprecationWarning",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {},
+        "module_name": "langgraph._api.deprecation",
+        "mro": [
+          "langgraph._api.deprecation.LangGraphDeprecationWarning",
+          "builtins.DeprecationWarning",
+          "builtins.Warning",
+          "builtins.Exception",
+          "builtins.BaseException",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable"
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "langgraph._api.deprecation.LangGraphDeprecationWarning.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "langgraph._api.deprecation.LangGraphDeprecationWarning",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "TypeVar": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.TypeVar",
+      "kind": "Gdef"
+    },
+    "Union": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Union",
+      "kind": "Gdef"
+    },
+    "__annotations__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "langgraph._api.deprecation.__annotations__",
+        "name": "__annotations__",
+        "type": {
+          ".class": "Instance",
+          "args": [
+            "builtins.str",
+            {
+              ".class": "AnyType",
+              "missing_import_name": null,
+              "source_any": null,
+              "type_of_any": 6
+            }
+          ],
+          "extra_attrs": null,
+          "type_ref": "builtins.dict"
+        }
+      }
+    },
+    "__doc__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "langgraph._api.deprecation.__doc__",
+        "name": "__doc__",
+        "type": "builtins.str"
+      }
+    },
+    "__file__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "langgraph._api.deprecation.__file__",
+        "name": "__file__",
+        "type": "builtins.str"
+      }
+    },
+    "__name__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "langgraph._api.deprecation.__name__",
+        "name": "__name__",
+        "type": "builtins.str"
+      }
+    },
+    "__package__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "langgraph._api.deprecation.__package__",
+        "name": "__package__",
+        "type": "builtins.str"
+      }
+    },
+    "__spec__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "langgraph._api.deprecation.__spec__",
+        "name": "__spec__",
+        "type": "_frozen_importlib.ModuleSpec"
+      }
+    },
+    "cast": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.cast",
+      "kind": "Gdef"
+    },
+    "deprecated": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "FuncDef",
+        "abstract_status": 0,
+        "arg_kinds": [
+          0,
+          0,
+          5,
+          5
+        ],
+        "arg_names": [
+          "since",
+          "alternative",
+          "removal",
+          "example"
+        ],
+        "dataclass_transform_spec": null,
+        "deprecated": null,
+        "flags": [],
+        "fullname": "langgraph._api.deprecation.deprecated",
+        "name": "deprecated",
+        "type": {
+          ".class": "CallableType",
+          "arg_kinds": [
+            0,
+            0,
+            5,
+            5
+          ],
+          "arg_names": [
+            "since",
+            "alternative",
+            "removal",
+            "example"
+          ],
+          "arg_types": [
+            "builtins.str",
+            "builtins.str",
+            "builtins.str",
+            "builtins.str"
+          ],
+          "bound_args": [],
+          "def_extras": {
+            "first_arg": null
+          },
+          "fallback": "builtins.function",
+          "from_concatenate": false,
+          "implicit": false,
+          "imprecise_arg_kinds": false,
+          "is_ellipsis_args": false,
+          "name": "deprecated",
+          "ret_type": {
+            ".class": "CallableType",
+            "arg_kinds": [
+              0
+            ],
+            "arg_names": [
+              null
+            ],
+            "arg_types": [
+              {
+                ".class": "TypeVarType",
+                "default": {
+                  ".class": "AnyType",
+                  "missing_import_name": null,
+                  "source_any": null,
+                  "type_of_any": 4
+                },
+                "fullname": "langgraph._api.deprecation.F",
+                "id": -1,
+                "name": "F",
+                "namespace": "",
+                "upper_bound": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    2,
+                    4
+                  ],
+                  "arg_names": [
+                    null,
+                    null
+                  ],
+                  "arg_types": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    }
+                  ],
+                  "bound_args": [],
+                  "def_extras": {},
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": true,
+                  "name": null,
+                  "ret_type": {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 2
+                  },
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                },
+                "values": [],
+                "variance": 0
+              }
+            ],
+            "bound_args": [],
+            "def_extras": {},
+            "fallback": "builtins.function",
+            "from_concatenate": false,
+            "implicit": false,
+            "imprecise_arg_kinds": false,
+            "is_ellipsis_args": false,
+            "name": null,
+            "ret_type": {
+              ".class": "TypeVarType",
+              "default": {
+                ".class": "AnyType",
+                "missing_import_name": null,
+                "source_any": null,
+                "type_of_any": 4
+              },
+              "fullname": "langgraph._api.deprecation.F",
+              "id": -1,
+              "name": "F",
+              "namespace": "",
+              "upper_bound": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  2,
+                  4
+                ],
+                "arg_names": [
+                  null,
+                  null
+                ],
+                "arg_types": [
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 2
+                  },
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 2
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {},
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": true,
+                "name": null,
+                "ret_type": {
+                  ".class": "AnyType",
+                  "missing_import_name": null,
+                  "source_any": null,
+                  "type_of_any": 2
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              },
+              "values": [],
+              "variance": 0
+            },
+            "type_guard": null,
+            "type_is": null,
+            "unpack_kwargs": false,
+            "variables": [
+              {
+                ".class": "TypeVarType",
+                "default": {
+                  ".class": "AnyType",
+                  "missing_import_name": null,
+                  "source_any": null,
+                  "type_of_any": 4
+                },
+                "fullname": "langgraph._api.deprecation.F",
+                "id": -1,
+                "name": "F",
+                "namespace": "",
+                "upper_bound": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    2,
+                    4
+                  ],
+                  "arg_names": [
+                    null,
+                    null
+                  ],
+                  "arg_types": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    }
+                  ],
+                  "bound_args": [],
+                  "def_extras": {},
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": true,
+                  "name": null,
+                  "ret_type": {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 2
+                  },
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                },
+                "values": [],
+                "variance": 0
+              }
+            ]
+          },
+          "type_guard": null,
+          "type_is": null,
+          "unpack_kwargs": false,
+          "variables": []
+        }
+      }
+    },
+    "deprecated_parameter": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "FuncDef",
+        "abstract_status": 0,
+        "arg_kinds": [
+          0,
+          0,
+          0,
+          3
+        ],
+        "arg_names": [
+          "arg_name",
+          "since",
+          "alternative",
+          "removal"
+        ],
+        "dataclass_transform_spec": null,
+        "deprecated": null,
+        "flags": [],
+        "fullname": "langgraph._api.deprecation.deprecated_parameter",
+        "name": "deprecated_parameter",
+        "type": {
+          ".class": "CallableType",
+          "arg_kinds": [
+            0,
+            0,
+            0,
+            3
+          ],
+          "arg_names": [
+            "arg_name",
+            "since",
+            "alternative",
+            "removal"
+          ],
+          "arg_types": [
+            "builtins.str",
+            "builtins.str",
+            "builtins.str",
+            "builtins.str"
+          ],
+          "bound_args": [],
+          "def_extras": {
+            "first_arg": null
+          },
+          "fallback": "builtins.function",
+          "from_concatenate": false,
+          "implicit": false,
+          "imprecise_arg_kinds": false,
+          "is_ellipsis_args": false,
+          "name": "deprecated_parameter",
+          "ret_type": {
+            ".class": "CallableType",
+            "arg_kinds": [
+              0
+            ],
+            "arg_names": [
+              null
+            ],
+            "arg_types": [
+              {
+                ".class": "TypeVarType",
+                "default": {
+                  ".class": "AnyType",
+                  "missing_import_name": null,
+                  "source_any": null,
+                  "type_of_any": 4
+                },
+                "fullname": "langgraph._api.deprecation.F",
+                "id": -1,
+                "name": "F",
+                "namespace": "",
+                "upper_bound": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    2,
+                    4
+                  ],
+                  "arg_names": [
+                    null,
+                    null
+                  ],
+                  "arg_types": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    }
+                  ],
+                  "bound_args": [],
+                  "def_extras": {},
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": true,
+                  "name": null,
+                  "ret_type": {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 2
+                  },
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                },
+                "values": [],
+                "variance": 0
+              }
+            ],
+            "bound_args": [],
+            "def_extras": {},
+            "fallback": "builtins.function",
+            "from_concatenate": false,
+            "implicit": false,
+            "imprecise_arg_kinds": false,
+            "is_ellipsis_args": false,
+            "name": null,
+            "ret_type": {
+              ".class": "TypeVarType",
+              "default": {
+                ".class": "AnyType",
+                "missing_import_name": null,
+                "source_any": null,
+                "type_of_any": 4
+              },
+              "fullname": "langgraph._api.deprecation.F",
+              "id": -1,
+              "name": "F",
+              "namespace": "",
+              "upper_bound": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  2,
+                  4
+                ],
+                "arg_names": [
+                  null,
+                  null
+                ],
+                "arg_types": [
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 2
+                  },
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 2
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {},
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": true,
+                "name": null,
+                "ret_type": {
+                  ".class": "AnyType",
+                  "missing_import_name": null,
+                  "source_any": null,
+                  "type_of_any": 2
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              },
+              "values": [],
+              "variance": 0
+            },
+            "type_guard": null,
+            "type_is": null,
+            "unpack_kwargs": false,
+            "variables": [
+              {
+                ".class": "TypeVarType",
+                "default": {
+                  ".class": "AnyType",
+                  "missing_import_name": null,
+                  "source_any": null,
+                  "type_of_any": 4
+                },
+                "fullname": "langgraph._api.deprecation.F",
+                "id": -1,
+                "name": "F",
+                "namespace": "",
+                "upper_bound": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    2,
+                    4
+                  ],
+                  "arg_names": [
+                    null,
+                    null
+                  ],
+                  "arg_types": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    }
+                  ],
+                  "bound_args": [],
+                  "def_extras": {},
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": true,
+                  "name": null,
+                  "ret_type": {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 2
+                  },
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                },
+                "values": [],
+                "variance": 0
+              }
+            ]
+          },
+          "type_guard": null,
+          "type_is": null,
+          "unpack_kwargs": false,
+          "variables": []
+        }
+      }
+    },
+    "functools": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "functools",
+      "kind": "Gdef"
+    },
+    "warnings": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "warnings",
+      "kind": "Gdef"
+    }
+  },
+  "path": "/Users/cosburn/BoarderframeOS/.venv/lib/python3.13/site-packages/langgraph/_api/deprecation.py"
+}

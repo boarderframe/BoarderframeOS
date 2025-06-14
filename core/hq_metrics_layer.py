@@ -125,7 +125,9 @@ class MetricsCalculator:
         self._cache_ttl = 30  # seconds
         self._server_status_override = None  # Allow injecting real server status
         # Initialize visual metadata cache
-        from enhance_metrics_visual_integration import VisualMetadataCache
+        from scripts.enhance.enhance_metrics_visual_integration import (
+            VisualMetadataCache,
+        )
 
         self._visual_cache = VisualMetadataCache(db_config)
 
@@ -670,7 +672,9 @@ class MetricsCalculator:
                 status_color = (
                     BFColors.INFO
                     if row[6] == "hired"
-                    else BFColors.SUCCESS if row[6] == "active" else BFColors.NEUTRAL
+                    else BFColors.SUCCESS
+                    if row[6] == "active"
+                    else BFColors.NEUTRAL
                 )
 
                 leader = EntityMetrics(

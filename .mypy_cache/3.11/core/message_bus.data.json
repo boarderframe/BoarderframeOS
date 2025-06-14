@@ -1,0 +1,3062 @@
+{
+  ".class": "MypyFile",
+  "_fullname": "core.message_bus",
+  "future_import_flags": [],
+  "is_partial_stub_package": false,
+  "is_stub": false,
+  "names": {
+    ".class": "SymbolTable",
+    "AgentMessage": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "builtins.object"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "core.message_bus.AgentMessage",
+          "name": "AgentMessage",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "core.message_bus.AgentMessage",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {
+          "dataclass": {
+            "attributes": [
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": false,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 37,
+                "name": "from_agent",
+                "type": "builtins.str"
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": false,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 38,
+                "name": "to_agent",
+                "type": "builtins.str"
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": false,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 39,
+                "name": "message_type",
+                "type": "core.message_bus.MessageType"
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": false,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 40,
+                "name": "content",
+                "type": {
+                  ".class": "Instance",
+                  "args": [
+                    "builtins.str",
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.dict"
+                }
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 41,
+                "name": "priority",
+                "type": "core.message_bus.MessagePriority"
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 42,
+                "name": "timestamp",
+                "type": "datetime.datetime"
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 43,
+                "name": "requires_response",
+                "type": "builtins.bool"
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 44,
+                "name": "correlation_id",
+                "type": {
+                  ".class": "UnionType",
+                  "items": [
+                    "builtins.str",
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "uses_pep604_syntax": false
+                }
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 45,
+                "name": "ttl_seconds",
+                "type": {
+                  ".class": "UnionType",
+                  "items": [
+                    "builtins.int",
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "uses_pep604_syntax": false
+                }
+              }
+            ],
+            "frozen": false
+          },
+          "dataclass_tag": {}
+        },
+        "module_name": "core.message_bus",
+        "mro": [
+          "core.message_bus.AgentMessage",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "__dataclass_fields__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_classvar",
+                "is_ready"
+              ],
+              "fullname": "core.message_bus.AgentMessage.__dataclass_fields__",
+              "name": "__dataclass_fields__",
+              "type": {
+                ".class": "Instance",
+                "args": [
+                  "builtins.str",
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 2
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "dataclasses.Field"
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            },
+            "plugin_generated": true
+          },
+          "__init__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              "arg_names": [
+                "self",
+                "from_agent",
+                "to_agent",
+                "message_type",
+                "content",
+                "priority",
+                "timestamp",
+                "requires_response",
+                "correlation_id",
+                "ttl_seconds"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.message_bus.AgentMessage.__init__",
+              "name": "__init__",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "arg_names": [
+                  "self",
+                  "from_agent",
+                  "to_agent",
+                  "message_type",
+                  "content",
+                  "priority",
+                  "timestamp",
+                  "requires_response",
+                  "correlation_id",
+                  "ttl_seconds"
+                ],
+                "arg_types": [
+                  "core.message_bus.AgentMessage",
+                  "builtins.str",
+                  "builtins.str",
+                  "core.message_bus.MessageType",
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      "builtins.str",
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 2
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "builtins.dict"
+                  },
+                  "core.message_bus.MessagePriority",
+                  "datetime.datetime",
+                  "builtins.bool",
+                  {
+                    ".class": "UnionType",
+                    "items": [
+                      "builtins.str",
+                      {
+                        ".class": "NoneType"
+                      }
+                    ],
+                    "uses_pep604_syntax": false
+                  },
+                  {
+                    ".class": "UnionType",
+                    "items": [
+                      "builtins.int",
+                      {
+                        ".class": "NoneType"
+                      }
+                    ],
+                    "uses_pep604_syntax": false
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {},
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "__init__ of AgentMessage",
+                "ret_type": {
+                  ".class": "NoneType"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            },
+            "plugin_generated": true
+          },
+          "__match_args__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_ready",
+                "allow_incompatible_override"
+              ],
+              "fullname": "core.message_bus.AgentMessage.__match_args__",
+              "name": "__match_args__",
+              "type": {
+                ".class": "TupleType",
+                "implicit": false,
+                "items": [
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "from_agent"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "to_agent"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "message_type"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "content"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "priority"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "timestamp"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "requires_response"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "correlation_id"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "ttl_seconds"
+                  }
+                ],
+                "partial_fallback": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.tuple"
+                }
+              }
+            },
+            "plugin_generated": true
+          },
+          "__mypy-replace": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Decorator",
+              "func": {
+                ".class": "FuncDef",
+                "abstract_status": 0,
+                "arg_kinds": [
+                  5,
+                  5,
+                  5,
+                  5,
+                  5,
+                  5,
+                  5,
+                  5,
+                  5
+                ],
+                "arg_names": [
+                  "from_agent",
+                  "to_agent",
+                  "message_type",
+                  "content",
+                  "priority",
+                  "timestamp",
+                  "requires_response",
+                  "correlation_id",
+                  "ttl_seconds"
+                ],
+                "dataclass_transform_spec": null,
+                "deprecated": null,
+                "flags": [
+                  "is_static",
+                  "is_decorated"
+                ],
+                "fullname": "core.message_bus.AgentMessage.__mypy-replace",
+                "name": "__mypy-replace",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5
+                  ],
+                  "arg_names": [
+                    "from_agent",
+                    "to_agent",
+                    "message_type",
+                    "content",
+                    "priority",
+                    "timestamp",
+                    "requires_response",
+                    "correlation_id",
+                    "ttl_seconds"
+                  ],
+                  "arg_types": [
+                    "builtins.str",
+                    "builtins.str",
+                    "core.message_bus.MessageType",
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.str",
+                        {
+                          ".class": "AnyType",
+                          "missing_import_name": null,
+                          "source_any": null,
+                          "type_of_any": 2
+                        }
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.dict"
+                    },
+                    "core.message_bus.MessagePriority",
+                    "datetime.datetime",
+                    "builtins.bool",
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.str",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.int",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    }
+                  ],
+                  "bound_args": [],
+                  "def_extras": {},
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "__mypy-replace of AgentMessage",
+                  "ret_type": {
+                    ".class": "NoneType"
+                  },
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              },
+              "is_overload": false,
+              "var": {
+                ".class": "Var",
+                "flags": [
+                  "is_staticmethod",
+                  "is_ready"
+                ],
+                "fullname": "core.message_bus.AgentMessage.__mypy-replace",
+                "name": "__mypy-replace",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5
+                  ],
+                  "arg_names": [
+                    "from_agent",
+                    "to_agent",
+                    "message_type",
+                    "content",
+                    "priority",
+                    "timestamp",
+                    "requires_response",
+                    "correlation_id",
+                    "ttl_seconds"
+                  ],
+                  "arg_types": [
+                    "builtins.str",
+                    "builtins.str",
+                    "core.message_bus.MessageType",
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.str",
+                        {
+                          ".class": "AnyType",
+                          "missing_import_name": null,
+                          "source_any": null,
+                          "type_of_any": 2
+                        }
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.dict"
+                    },
+                    "core.message_bus.MessagePriority",
+                    "datetime.datetime",
+                    "builtins.bool",
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.str",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.int",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    }
+                  ],
+                  "bound_args": [],
+                  "def_extras": {},
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "__mypy-replace of AgentMessage",
+                  "ret_type": {
+                    ".class": "NoneType"
+                  },
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              }
+            },
+            "plugin_generated": true
+          },
+          "content": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready"
+              ],
+              "fullname": "core.message_bus.AgentMessage.content",
+              "name": "content",
+              "type": {
+                ".class": "Instance",
+                "args": [
+                  "builtins.str",
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 2
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            }
+          },
+          "correlation_id": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.message_bus.AgentMessage.correlation_id",
+              "name": "correlation_id",
+              "type": {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.str",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            }
+          },
+          "from_agent": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready"
+              ],
+              "fullname": "core.message_bus.AgentMessage.from_agent",
+              "name": "from_agent",
+              "type": "builtins.str"
+            }
+          },
+          "message_type": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready"
+              ],
+              "fullname": "core.message_bus.AgentMessage.message_type",
+              "name": "message_type",
+              "type": "core.message_bus.MessageType"
+            }
+          },
+          "priority": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.message_bus.AgentMessage.priority",
+              "name": "priority",
+              "type": "core.message_bus.MessagePriority"
+            }
+          },
+          "requires_response": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.message_bus.AgentMessage.requires_response",
+              "name": "requires_response",
+              "type": "builtins.bool"
+            }
+          },
+          "timestamp": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.message_bus.AgentMessage.timestamp",
+              "name": "timestamp",
+              "type": "datetime.datetime"
+            }
+          },
+          "to_agent": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready"
+              ],
+              "fullname": "core.message_bus.AgentMessage.to_agent",
+              "name": "to_agent",
+              "type": "builtins.str"
+            }
+          },
+          "ttl_seconds": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.message_bus.AgentMessage.ttl_seconds",
+              "name": "ttl_seconds",
+              "type": {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.int",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "core.message_bus.AgentMessage.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "core.message_bus.AgentMessage",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "Any": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Any",
+      "kind": "Gdef"
+    },
+    "Callable": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Callable",
+      "kind": "Gdef"
+    },
+    "Dict": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Dict",
+      "kind": "Gdef"
+    },
+    "Enum": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "enum.Enum",
+      "kind": "Gdef"
+    },
+    "List": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.List",
+      "kind": "Gdef"
+    },
+    "MessageBus": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "builtins.object"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "core.message_bus.MessageBus",
+          "name": "MessageBus",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "core.message_bus.MessageBus",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {},
+        "module_name": "core.message_bus",
+        "mro": [
+          "core.message_bus.MessageBus",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "__init__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.message_bus.MessageBus.__init__",
+              "name": "__init__",
+              "type": null
+            }
+          },
+          "_process_messages": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.message_bus.MessageBus._process_messages",
+              "name": "_process_messages",
+              "type": null
+            }
+          },
+          "_task": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.message_bus.MessageBus._task",
+              "name": "_task",
+              "type": {
+                ".class": "AnyType",
+                "missing_import_name": null,
+                "source_any": null,
+                "type_of_any": 1
+              }
+            }
+          },
+          "agent_queues": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "explicit_self_type",
+                "is_ready",
+                "is_inferred"
+              ],
+              "fullname": "core.message_bus.MessageBus.agent_queues",
+              "name": "agent_queues",
+              "type": {
+                ".class": "Instance",
+                "args": [
+                  "builtins.str",
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 4
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "asyncio.queues.Queue"
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            }
+          },
+          "broadcast": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                1
+              ],
+              "arg_names": [
+                "self",
+                "message",
+                "topic"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.message_bus.MessageBus.broadcast",
+              "name": "broadcast",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  1
+                ],
+                "arg_names": [
+                  "self",
+                  "message",
+                  "topic"
+                ],
+                "arg_types": [
+                  "core.message_bus.MessageBus",
+                  "core.message_bus.AgentMessage",
+                  {
+                    ".class": "UnionType",
+                    "items": [
+                      "builtins.str",
+                      {
+                        ".class": "NoneType"
+                      }
+                    ],
+                    "uses_pep604_syntax": false
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "broadcast of MessageBus",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 1
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "get_message_stats": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.message_bus.MessageBus.get_message_stats",
+              "name": "get_message_stats",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "arg_types": [
+                  "core.message_bus.MessageBus"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "get_message_stats of MessageBus",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    "builtins.str",
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.dict"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "get_messages": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                1
+              ],
+              "arg_names": [
+                "self",
+                "agent_name",
+                "timeout"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.message_bus.MessageBus.get_messages",
+              "name": "get_messages",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  1
+                ],
+                "arg_names": [
+                  "self",
+                  "agent_name",
+                  "timeout"
+                ],
+                "arg_types": [
+                  "core.message_bus.MessageBus",
+                  "builtins.str",
+                  {
+                    ".class": "UnionType",
+                    "items": [
+                      "builtins.float",
+                      {
+                        ".class": "NoneType"
+                      }
+                    ],
+                    "uses_pep604_syntax": false
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "get_messages of MessageBus",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "core.message_bus.AgentMessage"
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.list"
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "logger": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.message_bus.MessageBus.logger",
+              "name": "logger",
+              "type": {
+                ".class": "AnyType",
+                "missing_import_name": null,
+                "source_any": null,
+                "type_of_any": 1
+              }
+            }
+          },
+          "message_history": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "explicit_self_type",
+                "is_ready",
+                "is_inferred"
+              ],
+              "fullname": "core.message_bus.MessageBus.message_history",
+              "name": "message_history",
+              "type": {
+                ".class": "Instance",
+                "args": [
+                  "core.message_bus.AgentMessage"
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.list"
+              }
+            }
+          },
+          "register_agent": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                1
+              ],
+              "arg_names": [
+                "self",
+                "agent_name",
+                "queue_size"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.message_bus.MessageBus.register_agent",
+              "name": "register_agent",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  1
+                ],
+                "arg_names": [
+                  "self",
+                  "agent_name",
+                  "queue_size"
+                ],
+                "arg_types": [
+                  "core.message_bus.MessageBus",
+                  "builtins.str",
+                  "builtins.int"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "register_agent of MessageBus",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 1
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "route_to_agent": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "to_agent",
+                "message"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.message_bus.MessageBus.route_to_agent",
+              "name": "route_to_agent",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "to_agent",
+                  "message"
+                ],
+                "arg_types": [
+                  "core.message_bus.MessageBus",
+                  "builtins.str",
+                  "core.message_bus.AgentMessage"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "route_to_agent of MessageBus",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 1
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "running": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.message_bus.MessageBus.running",
+              "name": "running",
+              "type": {
+                ".class": "AnyType",
+                "missing_import_name": null,
+                "source_any": null,
+                "type_of_any": 1
+              }
+            }
+          },
+          "send_message": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "message"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.message_bus.MessageBus.send_message",
+              "name": "send_message",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "message"
+                ],
+                "arg_types": [
+                  "core.message_bus.MessageBus",
+                  "core.message_bus.AgentMessage"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "send_message of MessageBus",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 1
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "start": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.message_bus.MessageBus.start",
+              "name": "start",
+              "type": null
+            }
+          },
+          "stop": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.message_bus.MessageBus.stop",
+              "name": "stop",
+              "type": null
+            }
+          },
+          "subscribe": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "agent_name",
+                "callback"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.message_bus.MessageBus.subscribe",
+              "name": "subscribe",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "agent_name",
+                  "callback"
+                ],
+                "arg_types": [
+                  "core.message_bus.MessageBus",
+                  "builtins.str",
+                  {
+                    ".class": "CallableType",
+                    "arg_kinds": [
+                      2,
+                      4
+                    ],
+                    "arg_names": [
+                      null,
+                      null
+                    ],
+                    "arg_types": [
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 4
+                      },
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 4
+                      }
+                    ],
+                    "bound_args": [],
+                    "def_extras": {},
+                    "fallback": "builtins.function",
+                    "from_concatenate": false,
+                    "implicit": false,
+                    "imprecise_arg_kinds": false,
+                    "is_ellipsis_args": true,
+                    "name": null,
+                    "ret_type": {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 4
+                    },
+                    "type_guard": null,
+                    "type_is": null,
+                    "unpack_kwargs": false,
+                    "variables": []
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "subscribe of MessageBus",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 1
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "subscribe_to_topic": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "arg_names": [
+                "self",
+                "agent_name",
+                "topic",
+                "callback"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.message_bus.MessageBus.subscribe_to_topic",
+              "name": "subscribe_to_topic",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  0,
+                  1
+                ],
+                "arg_names": [
+                  "self",
+                  "agent_name",
+                  "topic",
+                  "callback"
+                ],
+                "arg_types": [
+                  "core.message_bus.MessageBus",
+                  "builtins.str",
+                  "builtins.str",
+                  {
+                    ".class": "UnionType",
+                    "items": [
+                      {
+                        ".class": "CallableType",
+                        "arg_kinds": [
+                          2,
+                          4
+                        ],
+                        "arg_names": [
+                          null,
+                          null
+                        ],
+                        "arg_types": [
+                          {
+                            ".class": "AnyType",
+                            "missing_import_name": null,
+                            "source_any": null,
+                            "type_of_any": 4
+                          },
+                          {
+                            ".class": "AnyType",
+                            "missing_import_name": null,
+                            "source_any": null,
+                            "type_of_any": 4
+                          }
+                        ],
+                        "bound_args": [],
+                        "def_extras": {},
+                        "fallback": "builtins.function",
+                        "from_concatenate": false,
+                        "implicit": false,
+                        "imprecise_arg_kinds": false,
+                        "is_ellipsis_args": true,
+                        "name": null,
+                        "ret_type": {
+                          ".class": "AnyType",
+                          "missing_import_name": null,
+                          "source_any": null,
+                          "type_of_any": 4
+                        },
+                        "type_guard": null,
+                        "type_is": null,
+                        "unpack_kwargs": false,
+                        "variables": []
+                      },
+                      {
+                        ".class": "NoneType"
+                      }
+                    ],
+                    "uses_pep604_syntax": false
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "subscribe_to_topic of MessageBus",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 1
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "subscribers": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "explicit_self_type",
+                "is_ready",
+                "is_inferred"
+              ],
+              "fullname": "core.message_bus.MessageBus.subscribers",
+              "name": "subscribers",
+              "type": {
+                ".class": "Instance",
+                "args": [
+                  "builtins.str",
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      "builtins.str",
+                      {
+                        ".class": "Instance",
+                        "args": [
+                          {
+                            ".class": "CallableType",
+                            "arg_kinds": [
+                              2,
+                              4
+                            ],
+                            "arg_names": [
+                              null,
+                              null
+                            ],
+                            "arg_types": [
+                              {
+                                ".class": "AnyType",
+                                "missing_import_name": null,
+                                "source_any": null,
+                                "type_of_any": 4
+                              },
+                              {
+                                ".class": "AnyType",
+                                "missing_import_name": null,
+                                "source_any": null,
+                                "type_of_any": 4
+                              }
+                            ],
+                            "bound_args": [],
+                            "def_extras": {},
+                            "fallback": "builtins.function",
+                            "from_concatenate": false,
+                            "implicit": false,
+                            "imprecise_arg_kinds": false,
+                            "is_ellipsis_args": true,
+                            "name": null,
+                            "ret_type": {
+                              ".class": "AnyType",
+                              "missing_import_name": null,
+                              "source_any": null,
+                              "type_of_any": 4
+                            },
+                            "type_guard": null,
+                            "type_is": null,
+                            "unpack_kwargs": false,
+                            "variables": []
+                          }
+                        ],
+                        "extra_attrs": null,
+                        "type_ref": "builtins.list"
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "builtins.dict"
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            }
+          },
+          "topic_subscribers": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "explicit_self_type",
+                "is_ready",
+                "is_inferred"
+              ],
+              "fullname": "core.message_bus.MessageBus.topic_subscribers",
+              "name": "topic_subscribers",
+              "type": {
+                ".class": "Instance",
+                "args": [
+                  "builtins.str",
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      "builtins.str"
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "builtins.set"
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            }
+          },
+          "unregister_agent": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "agent_name"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.message_bus.MessageBus.unregister_agent",
+              "name": "unregister_agent",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "agent_name"
+                ],
+                "arg_types": [
+                  "core.message_bus.MessageBus",
+                  "builtins.str"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "unregister_agent of MessageBus",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 1
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "unsubscribe_from_topic": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "agent_name",
+                "topic"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.message_bus.MessageBus.unsubscribe_from_topic",
+              "name": "unsubscribe_from_topic",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "agent_name",
+                  "topic"
+                ],
+                "arg_types": [
+                  "core.message_bus.MessageBus",
+                  "builtins.str",
+                  "builtins.str"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "unsubscribe_from_topic of MessageBus",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 1
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "wait_for_response": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                1
+              ],
+              "arg_names": [
+                "self",
+                "correlation_id",
+                "timeout"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.message_bus.MessageBus.wait_for_response",
+              "name": "wait_for_response",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  1
+                ],
+                "arg_names": [
+                  "self",
+                  "correlation_id",
+                  "timeout"
+                ],
+                "arg_types": [
+                  "core.message_bus.MessageBus",
+                  "builtins.str",
+                  "builtins.float"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "wait_for_response of MessageBus",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "core.message_bus.AgentMessage",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "core.message_bus.MessageBus.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "core.message_bus.MessageBus",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "MessagePriority": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "enum.Enum"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "core.message_bus.MessagePriority",
+          "name": "MessagePriority",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [
+          "is_enum"
+        ],
+        "fullname": "core.message_bus.MessagePriority",
+        "has_param_spec_type": false,
+        "metaclass_type": "enum.EnumMeta",
+        "metadata": {},
+        "module_name": "core.message_bus",
+        "mro": [
+          "core.message_bus.MessagePriority",
+          "enum.Enum",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "CRITICAL": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.message_bus.MessagePriority.CRITICAL",
+              "name": "CRITICAL",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.int",
+                  "value": 4
+                },
+                "type_ref": "builtins.int"
+              }
+            }
+          },
+          "HIGH": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.message_bus.MessagePriority.HIGH",
+              "name": "HIGH",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.int",
+                  "value": 3
+                },
+                "type_ref": "builtins.int"
+              }
+            }
+          },
+          "LOW": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.message_bus.MessagePriority.LOW",
+              "name": "LOW",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.int",
+                  "value": 1
+                },
+                "type_ref": "builtins.int"
+              }
+            }
+          },
+          "NORMAL": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.message_bus.MessagePriority.NORMAL",
+              "name": "NORMAL",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.int",
+                  "value": 2
+                },
+                "type_ref": "builtins.int"
+              }
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "core.message_bus.MessagePriority.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "core.message_bus.MessagePriority",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "MessageType": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "enum.Enum"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "core.message_bus.MessageType",
+          "name": "MessageType",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [
+          "is_enum"
+        ],
+        "fullname": "core.message_bus.MessageType",
+        "has_param_spec_type": false,
+        "metaclass_type": "enum.EnumMeta",
+        "metadata": {},
+        "module_name": "core.message_bus",
+        "mro": [
+          "core.message_bus.MessageType",
+          "enum.Enum",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "ALERT": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.message_bus.MessageType.ALERT",
+              "name": "ALERT",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "alert"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          },
+          "COORDINATION": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.message_bus.MessageType.COORDINATION",
+              "name": "COORDINATION",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "coordination"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          },
+          "KNOWLEDGE_SHARE": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.message_bus.MessageType.KNOWLEDGE_SHARE",
+              "name": "KNOWLEDGE_SHARE",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "knowledge_share"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          },
+          "RESOURCE_REQUEST": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.message_bus.MessageType.RESOURCE_REQUEST",
+              "name": "RESOURCE_REQUEST",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "resource_request"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          },
+          "STATUS_UPDATE": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.message_bus.MessageType.STATUS_UPDATE",
+              "name": "STATUS_UPDATE",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "status_update"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          },
+          "TASK_REQUEST": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.message_bus.MessageType.TASK_REQUEST",
+              "name": "TASK_REQUEST",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "task_request"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          },
+          "TASK_RESPONSE": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.message_bus.MessageType.TASK_RESPONSE",
+              "name": "TASK_RESPONSE",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "task_response"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "core.message_bus.MessageType.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "core.message_bus.MessageType",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "Optional": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Optional",
+      "kind": "Gdef"
+    },
+    "Set": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Set",
+      "kind": "Gdef"
+    },
+    "__annotations__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.message_bus.__annotations__",
+        "name": "__annotations__",
+        "type": {
+          ".class": "Instance",
+          "args": [
+            "builtins.str",
+            {
+              ".class": "AnyType",
+              "missing_import_name": null,
+              "source_any": null,
+              "type_of_any": 6
+            }
+          ],
+          "extra_attrs": null,
+          "type_ref": "builtins.dict"
+        }
+      }
+    },
+    "__doc__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.message_bus.__doc__",
+        "name": "__doc__",
+        "type": "builtins.str"
+      }
+    },
+    "__file__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.message_bus.__file__",
+        "name": "__file__",
+        "type": "builtins.str"
+      }
+    },
+    "__name__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.message_bus.__name__",
+        "name": "__name__",
+        "type": "builtins.str"
+      }
+    },
+    "__package__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.message_bus.__package__",
+        "name": "__package__",
+        "type": "builtins.str"
+      }
+    },
+    "__spec__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.message_bus.__spec__",
+        "name": "__spec__",
+        "type": "_frozen_importlib.ModuleSpec"
+      }
+    },
+    "asyncio": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "asyncio",
+      "kind": "Gdef"
+    },
+    "broadcast_status": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "FuncDef",
+        "abstract_status": 0,
+        "arg_kinds": [
+          0,
+          0
+        ],
+        "arg_names": [
+          "agent_name",
+          "status"
+        ],
+        "dataclass_transform_spec": null,
+        "deprecated": null,
+        "flags": [
+          "is_coroutine"
+        ],
+        "fullname": "core.message_bus.broadcast_status",
+        "name": "broadcast_status",
+        "type": {
+          ".class": "CallableType",
+          "arg_kinds": [
+            0,
+            0
+          ],
+          "arg_names": [
+            "agent_name",
+            "status"
+          ],
+          "arg_types": [
+            "builtins.str",
+            {
+              ".class": "Instance",
+              "args": [
+                "builtins.str",
+                {
+                  ".class": "AnyType",
+                  "missing_import_name": null,
+                  "source_any": null,
+                  "type_of_any": 2
+                }
+              ],
+              "extra_attrs": null,
+              "type_ref": "builtins.dict"
+            }
+          ],
+          "bound_args": [],
+          "def_extras": {
+            "first_arg": null
+          },
+          "fallback": "builtins.function",
+          "from_concatenate": false,
+          "implicit": false,
+          "imprecise_arg_kinds": false,
+          "is_ellipsis_args": false,
+          "name": "broadcast_status",
+          "ret_type": {
+            ".class": "Instance",
+            "args": [
+              {
+                ".class": "AnyType",
+                "missing_import_name": null,
+                "source_any": null,
+                "type_of_any": 6
+              },
+              {
+                ".class": "AnyType",
+                "missing_import_name": null,
+                "source_any": null,
+                "type_of_any": 6
+              },
+              {
+                ".class": "AnyType",
+                "missing_import_name": null,
+                "source_any": null,
+                "type_of_any": 1
+              }
+            ],
+            "extra_attrs": null,
+            "type_ref": "typing.Coroutine"
+          },
+          "type_guard": null,
+          "type_is": null,
+          "unpack_kwargs": false,
+          "variables": []
+        }
+      }
+    },
+    "dataclass": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "dataclasses.dataclass",
+      "kind": "Gdef"
+    },
+    "datetime": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "datetime.datetime",
+      "kind": "Gdef"
+    },
+    "defaultdict": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "collections.defaultdict",
+      "kind": "Gdef"
+    },
+    "field": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "dataclasses.field",
+      "kind": "Gdef"
+    },
+    "json": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "json",
+      "kind": "Gdef"
+    },
+    "logging": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "logging",
+      "kind": "Gdef"
+    },
+    "message_bus": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.message_bus.message_bus",
+        "name": "message_bus",
+        "type": "core.message_bus.MessageBus"
+      }
+    },
+    "send_task_request": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "FuncDef",
+        "abstract_status": 0,
+        "arg_kinds": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "arg_names": [
+          "from_agent",
+          "to_agent",
+          "task",
+          "priority"
+        ],
+        "dataclass_transform_spec": null,
+        "deprecated": null,
+        "flags": [
+          "is_coroutine"
+        ],
+        "fullname": "core.message_bus.send_task_request",
+        "name": "send_task_request",
+        "type": {
+          ".class": "CallableType",
+          "arg_kinds": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "arg_names": [
+            "from_agent",
+            "to_agent",
+            "task",
+            "priority"
+          ],
+          "arg_types": [
+            "builtins.str",
+            "builtins.str",
+            {
+              ".class": "Instance",
+              "args": [
+                "builtins.str",
+                {
+                  ".class": "AnyType",
+                  "missing_import_name": null,
+                  "source_any": null,
+                  "type_of_any": 2
+                }
+              ],
+              "extra_attrs": null,
+              "type_ref": "builtins.dict"
+            },
+            "core.message_bus.MessagePriority"
+          ],
+          "bound_args": [],
+          "def_extras": {
+            "first_arg": null
+          },
+          "fallback": "builtins.function",
+          "from_concatenate": false,
+          "implicit": false,
+          "imprecise_arg_kinds": false,
+          "is_ellipsis_args": false,
+          "name": "send_task_request",
+          "ret_type": {
+            ".class": "Instance",
+            "args": [
+              {
+                ".class": "AnyType",
+                "missing_import_name": null,
+                "source_any": null,
+                "type_of_any": 6
+              },
+              {
+                ".class": "AnyType",
+                "missing_import_name": null,
+                "source_any": null,
+                "type_of_any": 6
+              },
+              "builtins.str"
+            ],
+            "extra_attrs": null,
+            "type_ref": "typing.Coroutine"
+          },
+          "type_guard": null,
+          "type_is": null,
+          "unpack_kwargs": false,
+          "variables": []
+        }
+      }
+    },
+    "share_knowledge": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "FuncDef",
+        "abstract_status": 0,
+        "arg_kinds": [
+          0,
+          0,
+          0
+        ],
+        "arg_names": [
+          "from_agent",
+          "knowledge",
+          "topic"
+        ],
+        "dataclass_transform_spec": null,
+        "deprecated": null,
+        "flags": [
+          "is_coroutine"
+        ],
+        "fullname": "core.message_bus.share_knowledge",
+        "name": "share_knowledge",
+        "type": {
+          ".class": "CallableType",
+          "arg_kinds": [
+            0,
+            0,
+            0
+          ],
+          "arg_names": [
+            "from_agent",
+            "knowledge",
+            "topic"
+          ],
+          "arg_types": [
+            "builtins.str",
+            {
+              ".class": "Instance",
+              "args": [
+                "builtins.str",
+                {
+                  ".class": "AnyType",
+                  "missing_import_name": null,
+                  "source_any": null,
+                  "type_of_any": 2
+                }
+              ],
+              "extra_attrs": null,
+              "type_ref": "builtins.dict"
+            },
+            "builtins.str"
+          ],
+          "bound_args": [],
+          "def_extras": {
+            "first_arg": null
+          },
+          "fallback": "builtins.function",
+          "from_concatenate": false,
+          "implicit": false,
+          "imprecise_arg_kinds": false,
+          "is_ellipsis_args": false,
+          "name": "share_knowledge",
+          "ret_type": {
+            ".class": "Instance",
+            "args": [
+              {
+                ".class": "AnyType",
+                "missing_import_name": null,
+                "source_any": null,
+                "type_of_any": 6
+              },
+              {
+                ".class": "AnyType",
+                "missing_import_name": null,
+                "source_any": null,
+                "type_of_any": 6
+              },
+              {
+                ".class": "AnyType",
+                "missing_import_name": null,
+                "source_any": null,
+                "type_of_any": 1
+              }
+            ],
+            "extra_attrs": null,
+            "type_ref": "typing.Coroutine"
+          },
+          "type_guard": null,
+          "type_is": null,
+          "unpack_kwargs": false,
+          "variables": []
+        }
+      }
+    }
+  },
+  "path": "/Users/cosburn/BoarderframeOS/core/message_bus.py"
+}

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Corporate HQ Refresh Fixes 🔧</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d1b69 100%);
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 40px;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
+        }
+        .fix-card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+        .fix-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .fix-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .fix-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        .fix-title {
+            flex: 1;
+        }
+        .fix-title h3 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+        .fix-title p {
+            margin: 5px 0 0 0;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+        }
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-fixed {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+        .code-block {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 10px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .before-after {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .before, .after {
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .before {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        .after {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        .test-button {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+        }
+        .center {
+            text-align: center;
+            margin-top: 40px;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        li:before {
+            content: "✅";
+            font-size: 1.2rem;
+        }
+        .warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Corporate HQ Refresh Fixes</h1>
+
+        <!-- Fix 1: Registry Refresh -->
+        <div class="fix-card">
+            <div class="fix-header">
+                <div class="fix-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                    🔄
+                </div>
+                <div class="fix-title">
+                    <h3>Registry, Departments & Organization Refresh</h3>
+                    <p>Fixed hanging refresh for these components</p>
+                </div>
+                <span class="status-badge status-fixed">Fixed</span>
+            </div>
+
+            <h4>Issue:</h4>
+            <p>The registry refresh was just a placeholder <code>pass</code> statement, causing the refresh to hang indefinitely.</p>
+
+            <h4>Solution:</h4>
+            <p>Implemented proper refresh logic for registry data:</p>
+            <div class="code-block">
+async def _refresh_registry_data(self):
+    """Refresh service registry information"""
+    try:
+        registry_status = self.dashboard.unified_data.get("services_status", {}).get("registry", {})
+        registry_data = {
+            "status": registry_status.get("status", "unknown"),
+            "services_count": len(self.dashboard.unified_data.get("services_status", {})),
+            "agents_count": len(self.dashboard.unified_data.get("agents_status", {})),
+            "last_updated": datetime.now().isoformat(),
+        }
+        self.dashboard.unified_data["registry_data"] = registry_data
+        return True
+    except Exception as e:
+        return False
+            </div>
+        </div>
+
+        <!-- Fix 2: Close Button -->
+        <div class="fix-card">
+            <div class="fix-header">
+                <div class="fix-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                    ❌
+                </div>
+                <div class="fix-title">
+                    <h3>Modal Close Button</h3>
+                    <p>Fixed X button not closing the Refresh OS modal</p>
+                </div>
+                <span class="status-badge status-fixed">Fixed</span>
+            </div>
+
+            <h4>Issue:</h4>
+            <p>The <code>closeGlobalRefreshModal</code> function wasn't globally accessible, causing "function not defined" errors.</p>
+
+            <h4>Solution:</h4>
+            <p>Made the function globally accessible and added proper error handling:</p>
+            <div class="code-block">
+window.closeGlobalRefreshModal = function() {
+    console.log('[BoarderframeOS] Closing global refresh modal');
+    const modal = document.getElementById('globalRefreshModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    // Re-enable close buttons
+    const closeButtons = document.querySelectorAll('#closeRefreshBtn, #closeRefreshBtnHeader');
+    closeButtons.forEach(btn => {
+        if (btn) btn.disabled = false;
+    });
+}
+            </div>
+        </div>
+
+        <!-- Fix 3: Dropdown Alignment -->
+        <div class="fix-card">
+            <div class="fix-header">
+                <div class="fix-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                    📐
+                </div>
+                <div class="fix-title">
+                    <h3>Dropdown Menu Alignment</h3>
+                    <p>Fixed inconsistent alignment in Refresh OS dropdown</p>
+                </div>
+                <span class="status-badge status-fixed">Fixed</span>
+            </div>
+
+            <h4>Issue:</h4>
+            <p>The "Refresh History" menu item wasn't properly aligned with other items due to missing flex properties.</p>
+
+            <div class="before-after">
+                <div class="before">
+                    <strong>Before:</strong>
+                    <div class="code-block">
+&lt;i class="fas fa-history" style="color: #8b5cf6; width: 16px;"&gt;&lt;/i&gt;
+&lt;div&gt;
+    &lt;div&gt;Refresh History&lt;/div&gt;
+&lt;/div&gt;
+                    </div>
+                </div>
+                <div class="after">
+                    <strong>After:</strong>
+                    <div class="code-block">
+&lt;i class="fas fa-history" style="color: #8b5cf6; width: 16px; text-align: center;"&gt;&lt;/i&gt;
+&lt;div style="flex: 1;"&gt;
+    &lt;div&gt;Refresh History&lt;/div&gt;
+&lt;/div&gt;
+                    </div>
+                </div>
+            </div>
+
+            <h4>Changes Applied:</h4>
+            <ul>
+                <li>Added <code>text-align: center</code> to all dropdown icons</li>
+                <li>Added <code>flex: 1</code> to all text containers for consistent spacing</li>
+                <li>Ensured all dropdown items have identical structure</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <h4>⚠️ Note:</h4>
+            <p>You'll need to restart the Corporate HQ server for these fixes to take effect:</p>
+            <div class="code-block">
+# Kill existing process
+pkill -f "python.*corporate_headquarters.py"
+
+# Restart Corporate HQ
+python corporate_headquarters.py
+            </div>
+        </div>
+
+        <div class="center">
+            <button class="test-button" onclick="window.open('http://localhost:8888', '_blank')">
+                🚀 Open Corporate HQ
+            </button>
+            <button class="test-button" onclick="testRefresh()">
+                🧪 Test Refresh Components
+            </button>
+        </div>
+
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        async function testRefresh() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<div class="fix-card"><h3>⏳ Testing refresh endpoints...</h3></div>';
+
+            const components = ['registry_data', 'departments_data', 'organizational_data'];
+            let testResults = '<div class="fix-card"><h3>Test Results:</h3><ul>';
+
+            for (const component of components) {
+                try {
+                    const response = await fetch(`http://localhost:8888/api/refresh/${component}`, {
+                        method: 'POST'
+                    });
+                    const data = await response.json();
+
+                    if (response.ok && data.status === 'success') {
+                        testResults += `<li>✅ ${component} refresh: Working</li>`;
+                    } else {
+                        testResults += `<li>❌ ${component} refresh: ${data.message || 'Failed'}</li>`;
+                    }
+                } catch (e) {
+                    testResults += `<li>❌ ${component} refresh: Network error</li>`;
+                }
+            }
+
+            testResults += '</ul></div>';
+            results.innerHTML = testResults;
+        }
+    </script>
+</body>
+</html>

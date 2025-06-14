@@ -1,0 +1,1417 @@
+{
+  ".class": "MypyFile",
+  "_fullname": "litellm.types.llms.gemini",
+  "future_import_flags": [],
+  "is_partial_stub_package": false,
+  "is_stub": false,
+  "names": {
+    ".class": "SymbolTable",
+    "Any": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Any",
+      "kind": "Gdef"
+    },
+    "AutomaticActivityDetection": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "typing._TypedDict"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "litellm.types.llms.gemini.AutomaticActivityDetection",
+          "name": "AutomaticActivityDetection",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "litellm.types.llms.gemini.AutomaticActivityDetection",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {},
+        "module_name": "litellm.types.llms.gemini",
+        "mro": [
+          "litellm.types.llms.gemini.AutomaticActivityDetection",
+          "typing._TypedDict",
+          "typing.Mapping",
+          "typing.Collection",
+          "typing.Iterable",
+          "typing.Container",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable"
+        },
+        "self_type": null,
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": {
+          ".class": "TypedDictType",
+          "fallback": "typing._TypedDict",
+          "items": [
+            [
+              "disabled",
+              "builtins.bool"
+            ],
+            [
+              "startOfSpeechSensitivity",
+              {
+                ".class": "TypeAliasType",
+                "args": [],
+                "type_ref": "litellm.types.llms.gemini.StartOfSpeechSensitivityEnum"
+              }
+            ],
+            [
+              "prefixPaddingMs",
+              "builtins.int"
+            ],
+            [
+              "endOfSpeechSensitivity",
+              {
+                ".class": "TypeAliasType",
+                "args": [],
+                "type_ref": "litellm.types.llms.gemini.EndOfSpeechSensitivityEnum"
+              }
+            ],
+            [
+              "silenceDurationMs",
+              "builtins.int"
+            ]
+          ],
+          "readonly_keys": [],
+          "required_keys": []
+        }
+      }
+    },
+    "BidiGenerateContentRealtimeInput": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "typing._TypedDict"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "litellm.types.llms.gemini.BidiGenerateContentRealtimeInput",
+          "name": "BidiGenerateContentRealtimeInput",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "litellm.types.llms.gemini.BidiGenerateContentRealtimeInput",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {},
+        "module_name": "litellm.types.llms.gemini",
+        "mro": [
+          "litellm.types.llms.gemini.BidiGenerateContentRealtimeInput",
+          "typing._TypedDict",
+          "typing.Mapping",
+          "typing.Collection",
+          "typing.Iterable",
+          "typing.Container",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable"
+        },
+        "self_type": null,
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": {
+          ".class": "TypedDictType",
+          "fallback": "typing._TypedDict",
+          "items": [
+            [
+              "text",
+              "builtins.str"
+            ],
+            [
+              "audio",
+              {
+                ".class": "TypeAliasType",
+                "args": [],
+                "type_ref": "litellm.types.llms.vertex_ai.HttpxBlobType"
+              }
+            ],
+            [
+              "video",
+              {
+                ".class": "TypeAliasType",
+                "args": [],
+                "type_ref": "litellm.types.llms.vertex_ai.HttpxBlobType"
+              }
+            ],
+            [
+              "audioStreamEnd",
+              "builtins.bool"
+            ],
+            [
+              "activityStart",
+              "builtins.bool"
+            ],
+            [
+              "activityEnd",
+              "builtins.bool"
+            ]
+          ],
+          "readonly_keys": [],
+          "required_keys": []
+        }
+      }
+    },
+    "BidiGenerateContentRealtimeInputConfig": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "typing._TypedDict"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "litellm.types.llms.gemini.BidiGenerateContentRealtimeInputConfig",
+          "name": "BidiGenerateContentRealtimeInputConfig",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "litellm.types.llms.gemini.BidiGenerateContentRealtimeInputConfig",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {},
+        "module_name": "litellm.types.llms.gemini",
+        "mro": [
+          "litellm.types.llms.gemini.BidiGenerateContentRealtimeInputConfig",
+          "typing._TypedDict",
+          "typing.Mapping",
+          "typing.Collection",
+          "typing.Iterable",
+          "typing.Container",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable"
+        },
+        "self_type": null,
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": {
+          ".class": "TypedDictType",
+          "fallback": "typing._TypedDict",
+          "items": [
+            [
+              "automaticActivityDetection",
+              {
+                ".class": "TypeAliasType",
+                "args": [],
+                "type_ref": "litellm.types.llms.gemini.AutomaticActivityDetection"
+              }
+            ]
+          ],
+          "readonly_keys": [],
+          "required_keys": []
+        }
+      }
+    },
+    "BidiGenerateContentServerContent": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "typing._TypedDict"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "litellm.types.llms.gemini.BidiGenerateContentServerContent",
+          "name": "BidiGenerateContentServerContent",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "litellm.types.llms.gemini.BidiGenerateContentServerContent",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {},
+        "module_name": "litellm.types.llms.gemini",
+        "mro": [
+          "litellm.types.llms.gemini.BidiGenerateContentServerContent",
+          "typing._TypedDict",
+          "typing.Mapping",
+          "typing.Collection",
+          "typing.Iterable",
+          "typing.Container",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable"
+        },
+        "self_type": null,
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": {
+          ".class": "TypedDictType",
+          "fallback": "typing._TypedDict",
+          "items": [
+            [
+              "generationComplete",
+              "builtins.bool"
+            ],
+            [
+              "turnComplete",
+              "builtins.bool"
+            ],
+            [
+              "interrupted",
+              "builtins.bool"
+            ],
+            [
+              "groundingMetadata",
+              {
+                ".class": "Instance",
+                "args": [
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  },
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            ],
+            [
+              "inputTranscription",
+              {
+                ".class": "TypeAliasType",
+                "args": [],
+                "type_ref": "litellm.types.llms.gemini.BidiGenerateContentTranscription"
+              }
+            ],
+            [
+              "outputTranscription",
+              {
+                ".class": "TypeAliasType",
+                "args": [],
+                "type_ref": "litellm.types.llms.gemini.BidiGenerateContentTranscription"
+              }
+            ],
+            [
+              "modelTurn",
+              {
+                ".class": "TypeAliasType",
+                "args": [],
+                "type_ref": "litellm.types.llms.vertex_ai.HttpxContentType"
+              }
+            ]
+          ],
+          "readonly_keys": [],
+          "required_keys": []
+        }
+      }
+    },
+    "BidiGenerateContentServerMessage": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "typing._TypedDict"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "litellm.types.llms.gemini.BidiGenerateContentServerMessage",
+          "name": "BidiGenerateContentServerMessage",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "litellm.types.llms.gemini.BidiGenerateContentServerMessage",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {},
+        "module_name": "litellm.types.llms.gemini",
+        "mro": [
+          "litellm.types.llms.gemini.BidiGenerateContentServerMessage",
+          "typing._TypedDict",
+          "typing.Mapping",
+          "typing.Collection",
+          "typing.Iterable",
+          "typing.Container",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable"
+        },
+        "self_type": null,
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": {
+          ".class": "TypedDictType",
+          "fallback": "typing._TypedDict",
+          "items": [
+            [
+              "usageMetadata",
+              {
+                ".class": "TypeAliasType",
+                "args": [],
+                "type_ref": "litellm.types.llms.vertex_ai.UsageMetadata"
+              }
+            ],
+            [
+              "serverContent",
+              {
+                ".class": "TypeAliasType",
+                "args": [],
+                "type_ref": "litellm.types.llms.gemini.BidiGenerateContentServerContent"
+              }
+            ],
+            [
+              "setupComplete",
+              {
+                ".class": "Instance",
+                "args": [
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  },
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            ]
+          ],
+          "readonly_keys": [],
+          "required_keys": []
+        }
+      }
+    },
+    "BidiGenerateContentSetup": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "typing._TypedDict"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "litellm.types.llms.gemini.BidiGenerateContentSetup",
+          "name": "BidiGenerateContentSetup",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "litellm.types.llms.gemini.BidiGenerateContentSetup",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {},
+        "module_name": "litellm.types.llms.gemini",
+        "mro": [
+          "litellm.types.llms.gemini.BidiGenerateContentSetup",
+          "typing._TypedDict",
+          "typing.Mapping",
+          "typing.Collection",
+          "typing.Iterable",
+          "typing.Container",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable"
+        },
+        "self_type": null,
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": {
+          ".class": "TypedDictType",
+          "fallback": "typing._TypedDict",
+          "items": [
+            [
+              "model",
+              "builtins.str"
+            ],
+            [
+              "generationConfig",
+              {
+                ".class": "TypeAliasType",
+                "args": [],
+                "type_ref": "litellm.types.llms.vertex_ai.GenerationConfig"
+              }
+            ],
+            [
+              "systemInstruction",
+              {
+                ".class": "TypeAliasType",
+                "args": [],
+                "type_ref": "litellm.types.llms.vertex_ai.HttpxContentType"
+              }
+            ],
+            [
+              "tools",
+              {
+                ".class": "Instance",
+                "args": [
+                  {
+                    ".class": "TypeAliasType",
+                    "args": [],
+                    "type_ref": "litellm.types.llms.vertex_ai.Tools"
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.list"
+              }
+            ],
+            [
+              "realtimeInputConfig",
+              {
+                ".class": "Instance",
+                "args": [
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  },
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            ],
+            [
+              "sessionResumption",
+              {
+                ".class": "Instance",
+                "args": [
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  },
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            ],
+            [
+              "sessionResumptionConfig",
+              {
+                ".class": "Instance",
+                "args": [
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  },
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            ],
+            [
+              "contextWindowCompression",
+              {
+                ".class": "Instance",
+                "args": [
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  },
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            ],
+            [
+              "inputAudioTranscription",
+              {
+                ".class": "Instance",
+                "args": [
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  },
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            ],
+            [
+              "outputAudioTranscription",
+              {
+                ".class": "Instance",
+                "args": [
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  },
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            ]
+          ],
+          "readonly_keys": [],
+          "required_keys": []
+        }
+      }
+    },
+    "BidiGenerateContentTranscription": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "typing._TypedDict"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "litellm.types.llms.gemini.BidiGenerateContentTranscription",
+          "name": "BidiGenerateContentTranscription",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "litellm.types.llms.gemini.BidiGenerateContentTranscription",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {},
+        "module_name": "litellm.types.llms.gemini",
+        "mro": [
+          "litellm.types.llms.gemini.BidiGenerateContentTranscription",
+          "typing._TypedDict",
+          "typing.Mapping",
+          "typing.Collection",
+          "typing.Iterable",
+          "typing.Container",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable"
+        },
+        "self_type": null,
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": {
+          ".class": "TypedDictType",
+          "fallback": "typing._TypedDict",
+          "items": [
+            [
+              "text",
+              "builtins.str"
+            ]
+          ],
+          "readonly_keys": [],
+          "required_keys": [
+            "text"
+          ]
+        }
+      }
+    },
+    "Dict": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Dict",
+      "kind": "Gdef"
+    },
+    "EndOfSpeechSensitivityEnum": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "litellm.types.llms.gemini.EndOfSpeechSensitivityEnum",
+        "line": 106,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            {
+              ".class": "LiteralType",
+              "fallback": "builtins.str",
+              "value": "END_SENSITIVITY_UNSPECIFIED"
+            },
+            {
+              ".class": "LiteralType",
+              "fallback": "builtins.str",
+              "value": "END_SENSITIVITY_HIGH"
+            },
+            {
+              ".class": "LiteralType",
+              "fallback": "builtins.str",
+              "value": "END_SENSITIVITY_LOW"
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "Enum": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "enum.Enum",
+      "kind": "Gdef"
+    },
+    "GeminiCreateFilesResponseObject": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "typing._TypedDict"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "litellm.types.llms.gemini.GeminiCreateFilesResponseObject",
+          "name": "GeminiCreateFilesResponseObject",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "litellm.types.llms.gemini.GeminiCreateFilesResponseObject",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {},
+        "module_name": "litellm.types.llms.gemini",
+        "mro": [
+          "litellm.types.llms.gemini.GeminiCreateFilesResponseObject",
+          "typing._TypedDict",
+          "typing.Mapping",
+          "typing.Collection",
+          "typing.Iterable",
+          "typing.Container",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable"
+        },
+        "self_type": null,
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": {
+          ".class": "TypedDictType",
+          "fallback": "typing._TypedDict",
+          "items": [
+            [
+              "name",
+              "builtins.str"
+            ],
+            [
+              "displayName",
+              "builtins.str"
+            ],
+            [
+              "mimeType",
+              "builtins.str"
+            ],
+            [
+              "sizeBytes",
+              "builtins.str"
+            ],
+            [
+              "createTime",
+              "builtins.str"
+            ],
+            [
+              "updateTime",
+              "builtins.str"
+            ],
+            [
+              "expirationTime",
+              "builtins.str"
+            ],
+            [
+              "sha256Hash",
+              "builtins.str"
+            ],
+            [
+              "uri",
+              "builtins.str"
+            ],
+            [
+              "state",
+              "litellm.types.llms.gemini.GeminiFilesState"
+            ],
+            [
+              "source",
+              "litellm.types.llms.gemini.GeminiFilesSource"
+            ],
+            [
+              "error",
+              {
+                ".class": "Instance",
+                "args": [
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  },
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            ],
+            [
+              "metadata",
+              {
+                ".class": "Instance",
+                "args": [
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  },
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 4
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            ]
+          ],
+          "readonly_keys": [],
+          "required_keys": [
+            "createTime",
+            "displayName",
+            "error",
+            "expirationTime",
+            "metadata",
+            "mimeType",
+            "name",
+            "sha256Hash",
+            "sizeBytes",
+            "source",
+            "state",
+            "updateTime",
+            "uri"
+          ]
+        }
+      }
+    },
+    "GeminiFilesSource": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "enum.Enum"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "litellm.types.llms.gemini.GeminiFilesSource",
+          "name": "GeminiFilesSource",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [
+          "is_enum"
+        ],
+        "fullname": "litellm.types.llms.gemini.GeminiFilesSource",
+        "has_param_spec_type": false,
+        "metaclass_type": "enum.EnumMeta",
+        "metadata": {},
+        "module_name": "litellm.types.llms.gemini",
+        "mro": [
+          "litellm.types.llms.gemini.GeminiFilesSource",
+          "enum.Enum",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "GENERATED": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "litellm.types.llms.gemini.GeminiFilesSource.GENERATED",
+              "name": "GENERATED",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "GENERATED"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          },
+          "SOURCE_UNSPECIFIED": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "litellm.types.llms.gemini.GeminiFilesSource.SOURCE_UNSPECIFIED",
+              "name": "SOURCE_UNSPECIFIED",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "SOURCE_UNSPECIFIED"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          },
+          "UPLOADED": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "litellm.types.llms.gemini.GeminiFilesSource.UPLOADED",
+              "name": "UPLOADED",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "UPLOADED"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "litellm.types.llms.gemini.GeminiFilesSource.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "litellm.types.llms.gemini.GeminiFilesSource",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "GeminiFilesState": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "enum.Enum"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "litellm.types.llms.gemini.GeminiFilesState",
+          "name": "GeminiFilesState",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [
+          "is_enum"
+        ],
+        "fullname": "litellm.types.llms.gemini.GeminiFilesState",
+        "has_param_spec_type": false,
+        "metaclass_type": "enum.EnumMeta",
+        "metadata": {},
+        "module_name": "litellm.types.llms.gemini",
+        "mro": [
+          "litellm.types.llms.gemini.GeminiFilesState",
+          "enum.Enum",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "ACTIVE": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "litellm.types.llms.gemini.GeminiFilesState.ACTIVE",
+              "name": "ACTIVE",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "ACTIVE"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          },
+          "FAILED": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "litellm.types.llms.gemini.GeminiFilesState.FAILED",
+              "name": "FAILED",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "FAILED"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          },
+          "PROCESSING": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "litellm.types.llms.gemini.GeminiFilesState.PROCESSING",
+              "name": "PROCESSING",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "PROCESSING"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          },
+          "STATE_UNSPECIFIED": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "litellm.types.llms.gemini.GeminiFilesState.STATE_UNSPECIFIED",
+              "name": "STATE_UNSPECIFIED",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "STATE_UNSPECIFIED"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "litellm.types.llms.gemini.GeminiFilesState.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "litellm.types.llms.gemini.GeminiFilesState",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "GenerationConfig": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "litellm.types.llms.vertex_ai.GenerationConfig",
+      "kind": "Gdef"
+    },
+    "HttpxBlobType": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "litellm.types.llms.vertex_ai.HttpxBlobType",
+      "kind": "Gdef"
+    },
+    "HttpxContentType": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "litellm.types.llms.vertex_ai.HttpxContentType",
+      "kind": "Gdef"
+    },
+    "Iterable": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Iterable",
+      "kind": "Gdef"
+    },
+    "List": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.List",
+      "kind": "Gdef"
+    },
+    "Literal": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Literal",
+      "kind": "Gdef"
+    },
+    "Optional": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Optional",
+      "kind": "Gdef"
+    },
+    "Required": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Required",
+      "kind": "Gdef"
+    },
+    "StartOfSpeechSensitivityEnum": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "litellm.types.llms.gemini.StartOfSpeechSensitivityEnum",
+        "line": 103,
+        "no_args": false,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": {
+          ".class": "UnionType",
+          "items": [
+            {
+              ".class": "LiteralType",
+              "fallback": "builtins.str",
+              "value": "START_SENSITIVITY_UNSPECIFIED"
+            },
+            {
+              ".class": "LiteralType",
+              "fallback": "builtins.str",
+              "value": "START_SENSITIVITY_HIGH"
+            },
+            {
+              ".class": "LiteralType",
+              "fallback": "builtins.str",
+              "value": "START_SENSITIVITY_LOW"
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "Tools": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "litellm.types.llms.vertex_ai.Tools",
+      "kind": "Gdef"
+    },
+    "TypedDict": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.TypedDict",
+      "kind": "Gdef"
+    },
+    "Union": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Union",
+      "kind": "Gdef"
+    },
+    "UsageMetadata": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "litellm.types.llms.vertex_ai.UsageMetadata",
+      "kind": "Gdef"
+    },
+    "__annotations__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "litellm.types.llms.gemini.__annotations__",
+        "name": "__annotations__",
+        "type": {
+          ".class": "Instance",
+          "args": [
+            "builtins.str",
+            {
+              ".class": "AnyType",
+              "missing_import_name": null,
+              "source_any": null,
+              "type_of_any": 6
+            }
+          ],
+          "extra_attrs": null,
+          "type_ref": "builtins.dict"
+        }
+      }
+    },
+    "__doc__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "litellm.types.llms.gemini.__doc__",
+        "name": "__doc__",
+        "type": "builtins.str"
+      }
+    },
+    "__file__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "litellm.types.llms.gemini.__file__",
+        "name": "__file__",
+        "type": "builtins.str"
+      }
+    },
+    "__name__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "litellm.types.llms.gemini.__name__",
+        "name": "__name__",
+        "type": "builtins.str"
+      }
+    },
+    "__package__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "litellm.types.llms.gemini.__package__",
+        "name": "__package__",
+        "type": "builtins.str"
+      }
+    },
+    "__spec__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "litellm.types.llms.gemini.__spec__",
+        "name": "__spec__",
+        "type": "_frozen_importlib.ModuleSpec"
+      }
+    }
+  },
+  "path": "/Users/cosburn/BoarderframeOS/.venv/lib/python3.13/site-packages/litellm/types/llms/gemini.py"
+}

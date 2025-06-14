@@ -1,885 +1,430 @@
 """
-Enhanced BaseAgent with Agent Cortex + LangGraph Integration
-Next-generation agent framework for BoarderframeOS
+Enhanced Base Agent with Claude API and Voice Integration
+Extends the existing BaseAgent with modern capabilities
 """
 
 import asyncio
 import json
 import logging
-import uuid
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
-# Monitoring integration
-import agentops
-from langgraph.checkpoint.memory import MemorySaver
+# Import existing base agent
+from .base_agent import AgentConfig, AgentState, BaseAgent
+from .claude_integration import get_claude_integration
+from .message_bus import MessagePriority, send_task_request
+from .voice_integration import get_voice_integration
 
-# LangGraph integration
-from langgraph.graph import END, START, StateGraph
-from langgraph.prebuilt import create_react_agent
-from langsmith import Client as LangSmithClient
+# Import LangChain components
+try:
+    from langchain.chains import LLMChain
+    from langchain.memory import ConversationBufferWindowMemory
+    from langchain.prompts import PromptTemplate
+    from langchain_anthropic import ChatAnthropic
+    from langchain_core.messages import AIMessage, HumanMessage
 
-from .agent_cortex_langgraph_orchestrator import (
-    AgentCortexLangGraphOrchestrator,
-    get_orchestrator,
-)
+    LANGCHAIN_AVAILABLE = True
+except ImportError:
+    LANGCHAIN_AVAILABLE = False
+    logging.warning("LangChain not available - some features will be limited")
 
-# BoarderframeOS core (keeping existing integrations)
-from .base_agent import AgentConfig, AgentMemory, AgentState  # Import from original
-from .cost_management import get_agent_cost_policy
-from .message_bus import MessagePriority, MessageType, message_bus
-from .registry_integration import register_agent_with_database
+# Import LangGraph for workflows
+try:
+    from langgraph.checkpoint import MemorySaver
+    from langgraph.graph import END, StateGraph
 
-# Agent Cortex integration
-from .the_agent_cortex import (
-    AgentRequest,
-    PerformanceMetrics,
-    TheAgentCortex,
-    get_agent_cortex_instance,
-)
+    LANGGRAPH_AVAILABLE = True
+except ImportError:
+    LANGGRAPH_AVAILABLE = False
+    logging.warning("LangGraph not available - workflow features will be limited")
 
-
-class EnhancedAgentState(Enum):
-    """Enhanced agent states with Agent Cortex integration"""
-
-    INITIALIZING = "initializing"
-    IDLE = "idle"
-    THINKING_WITH_AGENT_CORTEX = "thinking_with_agent_cortex"
-    ACTING_WITH_AGENT_CORTEX = "acting_with_agent_cortex"
-    ORCHESTRATING = "orchestrating"
-    LEARNING = "learning"
-    ERROR = "error"
-    TERMINATED = "terminated"
+logger = logging.getLogger(__name__)
 
 
-@dataclass
-class AgentCortexSession:
-    """Agent Cortex session tracking for agent"""
-
-    agent_name: str
-    session_id: str
-    active_requests: List[str] = field(default_factory=list)
-    performance_history: List[PerformanceMetrics] = field(default_factory=list)
-    model_preferences: Dict[str, Any] = field(default_factory=dict)
-    cost_budget: float = 10.0
-    quality_threshold: float = 0.85
-
-
-@dataclass
-class EnhancedAgentMetrics:
-    """Enhanced metrics with Agent Cortex and LangGraph tracking"""
-
-    # Original metrics
-    thoughts_processed: int = 0
-    actions_taken: int = 0
-    errors: int = 0
-
-    # Agent Cortex-specific metrics
-    agent_cortex_requests: int = 0
-    model_switches: int = 0
-    cost_savings: float = 0.0
-
-    # LangGraph metrics
-    workflows_completed: int = 0
-    handoffs_executed: int = 0
-    orchestration_time: float = 0.0
-
-    # Performance metrics
-    avg_response_time: float = 0.0
-    quality_score: float = 0.0
-    user_satisfaction: float = 0.0
-
-    # Timestamps
-    start_time: datetime = field(default_factory=datetime.now)
-    last_activity: datetime = field(default_factory=datetime.now)
-
-
-class EnhancedBaseAgent(ABC):
-    """Enhanced BaseAgent with Agent Cortex + LangGraph + Monitoring integration"""
+class EnhancedBaseAgent(BaseAgent):
+    """
+    Enhanced agent with Claude intelligence and voice capabilities
+    Fully backward compatible with existing BaseAgent
+    """
 
     def __init__(self, config: AgentConfig):
-        self.config = config
-        self.state = EnhancedAgentState.INITIALIZING
-        self.memory = AgentMemory()
+        super().__init__(config)
 
-        # Agent Cortex integration
-        self.agent_cortex = None  # Will be initialized async
-        self.agent_cortex_session = AgentCortexSession(
-            agent_name=config.name, session_id=str(uuid.uuid4())
-        )
+        # Get singleton instances
+        self.claude = get_claude_integration()
+        self.voice = get_voice_integration()
 
-        # LangGraph integration
-        self.orchestrator = None  # Will be initialized async
-        self.agent_graph = None
-        self.memory_checkpoint = MemorySaver()
+        # Enhanced capabilities flags
+        self.has_voice = True
+        self.has_claude = True
+        self.has_langchain = LANGCHAIN_AVAILABLE
+        self.has_workflows = LANGGRAPH_AVAILABLE
 
-        # Monitoring integration
-        self.langsmith_client = None
-        self.agentops_session = None
+        # Initialize LangChain if available
+        if LANGCHAIN_AVAILABLE:
+            self._init_langchain()
 
-        # Enhanced metrics
-        self.metrics = EnhancedAgentMetrics()
+        # Voice conversation state
+        self.is_listening = False
+        self.voice_callback = None
 
-        # Message handling (keeping existing)
-        self.active_tasks: List[asyncio.Task] = []
-        self.message_queue: asyncio.Queue = asyncio.Queue()
-        self.message_handlers: Dict[MessageType, Callable] = {}
+        # Team collaboration
+        self.team_members: List[str] = []
+        self.is_team_leader = False
 
-        # Tools and capabilities (enhanced)
-        self.tools: Dict[str, Callable] = {}
-        self.mcp_tools: Dict[str, Any] = {}
-
-        # State management
-        self.active = True
-        self.logger = self._setup_enhanced_logger()
-
-        # Cost management (keeping existing integration)
-        self.cost_policy = get_agent_cost_policy(config.name)
-
-        # Registry integration
-        self.registry_id = None
-
-    async def initialize(self):
-        """Initialize all enhanced systems"""
-
-        self.logger.info(f"🚀 Initializing enhanced agent: {self.config.name}")
-
-        # Initialize Agent Cortex connection
-        self.agent_cortex = await get_agent_cortex_instance()
-        self.logger.info("🧠 Agent Cortex connection established")
-
-        # Initialize LangGraph orchestrator
-        self.orchestrator = await get_orchestrator()
-        self.logger.info("🕸️ LangGraph orchestrator connected")
-
-        # Create agent-specific graph
-        self.agent_graph = await self._create_agent_graph()
-        self.logger.info("📊 Agent-specific graph created")
-
-        # Initialize monitoring
-        await self._initialize_monitoring()
-        self.logger.info("📈 Monitoring systems initialized")
-
-        # Load enhanced tools
-        await self._load_enhanced_tools()
-        self.logger.info("🛠️ Enhanced tools loaded")
-
-        # Register with systems
-        await self._register_with_systems()
-        self.logger.info("📝 Registered with all systems")
-
-        self.state = EnhancedAgentState.IDLE
-        self.logger.info(f"✅ Enhanced agent {self.config.name} ready")
-
-    def _setup_enhanced_logger(self) -> logging.Logger:
-        """Setup enhanced logging with Agent Cortex/LangGraph context"""
-        logger = logging.getLogger(f"enhanced_agent.{self.config.name}")
-
-        # Enhanced formatter with more context
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - [AgentCortex:%(agent_cortex_model)s] - %(message)s",
-            defaults={"agent_cortex_model": "none"},
-        )
-
-        # File handler
-        from pathlib import Path
-
-        log_dir = Path("logs/enhanced_agents")
-        log_dir.mkdir(parents=True, exist_ok=True)
-
-        handler = logging.FileHandler(f"logs/enhanced_agents/{self.config.name}.log")
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
-
-        return logger
-
-    async def _create_agent_graph(self) -> StateGraph:
-        """Create LangGraph workflow specific to this agent"""
-
-        from .agent_cortex_langgraph_orchestrator import BoarderframeState
-
-        # Create agent-specific state graph
-        graph = StateGraph(BoarderframeState)
-
-        # Standard agent workflow nodes
-        graph.add_node("perceive", self._agent_cortex_perceive)
-        graph.add_node("think", self._agent_cortex_think)
-        graph.add_node("act", self._agent_cortex_act)
-        graph.add_node("reflect", self._agent_cortex_reflect)
-        graph.add_node("learn", self._agent_cortex_learn)
-
-        # Agent-specific specialized nodes
-        await self._add_specialized_nodes(graph)
-
-        # Standard workflow edges
-        graph.add_edge(START, "perceive")
-        graph.add_edge("perceive", "think")
-        graph.add_edge("think", "act")
-        graph.add_edge("act", "reflect")
-        graph.add_edge("reflect", "learn")
-        graph.add_edge("learn", END)
-
-        # Compile with checkpointing
-        return graph.compile(checkpointer=self.memory_checkpoint)
-
-    async def _add_specialized_nodes(self, graph: StateGraph):
-        """Add agent-specific specialized nodes (override in subclasses)"""
-        # Base implementation - subclasses can add specific nodes
-        pass
-
-    async def _agent_cortex_perceive(self, state: Dict[str, Any]) -> Dict[str, Any]:
-        """Enhanced perception with Agent Cortex context awareness"""
-
-        self.state = EnhancedAgentState.THINKING_WITH_AGENT_CORTEX
-
-        # Gather enhanced context
-        perception_context = {
-            "user_input": state.get("user_request", ""),
-            "conversation_history": await self._get_conversation_history(),
-            "agent_state": self.state.value,
-            "recent_performance": self.agent_cortex_session.performance_history[-5:],
-            "available_tools": list(self.tools.keys()),
-            "system_context": await self._get_system_context(),
+        # Learning and improvement
+        self.performance_metrics = {
+            "tasks_completed": 0,
+            "success_rate": 0.0,
+            "average_response_time": 0.0,
+            "user_satisfaction": 0.0,
         }
 
-        # Update state with perception
-        state["perception_context"] = perception_context
-        state["current_agent"] = self.config.name
-        state["perception_timestamp"] = datetime.now().isoformat()
+        logger.info(f"Enhanced agent {config.name} initialized with Claude and voice")
 
-        return state
-
-    async def _agent_cortex_think(self, state: Dict[str, Any]) -> Dict[str, Any]:
-        """Enhanced thinking with Agent Cortex model selection"""
-
-        # Assess thinking complexity
-        complexity = await self._assess_thinking_complexity(state)
-
-        # Create Agent Cortex request for thinking
-        agent_cortex_request = AgentRequest(
-            agent_name=self.config.name,
-            task_type="thinking",
-            context=state.get("perception_context", {}),
-            complexity=complexity,
-            quality_requirements=self.agent_cortex_session.quality_threshold,
-            conversation_id=state.get("conversation_id"),
-        )
-
-        # Get optimal model from Agent Cortex
-        agent_cortex_response = await self.agent_cortex.process_agent_request(
-            agent_cortex_request
-        )
-
-        # Track Agent Cortex selection
-        self.agent_cortex_session.active_requests.append(
-            agent_cortex_response.tracking_id
-        )
-        self.metrics.agent_cortex_requests += 1
-
-        # Enhanced thinking prompt
-        thinking_prompt = await self._create_thinking_prompt(
-            state, agent_cortex_response
-        )
-
-        # Execute thinking with Agent Cortex-selected model
+    def _init_langchain(self):
+        """Initialize LangChain components"""
         try:
-            thinking_result = await agent_cortex_response.llm.generate(thinking_prompt)
-
-            # Report success to Agent Cortex
-            await self._report_agent_cortex_performance(
-                agent_cortex_response.tracking_id, thinking_result, success=True
+            # Create LangChain LLM with Claude
+            self.langchain_llm = ChatAnthropic(
+                model="claude-3-opus-20240229",
+                anthropic_api_key=self.claude.api_key,
+                temperature=0.7,
+                max_tokens=4096,
             )
 
-        except Exception as e:
-            self.logger.error(f"Thinking error: {e}")
-            thinking_result = f"I encountered an issue while thinking: {str(e)}"
-
-            # Report error to Agent Cortex
-            await self._report_agent_cortex_performance(
-                agent_cortex_response.tracking_id, thinking_result, success=False
+            # Create memory
+            self.langchain_memory = ConversationBufferWindowMemory(
+                k=10, return_messages=True  # Keep last 10 exchanges
             )
 
-        # Update state
-        state["thoughts"] = thinking_result
-        state["agent_cortex_selection"] = agent_cortex_response.selection.__dict__
-        state["thinking_timestamp"] = datetime.now().isoformat()
-
-        return state
-
-    async def _agent_cortex_act(self, state: Dict[str, Any]) -> Dict[str, Any]:
-        """Enhanced action with Agent Cortex optimization"""
-
-        self.state = EnhancedAgentState.ACTING_WITH_AGENT_CORTEX
-
-        # Determine action complexity
-        action_complexity = await self._assess_action_complexity(state)
-
-        # Create Agent Cortex request for action
-        agent_cortex_request = AgentRequest(
-            agent_name=self.config.name,
-            task_type="action",
-            context={
-                "thoughts": state.get("thoughts", ""),
-                "perception": state.get("perception_context", {}),
-                "required_action": await self._determine_required_action(state),
-            },
-            complexity=action_complexity,
-            quality_requirements=self.agent_cortex_session.quality_threshold,
-        )
-
-        # Get optimal model from Agent Cortex
-        agent_cortex_response = await self.agent_cortex.process_agent_request(
-            agent_cortex_request
-        )
-
-        # Execute action with Agent Cortex-selected model
-        action_result = await self._execute_enhanced_action(
-            state, agent_cortex_response
-        )
-
-        # Update metrics
-        self.metrics.actions_taken += 1
-
-        # Update state
-        state["action_result"] = action_result
-        state["action_agent_cortex_selection"] = (
-            agent_cortex_response.selection.__dict__
-        )
-        state["action_timestamp"] = datetime.now().isoformat()
-
-        return state
-
-    async def _agent_cortex_reflect(self, state: Dict[str, Any]) -> Dict[str, Any]:
-        """Enhanced reflection with performance analysis"""
-
-        # Analyze performance of this interaction
-        performance_analysis = await self._analyze_interaction_performance(state)
-
-        # Store in memory
-        await self._store_reflection_in_memory(state, performance_analysis)
-
-        # Update state
-        state["reflection"] = performance_analysis
-        state["reflection_timestamp"] = datetime.now().isoformat()
-
-        return state
-
-    async def _agent_cortex_learn(self, state: Dict[str, Any]) -> Dict[str, Any]:
-        """Enhanced learning with Agent Cortex feedback"""
-
-        self.state = EnhancedAgentState.LEARNING
-
-        # Extract learning insights
-        learning_insights = await self._extract_learning_insights(state)
-
-        # Update agent preferences based on Agent Cortex performance
-        await self._update_agent_cortex_preferences(state)
-
-        # Update metrics
-        self.metrics.workflows_completed += 1
-        self.metrics.last_activity = datetime.now()
-
-        # Update state
-        state["learning_insights"] = learning_insights
-        state["learning_timestamp"] = datetime.now().isoformat()
-
-        self.state = EnhancedAgentState.IDLE
-
-        return state
-
-    async def _initialize_monitoring(self):
-        """Initialize LangSmith and AgentOps monitoring"""
-
-        try:
-            # Initialize LangSmith
-            self.langsmith_client = LangSmithClient()
-            await self._setup_langsmith_project()
-
-            # Initialize AgentOps
-            agentops.init(
-                tags=["boarderframeos", "enhanced_agent", "agent_cortex_powered"]
-            )
-            self.agentops_session = agentops.start_session()
-
-        except Exception as e:
-            self.logger.warning(f"Monitoring initialization failed: {e}")
-
-    async def _load_enhanced_tools(self):
-        """Load enhanced tools with MCP integration"""
-
-        # Load MCP tools based on agent configuration
-        for tool_name in self.config.tools:
-            if tool_name == "analytics":
-                self.mcp_tools["analytics"] = await self._create_analytics_tool()
-            elif tool_name == "customer":
-                self.mcp_tools["customer"] = await self._create_customer_tool()
-            elif tool_name == "registry":
-                self.mcp_tools["registry"] = await self._create_registry_tool()
-            elif tool_name == "filesystem":
-                self.mcp_tools["filesystem"] = await self._create_filesystem_tool()
-            elif tool_name == "database":
-                self.mcp_tools["database"] = await self._create_database_tool()
-
-        # Combine with existing tools
-        self.tools.update(self.mcp_tools)
-
-    async def _register_with_systems(self):
-        """Register with all BoarderframeOS systems"""
-
-        # Register with database registry (existing)
-        try:
-            self.registry_id = await register_agent_with_database(self.config)
-        except Exception as e:
-            self.logger.warning(f"Registry registration failed: {e}")
-            self.registry_id = "unregistered"
-
-        # Register with message bus (existing)
-        await self._register_with_message_bus()
-
-        # Register with Agent Cortex
-        await self._register_with_agent_cortex()
-
-    async def _register_with_agent_cortex(self):
-        """Register this agent with The Agent Cortex"""
-
-        # Update Agent Cortex's agent registry
-        # This would be implemented when Agent Cortex has agent registry
-        pass
-
-    # Enhanced user chat interface
-    async def handle_user_chat(
-        self, message: str, conversation_id: Optional[str] = None
-    ) -> str:
-        """Enhanced chat handling with full Agent Cortex + LangGraph integration"""
-
-        self.logger.info(f"Handling user chat: {message[:100]}...")
-
-        try:
-            # Use the orchestrator for complex multi-agent workflows
-            if await self._should_use_orchestrator(message):
-                result = await self.orchestrator.process_user_request(
-                    message, conversation_id
-                )
-                return result["response"]
-
-            # Use agent-specific graph for single-agent tasks
-            else:
-                return await self._process_with_agent_graph(message, conversation_id)
-
-        except Exception as e:
-            self.logger.error(f"Enhanced chat error: {e}")
-            return f"I apologize, but I encountered an error: {str(e)}"
-
-    async def _should_use_orchestrator(self, message: str) -> bool:
-        """Determine if request should use multi-agent orchestrator"""
-
-        # Use orchestrator for complex requests that might need multiple agents
-        complex_keywords = [
-            "create agent",
-            "new agent",
-            "department",
-            "team",
-            "coordinate",
-            "multiple",
-            "complex",
-            "strategy",
-            "business plan",
-            "analysis",
-        ]
-
-        return any(keyword in message.lower() for keyword in complex_keywords)
-
-    async def _process_with_agent_graph(
-        self, message: str, conversation_id: Optional[str]
-    ) -> str:
-        """Process using agent-specific LangGraph"""
-
-        from .agent_cortex_langgraph_orchestrator import BoarderframeState
-
-        # Create initial state
-        initial_state = BoarderframeState(
-            user_request=message,
-            conversation_id=conversation_id or str(uuid.uuid4()),
-            workflow_type="single_agent",
-            current_agent=self.config.name,
-            agent_chain=[self.config.name],
-            reasoning_chain=[],
-            context={},
-            conversation_history=await self._get_conversation_history(),
-            task_context={},
-            agent_cortex_selections=[],
-            performance_tracking=[],
-            available_tools=list(self.tools.keys()),
-            tool_results=[],
-            department=None,
-            handoff_context=None,
-            final_response="",
-            completion_status="pending",
-            quality_score=0.0,
-            timestamp=datetime.now().isoformat(),
-            processing_time=0.0,
-        )
-
-        # Process through agent graph
-        config = {"configurable": {"thread_id": initial_state["conversation_id"]}}
-        final_state = await self.agent_graph.ainvoke(initial_state, config=config)
-
-        # Extract response
-        if final_state.get("action_result"):
-            return final_state["action_result"]
-        elif final_state.get("thoughts"):
-            return final_state["thoughts"]
-        else:
-            return "I've processed your request but don't have a specific response."
-
-    # Helper methods
-    async def _assess_thinking_complexity(self, state: Dict[str, Any]) -> int:
-        """Assess complexity of thinking task"""
-
-        user_input = state.get("perception_context", {}).get("user_input", "")
-
-        complexity = 5  # Base complexity
-
-        # Increase complexity for certain keywords
-        if any(
-            keyword in user_input.lower()
-            for keyword in ["analyze", "strategy", "complex"]
-        ):
-            complexity += 2
-        if any(
-            keyword in user_input.lower()
-            for keyword in ["business", "revenue", "optimization"]
-        ):
-            complexity += 1
-        if len(user_input) > 500:  # Long requests
-            complexity += 1
-
-        return min(complexity, 10)
-
-    async def _assess_action_complexity(self, state: Dict[str, Any]) -> int:
-        """Assess complexity of action task"""
-
-        thoughts = state.get("thoughts", "")
-
-        complexity = 4  # Base complexity for actions
-
-        # Increase complexity for complex actions
-        if any(
-            keyword in thoughts.lower() for keyword in ["create", "generate", "complex"]
-        ):
-            complexity += 3
-        if any(
-            keyword in thoughts.lower()
-            for keyword in ["coordinate", "multiple", "integrate"]
-        ):
-            complexity += 2
-
-        return min(complexity, 10)
-
-    async def _create_thinking_prompt(
-        self, state: Dict[str, Any], agent_cortex_response
-    ) -> str:
-        """Create enhanced thinking prompt"""
-
-        perception = state.get("perception_context", {})
-
-        prompt = f"""
-        You are {self.config.name}, an enhanced AI agent with the role: {self.config.role}
-
-        Your primary goals:
-        {chr(10).join(f"- {goal}" for goal in self.config.goals)}
-
-        Current situation:
-        - User input: {perception.get('user_input', '')}
-        - Available tools: {', '.join(perception.get('available_tools', []))}
-        - Recent performance: {len(perception.get('recent_performance', []))} interactions tracked
-
-        Agent Cortex selected model: {agent_cortex_response.selection.selected_model}
-        Reasoning: {agent_cortex_response.selection.reasoning}
-
-        Think step by step about how to best respond to this user input.
-        Consider your role, goals, and available capabilities.
-        Be specific and actionable in your thinking.
-        """
-
-        return prompt
-
-    async def _determine_required_action(self, state: Dict[str, Any]) -> str:
-        """Determine what action is required based on thinking"""
-
-        thoughts = state.get("thoughts", "")
-
-        # Simple action determination logic
-        if "tool" in thoughts.lower():
-            return "use_tool"
-        elif "respond" in thoughts.lower():
-            return "generate_response"
-        elif "analyze" in thoughts.lower():
-            return "perform_analysis"
-        else:
-            return "general_response"
-
-    async def _execute_enhanced_action(
-        self, state: Dict[str, Any], agent_cortex_response
-    ) -> str:
-        """Execute action with Agent Cortex-selected model"""
-
-        required_action = await self._determine_required_action(state)
-        thoughts = state.get("thoughts", "")
-
-        action_prompt = f"""
-        Based on my thinking: {thoughts}
-
-        Required action: {required_action}
-
-        Execute this action and provide the result.
-        Be helpful, accurate, and aligned with my role as {self.config.role}.
-        """
-
-        try:
-            action_result = await agent_cortex_response.llm.generate(action_prompt)
-
-            # Report success to Agent Cortex
-            await self._report_agent_cortex_performance(
-                agent_cortex_response.tracking_id, action_result, success=True
+            # Create a general-purpose chain
+            self.general_chain = LLMChain(
+                llm=self.langchain_llm, memory=self.langchain_memory, verbose=False
             )
 
-            return action_result
+            logger.info(f"LangChain initialized for {self.config.name}")
 
         except Exception as e:
-            error_result = f"Action execution failed: {str(e)}"
+            logger.error(f"Failed to initialize LangChain: {e}")
+            self.has_langchain = False
 
-            # Report error to Agent Cortex
-            await self._report_agent_cortex_performance(
-                agent_cortex_response.tracking_id, error_result, success=False
-            )
-
-            return error_result
-
-    async def _report_agent_cortex_performance(
-        self, tracking_id: str, result: str, success: bool
-    ):
-        """Report performance metrics to Agent Cortex"""
-
-        try:
-            metrics = PerformanceMetrics(
-                tracking_id=tracking_id,
-                agent_name=self.config.name,
-                selected_model="",  # Will be filled by Agent Cortex
-                actual_cost=0.001,  # Estimated
-                actual_latency=1.5,  # Estimated
-                actual_quality=0.8 if success else 0.3,
-                user_satisfaction=0.8 if success else 0.4,
-                task_completion=success,
-            )
-
-            await self.agent_cortex.report_performance(tracking_id, metrics)
-
-            # Update local metrics
-            if success:
-                self.metrics.quality_score = (self.metrics.quality_score + 0.8) / 2
-            else:
-                self.metrics.errors += 1
-
-        except Exception as e:
-            self.logger.error(f"Error reporting Agent Cortex performance: {e}")
-
-    # Abstract methods for subclasses
-    @abstractmethod
     async def think(self, context: Dict[str, Any]) -> str:
-        """Abstract method for agent-specific thinking (compatibility with old interface)"""
-        pass
+        """
+        Enhanced thinking with Claude API
+        Backward compatible with original think method
+        """
+        # Extract message from context
+        message = context.get("message", context.get("task", str(context)))
 
-    @abstractmethod
-    async def act(self, action: Dict[str, Any]) -> Dict[str, Any]:
-        """Abstract method for agent-specific actions (compatibility with old interface)"""
-        pass
-
-    # Additional helper methods
-    async def _get_conversation_history(self) -> List[Dict[str, Any]]:
-        """Get conversation history"""
-        return self.memory.recall("conversation", limit=10)
-
-    async def _get_system_context(self) -> Dict[str, Any]:
-        """Get current system context"""
-        return {
-            "agent_count": len(await self._get_active_agents()),
-            "system_load": 0.3,  # TODO: Get real system load
-            "time_of_day": datetime.now().hour,
-        }
-
-    async def _get_active_agents(self) -> List[str]:
-        """Get list of active agents"""
-        # TODO: Integrate with registry
-        return ["solomon", "david", "adam"]
-
-    async def _analyze_interaction_performance(
-        self, state: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Analyze performance of the interaction"""
-
-        start_time = datetime.fromisoformat(
-            state.get("timestamp", datetime.now().isoformat())
-        )
-        processing_time = (datetime.now() - start_time).total_seconds()
-
-        return {
-            "processing_time": processing_time,
-            "agent_cortex_selections": len(state.get("agent_cortex_selections", [])),
-            "tools_used": len(state.get("tool_results", [])),
-            "quality_indicators": {
-                "response_length": len(state.get("action_result", "")),
-                "complexity_handled": state.get("complexity", 5),
-                "error_free": state.get("completion_status") != "error",
-            },
-        }
-
-    async def _store_reflection_in_memory(
-        self, state: Dict[str, Any], performance_analysis: Dict[str, Any]
-    ):
-        """Store reflection in agent memory"""
-
-        reflection_entry = {
-            "type": "reflection",
-            "user_request": state.get("user_request", ""),
-            "response": state.get("action_result", ""),
-            "performance": performance_analysis,
-            "agent_cortex_selections": state.get("agent_cortex_selections", []),
-            "timestamp": datetime.now().isoformat(),
-        }
-
-        self.memory.add(reflection_entry, permanent=True)
-
-    async def _extract_learning_insights(self, state: Dict[str, Any]) -> Dict[str, Any]:
-        """Extract learning insights from the interaction"""
-
-        agent_cortex_selections = state.get("agent_cortex_selections", [])
-        performance = state.get("reflection", {})
-
-        insights = {
-            "model_effectiveness": {},
-            "tool_usage_patterns": {},
-            "improvement_opportunities": [],
-        }
-
-        # Analyze Agent Cortex model selections
-        for selection in agent_cortex_selections:
-            model = selection.get("selected_model", "unknown")
-            if model not in insights["model_effectiveness"]:
-                insights["model_effectiveness"][model] = {"uses": 0, "avg_quality": 0.0}
-
-            insights["model_effectiveness"][model]["uses"] += 1
-            # TODO: Track actual quality scores
-
-        return insights
-
-    async def _update_agent_cortex_preferences(self, state: Dict[str, Any]):
-        """Update Agent Cortex preferences based on performance"""
-
-        # Update quality threshold based on recent performance
-        if state.get("quality_score", 0) > 0.9:
-            self.agent_cortex_session.quality_threshold = min(
-                0.95, self.agent_cortex_session.quality_threshold + 0.01
-            )
-        elif state.get("quality_score", 0) < 0.7:
-            self.agent_cortex_session.quality_threshold = max(
-                0.75, self.agent_cortex_session.quality_threshold - 0.01
-            )
-
-    # Tool creation methods
-    async def _create_analytics_tool(self):
-        """Create analytics MCP tool"""
-
-        # TODO: Implement actual MCP integration
-        async def analytics_tool(query: str) -> str:
-            return f"Analytics query executed: {query}"
-
-        return analytics_tool
-
-    async def _create_customer_tool(self):
-        """Create customer MCP tool"""
-
-        async def customer_tool(action: str, data: Dict = None) -> str:
-            return f"Customer action {action} executed"
-
-        return customer_tool
-
-    async def _create_registry_tool(self):
-        """Create registry MCP tool"""
-
-        async def registry_tool(operation: str, agent_data: Dict = None) -> str:
-            return f"Registry operation {operation} executed"
-
-        return registry_tool
-
-    async def _create_filesystem_tool(self):
-        """Create filesystem MCP tool"""
-
-        async def filesystem_tool(action: str, path: str, content: str = None) -> str:
-            return f"Filesystem {action} on {path} executed"
-
-        return filesystem_tool
-
-    async def _create_database_tool(self):
-        """Create database MCP tool"""
-
-        async def database_tool(query: str, data: Dict = None) -> str:
-            return f"Database query executed: {query}"
-
-        return database_tool
-
-    # Compatibility methods
-    async def _register_with_message_bus(self):
-        """Register with message bus (existing functionality)"""
-        # TODO: Implement message bus registration
-        pass
-
-    async def _setup_langsmith_project(self):
-        """Setup LangSmith project for this agent"""
-        try:
-            # Create agent-specific project
-            project_name = f"boarderframeos-{self.config.name}"
-            # TODO: Implement LangSmith project setup
-        except Exception as e:
-            self.logger.warning(f"LangSmith setup failed: {e}")
-
-    # Status and monitoring
-    async def get_enhanced_status(self) -> Dict[str, Any]:
-        """Get comprehensive enhanced agent status"""
-
-        return {
+        # Add system context
+        enhanced_context = {
             "agent_name": self.config.name,
-            "state": self.state.value,
-            "agent_cortex_session": {
-                "session_id": self.agent_cortex_session.session_id,
-                "active_requests": len(self.agent_cortex_session.active_requests),
-                "cost_budget": self.agent_cortex_session.cost_budget,
-                "quality_threshold": self.agent_cortex_session.quality_threshold,
-            },
-            "metrics": {
-                "agent_cortex_requests": self.metrics.agent_cortex_requests,
-                "workflows_completed": self.metrics.workflows_completed,
-                "avg_response_time": self.metrics.avg_response_time,
-                "quality_score": self.metrics.quality_score,
-                "errors": self.metrics.errors,
-            },
-            "capabilities": {
-                "tools": list(self.tools.keys()),
-                "mcp_tools": list(self.mcp_tools.keys()),
-                "goals": self.config.goals,
-            },
-            "last_activity": self.metrics.last_activity.isoformat(),
+            "department": getattr(self, "department", "general"),
+            "current_time": datetime.utcnow().isoformat(),
+            "team_members": self.team_members,
+            **context,
         }
 
+        try:
+            # Use Claude for intelligent response
+            response = await self.claude.get_response(
+                agent_name=self.config.name.lower(),
+                user_message=message,
+                context=enhanced_context,
+            )
 
-# Export main class
-__all__ = [
-    "EnhancedBaseAgent",
-    "EnhancedAgentState",
-    "AgentCortexSession",
-    "EnhancedAgentMetrics",
-]
+            # Update metrics
+            self.performance_metrics["tasks_completed"] += 1
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Claude thinking error: {e}")
+            # Fallback to simple response
+            return f"I understand the task: {message}. Let me process this."
+
+    async def act(self, thought: str, context: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Enhanced acting based on thoughts
+        Backward compatible with original act method
+        """
+        # Default implementation that can be overridden
+        result = {
+            "status": "completed",
+            "thought": thought,
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+
+        # If the thought suggests using a tool, try to use it
+        if "use tool" in thought.lower():
+            for tool_name, tool_func in self.tools.items():
+                if tool_name in thought.lower():
+                    try:
+                        tool_result = await tool_func("execute", context=context)
+                        result["tool_used"] = tool_name
+                        result["tool_result"] = tool_result
+                        break
+                    except Exception as e:
+                        logger.error(f"Tool execution error: {e}")
+
+        return result
+
+    async def speak(
+        self, text: str, emotion: Optional[float] = None
+    ) -> Optional[bytes]:
+        """
+        Speak the given text with voice synthesis
+        """
+        if not self.has_voice:
+            logger.warning(f"{self.config.name} has no voice capability")
+            return None
+
+        try:
+            audio_data = await self.voice.text_to_speech(
+                text=text, agent_name=self.config.name.lower(), emotion=emotion
+            )
+
+            logger.info(f"{self.config.name} spoke: {text[:50]}...")
+            return audio_data
+
+        except Exception as e:
+            logger.error(f"Voice synthesis error: {e}")
+            return None
+
+    async def listen(self, duration: int = 5) -> Optional[str]:
+        """
+        Listen for speech input
+        """
+        if not self.has_voice:
+            logger.warning(f"{self.config.name} has no voice capability")
+            return None
+
+        try:
+            text = await self.voice.speech_to_text(duration=duration)
+
+            if text:
+                logger.info(f"{self.config.name} heard: {text}")
+
+            return text
+
+        except Exception as e:
+            logger.error(f"Speech recognition error: {e}")
+            return None
+
+    def start_continuous_listening(self, callback: Callable[[str], None]):
+        """
+        Start listening continuously for voice commands
+        """
+        if not self.has_voice:
+            logger.warning(f"{self.config.name} has no voice capability")
+            return
+
+        self.is_listening = True
+        self.voice_callback = callback
+
+        def voice_handler(text: str):
+            # Process through Claude first
+            response = self.claude.get_sync_response(self.config.name.lower(), text)
+            callback(response)
+
+        self.voice.start_continuous_listening(voice_handler)
+        logger.info(f"{self.config.name} started continuous listening")
+
+    def stop_continuous_listening(self):
+        """
+        Stop continuous listening
+        """
+        self.is_listening = False
+        self.voice.stop_continuous_listening()
+        logger.info(f"{self.config.name} stopped continuous listening")
+
+    async def handle_user_chat(self, message: str) -> str:
+        """
+        Enhanced chat handling with Claude
+        For Corporate HQ integration
+        """
+        try:
+            # Get intelligent response from Claude
+            response = await self.claude.get_response(
+                agent_name=self.config.name.lower(),
+                user_message=message,
+                context={"chat_interface": "corporate_hq", "user": "operator"},
+            )
+
+            # Optionally speak the response
+            if self.has_voice and hasattr(self, "voice_enabled") and self.voice_enabled:
+                await self.speak(response)
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Chat handling error: {e}")
+            return f"I apologize, but I encountered an error processing your message: {str(e)}"
+
+    async def collaborate_with(self, agent_name: str, task: Dict[str, Any]) -> Any:
+        """
+        Collaborate with another agent on a task
+        """
+        logger.info(f"{self.config.name} collaborating with {agent_name} on task")
+
+        # Send task to other agent
+        response = await send_task_request(
+            from_agent=self.config.name,
+            to_agent=agent_name,
+            task=task,
+            priority=MessagePriority.NORMAL,
+        )
+
+        return response
+
+    def form_team(self, members: List[str], make_leader: bool = False):
+        """
+        Form a team with other agents
+        """
+        self.team_members = members
+        self.is_team_leader = make_leader
+
+        logger.info(f"{self.config.name} formed team with {members}")
+
+        if make_leader:
+            logger.info(f"{self.config.name} is team leader")
+
+    async def delegate_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Delegate task to team members
+        """
+        if not self.is_team_leader or not self.team_members:
+            logger.warning(f"{self.config.name} cannot delegate - not a team leader")
+            return {"error": "Not a team leader"}
+
+        # Use Claude to decide best agent for task
+        decision = await self.claude.get_response(
+            self.config.name.lower(),
+            f"Which team member should handle this task? Members: {self.team_members}. Task: {task}",
+            context={"role": "delegation"},
+        )
+
+        # Extract agent name from decision (simplified)
+        selected_agent = self.team_members[0]  # Default to first member
+
+        # Delegate to selected agent
+        result = await self.collaborate_with(selected_agent, task)
+
+        return {"delegated_to": selected_agent, "result": result}
+
+    async def learn_from_interaction(self, interaction: Dict[str, Any]):
+        """
+        Learn and improve from interactions
+        """
+        # Update performance metrics
+        if interaction.get("success", False):
+            self.performance_metrics["success_rate"] = (
+                self.performance_metrics["success_rate"] * 0.9 + 0.1
+            )
+
+        # Store learning in Claude's memory
+        await self.claude.get_response(
+            self.config.name.lower(),
+            f"Learn from this interaction: {json.dumps(interaction)}",
+            context={"learning_mode": True},
+        )
+
+    def create_workflow(self) -> Optional[Any]:
+        """
+        Create a LangGraph workflow for complex tasks
+        """
+        if not LANGGRAPH_AVAILABLE:
+            logger.warning("LangGraph not available")
+            return None
+
+        # Create state graph
+        workflow = StateGraph(dict)
+
+        # Add nodes for common agent tasks
+        workflow.add_node("analyze", self._analyze_task)
+        workflow.add_node("plan", self._plan_execution)
+        workflow.add_node("execute", self._execute_plan)
+        workflow.add_node("review", self._review_results)
+
+        # Add edges
+        workflow.add_edge("analyze", "plan")
+        workflow.add_edge("plan", "execute")
+        workflow.add_edge("execute", "review")
+        workflow.add_edge("review", END)
+
+        # Set entry point
+        workflow.set_entry_point("analyze")
+
+        # Compile with memory
+        checkpointer = MemorySaver()
+        return workflow.compile(checkpointer=checkpointer)
+
+    async def _analyze_task(self, state: Dict) -> Dict:
+        """Analyze incoming task"""
+        analysis = await self.think({"task": state.get("task"), "phase": "analysis"})
+        state["analysis"] = analysis
+        return state
+
+    async def _plan_execution(self, state: Dict) -> Dict:
+        """Plan task execution"""
+        plan = await self.think(
+            {"analysis": state.get("analysis"), "phase": "planning"}
+        )
+        state["plan"] = plan
+        return state
+
+    async def _execute_plan(self, state: Dict) -> Dict:
+        """Execute the plan"""
+        result = await self.act(state.get("plan"), {"phase": "execution"})
+        state["result"] = result
+        return state
+
+    async def _review_results(self, state: Dict) -> Dict:
+        """Review and learn from results"""
+        review = await self.think({"result": state.get("result"), "phase": "review"})
+        state["review"] = review
+
+        # Learn from the interaction
+        await self.learn_from_interaction(
+            {"task": state.get("task"), "result": state.get("result"), "success": True}
+        )
+
+        return state
+
+    async def process_with_workflow(self, task: Dict) -> Dict:
+        """
+        Process a task using the workflow
+        """
+        workflow = self.create_workflow()
+        if not workflow:
+            # Fallback to simple processing
+            thought = await self.think(task)
+            return await self.act(thought, task)
+
+        # Run workflow
+        result = await workflow.ainvoke({"task": task})
+        return result
+
+    def get_capabilities(self) -> Dict[str, bool]:
+        """
+        Get agent's enhanced capabilities
+        """
+        return {
+            "voice": self.has_voice,
+            "claude_ai": self.has_claude,
+            "langchain": self.has_langchain,
+            "workflows": self.has_workflows,
+            "team_collaboration": True,
+            "continuous_learning": True,
+        }
+
+    def __repr__(self) -> str:
+        """Enhanced representation"""
+        return (
+            f"EnhancedAgent(name='{self.config.name}', "
+            f"role='{self.config.role}', "
+            f"voice={self.has_voice}, "
+            f"claude={self.has_claude}, "
+            f"team_size={len(self.team_members)})"
+        )

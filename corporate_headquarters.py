@@ -47,6 +47,7 @@ class HealthDataManager:
             "Scanning Filesystem MCP server...",
             "Checking Database MCP server...",
             "Checking Agent Cortex intelligent orchestration...",
+            "Checking Agent Communication Center (ACC)...",
             "Checking Analytics MCP server...",
             "Scanning Payment MCP server...",
             "Checking Customer MCP server...",
@@ -99,6 +100,10 @@ class HealthDataManager:
             refresh_time = time.time() - start_time
             print(f"✅ Global refresh completed in {refresh_time:.2f}s")
 
+            # Record refresh duration for history
+            if hasattr(self.dashboard, "last_refresh_duration"):
+                self.dashboard.last_refresh_duration = refresh_time * 1000
+
             return True
 
         except Exception as e:
@@ -109,6 +114,218 @@ class HealthDataManager:
             return False
         finally:
             self.dashboard.unified_data["refresh_in_progress"] = False
+
+    async def enhanced_global_refresh(self, components=None, progress_callback=None):
+        """Enhanced global refresh with component selection support and real-time progress"""
+        print(f"🔄 Starting enhanced global refresh with components: {components}")
+        self.dashboard.unified_data["refresh_in_progress"] = True
+
+        # Clear all caches before refresh
+        self._clear_all_caches()
+
+        # Map component names to refresh methods
+        component_map = {
+            "system_metrics": self._refresh_system_metrics,
+            "database_health": self._refresh_database_health,
+            "services_status": self._refresh_all_services,
+            "agents_status": self._refresh_agents_status,
+            "mcp_servers": self._refresh_all_mcp_servers,
+            "registry_data": self._refresh_registry_data,
+            "departments_data": self._refresh_departments_data,
+            "organizational_data": self._refresh_organizational_data,
+        }
+
+        start_time = time.time()
+        refreshed_components = []
+        failed_components = []
+        component_details = {}
+
+        try:
+            # If no components specified, refresh all
+            if not components:
+                components = list(component_map.keys())
+
+            total_components = len(components)
+            for idx, component in enumerate(components):
+                if component in component_map:
+                    try:
+                        component_start = time.time()
+                        print(f"🔄 Refreshing component: {component}")
+
+                        # Send progress update if callback provided
+                        if progress_callback:
+                            await progress_callback(
+                                {
+                                    "component": component,
+                                    "status": "running",
+                                    "progress": (idx / total_components) * 100,
+                                    "message": f'Refreshing {component.replace("_", " ")}...',
+                                }
+                            )
+
+                        await component_map[component]()
+
+                        component_time = time.time() - component_start
+                        refreshed_components.append(component)
+                        component_details[component] = {
+                            "status": "success",
+                            "duration": component_time,
+                        }
+
+                        print(
+                            f"✅ Successfully refreshed: {component} ({component_time:.2f}s)"
+                        )
+
+                        # Send success update
+                        if progress_callback:
+                            await progress_callback(
+                                {
+                                    "component": component,
+                                    "status": "completed",
+                                    "progress": ((idx + 1) / total_components) * 100,
+                                    "message": f'{component.replace("_", " ")} refreshed',
+                                    "duration": component_time,
+                                }
+                            )
+                    except Exception as e:
+                        print(f"❌ Failed to refresh {component}: {e}")
+                        failed_components.append(component)
+                        component_details[component] = {
+                            "status": "error",
+                            "error": str(e),
+                        }
+
+                        # Send error update
+                        if progress_callback:
+                            await progress_callback(
+                                {
+                                    "component": component,
+                                    "status": "error",
+                                    "progress": ((idx + 1) / total_components) * 100,
+                                    "message": f'Failed to refresh {component.replace("_", " ")}',
+                                    "error": str(e),
+                                }
+                            )
+                else:
+                    print(f"⚠️ Unknown component: {component}")
+
+            # Update timestamp
+            self.dashboard.unified_data["last_refresh"] = datetime.now().isoformat()
+
+            # Sync to legacy properties
+            self._sync_to_legacy_properties()
+
+            # Force metrics layer cache refresh
+            if (
+                hasattr(self.dashboard, "metrics_layer")
+                and self.dashboard.metrics_layer
+            ):
+                print("🔄 Forcing metrics layer cache refresh...")
+                try:
+                    self.dashboard.metrics_layer.get_all_metrics(force_refresh=True)
+                except Exception as e:
+                    print(f"⚠️ Metrics layer refresh warning: {e}")
+
+            # Emit refresh completed event
+            self._emit_refresh_event(
+                "refresh_completed",
+                {
+                    "components": refreshed_components,
+                    "failed": failed_components,
+                    "timestamp": datetime.now().isoformat(),
+                },
+            )
+
+            refresh_time = time.time() - start_time
+            print(f"✅ Enhanced refresh completed in {refresh_time:.2f}s")
+
+            # Record refresh duration
+            if hasattr(self.dashboard, "last_refresh_duration"):
+                self.dashboard.last_refresh_duration = refresh_time * 1000
+
+            return {
+                "status": "success" if not failed_components else "partial_success",
+                "refreshed_components": refreshed_components,
+                "failed_components": failed_components,
+                "duration": refresh_time,
+                "component_details": component_details,
+            }
+
+        except Exception as e:
+            print(f"❌ Enhanced refresh failed: {e}")
+            import traceback
+
+            traceback.print_exc()
+            return {
+                "status": "error",
+                "error": str(e),
+                "refreshed_components": refreshed_components,
+                "failed_components": failed_components,
+            }
+        finally:
+            self.dashboard.unified_data["refresh_in_progress"] = False
+
+    def _clear_all_caches(self):
+        """Clear all caches to ensure fresh data"""
+        print("🧹 Clearing all caches...")
+
+        # Clear metrics layer cache
+        if hasattr(self.dashboard, "metrics_layer") and self.dashboard.metrics_layer:
+            if hasattr(self.dashboard.metrics_layer, "_metrics_cache"):
+                self.dashboard.metrics_layer._metrics_cache = {}
+                self.dashboard.metrics_layer._last_refresh = None
+                print("✅ Metrics layer cache cleared")
+
+        # Clear any other caches
+        if hasattr(self.dashboard, "_cache"):
+            self.dashboard._cache = {}
+
+        # Clear unified data caches
+        for key in ["agents_cache", "departments_cache", "services_cache"]:
+            if key in self.dashboard.unified_data:
+                self.dashboard.unified_data[key] = {}
+
+        print("✅ All caches cleared")
+
+    def _emit_refresh_event(self, event_type, data):
+        """Emit refresh events for UI updates"""
+        if hasattr(self.dashboard, "event_emitter"):
+            self.dashboard.event_emitter.emit(event_type, data)
+
+        # Store in unified data for polling
+        if "refresh_events" not in self.dashboard.unified_data:
+            self.dashboard.unified_data["refresh_events"] = []
+
+        self.dashboard.unified_data["refresh_events"].append(
+            {"type": event_type, "data": data, "timestamp": datetime.now().isoformat()}
+        )
+
+        # Keep only last 100 events
+        if len(self.dashboard.unified_data["refresh_events"]) > 100:
+            self.dashboard.unified_data["refresh_events"] = self.dashboard.unified_data[
+                "refresh_events"
+            ][-100:]
+
+    async def _refresh_all_services(self):
+        """Refresh all services status"""
+        await self._refresh_corporate_headquarters_status()
+        await self._refresh_agent_cortex_status()
+        await self._refresh_acc_status()
+
+    async def _refresh_all_mcp_servers(self):
+        """Refresh all MCP servers"""
+        mcp_servers = [
+            ("registry", 8000),
+            ("filesystem", 8001),
+            ("database_postgres", 8010),
+            ("analytics", 8007),
+            ("payment", 8006),
+            ("customer", 8008),
+            ("llm", 8005),
+        ]
+
+        for server_name, port in mcp_servers:
+            await self._refresh_mcp_server(server_name, port)
 
     async def _execute_refresh_step(self, step_index: int):
         """Execute specific refresh step based on index"""
@@ -137,39 +354,42 @@ class HealthDataManager:
             elif step_index == 7:  # Database MCP
                 print("🖾 Checking Database MCP...")
                 await self._refresh_mcp_server("database_postgres", 8010)
-            elif step_index == 8:  # Agent Cortex (replaced LLM MCP)
+            elif step_index == 8:  # Agent Cortex
                 print("🧠 Checking Agent Cortex system...")
                 await self._refresh_agent_cortex_status()
-            elif step_index == 9:  # Analytics MCP
+            elif step_index == 9:  # ACC
+                print("💬 Checking Agent Communication Center...")
+                await self._refresh_acc_status()
+            elif step_index == 10:  # Analytics MCP
                 print("📊 Checking Analytics MCP...")
                 await self._refresh_mcp_server("analytics", 8007)
-            elif step_index == 10:  # Payment MCP
+            elif step_index == 11:  # Payment MCP
                 print("💳 Checking Payment MCP...")
                 await self._refresh_mcp_server("payment", 8006)
-            elif step_index == 11:  # Customer MCP
+            elif step_index == 12:  # Customer MCP
                 print("👥 Checking Customer MCP...")
                 await self._refresh_mcp_server("customer", 8008)
-            elif step_index == 12:  # PostgreSQL MCP
+            elif step_index == 13:  # PostgreSQL MCP
                 print("🐘 Checking PostgreSQL MCP...")
                 await self._refresh_mcp_server("postgres", 8010)
-            elif step_index == 13:  # LLM MCP
+            elif step_index == 14:  # LLM MCP
                 print("🤖 Checking LLM MCP...")
                 await self._refresh_mcp_server("llm", 8005)
-            elif step_index == 14:  # Running agents
+            elif step_index == 15:  # Running agents
                 print("🤖 Refreshing agents status...")
                 await self._refresh_agents_status()
-            elif step_index == 15:  # Organizational data
+            elif step_index == 16:  # Organizational data
                 print("🏢 Refreshing organizational data...")
                 await self._refresh_organizational_data()
-            elif step_index == 16:  # Departments/divisions
+            elif step_index == 17:  # Departments/divisions
                 print("🏢 Refreshing departments data...")
                 await self._refresh_departments_data()
                 # Also collect organizational metrics
                 await self._collect_organizational_metrics()
-            elif step_index == 17:  # Service registry
+            elif step_index == 18:  # Service registry
                 print("🗜 Refreshing service registry...")
                 await self._refresh_registry_data()
-            elif step_index == 18:  # Finalize
+            elif step_index == 19:  # Finalize
                 print("✅ Finalizing health metrics...")
                 await self._finalize_health_metrics()
         except Exception as e:
@@ -362,26 +582,51 @@ class HealthDataManager:
             async with httpx.AsyncClient(
                 timeout=self.dashboard.monitoring_config["health_check_timeout"]
             ) as client:
-                url = "http://localhost:8889/api/agent-cortex/status"
+                url = "http://localhost:8888/api/agent-cortex/status"
                 response = await client.get(url)
 
                 if response.status_code == 200:
-                    agent_cortex_status = response.json()
-                    self.dashboard.unified_data["services_status"]["agent_cortex"] = {
-                        "status": "healthy",
-                        "port": 8889,
-                        "response_time": response.elapsed.total_seconds(),
-                        "details": agent_cortex_status,
-                        "last_check": datetime.now().isoformat(),
-                    }
-                    print(f"✅ Agent Cortex system is healthy")
+                    cortex_data = response.json()
+                    if cortex_data.get("status") == "success":
+                        cortex_status = {
+                            "status": "healthy",
+                            "port": 8889,  # Keep UI port for consistency
+                            "response_time": response.elapsed.total_seconds(),
+                            "details": cortex_data.get("cortex_status", {}),
+                            "integration": cortex_data.get("integration", {}),
+                            "last_check": datetime.now().isoformat(),
+                        }
+                        # Update both unified_data and services_status for consistency
+                        self.dashboard.unified_data["services_status"][
+                            "agent_cortex"
+                        ] = cortex_status
+                        self.dashboard.services_status["agent_cortex"] = cortex_status
+                        print(f"✅ Agent Cortex system is healthy (integrated)")
+                    else:
+                        cortex_status = {
+                            "status": "degraded",
+                            "port": 8889,
+                            "error": cortex_data.get("error", "Unknown error"),
+                            "last_check": datetime.now().isoformat(),
+                        }
+                        # Update both unified_data and services_status for consistency
+                        self.dashboard.unified_data["services_status"][
+                            "agent_cortex"
+                        ] = cortex_status
+                        self.dashboard.services_status["agent_cortex"] = cortex_status
+                        print(f"⚠️ Agent Cortex degraded: {cortex_data.get('error')}")
                 else:
-                    self.dashboard.unified_data["services_status"]["agent_cortex"] = {
+                    cortex_status = {
                         "status": "unhealthy",
                         "port": 8889,
                         "last_check": datetime.now().isoformat(),
                     }
-                    print(f"⚠️ Agent Cortex returned status {response.status_code}")
+                    # Update both unified_data and services_status for consistency
+                    self.dashboard.unified_data["services_status"][
+                        "agent_cortex"
+                    ] = cortex_status
+                    self.dashboard.services_status["agent_cortex"] = cortex_status
+                    print(f"⚠️ Agent Cortex API returned status {response.status_code}")
         except Exception as e:
             # Try to check if Agent Cortex instance exists even if UI is not running
             try:
@@ -389,22 +634,120 @@ class HealthDataManager:
 
                 agent_cortex = await get_agent_cortex_instance()
                 status = await agent_cortex.get_status()
-                self.dashboard.unified_data["services_status"]["agent_cortex"] = {
+                cortex_status = {
                     "status": "healthy",
                     "port": 8889,
                     "details": status,
-                    "note": "UI not running but Cortex operational",
+                    "note": "Direct instance check - API unavailable",
                     "last_check": datetime.now().isoformat(),
                 }
-                print(f"✅ Agent Cortex system is operational (UI not accessible)")
-            except:
-                self.dashboard.unified_data["services_status"]["agent_cortex"] = {
+                # Update both unified_data and services_status for consistency
+                self.dashboard.unified_data["services_status"][
+                    "agent_cortex"
+                ] = cortex_status
+                self.dashboard.services_status["agent_cortex"] = cortex_status
+                print(f"✅ Agent Cortex operational (direct check)")
+            except Exception as fallback_error:
+                cortex_status = {
                     "status": "offline",
                     "port": 8889,
-                    "error": str(e),
+                    "error": str(fallback_error),
+                    "api_error": str(e),
                     "last_check": datetime.now().isoformat(),
                 }
-                print(f"❌ Agent Cortex system offline: {e}")
+                # Update both unified_data and services_status for consistency
+                self.dashboard.unified_data["services_status"][
+                    "agent_cortex"
+                ] = cortex_status
+                self.dashboard.services_status["agent_cortex"] = cortex_status
+                print(f"❌ Agent Cortex offline: {fallback_error}")
+
+    async def _refresh_acc_status(self):
+        """Refresh Agent Communication Center (ACC) status"""
+        try:
+            # First check if ACC is running via health endpoint
+            async with httpx.AsyncClient(
+                timeout=self.dashboard.monitoring_config["health_check_timeout"]
+            ) as client:
+                # Check health endpoint first
+                health_url = "http://localhost:8890/health"
+                try:
+                    health_response = await client.get(health_url)
+                    if health_response.status_code == 200:
+                        health_data = health_response.json()
+                        # ACC is healthy, use health data directly
+                        acc_status = {
+                            "status": "healthy",
+                            "port": 8890,
+                            "response_time": health_response.elapsed.total_seconds(),
+                            "details": {
+                                "agents_online": health_data.get("agents_online", 0),
+                                "total_agents": health_data.get("total_agents", 0),
+                                "enhanced_agents": health_data.get("agents", []),
+                                "system_status": health_data.get(
+                                    "status", "operational"
+                                ),
+                                "routes": health_data.get("routes", []),
+                            },
+                            "last_check": datetime.now().isoformat(),
+                        }
+                        self.dashboard.unified_data["services_status"][
+                            "agent_communication_center"
+                        ] = acc_status
+                        self.dashboard.services_status[
+                            "agent_communication_center"
+                        ] = acc_status
+                        print(
+                            f"✅ ACC is healthy ({health_data.get('agents_online', 0)}/{health_data.get('total_agents', 0)} agents online)"
+                        )
+                        return
+                    else:
+                        # Health check failed
+                        acc_status = {
+                            "status": "unhealthy",
+                            "port": 8890,
+                            "error": f"Health check returned {health_response.status_code}",
+                            "last_check": datetime.now().isoformat(),
+                        }
+                        self.dashboard.unified_data["services_status"][
+                            "agent_communication_center"
+                        ] = acc_status
+                        self.dashboard.services_status[
+                            "agent_communication_center"
+                        ] = acc_status
+                        print(
+                            f"⚠️ ACC health check failed with status {health_response.status_code}"
+                        )
+                        return
+                except Exception as health_error:
+                    # Health endpoint not available
+                    acc_status = {
+                        "status": "offline",
+                        "port": 8890,
+                        "error": str(health_error),
+                        "last_check": datetime.now().isoformat(),
+                    }
+                    self.dashboard.unified_data["services_status"][
+                        "agent_communication_center"
+                    ] = acc_status
+                    self.dashboard.services_status[
+                        "agent_communication_center"
+                    ] = acc_status
+                    print(f"❌ ACC offline: {health_error}")
+                    return
+        except Exception as e:
+            acc_status = {
+                "status": "offline",
+                "port": 8890,
+                "error": str(e),
+                "last_check": datetime.now().isoformat(),
+            }
+            # Update both unified_data and services_status for consistency
+            self.dashboard.unified_data["services_status"][
+                "agent_communication_center"
+            ] = acc_status
+            self.dashboard.services_status["agent_communication_center"] = acc_status
+            print(f"❌ ACC offline: {e}")
 
     async def _refresh_corporate_headquarters_status(self):
         """Refresh Corporate Headquarters server status"""
@@ -508,7 +851,7 @@ class HealthDataManager:
             leaders_query = """
                 SELECT COUNT(*) as total,
                        COUNT(CASE WHEN active_status = 'active' THEN 1 END) as active
-                FROM leaders
+                FROM department_leaders
             """
             leader_result = await connection.fetchrow(leaders_query)
             metrics["leaders"]["total"] = leader_result["total"]
@@ -531,7 +874,7 @@ class HealthDataManager:
                     COUNT(DISTINCT CASE WHEN l.active_status = 'active' THEN l.id END) as active_leaders
                 FROM divisions div
                 LEFT JOIN departments d ON div.id = d.division_id
-                LEFT JOIN leaders l ON d.id = l.department_id
+                LEFT JOIN department_leaders l ON d.id = l.department_id
                 GROUP BY div.id, div.division_name, div.is_active
             """
 
@@ -628,8 +971,32 @@ class HealthDataManager:
 
     async def _refresh_registry_data(self):
         """Refresh service registry information"""
-        # Placeholder for registry-specific data
-        pass
+        try:
+            # Get registry server status
+            registry_status = self.dashboard.unified_data.get(
+                "services_status", {}
+            ).get("registry", {})
+
+            # Simulate registry data collection (in real implementation, would query registry)
+            registry_data = {
+                "status": registry_status.get("status", "unknown"),
+                "services_count": len(
+                    self.dashboard.unified_data.get("services_status", {})
+                ),
+                "agents_count": len(
+                    self.dashboard.unified_data.get("agents_status", {})
+                ),
+                "last_updated": datetime.now().isoformat(),
+            }
+
+            self.dashboard.unified_data["registry_data"] = registry_data
+            print(
+                f"✅ Refreshed registry data: {registry_data['services_count']} services registered"
+            )
+            return True
+        except Exception as e:
+            print(f"❌ Failed to refresh registry data: {e}")
+            return False
 
     async def _finalize_health_metrics(self):
         """Finalize and calculate overall health metrics"""
@@ -647,7 +1014,9 @@ class HealthDataManager:
             "status": (
                 "online"
                 if services_online > total_services * 0.7
-                else "warning" if services_online > 0 else "offline"
+                else "warning"
+                if services_online > 0
+                else "offline"
             ),
             "services_ratio": f"{services_online}/{total_services}",
             "last_calculated": datetime.now().isoformat(),
@@ -782,7 +1151,7 @@ class HealthDataManager:
             elif component == "agents_status":
                 await self._refresh_agents_status()
             elif component == "mcp_servers":
-                # Refresh all MCP servers
+                # Refresh all MCP servers and core services
                 mcp_servers = [
                     ("registry", 8000),
                     ("filesystem", 8001),
@@ -790,7 +1159,7 @@ class HealthDataManager:
                     ("analytics", 8007),
                     ("payment", 8006),
                     ("customer", 8008),
-                    ("llm", 8005),
+                    ("agent_communication_center", 8890),
                 ]
                 for server_name, port in mcp_servers:
                     await self._refresh_mcp_server(server_name, port)
@@ -853,7 +1222,7 @@ class DashboardData:
         self.health_history = {}
         self.alert_conditions = {}
         self.monitoring_config = {
-            "update_interval": 15,  # seconds
+            "update_interval": 30,  # seconds - optimized for performance
             "health_check_timeout": 8,  # seconds
             "max_history_entries": 100,
             "global_refresh_steps": 16,  # Total steps in global refresh
@@ -1259,7 +1628,12 @@ class DashboardData:
 
         # Define server categories matching the Systems tab organization
         category_servers = {
-            "Core Systems": ["corporate_headquarters", "agent_cortex", "registry"],
+            "Core Systems": [
+                "corporate_headquarters",
+                "agent_cortex",
+                "agent_communication_center",
+                "registry",
+            ],
             "MCP Servers": ["filesystem", "database_postgres", "analytics"],
             "Business Services": ["payment", "customer"],
         }
@@ -1280,7 +1654,12 @@ class DashboardData:
 
         # Define server categories matching the Systems tab organization
         category_servers = {
-            "Core Systems": ["corporate_headquarters", "agent_cortex", "registry"],
+            "Core Systems": [
+                "corporate_headquarters",
+                "agent_cortex",
+                "agent_communication_center",
+                "registry",
+            ],
             "MCP Servers": ["filesystem", "database_postgres", "analytics"],
             "Business Services": ["payment", "customer"],
         }
@@ -1306,9 +1685,7 @@ class DashboardData:
         print(
             f"🔄 Starting {'enhanced' if enhanced else 'standard'} monitoring system..."
         )
-        print(
-            f"📊 Update interval: {self.monitoring_config['update_interval']} seconds"
-        )
+        print(f"📊 Update interval: {self.monitoring_config['update_interval']} seconds")
 
         # Run initial update immediately
         try:
@@ -1740,6 +2117,74 @@ class DashboardData:
                                     "services_status"
                                 ][service_name]
 
+                    # Load agents status
+                    if "agents" in startup_data:
+                        print(
+                            f"✅ Found {len(startup_data['agents'])} agents in startup status"
+                        )
+                        for agent_name, agent_info in startup_data["agents"].items():
+                            if agent_info.get("status") == "running":
+                                # Add to unified data
+                                self.unified_data["agents_status"][agent_name] = {
+                                    "status": "running",
+                                    "name": agent_name.title(),
+                                    "managed_by": agent_info.get("details", {}).get(
+                                        "managed_by", "unknown"
+                                    ),
+                                    "lifecycle_management": agent_info.get(
+                                        "details", {}
+                                    ).get("lifecycle_management", "unknown"),
+                                    "last_update": agent_info.get(
+                                        "last_update", datetime.now().isoformat()
+                                    ),
+                                }
+                                # Also add to legacy for compatibility
+                                self.agents_status[agent_name] = self.unified_data[
+                                    "agents_status"
+                                ][agent_name]
+                                print(f"  ✅ Loaded agent {agent_name} as running")
+
+                    # Update unified data agents count
+                    if self.unified_data.get("agents_status"):
+                        agents_count = len(self.unified_data["agents_status"])
+                        running_count = sum(
+                            1
+                            for a in self.unified_data["agents_status"].values()
+                            if a.get("status") == "running"
+                        )
+                        self.unified_data["agents"] = {
+                            "total": agents_count,
+                            "running": running_count,
+                            "stopped": agents_count - running_count,
+                        }
+                        print(f"📊 Updated agents count: {running_count}/{agents_count}")
+
+                    # Update services count in unified data
+                    if self.unified_data.get("services_status"):
+                        services_count = len(self.unified_data["services_status"])
+                        healthy_count = sum(
+                            1
+                            for s in self.unified_data["services_status"].values()
+                            if s.get("status") == "healthy"
+                        )
+                        self.unified_data["services"] = {
+                            "total": services_count,
+                            "healthy": healthy_count,
+                            "degraded": sum(
+                                1
+                                for s in self.unified_data["services_status"].values()
+                                if s.get("status") == "degraded"
+                            ),
+                            "critical": sum(
+                                1
+                                for s in self.unified_data["services_status"].values()
+                                if s.get("status") not in ["healthy", "degraded"]
+                            ),
+                        }
+                        print(
+                            f"📊 Updated services count: {healthy_count}/{services_count}"
+                        )
+
                     # Update metrics layer with initial status
                     if self.metrics_layer and hasattr(
                         self.metrics_layer, "set_server_status"
@@ -1810,9 +2255,15 @@ class DashboardData:
                 -max_entries:
             ]
 
-    def _check_alert_conditions(self):
+    def _check_alert_conditions(self, services_data=None, agents_data=None):
         """Check for alert conditions and record them"""
         alerts = []
+
+        # Use provided data or fallback to instance variables
+        if services_data is None:
+            services_data = self.services_status
+        if agents_data is None:
+            agents_data = self.agents_status
 
         # Check system metrics against thresholds
         for metric, threshold in self.monitoring_config["alert_thresholds"].items():
@@ -1831,7 +2282,7 @@ class DashboardData:
                 )
 
         # Check for service failures
-        for service_name, service_data in self.services_status.items():
+        for service_name, service_data in services_data.items():
             if service_data.get("status") not in ["healthy", "online"]:
                 alerts.append(
                     {
@@ -1843,7 +2294,7 @@ class DashboardData:
                 )
 
         # Check for agent failures
-        for agent_name, agent_data in self.agents_status.items():
+        for agent_name, agent_data in agents_data.items():
             if agent_data.get("status") != "running":
                 alerts.append(
                     {
@@ -1959,7 +2410,7 @@ class DashboardData:
                 "status": services_data.get("registry", {}).get("status", "offline")
             },
             "last_update": self.unified_data.get("last_refresh", self.last_update),
-            "alerts": self._check_alert_conditions(),
+            "alerts": self._check_alert_conditions(services_data, agents_data),
         }
 
         return summary
@@ -1989,13 +2440,22 @@ class DashboardData:
                 "priority": 2,
                 "description": "Intelligent model orchestration",
             },
-            "registry": {
-                "name": "Registry Server",
-                "port": 8009,
+            "agent_communication_center": {
+                "name": "Agent Communication Center",
+                "port": 8890,
                 "status": "unknown",
                 "last_check": "Initializing...",
                 "category": "Core Infrastructure",
                 "priority": 3,
+                "description": "Claude-powered agent communications",
+            },
+            "registry": {
+                "name": "Registry Server",
+                "port": 8000,
+                "status": "unknown",
+                "last_check": "Initializing...",
+                "category": "Core Infrastructure",
+                "priority": 4,
                 "description": "Service discovery and registration",
             },
             # MCP Servers (High Priority)
@@ -2005,7 +2465,7 @@ class DashboardData:
                 "status": "unknown",
                 "last_check": "Initializing...",
                 "category": "MCP Servers",
-                "priority": 4,
+                "priority": 5,
                 "description": "File operations and management",
             },
             "database_postgres": {
@@ -2014,7 +2474,7 @@ class DashboardData:
                 "status": "unknown",
                 "last_check": "Initializing...",
                 "category": "MCP Servers",
-                "priority": 5,
+                "priority": 6,
                 "description": "Data storage and retrieval",
             },
             "analytics": {
@@ -2023,7 +2483,7 @@ class DashboardData:
                 "status": "unknown",
                 "last_check": "Initializing...",
                 "category": "MCP Servers",
-                "priority": 6,
+                "priority": 7,
                 "description": "Business intelligence and metrics",
             },
             # Business Services (Medium Priority)
@@ -2033,7 +2493,7 @@ class DashboardData:
                 "status": "unknown",
                 "last_check": "Initializing...",
                 "category": "Business Services",
-                "priority": 7,
+                "priority": 8,
                 "description": "Revenue and billing management",
             },
             "customer": {
@@ -2042,7 +2502,7 @@ class DashboardData:
                 "status": "unknown",
                 "last_check": "Initializing...",
                 "category": "Business Services",
-                "priority": 8,
+                "priority": 9,
                 "description": "Customer relationship management",
             },
         }
@@ -2079,6 +2539,7 @@ class DashboardData:
         servers_to_check = [
             ("corporate_headquarters", 8888),
             ("agent_cortex", 8889),
+            ("agent_communication_center", 8890),
             ("registry", 8000),
             ("filesystem", 8001),
             ("database_postgres", 8010),
@@ -2339,7 +2800,12 @@ class DashboardData:
 
         # Define server categories
         category_servers = {
-            "Core Systems": ["corporate_headquarters", "agent_cortex", "registry"],
+            "Core Systems": [
+                "corporate_headquarters",
+                "agent_cortex",
+                "agent_communication_center",
+                "registry",
+            ],
             "MCP Servers": ["filesystem", "database_postgres", "analytics"],
             "Business Services": ["payment", "customer"],
         }
@@ -2490,14 +2956,19 @@ class DashboardData:
         services_data = self.unified_data.get("services_status", self.services_status)
 
         # Core infrastructure servers
-        core_servers = ["corporate_headquarters", "agent_cortex", "registry"]
+        core_servers = [
+            "corporate_headquarters",
+            "agent_cortex",
+            "agent_communication_center",
+            "registry",
+        ]
         # MCP (Model Context Protocol) servers
         mcp_servers = ["filesystem", "database_postgres", "analytics"]
         # Business services
         business_servers = ["payment", "customer"]
 
-        # Calculate totals - we have exactly 8 servers in the system
-        total_servers = 8  # 3 Core + 3 MCP + 2 Business = 8 servers
+        # Calculate totals - we have exactly 9 servers in the system
+        total_servers = 9  # 4 Core + 3 MCP + 2 Business = 9 servers
 
         # Count healthy servers from each category
         healthy_core = sum(
@@ -2627,6 +3098,17 @@ class DashboardData:
             transition: opacity 0.5s ease;
         }}
 
+        /* Fallback animation to ensure visibility */
+        @keyframes fadeIn {{
+            from {{ opacity: 0; }}
+            to {{ opacity: 1; }}
+        }}
+
+        /* Apply fade in after delay as fallback */
+        body {{
+            animation: fadeIn 0.5s ease 1s forwards;
+        }}
+
         /* Header */
         .header {{
             background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--card-bg) 50%, var(--accent-bg) 100%);
@@ -2669,39 +3151,58 @@ class DashboardData:
 
         .nav-link {{
             position: relative;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             height: 40px;
-            padding: 0;
-            margin: 0 15px;
+            padding: 0 20px;
+            margin: 0 5px;
             text-decoration: none;
             color: var(--secondary-text);
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 500;
             background: transparent;
             border: none;
             cursor: pointer;
-            transition: color 0.2s ease;
+            transition: all 0.2s ease;
             line-height: 40px;
             vertical-align: top;
             text-align: center;
+            gap: 6px;
+            white-space: nowrap;
         }}
 
         .nav-link:hover {{
             color: var(--primary-text);
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 6px;
         }}
 
         .nav-link.active {{
             color: var(--accent-color);
             font-weight: 600;
+            background: rgba(99, 102, 241, 0.15);
+            border-radius: 6px;
+        }}
+
+        .nav-link.active::after {{
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 2px;
+            background: var(--accent-color);
         }}
 
         .nav-link i {{
-            font-size: 14px;
+            font-size: 16px;
             vertical-align: middle;
-            margin-right: 6px;
         }}
 
         .nav-link span {{
+            font-size: 14px;
             vertical-align: middle;
         }}
 
@@ -2743,7 +3244,17 @@ class DashboardData:
         }}
 
         .tab-content.active {{
-            display: block;
+            display: block !important;
+        }}
+
+        /* Ensure nav is clickable */
+        .navigation-container * {{
+            pointer-events: auto;
+        }}
+
+        .nav-link {{
+            pointer-events: auto !important;
+            cursor: pointer !important;
         }}
 
         /* Chat Button */
@@ -3004,6 +3515,23 @@ class DashboardData:
             animation: spin 1s linear infinite;
         }}
 
+        .refresh-dropdown .dropdown-item:hover {{
+            background: rgba(255, 255, 255, 0.05);
+        }}
+
+        .refresh-dropdown .dropdown-item:active {{
+            background: rgba(255, 255, 255, 0.08);
+        }}
+
+        kbd {{
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            padding: 0.2rem 0.4rem;
+            font-family: monospace;
+            font-size: 0.85em;
+        }}
+
 
         @keyframes spin {{
             from {{ transform: rotate(0deg); }}
@@ -3045,6 +3573,122 @@ class DashboardData:
                 transform: scale(1.05);
                 filter: brightness(1.15);
             }}
+        }}
+
+        @keyframes dataFlow {{
+            0% {{
+                transform: translateY(100%);
+                opacity: 0;
+            }}
+            20% {{
+                opacity: 1;
+            }}
+            80% {{
+                opacity: 1;
+            }}
+            100% {{
+                transform: translateY(-100%);
+                opacity: 0;
+            }}
+        }}
+
+        @keyframes circuitGlow {{
+            0% {{
+                box-shadow: 0 0 20px rgba(99, 102, 241, 0.5),
+                           0 0 40px rgba(99, 102, 241, 0.3),
+                           inset 0 0 20px rgba(99, 102, 241, 0.1);
+            }}
+            50% {{
+                box-shadow: 0 0 30px rgba(99, 102, 241, 0.8),
+                           0 0 60px rgba(99, 102, 241, 0.5),
+                           inset 0 0 30px rgba(99, 102, 241, 0.2);
+            }}
+            100% {{
+                box-shadow: 0 0 20px rgba(99, 102, 241, 0.5),
+                           0 0 40px rgba(99, 102, 241, 0.3),
+                           inset 0 0 20px rgba(99, 102, 241, 0.1);
+            }}
+        }}
+
+        @keyframes refreshWave {{
+            0% {{
+                transform: translateX(-100%) skewX(-45deg);
+                opacity: 0;
+            }}
+            50% {{
+                opacity: 1;
+            }}
+            100% {{
+                transform: translateX(100%) skewX(-45deg);
+                opacity: 0;
+            }}
+        }}
+
+        .refresh-visualizer {{
+            position: relative;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f23 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }}
+
+        .refresh-visualizer::before {{
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.4), transparent);
+            animation: refreshWave 3s linear infinite;
+        }}
+
+        .system-circuit {{
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            z-index: 1;
+        }}
+
+        .circuit-node {{
+            position: relative;
+            background: rgba(99, 102, 241, 0.1);
+            border: 2px solid rgba(99, 102, 241, 0.5);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            animation: circuitGlow 3s ease-in-out infinite;
+        }}
+
+        .circuit-node.active {{
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+            animation: none;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.8),
+                       0 0 60px rgba(16, 185, 129, 0.5),
+                       inset 0 0 30px rgba(16, 185, 129, 0.2);
+        }}
+
+        .data-stream {{
+            position: absolute;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, #6366f1, transparent);
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden;
+        }}
+
+        .data-particle {{
+            position: absolute;
+            width: 100%;
+            height: 20px;
+            background: radial-gradient(circle, #fff 0%, transparent 70%);
+            animation: dataFlow 2s linear infinite;
         }}
 
         .system-status {{
@@ -4661,11 +5305,62 @@ class DashboardData:
                     </div>
                 </div>
 
-                <!-- Global Refresh Button -->
-                <button class="global-refresh-btn" onclick="startGlobalRefresh()" id="globalRefreshBtn" title="Refresh All Corporate Headquarters Data">
-                    <i class="fas fa-sync-alt"></i>
-                    <span>Refresh OS</span>
-                </button>
+                <!-- Enhanced Global Refresh Button with Dropdown -->
+                <div class="refresh-button-container" style="position: relative;">
+                    <button class="global-refresh-btn" id="globalRefreshBtn" style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span onclick="startGlobalRefresh()" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>Refresh OS</span>
+                        </span>
+                        <span onclick="toggleRefreshDropdown(event)" style="padding-left: 0.5rem; border-left: 1px solid rgba(255,255,255,0.2); margin-left: 0.5rem; cursor: pointer;">
+                            <i class="fas fa-chevron-down" style="font-size: 0.8rem;"></i>
+                        </span>
+                    </button>
+
+                    <!-- Refresh Options Dropdown -->
+                    <div id="refreshDropdown" class="refresh-dropdown" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); min-width: 220px; z-index: 1000;">
+                        <div class="dropdown-item" onclick="startGlobalRefresh(); closeRefreshDropdown();" style="padding: 0.75rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                            <i class="fas fa-sync-alt" style="color: var(--accent-color); width: 16px; text-align: center;"></i>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500;">Full Refresh</div>
+                                <div style="font-size: 0.75rem; color: var(--secondary-text);">Refresh all components</div>
+                            </div>
+                        </div>
+
+                        <div class="dropdown-item" onclick="openSelectiveRefreshModal(); closeRefreshDropdown();" style="padding: 0.75rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem;">
+                            <i class="fas fa-tasks" style="color: #10b981; width: 16px; text-align: center;"></i>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500;">Selective Refresh</div>
+                                <div style="font-size: 0.75rem; color: var(--secondary-text);">Choose components</div>
+                            </div>
+                        </div>
+
+                        <div style="border-top: 1px solid var(--border-color); margin: 0.25rem 0;"></div>
+
+                        <div class="dropdown-item" onclick="openRefreshScheduler(); closeRefreshDropdown();" style="padding: 0.75rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem;">
+                            <i class="fas fa-clock" style="color: #f59e0b; width: 16px; text-align: center;"></i>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500;">Schedule Refresh</div>
+                                <div style="font-size: 0.75rem; color: var(--secondary-text);">Set auto-refresh</div>
+                            </div>
+                        </div>
+
+                        <div class="dropdown-item" onclick="openRefreshHistory(); closeRefreshDropdown();" style="padding: 0.75rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem;">
+                            <i class="fas fa-history" style="color: #8b5cf6; width: 16px; text-align: center;"></i>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500;">Refresh History</div>
+                                <div style="font-size: 0.75rem; color: var(--secondary-text);">View past refreshes</div>
+                            </div>
+                        </div>
+
+                        <div style="border-top: 1px solid var(--border-color); margin: 0.25rem 0;"></div>
+
+                        <div style="padding: 0.5rem 1rem; font-size: 0.75rem; color: var(--secondary-text);">
+                            <div style="margin-bottom: 0.25rem;"><kbd>F5</kbd> or <kbd>Ctrl+R</kbd> - Full refresh</div>
+                            <div><kbd>Ctrl+Shift+R</kbd> - Selective refresh</div>
+                        </div>
+                    </div>
+                </div>
             </div>
                 <div class="status-dropdown" id="statusDropdown">
                     <div class="dropdown-header">
@@ -4934,8 +5629,71 @@ class DashboardData:
                         </div>
                     </div>
                 </div>
+
+                <!-- Enhanced Refresh Visualization Dashboard -->
+                <div class="refresh-visualizer" id="refreshVisualizer" style="display: none;">
+                    <h3 style="color: #fff; margin: 0 0 2rem 0; text-align: center;">System Refresh Analytics</h3>
+
+                    <!-- Real-time Performance Metrics -->
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
+                        <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; padding: 1rem; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #6366f1;" id="refreshSpeed">0</div>
+                            <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7);">ops/sec</div>
+                        </div>
+                        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 1rem; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #10b981;" id="refreshDataRate">0</div>
+                            <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7);">KB/s</div>
+                        </div>
+                        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 1rem; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #f59e0b;" id="refreshLatency">0</div>
+                            <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7);">ms latency</div>
+                        </div>
+                        <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 8px; padding: 1rem; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #8b5cf6;" id="refreshEfficiency">0</div>
+                            <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7);">% efficiency</div>
+                        </div>
+                    </div>
+
+                    <!-- System Circuit Visualization -->
+                    <div class="system-circuit">
+                        <div class="circuit-node" id="node-core">
+                            <i class="fas fa-microchip" style="font-size: 2rem; color: #6366f1;"></i>
+                            <h4 style="margin: 0.5rem 0; color: #fff;">Core System</h4>
+                            <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7);">Processing...</div>
+                            <div class="data-stream">
+                                <div class="data-particle"></div>
+                            </div>
+                        </div>
+
+                        <div class="circuit-node" id="node-agents">
+                            <i class="fas fa-robot" style="font-size: 2rem; color: #8b5cf6;"></i>
+                            <h4 style="margin: 0.5rem 0; color: #fff;">Agent Network</h4>
+                            <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7);">Syncing...</div>
+                            <div class="data-stream">
+                                <div class="data-particle" style="animation-delay: 0.5s;"></div>
+                            </div>
+                        </div>
+
+                        <div class="circuit-node" id="node-data">
+                            <i class="fas fa-database" style="font-size: 2rem; color: #10b981;"></i>
+                            <h4 style="margin: 0.5rem 0; color: #fff;">Data Layer</h4>
+                            <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7);">Updating...</div>
+                            <div class="data-stream">
+                                <div class="data-particle" style="animation-delay: 1s;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Refresh Timeline -->
+                    <div style="margin-top: 2rem; background: rgba(255,255,255,0.05); border-radius: 8px; padding: 1rem;">
+                        <h4 style="color: #fff; margin: 0 0 1rem 0;">Refresh Timeline</h4>
+                        <div id="refreshTimeline" style="max-height: 200px; overflow-y: auto;">
+                            <!-- Timeline entries will be added here dynamically -->
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
                 <button onclick="closeGlobalRefreshModal()" id="closeRefreshBtn" disabled style="background: var(--accent-color); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
                     <i class="fas fa-times"></i> Close
                 </button>
@@ -5300,7 +6058,7 @@ class DashboardData:
                     </div>
                     <div style="text-align: right;">
                         <div style="font-size: 0.75rem; color: var(--secondary-text); margin-bottom: 0.25rem;">Overall Health</div>
-                        <div style="font-size: 1rem; font-weight: 600; color: {'var(--success-color)' if overall_status == 'online' else 'var(--warning-color)' if overall_status == 'warning' else 'var(--danger-color)'};">
+                        <div style="font-size: 1rem; font-weight: 600; color: var(--{('success' if overall_status == 'online' else 'warning' if overall_status == 'warning' else 'danger')}-color);">
                             {(active_agents + healthy_services) / (total_agents + total_services) * 100:.0f}% Operational
                         </div>
                     </div>
@@ -5363,11 +6121,11 @@ class DashboardData:
                     <div class="widget widget-small">
                         <div class="widget-header">
                             <div class="widget-title">
-                                <i class="fas fa-network-wired" style="color: {('#10b981' if registry_status == 'healthy' else 'var(--danger-color)')};"></i>
+                                <i class="fas fa-network-wired" style="color: {'#10b981' if registry_status == 'healthy' else 'var(--danger-color)'};"></i>
                                 <span>Registry</span>
                             </div>
                         </div>
-                        <div class="widget-value" style="color: {('#10b981' if registry_status == 'healthy' else 'var(--danger-color)')};">
+                        <div class="widget-value" style="color: {'#10b981' if registry_status == 'healthy' else 'var(--danger-color)'};">
                             {'✓' if registry_status == 'healthy' else '✗'}
                         </div>
                         <div class="widget-subtitle">{'Healthy' if registry_status == 'healthy' else 'Offline'}</div>
@@ -5400,7 +6158,7 @@ class DashboardData:
                     </div>
                     <div style="text-align: right;">
                         <div style="font-size: 0.75rem; color: var(--secondary-text); margin-bottom: 0.25rem;">Overall Status</div>
-                        <div style="font-size: 1rem; font-weight: 600; color: {'var(--success-color)' if active_agents > 0 else 'var(--danger-color)'};">
+                        <div style="font-size: 1rem; font-weight: 600; color: var(--{('success' if active_agents > 0 else 'danger')}-color);">
                             {'Operational' if active_agents > 0 else 'Offline'}
                         </div>
                     </div>
@@ -5556,7 +6314,7 @@ class DashboardData:
                     </div>
                     <div style="text-align: right;">
                         <div style="font-size: 0.75rem; color: var(--secondary-text); margin-bottom: 0.25rem;">Registry Health</div>
-                        <div style="font-size: 1rem; font-weight: 600; color: {'var(--success-color)' if registry_status == 'healthy' else 'var(--warning-color)'};">
+                        <div style="font-size: 1rem; font-weight: 600; color: var(--{('success' if registry_status == 'healthy' else 'warning')}-color);">
                             {'Operational' if registry_status == 'healthy' else 'Degraded'}
                         </div>
                     </div>
@@ -6106,7 +6864,7 @@ class DashboardData:
                                 <span>Status</span>
                             </div>
                         </div>
-                        <div class="widget-value" style="color: {'var(--success-color)' if (hasattr(self, 'database_health_metrics') and self.database_health_metrics.get('status') == 'healthy') else 'var(--danger-color)'};">
+                        <div class="widget-value" style="color: var(--{('success' if (hasattr(self, 'database_health_metrics') and self.database_health_metrics.get('status') == 'healthy') else 'danger')}-color);">
                             {"Healthy" if (hasattr(self, 'database_health_metrics') and self.database_health_metrics.get('status') == 'healthy') else 'Error'}
                         </div>
                         <div class="widget-label">Health</div>
@@ -6323,7 +7081,7 @@ class DashboardData:
                     </div>
                     <div style="text-align: right;">
                         <div style="font-size: 0.75rem; color: var(--secondary-text); margin-bottom: 0.25rem;">Infrastructure Health</div>
-                        <div style="font-size: 1rem; font-weight: 600; color: {('#10b981' if healthy_services == total_services else '#f59e0b' if healthy_services > 0 else '#ef4444')};">
+                        <div style="font-size: 1rem; font-weight: 600; color: {'#10b981' if healthy_services == total_services else '#f59e0b' if healthy_services > 0 else '#ef4444'};">
                             {healthy_services}/{total_services} Online
                         </div>
                     </div>
@@ -6581,8 +7339,8 @@ class DashboardData:
         </div>
     </div>
 
-    <!-- Persistent Chat Button -->
-    <button class="chat-button" onclick="openChat()">
+    <!-- Persistent Chat Button - Opens Agent Communication Center -->
+    <button class="chat-button" onclick="openChat()" title="Open Agent Communication Center (ACC)">
         <i class="fas fa-comments"></i>
     </button>
 
@@ -6640,36 +7398,53 @@ class DashboardData:
     </div>
 
     <script>
-        // Tab switching functionality
-        function showTab(tabName) {{
-            // Hide all tab contents
-            const tabs = document.querySelectorAll('.tab-content');
-            tabs.forEach(tab => tab.classList.remove('active'));
+        // Make showTab globally accessible
+        window.showTab = function(tabName) {{
+            console.log('[BoarderframeOS] Switching to tab:', tabName);
 
-            // Remove active class from all nav links
-            const navLinks = document.querySelectorAll('.nav-link');
-            navLinks.forEach(link => link.classList.remove('active'));
+            try {{
+                // Hide all tab contents
+                const tabs = document.querySelectorAll('.tab-content');
+                console.log('[BoarderframeOS] Found', tabs.length, 'tab contents');
+                tabs.forEach(tab => {{
+                    tab.classList.remove('active');
+                    tab.style.display = 'none'; // Force hide
+                }});
 
-            // Show selected tab content
-            const selectedTab = document.getElementById(tabName);
-            if (selectedTab) {{
-                selectedTab.classList.add('active');
-            }}
+                // Remove active class from all nav links
+                const navLinks = document.querySelectorAll('.nav-link');
+                navLinks.forEach(link => link.classList.remove('active'));
 
-            // Add active class to clicked nav link
-            const clickedLink = document.querySelector(`.nav-link[data-tab="${{tabName}}"]`);
-            if (clickedLink) {{
-                clickedLink.classList.add('active');
-            }}
-
-            // Auto-load metrics when metrics tab is shown
-            if (tabName === 'metrics') {{
-                // Check if metrics haven't been loaded yet (spinner is showing)
-                const metricsContent = document.getElementById('metrics-content');
-                if (metricsContent && metricsContent.querySelector('.fa-spinner')) {{
-                    console.log('Auto-loading metrics...');
-                    loadMetricsData();
+                // Show selected tab content
+                const selectedTab = document.getElementById(tabName);
+                if (selectedTab) {{
+                    selectedTab.classList.add('active');
+                    selectedTab.style.display = 'block'; // Force show
+                    console.log('[BoarderframeOS] Activated tab:', tabName);
+                }} else {{
+                    console.error('[BoarderframeOS] Tab not found:', tabName);
                 }}
+
+                // Add active class to clicked nav link
+                const clickedLink = document.querySelector(`.nav-link[data-tab="${{tabName}}"]`);
+                if (clickedLink) {{
+                    clickedLink.classList.add('active');
+                }}
+
+                // Store current tab
+                window.currentTab = tabName;
+
+                // Auto-load metrics when metrics tab is shown
+                if (tabName === 'metrics') {{
+                    // Check if metrics haven't been loaded yet (spinner is showing)
+                    const metricsContent = document.getElementById('metrics-content');
+                    if (metricsContent && metricsContent.querySelector('.fa-spinner')) {{
+                        console.log('Auto-loading metrics...');
+                        loadMetricsData();
+                    }}
+                }}
+            }} catch (error) {{
+                console.error('[BoarderframeOS] Error in showTab:', error);
             }}
         }}
 
@@ -7588,6 +8363,25 @@ ${{JSON.stringify(data.data, null, 2)}}
             currentStepDetails.textContent = 'Preparing to refresh all BoarderframeOS components using enhanced system...';
 
             const startTime = Date.now();
+            window.refreshStartTime = startTime; // Store globally for metrics calculation
+            let eventSource = null;
+            let refreshMetrics = {{
+                operations: 0,
+                dataTransferred: 0,
+                latencies: [],
+                timeline: []
+            }};
+
+            // Show refresh visualizer
+            const visualizer = document.getElementById('refreshVisualizer');
+            if (visualizer) {{
+                visualizer.style.display = 'block';
+                startRefreshVisualization();
+            }}
+
+            // Note: SSE endpoint not implemented, using simulated progress instead
+            // This will be updated when the backend SSE endpoint is added
+            console.log('📊 Using simulated progress (SSE endpoint not yet implemented)');
 
             // Function to update component status
             const updateComponentStatus = (componentId, status) => {{
@@ -7638,7 +8432,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 console.log('🔄 Starting enhanced global refresh...');
 
                 // Simulate progressive refresh with realistic timing
-                const simulateProgress = async () => {{
+                const simulateProgress = () => {{
                     let currentComponent = 0;
                     const totalComponents = componentOrder.length;
 
@@ -7646,7 +8440,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                         if (currentComponent < totalComponents) {{
                             const component = componentOrder[currentComponent];
                             updateComponentStatus(component, 'running');
-                            currentStepText.textContent = `Refreshing ${{component.replace('_', ' ')}}...`;
+                            currentStepText.textContent = `Refreshing ${{component.replace(/_/g, ' ')}}...`;
                             currentStepDetails.textContent = `Processing ${{component}} data layer...`;
 
                             // Update progress bar
@@ -7657,7 +8451,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                             currentComponent++;
 
                             // Schedule next component (random delay between 300-800ms for realism)
-                            setTimeout(runNextComponent, Math.random() * 500 + 300);
+                            window.refreshSimulationInterval = setTimeout(runNextComponent, Math.random() * 500 + 300);
                         }}
                     }};
 
@@ -7700,6 +8494,12 @@ ${{JSON.stringify(data.data, null, 2)}}
 
                 // Wait a moment then show completions and handle skipped components
                 setTimeout(() => {{
+                    // Stop the simulation
+                    if (window.refreshSimulationInterval) {{
+                        clearInterval(window.refreshSimulationInterval);
+                        window.refreshSimulationInterval = null;
+                    }}
+
                     showCompletions();
 
                     // Mark any failed components
@@ -7709,7 +8509,6 @@ ${{JSON.stringify(data.data, null, 2)}}
                     }});
 
                     // Handle any skipped components
-                    const refreshedComponents = result.result?.refreshed_components || componentOrder;
                     componentOrder.forEach(component => {{
                         if (!refreshedComponents.includes(component) && !failedComponents.includes(component)) {{
                             const card = document.querySelector(`[data-component="${{component}}"]`);
@@ -7731,6 +8530,10 @@ ${{JSON.stringify(data.data, null, 2)}}
                     progressPercent.textContent = '100%';
                 }}, 2000); // After all components are shown as complete
 
+                // Record refresh history
+                window.lastRefreshDuration = refreshTime * 1000;
+                recordRefreshHistory('full');
+
                 // Update current step
                 currentStepText.textContent = 'Enhanced refresh completed successfully!';
                 currentStepDetails.textContent = `Refreshed ${{result.result?.refreshed_components?.length || 8}} components in ${{refreshTime.toFixed(2)}} seconds.`;
@@ -7750,6 +8553,12 @@ ${{JSON.stringify(data.data, null, 2)}}
 
                 // Enable close button
                 closeBtn.disabled = false;
+
+                // Close EventSource if it exists
+                if (eventSource) {{
+                    eventSource.close();
+                    eventSource = null;
+                }}
 
                 return result;
 
@@ -7778,6 +8587,12 @@ ${{JSON.stringify(data.data, null, 2)}}
                 // Re-enable refresh button
                 refreshBtn.disabled = false;
                 refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i><span>Refresh OS</span>';
+
+                // Clean up EventSource
+                if (eventSource) {{
+                    eventSource.close();
+                    eventSource = null;
+                }}
             }}
         }}
 
@@ -7976,8 +8791,107 @@ ${{JSON.stringify(data.data, null, 2)}}
             refreshSummary.style.display = 'block';
         }}
 
-        function closeGlobalRefreshModal() {{
-            document.getElementById('globalRefreshModal').style.display = 'none';
+        // Refresh Visualization Functions
+        function startRefreshVisualization() {{
+            const nodes = ['core', 'agents', 'data'];
+            nodes.forEach(node => {{
+                const element = document.getElementById(`node-${{node}}`);
+                if (element) {{
+                    element.classList.remove('active');
+                }}
+            }});
+
+            // Initialize metrics display
+            updateRefreshMetrics({{
+                operations: 0,
+                dataTransferred: 0,
+                latencies: [],
+                timeline: []
+            }});
+        }}
+
+        function updateVisualizerNode(component, status) {{
+            // Map components to nodes
+            const componentNodeMap = {{
+                'system_metrics': 'core',
+                'database_health': 'data',
+                'services_status': 'core',
+                'agents_status': 'agents',
+                'mcp_servers': 'core',
+                'registry_data': 'data',
+                'departments_data': 'data',
+                'organizational_data': 'data'
+            }};
+
+            const nodeId = componentNodeMap[component];
+            if (nodeId) {{
+                const node = document.getElementById(`node-${{nodeId}}`);
+                if (node && status === 'completed') {{
+                    node.classList.add('active');
+                }}
+            }}
+        }}
+
+        function updateRefreshMetrics(metrics) {{
+            // Calculate metrics
+            const elapsed = window.refreshStartTime ? (Date.now() - window.refreshStartTime) / 1000 : 1;
+            const opsPerSec = metrics.operations > 0 ? (metrics.operations / elapsed).toFixed(1) : 0;
+            const dataRate = metrics.dataTransferred > 0 && elapsed > 0 ? (metrics.dataTransferred / elapsed).toFixed(1) : 0;
+            const avgLatency = metrics.latencies.length > 0 ? (metrics.latencies.reduce((a, b) => a + b, 0) / metrics.latencies.length).toFixed(0) : 0;
+            const efficiency = metrics.operations > 0 ? Math.min(100, (metrics.operations / 8 * 100)).toFixed(0) : 0;
+
+            // Update displays
+            const speedEl = document.getElementById('refreshSpeed');
+            const dataRateEl = document.getElementById('refreshDataRate');
+            const latencyEl = document.getElementById('refreshLatency');
+            const efficiencyEl = document.getElementById('refreshEfficiency');
+
+            if (speedEl) speedEl.textContent = opsPerSec;
+            if (dataRateEl) dataRateEl.textContent = dataRate;
+            if (latencyEl) latencyEl.textContent = avgLatency;
+            if (efficiencyEl) efficiencyEl.textContent = efficiency;
+        }}
+
+        function addTimelineEntry(progress) {{
+            const timeline = document.getElementById('refreshTimeline');
+            if (!timeline) return;
+
+            const entry = document.createElement('div');
+            entry.style.cssText = 'padding: 0.5rem; border-left: 3px solid #6366f1; margin-bottom: 0.5rem; color: rgba(255,255,255,0.8);';
+
+            const timestamp = new Date().toLocaleTimeString();
+            const componentName = progress.component ? progress.component.replace(/_/g, ' ') : 'System';
+            const statusIcon = progress.status === 'completed' ? '✅' : progress.status === 'error' ? '❌' : '🔄';
+
+            entry.innerHTML = `
+                <div style="font-size: 0.7rem; color: rgba(255,255,255,0.5);">${{timestamp}}</div>
+                <div style="font-size: 0.9rem;">${{statusIcon}} ${{componentName}} - ${{progress.message || progress.status}}</div>
+                ${{progress.duration ? `<div style="font-size: 0.7rem; color: #6366f1;">Duration: ${{(progress.duration * 1000).toFixed(0)}}ms</div>` : ''}}
+            `;
+
+            timeline.insertBefore(entry, timeline.firstChild);
+
+            // Keep only last 20 entries
+            while (timeline.children.length > 20) {{
+                timeline.removeChild(timeline.lastChild);
+            }}
+        }}
+
+        window.closeGlobalRefreshModal = function() {{
+            console.log('[BoarderframeOS] Closing global refresh modal');
+            const modal = document.getElementById('globalRefreshModal');
+            if (modal) {{
+                modal.style.display = 'none';
+            }}
+            const visualizer = document.getElementById('refreshVisualizer');
+            if (visualizer) {{
+                visualizer.style.display = 'none';
+            }}
+            // Re-enable close buttons
+            const closeButtons = document.querySelectorAll('#closeRefreshBtn, #closeRefreshBtnHeader');
+            closeButtons.forEach(btn => {{
+                if (btn) btn.disabled = false;
+            }});
         }}
 
         function closeModal(modalId) {{
@@ -8238,8 +9152,12 @@ ${{JSON.stringify(data.data, null, 2)}}
         let chatMessages = [];
 
         function openChat() {{
-            document.getElementById('chatOverlay').style.display = 'flex';
-            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            // Open Agent Communication Center in new tab
+            window.open('http://localhost:8890', '_blank');
+
+            // Optionally, still show the overlay as fallback
+            // document.getElementById('chatOverlay').style.display = 'flex';
+            // document.body.style.overflow = 'hidden'; // Prevent background scrolling
         }}
 
         function closeChat() {{
@@ -8364,6 +9282,18 @@ ${{JSON.stringify(data.data, null, 2)}}
         let refreshInterval;
         let isRefreshing = false;
 
+        function updateRefreshDisplay() {{
+            // Update any refresh status indicators
+            const statusElement = document.querySelector('.refresh-status');
+            if (statusElement) {{
+                if (isRefreshing) {{
+                    statusElement.textContent = 'Refreshing...';
+                }} else {{
+                    statusElement.textContent = `Next refresh in ${{refreshCounter}}s`;
+                }}
+            }}
+        }}
+
         function updateDateTime() {{
             const now = new Date();
             const options = {{
@@ -8481,9 +9411,21 @@ ${{JSON.stringify(data.data, null, 2)}}
             alert('Department data refresh will be implemented soon!');
         }}
 
+        // Immediate fallback to ensure page is visible
+        setTimeout(() => {{
+            if (document.body.style.opacity === '0' || document.body.style.opacity === '') {{
+                console.log('[BoarderframeOS] Fallback: Setting body opacity to 1');
+                document.body.style.opacity = '1';
+            }}
+        }}, 500);
+
         // Start the refresh system
         document.addEventListener('DOMContentLoaded', () => {{
-            document.body.style.opacity = '1';\n            \n            // Initialize BoarderframeOS components\n            initializeBoarderframeOSComponents();
+            console.log('[BoarderframeOS] DOMContentLoaded fired');
+            document.body.style.opacity = '1';
+
+            // Initialize BoarderframeOS components
+            initializeBoarderframeOSComponents();
 
             // Start live datetime updates
             updateDateTime();
@@ -8496,7 +9438,654 @@ ${{JSON.stringify(data.data, null, 2)}}
             ['click', 'scroll', 'keypress', 'mousemove'].forEach(event => {{
                 document.addEventListener(event, resetRefreshTimer, {{ passive: true, once: false }});
             }});
+
+            // Initialize enhanced refresh features
+            initializeEnhancedRefresh();
+
+            // Ensure showTab function is available globally
+            if (typeof window.showTab !== 'function') {{
+                console.error('[BoarderframeOS] showTab function not found! Navigation will not work.');
+                // Try to find and fix the issue
+                const scripts = document.querySelectorAll('script');
+                scripts.forEach((script, index) => {{
+                    if (script.textContent && script.textContent.includes('window.showTab')) {{
+                        console.log('[BoarderframeOS] Found showTab definition in script', index);
+                    }}
+                }});
+            }} else {{
+                console.log('[BoarderframeOS] showTab function is available');
+            }}
+
+            // Ensure nav links are clickable
+            setTimeout(() => {{
+                console.log('[BoarderframeOS] Setting up nav link handlers...');
+                const navLinks = document.querySelectorAll('.nav-link');
+                console.log('[BoarderframeOS] Found', navLinks.length, 'nav links');
+
+                navLinks.forEach((link, index) => {{
+                    // Remove any existing onclick to avoid conflicts
+                    link.onclick = null;
+
+                    // Add new click handler
+                    link.addEventListener('click', function(e) {{
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const tabName = this.getAttribute('data-tab');
+                        console.log('[BoarderframeOS] Nav link clicked:', tabName, 'at index', index);
+                        if (tabName && window.showTab) {{
+                            window.showTab(tabName);
+                        }} else {{
+                            console.error('[BoarderframeOS] showTab not found or no tab name');
+                        }}
+                        return false;
+                    }});
+
+                    // Also ensure the button is not disabled
+                    link.disabled = false;
+                    link.style.pointerEvents = 'auto';
+                    link.style.cursor = 'pointer';
+                }});
+
+                console.log('[BoarderframeOS] Nav link handlers installed');
+            }}, 100); // Small delay to ensure DOM is ready
+
+            console.log('[BoarderframeOS] All components initialized successfully');
         }});
+
+        // Record refresh history
+        function recordRefreshHistory(type) {{
+            if (!window.refreshHistory) {{
+                window.refreshHistory = [];
+            }}
+            window.refreshHistory.push({{
+                type: type,
+                timestamp: new Date().toISOString(),
+                duration: window.lastRefreshDuration || 0
+            }});
+            // Keep only last 50 entries
+            if (window.refreshHistory.length > 50) {{
+                window.refreshHistory = window.refreshHistory.slice(-50);
+            }}
+            localStorage.setItem('boarderframeosRefreshHistory', JSON.stringify(window.refreshHistory));
+        }}
+
+        // Enhanced Refresh System
+        function initializeEnhancedRefresh() {{
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', (e) => {{
+                // F5 or Ctrl/Cmd+R for global refresh
+                if (e.key === 'F5' || ((e.ctrlKey || e.metaKey) && e.key === 'r')) {{
+                    e.preventDefault();
+                    startGlobalRefresh();
+                }}
+
+                // Ctrl/Cmd+Shift+R for selective refresh
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'R') {{
+                    e.preventDefault();
+                    openSelectiveRefreshModal();
+                }}
+
+                // Escape to close modals
+                if (e.key === 'Escape') {{
+                    closeAllRefreshModals();
+                }}
+            }});
+
+            // Initialize refresh history
+            window.refreshHistory = JSON.parse(localStorage.getItem('boarderframeosRefreshHistory') || '[]');
+
+            // Initialize refresh scheduling
+            initializeRefreshScheduler();
+
+            // Add refresh status to header
+            addRefreshStatusIndicator();
+
+            // Close refresh dropdown when clicking outside
+            document.addEventListener('click', (e) => {{
+                const dropdown = document.getElementById('refreshDropdown');
+                const refreshBtn = document.getElementById('globalRefreshBtn');
+                if (dropdown && !dropdown.contains(e.target) && !refreshBtn.contains(e.target)) {{
+                    dropdown.style.display = 'none';
+                }}
+            }});
+        }}
+
+        // Toggle refresh dropdown
+        function toggleRefreshDropdown(event) {{
+            event.stopPropagation();
+            const dropdown = document.getElementById('refreshDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }}
+
+        function closeRefreshDropdown() {{
+            const dropdown = document.getElementById('refreshDropdown');
+            if (dropdown) {{
+                dropdown.style.display = 'none';
+            }}
+        }}
+
+        // Selective Refresh Modal
+        function openSelectiveRefreshModal() {{
+            const existingModal = document.getElementById('selectiveRefreshModal');
+            if (existingModal) {{
+                existingModal.style.display = 'flex';
+                return;
+            }}
+
+            const modal = document.createElement('div');
+            modal.id = 'selectiveRefreshModal';
+            modal.className = 'modal-overlay';
+            modal.style.cssText = 'display: flex; z-index: 10000;';
+
+            modal.innerHTML = `
+                <div class="modal-content" style="width: 600px; max-height: 80vh; overflow-y: auto;">
+                    <div class="modal-header" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(79, 70, 229, 0.1)); border-bottom: 1px solid var(--border-color);">
+                        <h3 style="margin: 0; display: flex; align-items: center; gap: 0.75rem;">
+                            <i class="fas fa-tasks"></i> Selective Refresh
+                        </h3>
+                        <button onclick="closeSelectiveRefreshModal()" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: var(--secondary-text); padding: 0.5rem; border-radius: 6px; cursor: pointer;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body" style="padding: 1.5rem;">
+                        <p style="color: var(--secondary-text); margin-bottom: 1.5rem;">
+                            Choose which components to refresh. This allows for faster updates of specific systems.
+                        </p>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <button onclick="selectAllComponents(true)" style="margin-right: 0.5rem; padding: 0.5rem 1rem; background: var(--accent-color); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                                <i class="fas fa-check-square"></i> Select All
+                            </button>
+                            <button onclick="selectAllComponents(false)" style="padding: 0.5rem 1rem; background: rgba(255,255,255,0.1); color: var(--primary-text); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer;">
+                                <i class="fas fa-square"></i> Deselect All
+                            </button>
+                        </div>
+
+                        <div id="componentSelectionGrid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                            <!-- System Components -->
+                            <label class="component-checkbox" style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                                <input type="checkbox" name="refresh-component" value="system_metrics" checked style="width: 18px; height: 18px;">
+                                <div>
+                                    <div style="font-weight: 600; color: var(--primary-text);">
+                                        <i class="fas fa-chart-line" style="color: #6366f1;"></i> System Metrics
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: var(--secondary-text);">CPU, Memory, Disk usage</div>
+                                </div>
+                            </label>
+
+                            <label class="component-checkbox" style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                                <input type="checkbox" name="refresh-component" value="database_health" checked style="width: 18px; height: 18px;">
+                                <div>
+                                    <div style="font-weight: 600; color: var(--primary-text);">
+                                        <i class="fas fa-database" style="color: #10b981;"></i> Database Health
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: var(--secondary-text);">PostgreSQL connections</div>
+                                </div>
+                            </label>
+
+                            <label class="component-checkbox" style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                                <input type="checkbox" name="refresh-component" value="services_status" checked style="width: 18px; height: 18px;">
+                                <div>
+                                    <div style="font-weight: 600; color: var(--primary-text);">
+                                        <i class="fas fa-cogs" style="color: #f59e0b;"></i> Services Status
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: var(--secondary-text);">Core service health</div>
+                                </div>
+                            </label>
+
+                            <label class="component-checkbox" style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                                <input type="checkbox" name="refresh-component" value="agents_status" checked style="width: 18px; height: 18px;">
+                                <div>
+                                    <div style="font-weight: 600; color: var(--primary-text);">
+                                        <i class="fas fa-robot" style="color: #8b5cf6;"></i> Agents Status
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: var(--secondary-text);">AI agent processes</div>
+                                </div>
+                            </label>
+
+                            <label class="component-checkbox" style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                                <input type="checkbox" name="refresh-component" value="mcp_servers" checked style="width: 18px; height: 18px;">
+                                <div>
+                                    <div style="font-weight: 600; color: var(--primary-text);">
+                                        <i class="fas fa-server" style="color: #ef4444;"></i> MCP Servers
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: var(--secondary-text);">Protocol server health</div>
+                                </div>
+                            </label>
+
+                            <label class="component-checkbox" style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                                <input type="checkbox" name="refresh-component" value="registry_data" checked style="width: 18px; height: 18px;">
+                                <div>
+                                    <div style="font-weight: 600; color: var(--primary-text);">
+                                        <i class="fas fa-network-wired" style="color: #06b6d4;"></i> Registry Data
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: var(--secondary-text);">Service registry</div>
+                                </div>
+                            </label>
+
+                            <label class="component-checkbox" style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                                <input type="checkbox" name="refresh-component" value="departments_data" checked style="width: 18px; height: 18px;">
+                                <div>
+                                    <div style="font-weight: 600; color: var(--primary-text);">
+                                        <i class="fas fa-building" style="color: #ec4899;"></i> Departments
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: var(--secondary-text);">Department structure</div>
+                                </div>
+                            </label>
+
+                            <label class="component-checkbox" style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                                <input type="checkbox" name="refresh-component" value="organizational_data" checked style="width: 18px; height: 18px;">
+                                <div>
+                                    <div style="font-weight: 600; color: var(--primary-text);">
+                                        <i class="fas fa-sitemap" style="color: #14b8a6;"></i> Organizations
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: var(--secondary-text);">Org structure data</div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                            <button onclick="closeSelectiveRefreshModal()" style="padding: 0.75rem 1.5rem; background: rgba(255,255,255,0.1); color: var(--primary-text); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer;">
+                                Cancel
+                            </button>
+                            <button onclick="startSelectiveRefresh()" style="padding: 0.75rem 1.5rem; background: var(--accent-color); color: white; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-sync-alt"></i> Start Selective Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Add hover effects
+            modal.querySelectorAll('.component-checkbox').forEach(label => {{
+                label.addEventListener('mouseenter', () => {{
+                    label.style.background = 'rgba(255,255,255,0.08)';
+                    label.style.borderColor = 'var(--accent-color)';
+                }});
+                label.addEventListener('mouseleave', () => {{
+                    label.style.background = 'rgba(255,255,255,0.05)';
+                    label.style.borderColor = 'var(--border-color)';
+                }});
+            }});
+        }}
+
+        function closeSelectiveRefreshModal() {{
+            const modal = document.getElementById('selectiveRefreshModal');
+            if (modal) {{
+                modal.style.display = 'none';
+            }}
+        }}
+
+        function selectAllComponents(select) {{
+            document.querySelectorAll('input[name="refresh-component"]').forEach(checkbox => {{
+                checkbox.checked = select;
+            }});
+        }}
+
+        async function startSelectiveRefresh() {{
+            const selectedComponents = Array.from(document.querySelectorAll('input[name="refresh-component"]:checked'))
+                .map(cb => cb.value);
+
+            if (selectedComponents.length === 0) {{
+                showNotification('Please select at least one component to refresh', 'warning');
+                return;
+            }}
+
+            closeSelectiveRefreshModal();
+
+            // Use the enhanced refresh API with selected components
+            const refreshBtn = document.getElementById('globalRefreshBtn');
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = '<i class="fas fa-sync-alt spinning"></i><span>Selective Refresh...</span>';
+
+            try {{
+                const response = await fetch('/api/enhanced/refresh', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify({{ components: selectedComponents }})
+                }});
+
+                if (response.ok) {{
+                    const result = await response.json();
+                    showNotification(`Selective refresh completed: ${{selectedComponents.length}} components updated`, 'success');
+                    recordRefreshHistory('selective', selectedComponents);
+                }} else {{
+                    showNotification('Selective refresh failed', 'error');
+                }}
+            }} catch (error) {{
+                console.error('Selective refresh error:', error);
+                showNotification('Selective refresh error', 'error');
+            }} finally {{
+                refreshBtn.disabled = false;
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i><span>Refresh OS</span>';
+            }}
+        }}
+
+        // Refresh Scheduler
+        function initializeRefreshScheduler() {{
+            const schedulerData = JSON.parse(localStorage.getItem('boarderframeosRefreshSchedule') || '{{}}');
+            window.refreshSchedule = schedulerData;
+
+            if (schedulerData.enabled && schedulerData.interval) {{
+                startScheduledRefresh(schedulerData.interval);
+            }}
+        }}
+
+        function openRefreshScheduler() {{
+            const modal = document.createElement('div');
+            modal.id = 'refreshSchedulerModal';
+            modal.className = 'modal-overlay';
+            modal.style.cssText = 'display: flex; z-index: 10000;';
+
+            const currentSchedule = window.refreshSchedule || {{}};
+
+            modal.innerHTML = `
+                <div class="modal-content" style="width: 500px;">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-clock"></i> Refresh Scheduler</h3>
+                        <button onclick="closeRefreshScheduler()" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: var(--secondary-text); padding: 0.5rem; border-radius: 6px; cursor: pointer;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body" style="padding: 1.5rem;">
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                                <input type="checkbox" id="scheduleEnabled" ${{currentSchedule.enabled ? 'checked' : ''}} style="width: 18px; height: 18px;">
+                                <span style="font-weight: 600;">Enable Automatic Refresh</span>
+                            </label>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; color: var(--secondary-text);">Refresh Interval:</label>
+                            <select id="refreshInterval" style="width: 100%; padding: 0.5rem; background: var(--secondary-bg); color: var(--primary-text); border: 1px solid var(--border-color); border-radius: 6px;">
+                                <option value="300000" ${{currentSchedule.interval === 300000 ? 'selected' : ''}}>Every 5 minutes</option>
+                                <option value="600000" ${{currentSchedule.interval === 600000 ? 'selected' : ''}}>Every 10 minutes</option>
+                                <option value="900000" ${{currentSchedule.interval === 900000 ? 'selected' : ''}}>Every 15 minutes</option>
+                                <option value="1800000" ${{currentSchedule.interval === 1800000 ? 'selected' : ''}}>Every 30 minutes</option>
+                                <option value="3600000" ${{currentSchedule.interval === 3600000 ? 'selected' : ''}}>Every hour</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; color: var(--secondary-text);">Refresh Type:</label>
+                            <select id="refreshType" style="width: 100%; padding: 0.5rem; background: var(--secondary-bg); color: var(--primary-text); border: 1px solid var(--border-color); border-radius: 6px;">
+                                <option value="full" ${{currentSchedule.type === 'full' ? 'selected' : ''}}>Full Refresh (All Components)</option>
+                                <option value="selective" ${{currentSchedule.type === 'selective' ? 'selected' : ''}}>Selective Refresh (Choose Components)</option>
+                            </select>
+                        </div>
+
+                        <div id="nextRefreshInfo" style="padding: 1rem; background: rgba(99, 102, 241, 0.1); border: 1px solid var(--accent-color); border-radius: 8px; margin-bottom: 1.5rem;">
+                            <i class="fas fa-info-circle" style="color: var(--accent-color);"></i>
+                            <span id="nextRefreshText">Scheduled refresh is currently disabled</span>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                            <button onclick="closeRefreshScheduler()" style="padding: 0.75rem 1.5rem; background: rgba(255,255,255,0.1); color: var(--primary-text); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer;">
+                                Cancel
+                            </button>
+                            <button onclick="saveRefreshSchedule()" style="padding: 0.75rem 1.5rem; background: var(--accent-color); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                                <i class="fas fa-save"></i> Save Schedule
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+        }}
+
+        function closeRefreshScheduler() {{
+            const modal = document.getElementById('refreshSchedulerModal');
+            if (modal) {{
+                modal.remove();
+            }}
+        }}
+
+        function saveRefreshSchedule() {{
+            const enabled = document.getElementById('scheduleEnabled').checked;
+            const interval = parseInt(document.getElementById('refreshInterval').value);
+            const type = document.getElementById('refreshType').value;
+
+            window.refreshSchedule = {{ enabled, interval, type }};
+            localStorage.setItem('boarderframeosRefreshSchedule', JSON.stringify(window.refreshSchedule));
+
+            // Clear existing schedule
+            if (window.scheduledRefreshTimer) {{
+                clearInterval(window.scheduledRefreshTimer);
+            }}
+
+            // Start new schedule if enabled
+            if (enabled) {{
+                startScheduledRefresh(interval);
+                showNotification('Refresh schedule saved and activated', 'success');
+            }} else {{
+                showNotification('Refresh schedule saved (disabled)', 'info');
+            }}
+
+            closeRefreshScheduler();
+        }}
+
+        function startScheduledRefresh(interval) {{
+            window.scheduledRefreshTimer = setInterval(() => {{
+                if (window.refreshSchedule.type === 'full') {{
+                    startGlobalRefresh();
+                }} else {{
+                    // For selective, use predefined components
+                    // You can customize this list
+                    startSelectiveRefresh();
+                }}
+            }}, interval);
+        }}
+
+        // Refresh History
+        function recordRefreshHistory(type, components = null) {{
+            const entry = {{
+                timestamp: new Date().toISOString(),
+                type: type,
+                components: components,
+                duration: window.lastRefreshDuration || 0,
+                success: true
+            }};
+
+            window.refreshHistory.unshift(entry);
+
+            // Keep only last 50 entries
+            if (window.refreshHistory.length > 50) {{
+                window.refreshHistory = window.refreshHistory.slice(0, 50);
+            }}
+
+            localStorage.setItem('boarderframeosRefreshHistory', JSON.stringify(window.refreshHistory));
+        }}
+
+        function openRefreshHistory() {{
+            const modal = document.createElement('div');
+            modal.id = 'refreshHistoryModal';
+            modal.className = 'modal-overlay';
+            modal.style.cssText = 'display: flex; z-index: 10000;';
+
+            const historyHtml = window.refreshHistory.slice(0, 20).map(entry => {{
+                const date = new Date(entry.timestamp);
+                const timeStr = date.toLocaleTimeString();
+                const dateStr = date.toLocaleDateString();
+
+                return `
+                    <div style="padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 600; color: var(--primary-text);">
+                                    <i class="fas fa-history" style="color: var(--accent-color);"></i>
+                                    ${{entry.type === 'full' ? 'Full Refresh' : 'Selective Refresh'}}
+                                </div>
+                                <div style="font-size: 0.85rem; color: var(--secondary-text);">
+                                    ${{dateStr}} at ${{timeStr}} • Duration: ${{(entry.duration / 1000).toFixed(1)}}s
+                                </div>
+                                ${{entry.components ? `<div style="font-size: 0.8rem; color: var(--secondary-text); margin-top: 0.25rem;">Components: ${{entry.components.join(', ')}}</div>` : ''}}
+                            </div>
+                            <div>
+                                <i class="fas fa-check-circle" style="color: var(--success-color);"></i>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }}).join('');
+
+            modal.innerHTML = `
+                <div class="modal-content" style="width: 600px; max-height: 80vh;">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-history"></i> Refresh History</h3>
+                        <button onclick="closeRefreshHistory()" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: var(--secondary-text); padding: 0.5rem; border-radius: 6px; cursor: pointer;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body" style="padding: 1.5rem; overflow-y: auto; max-height: 60vh;">
+                        ${{historyHtml || '<p style="text-align: center; color: var(--secondary-text);">No refresh history available</p>'}}
+                    </div>
+                    <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+                        <button onclick="clearRefreshHistory()" style="padding: 0.5rem 1rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; border-radius: 6px; cursor: pointer;">
+                            <i class="fas fa-trash"></i> Clear History
+                        </button>
+                        <button onclick="closeRefreshHistory()" style="padding: 0.5rem 1rem; background: var(--accent-color); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+        }}
+
+        function closeRefreshHistory() {{
+            const modal = document.getElementById('refreshHistoryModal');
+            if (modal) {{
+                modal.remove();
+            }}
+        }}
+
+        function clearRefreshHistory() {{
+            window.refreshHistory = [];
+            localStorage.setItem('boarderframeosRefreshHistory', '[]');
+            closeRefreshHistory();
+            showNotification('Refresh history cleared', 'info');
+        }}
+
+        // Status Indicator
+        function addRefreshStatusIndicator() {{
+            const header = document.querySelector('.header-content');
+            if (!header) return;
+
+            const indicator = document.createElement('div');
+            indicator.id = 'refreshStatusIndicator';
+            indicator.style.cssText = `
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                margin-left: 1rem;
+                padding: 0.5rem 1rem;
+                background: rgba(255,255,255,0.1);
+                border-radius: 8px;
+                font-size: 0.85rem;
+                color: var(--secondary-text);
+            `;
+
+            indicator.innerHTML = `
+                <i class="fas fa-info-circle"></i>
+                <span>Press F5 or Ctrl+R to refresh</span>
+            `;
+
+            const systemStatus = header.querySelector('.system-status');
+            if (systemStatus) {{
+                systemStatus.appendChild(indicator);
+            }}
+        }}
+
+        // Close all refresh modals
+        function closeAllRefreshModals() {{
+            ['selectiveRefreshModal', 'refreshSchedulerModal', 'refreshHistoryModal', 'globalRefreshModal', 'systemsRefreshModal'].forEach(id => {{
+                const modal = document.getElementById(id);
+                if (modal) {{
+                    modal.style.display = 'none';
+                }}
+            }});
+        }}
+
+        // Enhanced notification system
+        function showNotification(message, type = 'info') {{
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                background: ${{
+                    type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' :
+                    type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)' :
+                    type === 'warning' ? 'linear-gradient(135deg, #f59e0b, #d97706)' :
+                    'linear-gradient(135deg, #6366f1, #4f46e5)'
+                }};
+                color: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 10001;
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                font-size: 0.9rem;
+                animation: slideIn 0.3s ease-out;
+            `;
+
+            const icon = {{
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            }}[type];
+
+            notification.innerHTML = `
+                <i class="fas ${{icon}}"></i>
+                <span>${{message}}</span>
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {{
+                notification.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => notification.remove(), 300);
+            }}, 3000);
+        }}
+
+        // Add CSS animations
+        const animationStyles = document.createElement('style');
+        animationStyles.textContent = `
+            @keyframes slideIn {{
+                from {{
+                    transform: translateX(100%);
+                    opacity: 0;
+                }}
+                to {{
+                    transform: translateX(0);
+                    opacity: 1;
+                }}
+            }}
+
+            @keyframes slideOut {{
+                from {{
+                    transform: translateX(0);
+                    opacity: 1;
+                }}
+                to {{
+                    transform: translateX(100%);
+                    opacity: 0;
+                }}
+            }}
+
+            .component-checkbox:hover {{
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+            }}
+        `;
+        document.head.appendChild(animationStyles);
 
         // Server filtering and sorting functions
         function filterServers() {{
@@ -9033,8 +10622,8 @@ ${{JSON.stringify(data.data, null, 2)}}
                         <div class="agent-info">
                             <div class="agent-header">
                                 <div>
-                                    <h4 class="agent-name">{agent['name']}</h4>
-                                    <div class="agent-title">{agent['type']}</div>
+                                    <h4 class="agent-name">{agent.get('name', 'Unknown')}</h4>
+                                    <div class="agent-title">{agent.get('type', agent.get('agent_type', 'Agent'))}</div>
                                     {self._get_agent_department_info(agent_id)}
                                 </div>
                                 <div class="agent-status-badge running">
@@ -9048,7 +10637,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                             <div class="agent-metrics">
                                 <div class="metric-chip">
                                     <i class="fas fa-hashtag"></i>
-                                    <span>PID: {agent['pid']}</span>
+                                    <span>PID: {agent.get('pid', 'N/A')}</span>
                                 </div>
                                 <div class="metric-chip">
                                     <i class="fas fa-memory"></i>
@@ -9814,13 +11403,21 @@ ${{JSON.stringify(data.data, null, 2)}}
                         "emoji": "🧠",
                         "priority": 2,
                     },
+                    "agent_communication_center": {
+                        "name": "Agent Communication Center",
+                        "icon": "fas fa-comments",
+                        "port": 8890,
+                        "description": "Claude-powered agent communications hub",
+                        "emoji": "💬",
+                        "priority": 3,
+                    },
                     "registry": {
                         "name": "Registry Server",
                         "icon": "fas fa-server",
                         "port": 8009,
                         "description": "Agent and service discovery management",
                         "emoji": "📋",
-                        "priority": 3,
+                        "priority": 4,
                     },
                 },
             },
@@ -11103,9 +12700,9 @@ ${{JSON.stringify(data.data, null, 2)}}
                         (activity_result["blocks_hit"] / total_blocks) * 100, 2
                     )
                 else:
-                    metrics["cache_hit_ratio"] = (
-                        100  # If no blocks read, assume perfect cache
-                    )
+                    metrics[
+                        "cache_hit_ratio"
+                    ] = 100  # If no blocks read, assume perfect cache
             else:
                 metrics["backends"] = 0
                 metrics["commits"] = 0
@@ -13040,11 +14637,64 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 "timestamp": datetime.now().isoformat(),
             }
             self.wfile.write(json.dumps(response).encode("utf-8"))
+        elif self.path == "/api/refresh/progress":
+            # Server-Sent Events endpoint for real-time refresh progress
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream")
+            self.send_header("Cache-Control", "no-cache")
+            self.send_header("Connection", "keep-alive")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+
+            # Stream progress updates
+            try:
+                while True:
+                    # Check for new refresh events
+                    if "refresh_events" in dashboard_data.unified_data:
+                        events = dashboard_data.unified_data.get("refresh_events", [])
+                        if events:
+                            # Send the latest event
+                            latest_event = events[-1]
+                            event_data = f"data: {json.dumps(latest_event)}\n\n"
+                            self.wfile.write(event_data.encode("utf-8"))
+                            self.wfile.flush()
+
+                            # Clear sent event
+                            dashboard_data.unified_data["refresh_events"].remove(
+                                latest_event
+                            )
+
+                    # Send heartbeat to keep connection alive
+                    heartbeat = f"event: heartbeat\ndata: {json.dumps({'timestamp': datetime.now().isoformat()})}\n\n"
+                    self.wfile.write(heartbeat.encode("utf-8"))
+                    self.wfile.flush()
+
+                    time.sleep(0.5)  # Check for updates every 500ms
+            except (BrokenPipeError, ConnectionResetError):
+                # Client disconnected
+                pass
+        elif self.path == "/api/refresh/status":
+            # Get current refresh status
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.end_headers()
+
+            status = {
+                "in_progress": dashboard_data.unified_data.get(
+                    "refresh_in_progress", False
+                ),
+                "last_refresh": dashboard_data.unified_data.get("last_refresh"),
+                "pending_events": len(
+                    dashboard_data.unified_data.get("refresh_events", [])
+                ),
+                "timestamp": datetime.now().isoformat(),
+            }
+            self.wfile.write(json.dumps(status).encode("utf-8"))
         else:
             super().do_GET()
 
     def _handle_enhanced_global_refresh(self):
-        """Enhanced global refresh with component selection"""
+        """Enhanced global refresh with component selection and real-time progress"""
         try:
             # Parse request body for component selection
             content_length = int(self.headers.get("Content-Length", 0))
@@ -13064,13 +14714,22 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
             if not hasattr(dashboard_data, "health_manager"):
                 raise Exception("HealthDataManager not initialized")
 
+            # Define progress callback
+            async def progress_callback(progress_data):
+                """Send progress updates to unified data for SSE streaming"""
+                dashboard_data.health_manager._emit_refresh_event(
+                    "refresh_progress", progress_data
+                )
+
             # Run enhanced refresh
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
 
             try:
                 result = loop.run_until_complete(
-                    dashboard_data.health_manager.enhanced_global_refresh(components)
+                    dashboard_data.health_manager.enhanced_global_refresh(
+                        components, progress_callback=progress_callback
+                    )
                 )
 
                 self.send_response(200)
@@ -13136,9 +14795,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                     "timestamp": datetime.now().isoformat(),
                 }
                 self.wfile.write(json.dumps(response).encode("utf-8"))
-                print(
-                    f"✅ Component {component} refresh API response sent successfully"
-                )
+                print(f"✅ Component {component} refresh API response sent successfully")
 
             finally:
                 loop.close()
@@ -13231,9 +14888,9 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
 
                     # Mark as success
                     success = True
-                    dashboard_data.unified_data["last_refresh"] = (
-                        datetime.now().isoformat()
-                    )
+                    dashboard_data.unified_data[
+                        "last_refresh"
+                    ] = datetime.now().isoformat()
                     dashboard_data.last_update = datetime.now().isoformat()
 
                     print(f"✅ Simplified global refresh completed successfully")
@@ -13826,6 +15483,324 @@ def main():
                     }
                 )
 
+            @app.route("/api/agent-cortex/status")
+            def agent_cortex_status():
+                """Get Agent Cortex status and metrics"""
+                try:
+                    import asyncio
+
+                    from core.agent_cortex import get_agent_cortex_instance
+
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+
+                    try:
+                        # Get Agent Cortex instance and status
+                        cortex = loop.run_until_complete(get_agent_cortex_instance())
+                        status = loop.run_until_complete(cortex.get_status())
+
+                        # Add integration status
+                        integration_status = {
+                            "cortex_available": True,
+                            "integration_with_acc": True,
+                            "last_updated": datetime.now().isoformat(),
+                            "model_selection_active": True,
+                            "cost_optimization_active": True,
+                        }
+
+                        return jsonify(
+                            {
+                                "status": "success",
+                                "cortex_status": status,
+                                "integration": integration_status,
+                            }
+                        )
+
+                    finally:
+                        loop.close()
+
+                except Exception as e:
+                    return jsonify(
+                        {
+                            "status": "error",
+                            "error": str(e),
+                            "cortex_available": False,
+                            "integration_with_acc": False,
+                        }
+                    )
+
+            @app.route("/api/ui/diagnostics")
+            def ui_diagnostics():
+                """Comprehensive UI state diagnostics for development"""
+                # Get current tab states
+                services_data = dashboard_data.unified_data.get("services_status", {})
+
+                # Analyze ACC display state
+                acc_status = services_data.get("agent_communication_center", {})
+                acc_diagnostics = {
+                    "displayed": "agent_communication_center" in services_data,
+                    "status": acc_status.get("status", "unknown"),
+                    "port": acc_status.get("port", 8890),
+                    "ui_state": {
+                        "color": "red"
+                        if acc_status.get("status") == "offline"
+                        else "green"
+                        if acc_status.get("status") == "healthy"
+                        else "yellow",
+                        "icon": "fa-comments",
+                        "position": "Core Systems section",
+                        "priority": 3,
+                    },
+                    "details": acc_status.get("details", {}),
+                    "last_check": acc_status.get("last_check", "never"),
+                }
+
+                # Analyze Agent Cortex display state
+                cortex_status = services_data.get("agent_cortex", {})
+                cortex_diagnostics = {
+                    "displayed": "agent_cortex" in services_data,
+                    "status": cortex_status.get("status", "unknown"),
+                    "port": cortex_status.get("port", 8889),
+                    "ui_state": {
+                        "color": "red"
+                        if cortex_status.get("status") == "offline"
+                        else "green"
+                        if cortex_status.get("status") == "healthy"
+                        else "yellow",
+                        "icon": "fa-brain",
+                        "position": "Core Systems section",
+                        "priority": 2,
+                    },
+                }
+
+                # Navigation state
+                nav_diagnostics = {
+                    "tabs": [
+                        "Welcome",
+                        "Agents",
+                        "Leaders",
+                        "Departments",
+                        "Divisions",
+                        "Registry",
+                        "Database",
+                        "Metrics",
+                        "Servers",
+                    ],
+                    "active_tab": "dashboard",  # Would need JS to track actual active tab
+                    "chat_button": {
+                        "visible": True,
+                        "action": "opens http://localhost:8890",
+                        "icon": "fa-comments",
+                    },
+                }
+
+                # Server counts
+                server_counts = {
+                    "core_systems": {
+                        "total": 4,
+                        "online": sum(
+                            1
+                            for k, v in services_data.items()
+                            if k
+                            in [
+                                "corporate_headquarters",
+                                "agent_cortex",
+                                "agent_communication_center",
+                                "registry",
+                            ]
+                            and v.get("status") == "healthy"
+                        ),
+                    },
+                    "mcp_servers": {
+                        "total": len(
+                            [
+                                k
+                                for k in services_data.keys()
+                                if k.endswith("_server")
+                                or k
+                                in [
+                                    "filesystem",
+                                    "database_postgres",
+                                    "analytics",
+                                    "payment",
+                                    "customer",
+                                ]
+                            ]
+                        ),
+                        "online": sum(
+                            1
+                            for k, v in services_data.items()
+                            if (
+                                k.endswith("_server")
+                                or k
+                                in [
+                                    "filesystem",
+                                    "database_postgres",
+                                    "analytics",
+                                    "payment",
+                                    "customer",
+                                ]
+                            )
+                            and v.get("status") == "healthy"
+                        ),
+                    },
+                }
+
+                # Welcome tab status display
+                welcome_tab = {
+                    "system_status": dashboard_data.unified_data.get(
+                        "overall_status", "unknown"
+                    ),
+                    "alerts": len(dashboard_data.unified_data.get("alerts", [])),
+                    "metrics_displayed": {
+                        "agents": dashboard_data.unified_data.get("agents", {}).get(
+                            "total", 0
+                        ),
+                        "leaders": dashboard_data.unified_data.get("leaders", {}).get(
+                            "total", 0
+                        ),
+                        "departments": dashboard_data.unified_data.get(
+                            "departments", {}
+                        ).get("total", 0),
+                        "services": dashboard_data.unified_data.get("services", {}).get(
+                            "total", 0
+                        ),
+                    },
+                }
+
+                return jsonify(
+                    {
+                        "timestamp": datetime.now().isoformat(),
+                        "ui_diagnostics": {
+                            "navigation": nav_diagnostics,
+                            "acc_display": acc_diagnostics,
+                            "cortex_display": cortex_diagnostics,
+                            "server_counts": server_counts,
+                            "welcome_tab": welcome_tab,
+                            "theme": {
+                                "primary_color": "#4fc3f7",
+                                "success_color": "#10b981",
+                                "danger_color": "#ef4444",
+                                "background": "dark gradient",
+                            },
+                        },
+                        "data_sources": {
+                            "unified_data_keys": list(
+                                dashboard_data.unified_data.keys()
+                            ),
+                            "services_tracked": len(services_data),
+                            "last_refresh": dashboard_data.unified_data.get(
+                                "last_refresh", "never"
+                            ),
+                        },
+                    }
+                )
+
+            @app.route("/api/ui/component/<component>")
+            def get_component_state(component):
+                """Get specific UI component state"""
+                component_states = {
+                    "header": {
+                        "logo": "BoarderframeOS",
+                        "status_text": f"{dashboard_data.unified_data.get('overall_status', 'unknown').title()} System Status",
+                        "server_counts": {
+                            "agents": f"{dashboard_data.unified_data.get('agents', {}).get('running', 0)}/{dashboard_data.unified_data.get('agents', {}).get('total', 0)}",
+                            "servers": f"{dashboard_data.unified_data.get('services', {}).get('healthy', 0)}/{dashboard_data.unified_data.get('services', {}).get('total', 0)}",
+                        },
+                    },
+                    "servers_tab": {
+                        "categories": [
+                            "Core Systems",
+                            "MCP Servers",
+                            "Business Services",
+                        ],
+                        "acc_entry": {
+                            "name": "Agent Communication Center",
+                            "port": 8890,
+                            "status": dashboard_data.unified_data.get(
+                                "services_status", {}
+                            )
+                            .get("agent_communication_center", {})
+                            .get("status", "unknown"),
+                            "icon": "fa-comments",
+                            "description": "Claude-powered agent communications hub",
+                        },
+                    },
+                    "chat_integration": {
+                        "button_visible": True,
+                        "button_action": "window.open('http://localhost:8890', '_blank')",
+                        "acc_url": "http://localhost:8890",
+                        "integration_type": "new_tab",
+                    },
+                }
+
+                if component in component_states:
+                    return jsonify(
+                        {
+                            "component": component,
+                            "state": component_states[component],
+                            "timestamp": datetime.now().isoformat(),
+                        }
+                    )
+                else:
+                    return (
+                        jsonify(
+                            {
+                                "error": "Component not found",
+                                "available_components": list(component_states.keys()),
+                            }
+                        ),
+                        404,
+                    )
+
+            @app.route("/api/ui/preview", methods=["POST"])
+            def preview_ui_change():
+                """Preview UI changes before applying them"""
+                data = request.get_json()
+                change_type = data.get("type")
+                changes = data.get("changes", {})
+
+                preview_html = f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>UI Change Preview</title>
+                    <style>
+                        body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                        .preview {{ border: 2px solid #4fc3f7; padding: 20px; margin: 20px 0; }}
+                        .before {{ background: #ffebee; }}
+                        .after {{ background: #e8f5e9; }}
+                    </style>
+                </head>
+                <body>
+                    <h1>UI Change Preview</h1>
+                    <div class="preview before">
+                        <h2>Before:</h2>
+                        <pre>{json.dumps(data.get("before", {}), indent=2)}</pre>
+                    </div>
+                    <div class="preview after">
+                        <h2>After:</h2>
+                        <pre>{json.dumps(changes, indent=2)}</pre>
+                    </div>
+                </body>
+                </html>
+                """
+
+                # Save preview
+                preview_path = (
+                    "ui_preview_" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".html"
+                )
+                with open(preview_path, "w") as f:
+                    f.write(preview_html)
+
+                return jsonify(
+                    {
+                        "preview_generated": True,
+                        "preview_file": preview_path,
+                        "changes_summary": changes,
+                    }
+                )
+
             @app.route("/api/global/refresh", methods=["POST"])
             def global_refresh():
                 """Handle global refresh request"""
@@ -13853,9 +15828,9 @@ def main():
 
                         # Mark as success
                         success = True
-                        dashboard_data.unified_data["last_refresh"] = (
-                            datetime.now().isoformat()
-                        )
+                        dashboard_data.unified_data[
+                            "last_refresh"
+                        ] = datetime.now().isoformat()
                         dashboard_data.last_update = datetime.now().isoformat()
 
                         print(f"✅ Simplified global refresh completed successfully")
@@ -13930,9 +15905,9 @@ def main():
                         )
 
                         # Update timestamp
-                        dashboard_data.unified_data["last_systems_refresh"] = (
-                            datetime.now().isoformat()
-                        )
+                        dashboard_data.unified_data[
+                            "last_systems_refresh"
+                        ] = datetime.now().isoformat()
                         dashboard_data.last_update = datetime.now().isoformat()
 
                         print(f"✅ Systems refresh completed successfully")
@@ -14327,6 +16302,85 @@ def main():
                         500,
                     )
 
+            @app.route("/api/metrics/summary")
+            def metrics_summary():
+                """Get comprehensive metrics summary"""
+                try:
+                    # Get all metrics data
+                    metrics = {
+                        "timestamp": datetime.now().isoformat(),
+                        "agents": dashboard_data.unified_data.get("agents", {}),
+                        "services": dashboard_data.unified_data.get("services", {}),
+                        "leaders": dashboard_data.unified_data.get("leaders", {}),
+                        "departments": dashboard_data.unified_data.get(
+                            "departments", {}
+                        ),
+                        "divisions": dashboard_data.unified_data.get("divisions", {}),
+                        "system": dashboard_data.unified_data.get("system_metrics", {}),
+                        "database": dashboard_data.unified_data.get(
+                            "database_health", {}
+                        ),
+                        "organizational": dashboard_data.unified_data.get(
+                            "organizational_metrics", {}
+                        ),
+                    }
+
+                    # Calculate summary statistics
+                    summary = {
+                        "total_agents": metrics["agents"].get("total", 0),
+                        "active_agents": metrics["agents"].get("running", 0),
+                        "total_services": metrics["services"].get("total", 0),
+                        "healthy_services": metrics["services"].get("healthy", 0),
+                        "total_leaders": metrics["leaders"].get("total", 0),
+                        "active_leaders": metrics["leaders"].get("active", 0),
+                        "total_departments": metrics["departments"].get("total", 0),
+                        "active_departments": metrics["departments"].get("active", 0),
+                        "total_divisions": metrics["divisions"].get("total", 0),
+                        "active_divisions": metrics["divisions"].get("active", 0),
+                    }
+
+                    return jsonify(
+                        {"status": "success", "summary": summary, "details": metrics}
+                    )
+                except Exception as e:
+                    return jsonify({"status": "error", "message": str(e)}), 500
+
+            @app.route("/api/refresh-all", methods=["POST"])
+            async def refresh_all():
+                """Refresh all data comprehensively"""
+                try:
+                    # Run global refresh
+                    await health_manager.global_refresh_all_data()
+
+                    return jsonify(
+                        {
+                            "status": "success",
+                            "message": "All data refreshed successfully",
+                            "timestamp": datetime.now().isoformat(),
+                        }
+                    )
+                except Exception as e:
+                    return jsonify({"status": "error", "message": str(e)}), 500
+
+            @app.route("/api/refresh/services_status", methods=["POST"])
+            async def refresh_services_status():
+                """Refresh services status specifically"""
+                try:
+                    await health_manager._refresh_services_status()
+
+                    return jsonify(
+                        {
+                            "status": "success",
+                            "message": "Services status refreshed",
+                            "services": dashboard_data.unified_data.get(
+                                "services_status", {}
+                            ),
+                            "timestamp": datetime.now().isoformat(),
+                        }
+                    )
+                except Exception as e:
+                    return jsonify({"status": "error", "message": str(e)}), 500
+
             # Run Flask with development features
             app.run(
                 host="0.0.0.0",
@@ -14338,9 +16392,7 @@ def main():
         else:
             # Use the original HTTPServer
             with socketserver.TCPServer(("", PORT), EnhancedHandler) as httpd:
-                print(
-                    f"✅ BoarderframeOS Corporate Headquarters running on port {PORT}"
-                )
+                print(f"✅ BoarderframeOS Corporate Headquarters running on port {PORT}")
                 print(f"🎯 Access at: http://localhost:{PORT}")
                 print()
                 httpd.serve_forever()

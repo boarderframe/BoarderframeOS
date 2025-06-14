@@ -1,0 +1,1907 @@
+{
+  ".class": "MypyFile",
+  "_fullname": "qdrant_client.grpc",
+  "future_import_flags": [],
+  "is_partial_stub_package": false,
+  "is_stub": false,
+  "names": {
+    ".class": "SymbolTable",
+    "AbortShardTransfer": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.AbortShardTransfer",
+      "kind": "Gdef"
+    },
+    "Acknowledged": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Acknowledged",
+      "kind": "Gdef"
+    },
+    "Active": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Active",
+      "kind": "Gdef"
+    },
+    "AliasDescription": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.AliasDescription",
+      "kind": "Gdef"
+    },
+    "AliasOperations": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.AliasOperations",
+      "kind": "Gdef"
+    },
+    "All": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.All",
+      "kind": "Gdef"
+    },
+    "Asc": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Asc",
+      "kind": "Gdef"
+    },
+    "Auto": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Auto",
+      "kind": "Gdef"
+    },
+    "AverageVector": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.AverageVector",
+      "kind": "Gdef"
+    },
+    "BatchResult": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.BatchResult",
+      "kind": "Gdef"
+    },
+    "BestScore": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.BestScore",
+      "kind": "Gdef"
+    },
+    "BinaryQuantization": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.BinaryQuantization",
+      "kind": "Gdef"
+    },
+    "Bool": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Bool",
+      "kind": "Gdef"
+    },
+    "BoolIndexParams": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.BoolIndexParams",
+      "kind": "Gdef"
+    },
+    "ChangeAliases": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.ChangeAliases",
+      "kind": "Gdef"
+    },
+    "ClearPayloadPoints": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.ClearPayloadPoints",
+      "kind": "Gdef"
+    },
+    "ClockRejected": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.ClockRejected",
+      "kind": "Gdef"
+    },
+    "CollectionClusterInfoRequest": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.CollectionClusterInfoRequest",
+      "kind": "Gdef"
+    },
+    "CollectionClusterInfoResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.CollectionClusterInfoResponse",
+      "kind": "Gdef"
+    },
+    "CollectionConfig": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.CollectionConfig",
+      "kind": "Gdef"
+    },
+    "CollectionDescription": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.CollectionDescription",
+      "kind": "Gdef"
+    },
+    "CollectionExists": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.CollectionExists",
+      "kind": "Gdef"
+    },
+    "CollectionExistsRequest": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.CollectionExistsRequest",
+      "kind": "Gdef"
+    },
+    "CollectionExistsResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.CollectionExistsResponse",
+      "kind": "Gdef"
+    },
+    "CollectionInfo": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.CollectionInfo",
+      "kind": "Gdef"
+    },
+    "CollectionOperationResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.CollectionOperationResponse",
+      "kind": "Gdef"
+    },
+    "CollectionParams": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.CollectionParams",
+      "kind": "Gdef"
+    },
+    "CollectionParamsDiff": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.CollectionParamsDiff",
+      "kind": "Gdef"
+    },
+    "CollectionStatus": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.CollectionStatus",
+      "kind": "Gdef"
+    },
+    "Collections": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_service_pb2_grpc.Collections",
+      "kind": "Gdef"
+    },
+    "CollectionsServicer": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_service_pb2_grpc.CollectionsServicer",
+      "kind": "Gdef"
+    },
+    "CollectionsStub": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_service_pb2_grpc.CollectionsStub",
+      "kind": "Gdef"
+    },
+    "Completed": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Completed",
+      "kind": "Gdef"
+    },
+    "CompressionRatio": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.CompressionRatio",
+      "kind": "Gdef"
+    },
+    "Condition": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Condition",
+      "kind": "Gdef"
+    },
+    "ContextExamplePair": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.ContextExamplePair",
+      "kind": "Gdef"
+    },
+    "ContextInput": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.ContextInput",
+      "kind": "Gdef"
+    },
+    "ContextInputPair": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.ContextInputPair",
+      "kind": "Gdef"
+    },
+    "Cosine": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Cosine",
+      "kind": "Gdef"
+    },
+    "CountPoints": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.CountPoints",
+      "kind": "Gdef"
+    },
+    "CountResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.CountResponse",
+      "kind": "Gdef"
+    },
+    "CountResult": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.CountResult",
+      "kind": "Gdef"
+    },
+    "CreateAlias": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.CreateAlias",
+      "kind": "Gdef"
+    },
+    "CreateCollection": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.CreateCollection",
+      "kind": "Gdef"
+    },
+    "CreateFieldIndexCollection": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.CreateFieldIndexCollection",
+      "kind": "Gdef"
+    },
+    "CreateFullSnapshotRequest": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.snapshots_service_pb2.CreateFullSnapshotRequest",
+      "kind": "Gdef"
+    },
+    "CreateShardKey": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.CreateShardKey",
+      "kind": "Gdef"
+    },
+    "CreateShardKeyRequest": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.CreateShardKeyRequest",
+      "kind": "Gdef"
+    },
+    "CreateShardKeyResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.CreateShardKeyResponse",
+      "kind": "Gdef"
+    },
+    "CreateSnapshotRequest": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.snapshots_service_pb2.CreateSnapshotRequest",
+      "kind": "Gdef"
+    },
+    "CreateSnapshotResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.snapshots_service_pb2.CreateSnapshotResponse",
+      "kind": "Gdef"
+    },
+    "Custom": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Custom",
+      "kind": "Gdef"
+    },
+    "DBSF": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.DBSF",
+      "kind": "Gdef"
+    },
+    "DESCRIPTOR": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.DESCRIPTOR",
+      "kind": "Gdef"
+    },
+    "Datatype": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Datatype",
+      "kind": "Gdef"
+    },
+    "Datetime": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Datetime",
+      "kind": "Gdef"
+    },
+    "DatetimeIndexParams": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.DatetimeIndexParams",
+      "kind": "Gdef"
+    },
+    "DatetimeRange": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.DatetimeRange",
+      "kind": "Gdef"
+    },
+    "Dead": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Dead",
+      "kind": "Gdef"
+    },
+    "DecayParamsExpression": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.DecayParamsExpression",
+      "kind": "Gdef"
+    },
+    "Default": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Default",
+      "kind": "Gdef"
+    },
+    "DeleteAlias": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.DeleteAlias",
+      "kind": "Gdef"
+    },
+    "DeleteCollection": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.DeleteCollection",
+      "kind": "Gdef"
+    },
+    "DeleteFieldIndexCollection": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.DeleteFieldIndexCollection",
+      "kind": "Gdef"
+    },
+    "DeleteFullSnapshotRequest": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.snapshots_service_pb2.DeleteFullSnapshotRequest",
+      "kind": "Gdef"
+    },
+    "DeletePayloadPoints": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.DeletePayloadPoints",
+      "kind": "Gdef"
+    },
+    "DeletePointVectors": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.DeletePointVectors",
+      "kind": "Gdef"
+    },
+    "DeletePoints": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.DeletePoints",
+      "kind": "Gdef"
+    },
+    "DeleteShardKey": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.DeleteShardKey",
+      "kind": "Gdef"
+    },
+    "DeleteShardKeyRequest": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.DeleteShardKeyRequest",
+      "kind": "Gdef"
+    },
+    "DeleteShardKeyResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.DeleteShardKeyResponse",
+      "kind": "Gdef"
+    },
+    "DeleteSnapshotRequest": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.snapshots_service_pb2.DeleteSnapshotRequest",
+      "kind": "Gdef"
+    },
+    "DeleteSnapshotResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.snapshots_service_pb2.DeleteSnapshotResponse",
+      "kind": "Gdef"
+    },
+    "DenseVector": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.DenseVector",
+      "kind": "Gdef"
+    },
+    "Desc": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Desc",
+      "kind": "Gdef"
+    },
+    "Direction": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Direction",
+      "kind": "Gdef"
+    },
+    "Disabled": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Disabled",
+      "kind": "Gdef"
+    },
+    "DiscoverBatchPoints": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.DiscoverBatchPoints",
+      "kind": "Gdef"
+    },
+    "DiscoverBatchResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.DiscoverBatchResponse",
+      "kind": "Gdef"
+    },
+    "DiscoverInput": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.DiscoverInput",
+      "kind": "Gdef"
+    },
+    "DiscoverPoints": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.DiscoverPoints",
+      "kind": "Gdef"
+    },
+    "DiscoverResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.DiscoverResponse",
+      "kind": "Gdef"
+    },
+    "Distance": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Distance",
+      "kind": "Gdef"
+    },
+    "DivExpression": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.DivExpression",
+      "kind": "Gdef"
+    },
+    "Document": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Document",
+      "kind": "Gdef"
+    },
+    "Dot": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Dot",
+      "kind": "Gdef"
+    },
+    "Down": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Down",
+      "kind": "Gdef"
+    },
+    "Euclid": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Euclid",
+      "kind": "Gdef"
+    },
+    "Expression": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Expression",
+      "kind": "Gdef"
+    },
+    "FacetCounts": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.FacetCounts",
+      "kind": "Gdef"
+    },
+    "FacetHit": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.FacetHit",
+      "kind": "Gdef"
+    },
+    "FacetResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.FacetResponse",
+      "kind": "Gdef"
+    },
+    "FacetValue": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.FacetValue",
+      "kind": "Gdef"
+    },
+    "FieldCondition": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.FieldCondition",
+      "kind": "Gdef"
+    },
+    "FieldType": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.FieldType",
+      "kind": "Gdef"
+    },
+    "FieldTypeBool": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.FieldTypeBool",
+      "kind": "Gdef"
+    },
+    "FieldTypeDatetime": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.FieldTypeDatetime",
+      "kind": "Gdef"
+    },
+    "FieldTypeFloat": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.FieldTypeFloat",
+      "kind": "Gdef"
+    },
+    "FieldTypeGeo": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.FieldTypeGeo",
+      "kind": "Gdef"
+    },
+    "FieldTypeInteger": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.FieldTypeInteger",
+      "kind": "Gdef"
+    },
+    "FieldTypeKeyword": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.FieldTypeKeyword",
+      "kind": "Gdef"
+    },
+    "FieldTypeText": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.FieldTypeText",
+      "kind": "Gdef"
+    },
+    "FieldTypeUuid": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.FieldTypeUuid",
+      "kind": "Gdef"
+    },
+    "Filter": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Filter",
+      "kind": "Gdef"
+    },
+    "Float": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Float",
+      "kind": "Gdef"
+    },
+    "Float16": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Float16",
+      "kind": "Gdef"
+    },
+    "Float32": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Float32",
+      "kind": "Gdef"
+    },
+    "FloatIndexParams": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.FloatIndexParams",
+      "kind": "Gdef"
+    },
+    "Formula": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Formula",
+      "kind": "Gdef"
+    },
+    "Fusion": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Fusion",
+      "kind": "Gdef"
+    },
+    "Geo": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Geo",
+      "kind": "Gdef"
+    },
+    "GeoBoundingBox": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.GeoBoundingBox",
+      "kind": "Gdef"
+    },
+    "GeoDistance": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.GeoDistance",
+      "kind": "Gdef"
+    },
+    "GeoIndexParams": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.GeoIndexParams",
+      "kind": "Gdef"
+    },
+    "GeoLineString": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.GeoLineString",
+      "kind": "Gdef"
+    },
+    "GeoPoint": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.GeoPoint",
+      "kind": "Gdef"
+    },
+    "GeoPolygon": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.GeoPolygon",
+      "kind": "Gdef"
+    },
+    "GeoRadius": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.GeoRadius",
+      "kind": "Gdef"
+    },
+    "GetCollectionInfoRequest": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.GetCollectionInfoRequest",
+      "kind": "Gdef"
+    },
+    "GetCollectionInfoResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.GetCollectionInfoResponse",
+      "kind": "Gdef"
+    },
+    "GetPoints": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.GetPoints",
+      "kind": "Gdef"
+    },
+    "GetResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.GetResponse",
+      "kind": "Gdef"
+    },
+    "Green": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Green",
+      "kind": "Gdef"
+    },
+    "Grey": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Grey",
+      "kind": "Gdef"
+    },
+    "GroupId": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.GroupId",
+      "kind": "Gdef"
+    },
+    "GroupsResult": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.GroupsResult",
+      "kind": "Gdef"
+    },
+    "HardwareUsage": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.HardwareUsage",
+      "kind": "Gdef"
+    },
+    "HasIdCondition": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.HasIdCondition",
+      "kind": "Gdef"
+    },
+    "HasVectorCondition": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.HasVectorCondition",
+      "kind": "Gdef"
+    },
+    "HealthCheckReply": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.qdrant_pb2.HealthCheckReply",
+      "kind": "Gdef"
+    },
+    "HealthCheckRequest": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.qdrant_pb2.HealthCheckRequest",
+      "kind": "Gdef"
+    },
+    "HnswConfigDiff": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.HnswConfigDiff",
+      "kind": "Gdef"
+    },
+    "Idf": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Idf",
+      "kind": "Gdef"
+    },
+    "Image": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Image",
+      "kind": "Gdef"
+    },
+    "InferenceObject": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.InferenceObject",
+      "kind": "Gdef"
+    },
+    "Initializing": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Initializing",
+      "kind": "Gdef"
+    },
+    "Int8": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Int8",
+      "kind": "Gdef"
+    },
+    "Integer": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Integer",
+      "kind": "Gdef"
+    },
+    "IntegerIndexParams": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.IntegerIndexParams",
+      "kind": "Gdef"
+    },
+    "IsEmptyCondition": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.IsEmptyCondition",
+      "kind": "Gdef"
+    },
+    "IsNullCondition": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.IsNullCondition",
+      "kind": "Gdef"
+    },
+    "Keyword": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Keyword",
+      "kind": "Gdef"
+    },
+    "KeywordIndexParams": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.KeywordIndexParams",
+      "kind": "Gdef"
+    },
+    "ListAliasesRequest": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.ListAliasesRequest",
+      "kind": "Gdef"
+    },
+    "ListAliasesResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.ListAliasesResponse",
+      "kind": "Gdef"
+    },
+    "ListCollectionAliasesRequest": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.ListCollectionAliasesRequest",
+      "kind": "Gdef"
+    },
+    "ListCollectionsRequest": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.ListCollectionsRequest",
+      "kind": "Gdef"
+    },
+    "ListCollectionsResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.ListCollectionsResponse",
+      "kind": "Gdef"
+    },
+    "ListFullSnapshotsRequest": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.snapshots_service_pb2.ListFullSnapshotsRequest",
+      "kind": "Gdef"
+    },
+    "ListSnapshotsRequest": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.snapshots_service_pb2.ListSnapshotsRequest",
+      "kind": "Gdef"
+    },
+    "ListSnapshotsResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.snapshots_service_pb2.ListSnapshotsResponse",
+      "kind": "Gdef"
+    },
+    "ListValue": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.json_with_int_pb2.ListValue",
+      "kind": "Gdef"
+    },
+    "Listener": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Listener",
+      "kind": "Gdef"
+    },
+    "LocalShardInfo": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.LocalShardInfo",
+      "kind": "Gdef"
+    },
+    "LookupLocation": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.LookupLocation",
+      "kind": "Gdef"
+    },
+    "Majority": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Majority",
+      "kind": "Gdef"
+    },
+    "Manhattan": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Manhattan",
+      "kind": "Gdef"
+    },
+    "Match": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Match",
+      "kind": "Gdef"
+    },
+    "MaxOptimizationThreads": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.MaxOptimizationThreads",
+      "kind": "Gdef"
+    },
+    "MaxSim": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.MaxSim",
+      "kind": "Gdef"
+    },
+    "Medium": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Medium",
+      "kind": "Gdef"
+    },
+    "MinShould": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.MinShould",
+      "kind": "Gdef"
+    },
+    "Modifier": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Modifier",
+      "kind": "Gdef"
+    },
+    "MoveShard": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.MoveShard",
+      "kind": "Gdef"
+    },
+    "MultExpression": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.MultExpression",
+      "kind": "Gdef"
+    },
+    "MultiDenseVector": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.MultiDenseVector",
+      "kind": "Gdef"
+    },
+    "MultiVectorComparator": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.MultiVectorComparator",
+      "kind": "Gdef"
+    },
+    "MultiVectorConfig": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.MultiVectorConfig",
+      "kind": "Gdef"
+    },
+    "Multilingual": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Multilingual",
+      "kind": "Gdef"
+    },
+    "NULL_VALUE": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.json_with_int_pb2.NULL_VALUE",
+      "kind": "Gdef"
+    },
+    "NamedVectors": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.NamedVectors",
+      "kind": "Gdef"
+    },
+    "NamedVectorsOutput": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.NamedVectorsOutput",
+      "kind": "Gdef"
+    },
+    "NestedCondition": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.NestedCondition",
+      "kind": "Gdef"
+    },
+    "NullValue": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.json_with_int_pb2.NullValue",
+      "kind": "Gdef"
+    },
+    "OptimizerStatus": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.OptimizerStatus",
+      "kind": "Gdef"
+    },
+    "OptimizersConfigDiff": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.OptimizersConfigDiff",
+      "kind": "Gdef"
+    },
+    "OrderBy": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.OrderBy",
+      "kind": "Gdef"
+    },
+    "OrderValue": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.OrderValue",
+      "kind": "Gdef"
+    },
+    "Partial": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Partial",
+      "kind": "Gdef"
+    },
+    "PartialSnapshot": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.PartialSnapshot",
+      "kind": "Gdef"
+    },
+    "PayloadExcludeSelector": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.PayloadExcludeSelector",
+      "kind": "Gdef"
+    },
+    "PayloadIncludeSelector": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.PayloadIncludeSelector",
+      "kind": "Gdef"
+    },
+    "PayloadIndexParams": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.PayloadIndexParams",
+      "kind": "Gdef"
+    },
+    "PayloadSchemaInfo": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.PayloadSchemaInfo",
+      "kind": "Gdef"
+    },
+    "PayloadSchemaType": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.PayloadSchemaType",
+      "kind": "Gdef"
+    },
+    "PointGroup": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.PointGroup",
+      "kind": "Gdef"
+    },
+    "PointId": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.PointId",
+      "kind": "Gdef"
+    },
+    "PointStruct": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.PointStruct",
+      "kind": "Gdef"
+    },
+    "PointVectors": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.PointVectors",
+      "kind": "Gdef"
+    },
+    "Points": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_service_pb2_grpc.Points",
+      "kind": "Gdef"
+    },
+    "PointsIdsList": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.PointsIdsList",
+      "kind": "Gdef"
+    },
+    "PointsOperationResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.PointsOperationResponse",
+      "kind": "Gdef"
+    },
+    "PointsSelector": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.PointsSelector",
+      "kind": "Gdef"
+    },
+    "PointsServicer": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_service_pb2_grpc.PointsServicer",
+      "kind": "Gdef"
+    },
+    "PointsStub": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_service_pb2_grpc.PointsStub",
+      "kind": "Gdef"
+    },
+    "PointsUpdateOperation": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.PointsUpdateOperation",
+      "kind": "Gdef"
+    },
+    "PowExpression": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.PowExpression",
+      "kind": "Gdef"
+    },
+    "PrefetchQuery": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.PrefetchQuery",
+      "kind": "Gdef"
+    },
+    "Prefix": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Prefix",
+      "kind": "Gdef"
+    },
+    "ProductQuantization": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.ProductQuantization",
+      "kind": "Gdef"
+    },
+    "Qdrant": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.qdrant_pb2_grpc.Qdrant",
+      "kind": "Gdef"
+    },
+    "QdrantServicer": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.qdrant_pb2_grpc.QdrantServicer",
+      "kind": "Gdef"
+    },
+    "QdrantStub": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.qdrant_pb2_grpc.QdrantStub",
+      "kind": "Gdef"
+    },
+    "QuantizationConfig": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.QuantizationConfig",
+      "kind": "Gdef"
+    },
+    "QuantizationConfigDiff": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.QuantizationConfigDiff",
+      "kind": "Gdef"
+    },
+    "QuantizationSearchParams": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.QuantizationSearchParams",
+      "kind": "Gdef"
+    },
+    "QuantizationType": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.QuantizationType",
+      "kind": "Gdef"
+    },
+    "Query": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Query",
+      "kind": "Gdef"
+    },
+    "QueryBatchPoints": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.QueryBatchPoints",
+      "kind": "Gdef"
+    },
+    "QueryBatchResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.QueryBatchResponse",
+      "kind": "Gdef"
+    },
+    "QueryGroupsResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.QueryGroupsResponse",
+      "kind": "Gdef"
+    },
+    "QueryPointGroups": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.QueryPointGroups",
+      "kind": "Gdef"
+    },
+    "QueryPoints": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.QueryPoints",
+      "kind": "Gdef"
+    },
+    "QueryResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.QueryResponse",
+      "kind": "Gdef"
+    },
+    "Quorum": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Quorum",
+      "kind": "Gdef"
+    },
+    "RRF": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.RRF",
+      "kind": "Gdef"
+    },
+    "Random": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Random",
+      "kind": "Gdef"
+    },
+    "Range": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Range",
+      "kind": "Gdef"
+    },
+    "ReadConsistency": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.ReadConsistency",
+      "kind": "Gdef"
+    },
+    "ReadConsistencyType": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.ReadConsistencyType",
+      "kind": "Gdef"
+    },
+    "RecommendBatchPoints": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.RecommendBatchPoints",
+      "kind": "Gdef"
+    },
+    "RecommendBatchResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.RecommendBatchResponse",
+      "kind": "Gdef"
+    },
+    "RecommendGroupsResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.RecommendGroupsResponse",
+      "kind": "Gdef"
+    },
+    "RecommendInput": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.RecommendInput",
+      "kind": "Gdef"
+    },
+    "RecommendPointGroups": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.RecommendPointGroups",
+      "kind": "Gdef"
+    },
+    "RecommendPoints": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.RecommendPoints",
+      "kind": "Gdef"
+    },
+    "RecommendResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.RecommendResponse",
+      "kind": "Gdef"
+    },
+    "RecommendStrategy": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.RecommendStrategy",
+      "kind": "Gdef"
+    },
+    "Recovery": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Recovery",
+      "kind": "Gdef"
+    },
+    "Red": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Red",
+      "kind": "Gdef"
+    },
+    "RemoteShardInfo": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.RemoteShardInfo",
+      "kind": "Gdef"
+    },
+    "RenameAlias": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.RenameAlias",
+      "kind": "Gdef"
+    },
+    "RepeatedIntegers": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.RepeatedIntegers",
+      "kind": "Gdef"
+    },
+    "RepeatedStrings": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.RepeatedStrings",
+      "kind": "Gdef"
+    },
+    "Replica": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Replica",
+      "kind": "Gdef"
+    },
+    "ReplicaState": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.ReplicaState",
+      "kind": "Gdef"
+    },
+    "ReplicateShard": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.ReplicateShard",
+      "kind": "Gdef"
+    },
+    "Resharding": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Resharding",
+      "kind": "Gdef"
+    },
+    "ReshardingDirection": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.ReshardingDirection",
+      "kind": "Gdef"
+    },
+    "ReshardingInfo": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.ReshardingInfo",
+      "kind": "Gdef"
+    },
+    "ReshardingScaleDown": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.ReshardingScaleDown",
+      "kind": "Gdef"
+    },
+    "ReshardingStreamRecords": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.ReshardingStreamRecords",
+      "kind": "Gdef"
+    },
+    "RestartTransfer": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.RestartTransfer",
+      "kind": "Gdef"
+    },
+    "RetrievedPoint": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.RetrievedPoint",
+      "kind": "Gdef"
+    },
+    "Sample": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Sample",
+      "kind": "Gdef"
+    },
+    "ScalarQuantization": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.ScalarQuantization",
+      "kind": "Gdef"
+    },
+    "ScoredPoint": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.ScoredPoint",
+      "kind": "Gdef"
+    },
+    "ScrollPoints": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.ScrollPoints",
+      "kind": "Gdef"
+    },
+    "ScrollResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.ScrollResponse",
+      "kind": "Gdef"
+    },
+    "SearchBatchPoints": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.SearchBatchPoints",
+      "kind": "Gdef"
+    },
+    "SearchBatchResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.SearchBatchResponse",
+      "kind": "Gdef"
+    },
+    "SearchGroupsResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.SearchGroupsResponse",
+      "kind": "Gdef"
+    },
+    "SearchMatrixOffsets": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.SearchMatrixOffsets",
+      "kind": "Gdef"
+    },
+    "SearchMatrixOffsetsResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.SearchMatrixOffsetsResponse",
+      "kind": "Gdef"
+    },
+    "SearchMatrixPair": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.SearchMatrixPair",
+      "kind": "Gdef"
+    },
+    "SearchMatrixPairs": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.SearchMatrixPairs",
+      "kind": "Gdef"
+    },
+    "SearchMatrixPairsResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.SearchMatrixPairsResponse",
+      "kind": "Gdef"
+    },
+    "SearchMatrixPoints": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.SearchMatrixPoints",
+      "kind": "Gdef"
+    },
+    "SearchParams": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.SearchParams",
+      "kind": "Gdef"
+    },
+    "SearchPointGroups": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.SearchPointGroups",
+      "kind": "Gdef"
+    },
+    "SearchPoints": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.SearchPoints",
+      "kind": "Gdef"
+    },
+    "SearchResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.SearchResponse",
+      "kind": "Gdef"
+    },
+    "SetPayloadPoints": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.SetPayloadPoints",
+      "kind": "Gdef"
+    },
+    "ShardKey": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.ShardKey",
+      "kind": "Gdef"
+    },
+    "ShardKeySelector": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.ShardKeySelector",
+      "kind": "Gdef"
+    },
+    "ShardTransferInfo": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.ShardTransferInfo",
+      "kind": "Gdef"
+    },
+    "ShardTransferMethod": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.ShardTransferMethod",
+      "kind": "Gdef"
+    },
+    "ShardingMethod": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.ShardingMethod",
+      "kind": "Gdef"
+    },
+    "Snapshot": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Snapshot",
+      "kind": "Gdef"
+    },
+    "SnapshotDescription": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.snapshots_service_pb2.SnapshotDescription",
+      "kind": "Gdef"
+    },
+    "Snapshots": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.snapshots_service_pb2_grpc.Snapshots",
+      "kind": "Gdef"
+    },
+    "SnapshotsServicer": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.snapshots_service_pb2_grpc.SnapshotsServicer",
+      "kind": "Gdef"
+    },
+    "SnapshotsStub": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.snapshots_service_pb2_grpc.SnapshotsStub",
+      "kind": "Gdef"
+    },
+    "SparseIndexConfig": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.SparseIndexConfig",
+      "kind": "Gdef"
+    },
+    "SparseIndices": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.SparseIndices",
+      "kind": "Gdef"
+    },
+    "SparseVector": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.SparseVector",
+      "kind": "Gdef"
+    },
+    "SparseVectorConfig": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.SparseVectorConfig",
+      "kind": "Gdef"
+    },
+    "SparseVectorParams": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.SparseVectorParams",
+      "kind": "Gdef"
+    },
+    "StartFrom": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.StartFrom",
+      "kind": "Gdef"
+    },
+    "StreamRecords": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.StreamRecords",
+      "kind": "Gdef"
+    },
+    "StrictModeConfig": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.StrictModeConfig",
+      "kind": "Gdef"
+    },
+    "StrictModeMultivector": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.StrictModeMultivector",
+      "kind": "Gdef"
+    },
+    "StrictModeMultivectorConfig": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.StrictModeMultivectorConfig",
+      "kind": "Gdef"
+    },
+    "StrictModeSparse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.StrictModeSparse",
+      "kind": "Gdef"
+    },
+    "StrictModeSparseConfig": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.StrictModeSparseConfig",
+      "kind": "Gdef"
+    },
+    "Strong": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Strong",
+      "kind": "Gdef"
+    },
+    "Struct": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.json_with_int_pb2.Struct",
+      "kind": "Gdef"
+    },
+    "SumExpression": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.SumExpression",
+      "kind": "Gdef"
+    },
+    "SumScores": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.SumScores",
+      "kind": "Gdef"
+    },
+    "TargetVector": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.TargetVector",
+      "kind": "Gdef"
+    },
+    "Text": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Text",
+      "kind": "Gdef"
+    },
+    "TextIndexParams": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.TextIndexParams",
+      "kind": "Gdef"
+    },
+    "TokenizerType": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.TokenizerType",
+      "kind": "Gdef"
+    },
+    "Uint8": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Uint8",
+      "kind": "Gdef"
+    },
+    "Unknown": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Unknown",
+      "kind": "Gdef"
+    },
+    "UnknownCollectionStatus": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.UnknownCollectionStatus",
+      "kind": "Gdef"
+    },
+    "UnknownDistance": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.UnknownDistance",
+      "kind": "Gdef"
+    },
+    "UnknownQuantization": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.UnknownQuantization",
+      "kind": "Gdef"
+    },
+    "UnknownType": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.UnknownType",
+      "kind": "Gdef"
+    },
+    "UnknownUpdateStatus": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.UnknownUpdateStatus",
+      "kind": "Gdef"
+    },
+    "Up": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Up",
+      "kind": "Gdef"
+    },
+    "UpdateBatchPoints": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.UpdateBatchPoints",
+      "kind": "Gdef"
+    },
+    "UpdateBatchResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.UpdateBatchResponse",
+      "kind": "Gdef"
+    },
+    "UpdateCollection": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.UpdateCollection",
+      "kind": "Gdef"
+    },
+    "UpdateCollectionClusterSetupRequest": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.UpdateCollectionClusterSetupRequest",
+      "kind": "Gdef"
+    },
+    "UpdateCollectionClusterSetupResponse": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.UpdateCollectionClusterSetupResponse",
+      "kind": "Gdef"
+    },
+    "UpdatePointVectors": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.UpdatePointVectors",
+      "kind": "Gdef"
+    },
+    "UpdateResult": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.UpdateResult",
+      "kind": "Gdef"
+    },
+    "UpdateStatus": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.UpdateStatus",
+      "kind": "Gdef"
+    },
+    "UpsertPoints": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.UpsertPoints",
+      "kind": "Gdef"
+    },
+    "Uuid": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Uuid",
+      "kind": "Gdef"
+    },
+    "UuidIndexParams": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.UuidIndexParams",
+      "kind": "Gdef"
+    },
+    "Value": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.json_with_int_pb2.Value",
+      "kind": "Gdef"
+    },
+    "ValuesCount": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.ValuesCount",
+      "kind": "Gdef"
+    },
+    "Vector": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Vector",
+      "kind": "Gdef"
+    },
+    "VectorExample": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.VectorExample",
+      "kind": "Gdef"
+    },
+    "VectorInput": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.VectorInput",
+      "kind": "Gdef"
+    },
+    "VectorOutput": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.VectorOutput",
+      "kind": "Gdef"
+    },
+    "VectorParams": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.VectorParams",
+      "kind": "Gdef"
+    },
+    "VectorParamsDiff": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.VectorParamsDiff",
+      "kind": "Gdef"
+    },
+    "VectorParamsDiffMap": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.VectorParamsDiffMap",
+      "kind": "Gdef"
+    },
+    "VectorParamsMap": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.VectorParamsMap",
+      "kind": "Gdef"
+    },
+    "Vectors": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Vectors",
+      "kind": "Gdef"
+    },
+    "VectorsConfig": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.VectorsConfig",
+      "kind": "Gdef"
+    },
+    "VectorsConfigDiff": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.VectorsConfigDiff",
+      "kind": "Gdef"
+    },
+    "VectorsOutput": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.VectorsOutput",
+      "kind": "Gdef"
+    },
+    "VectorsSelector": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.VectorsSelector",
+      "kind": "Gdef"
+    },
+    "WalConfigDiff": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.WalConfigDiff",
+      "kind": "Gdef"
+    },
+    "WalDelta": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.WalDelta",
+      "kind": "Gdef"
+    },
+    "Weak": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.Weak",
+      "kind": "Gdef"
+    },
+    "Whitespace": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Whitespace",
+      "kind": "Gdef"
+    },
+    "WithLookup": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.WithLookup",
+      "kind": "Gdef"
+    },
+    "WithPayloadSelector": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.WithPayloadSelector",
+      "kind": "Gdef"
+    },
+    "WithVectorsSelector": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.WithVectorsSelector",
+      "kind": "Gdef"
+    },
+    "Word": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Word",
+      "kind": "Gdef"
+    },
+    "WriteOrdering": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.WriteOrdering",
+      "kind": "Gdef"
+    },
+    "WriteOrderingType": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.WriteOrderingType",
+      "kind": "Gdef"
+    },
+    "Yellow": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.Yellow",
+      "kind": "Gdef"
+    },
+    "__annotations__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.grpc.__annotations__",
+        "name": "__annotations__",
+        "type": {
+          ".class": "Instance",
+          "args": [
+            "builtins.str",
+            {
+              ".class": "AnyType",
+              "missing_import_name": null,
+              "source_any": null,
+              "type_of_any": 6
+            }
+          ],
+          "extra_attrs": null,
+          "type_ref": "builtins.dict"
+        }
+      }
+    },
+    "__doc__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.grpc.__doc__",
+        "name": "__doc__",
+        "type": "builtins.str"
+      }
+    },
+    "__file__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.grpc.__file__",
+        "name": "__file__",
+        "type": "builtins.str"
+      }
+    },
+    "__name__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.grpc.__name__",
+        "name": "__name__",
+        "type": "builtins.str"
+      }
+    },
+    "__package__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.grpc.__package__",
+        "name": "__package__",
+        "type": "builtins.str"
+      }
+    },
+    "__path__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.grpc.__path__",
+        "name": "__path__",
+        "type": {
+          ".class": "Instance",
+          "args": [
+            "builtins.str"
+          ],
+          "extra_attrs": null,
+          "type_ref": "builtins.list"
+        }
+      }
+    },
+    "__spec__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "qdrant_client.grpc.__spec__",
+        "name": "__spec__",
+        "type": "_frozen_importlib.ModuleSpec"
+      }
+    },
+    "add_CollectionsServicer_to_server": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_service_pb2_grpc.add_CollectionsServicer_to_server",
+      "kind": "Gdef"
+    },
+    "add_PointsServicer_to_server": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_service_pb2_grpc.add_PointsServicer_to_server",
+      "kind": "Gdef"
+    },
+    "add_QdrantServicer_to_server": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.qdrant_pb2_grpc.add_QdrantServicer_to_server",
+      "kind": "Gdef"
+    },
+    "add_SnapshotsServicer_to_server": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.snapshots_service_pb2_grpc.add_SnapshotsServicer_to_server",
+      "kind": "Gdef"
+    },
+    "collections__pb2": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2",
+      "kind": "Gdef"
+    },
+    "collections__service__pb2": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_service_pb2",
+      "kind": "Gdef"
+    },
+    "enum_type_wrapper": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.enum_type_wrapper",
+      "kind": "Gdef"
+    },
+    "google_dot_protobuf_dot_timestamp__pb2": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2.google_dot_protobuf_dot_timestamp__pb2",
+      "kind": "Gdef"
+    },
+    "grpc": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_service_pb2_grpc.grpc",
+      "kind": "Gdef"
+    },
+    "json__with__int__pb2": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.json_with_int_pb2",
+      "kind": "Gdef"
+    },
+    "points__pb2": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_pb2",
+      "kind": "Gdef"
+    },
+    "points__service__pb2": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.points_service_pb2",
+      "kind": "Gdef"
+    },
+    "qdrant__pb2": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.qdrant_pb2",
+      "kind": "Gdef"
+    },
+    "snapshots__service__pb2": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.snapshots_service_pb2",
+      "kind": "Gdef"
+    },
+    "x16": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.x16",
+      "kind": "Gdef"
+    },
+    "x32": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.x32",
+      "kind": "Gdef"
+    },
+    "x4": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.x4",
+      "kind": "Gdef"
+    },
+    "x64": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.x64",
+      "kind": "Gdef"
+    },
+    "x8": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "qdrant_client.grpc.collections_pb2.x8",
+      "kind": "Gdef"
+    }
+  },
+  "path": "/Users/cosburn/BoarderframeOS/.venv/lib/python3.13/site-packages/qdrant_client/grpc/__init__.py"
+}

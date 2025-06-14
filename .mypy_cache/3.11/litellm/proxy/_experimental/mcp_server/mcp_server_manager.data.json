@@ -1,0 +1,1051 @@
+{
+  ".class": "MypyFile",
+  "_fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager",
+  "future_import_flags": [],
+  "is_partial_stub_package": false,
+  "is_stub": false,
+  "names": {
+    ".class": "SymbolTable",
+    "Any": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Any",
+      "kind": "Gdef"
+    },
+    "CallToolResult": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "mcp.types.CallToolResult",
+      "kind": "Gdef"
+    },
+    "ClientSession": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_suppressed_import",
+          "is_ready",
+          "is_inferred"
+        ],
+        "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.ClientSession",
+        "name": "ClientSession",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "litellm.proxy._experimental.mcp_server.mcp_server_manager.ClientSession",
+          "source_any": null,
+          "type_of_any": 3
+        }
+      }
+    },
+    "Dict": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Dict",
+      "kind": "Gdef"
+    },
+    "List": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.List",
+      "kind": "Gdef"
+    },
+    "LiteLLM_MCPServerTable": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "litellm.proxy._types.LiteLLM_MCPServerTable",
+      "kind": "Gdef"
+    },
+    "MCPAuthType": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "litellm.proxy._types.MCPAuthType",
+      "kind": "Gdef"
+    },
+    "MCPInfo": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "litellm.types.mcp_server.mcp_server_manager.MCPInfo",
+      "kind": "Gdef"
+    },
+    "MCPServer": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "litellm.types.mcp_server.mcp_server_manager.MCPServer",
+      "kind": "Gdef"
+    },
+    "MCPServerManager": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "builtins.object"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager",
+          "name": "MCPServerManager",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {},
+        "module_name": "litellm.proxy._experimental.mcp_server.mcp_server_manager",
+        "mro": [
+          "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "__init__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager.__init__",
+              "name": "__init__",
+              "type": null
+            }
+          },
+          "_add_mcp_servers_from_db_to_in_memory_registry": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager._add_mcp_servers_from_db_to_in_memory_registry",
+              "name": "_add_mcp_servers_from_db_to_in_memory_registry",
+              "type": null
+            }
+          },
+          "_get_mcp_server_from_tool_name": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "tool_name"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager._get_mcp_server_from_tool_name",
+              "name": "_get_mcp_server_from_tool_name",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "tool_name"
+                ],
+                "arg_types": [
+                  "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager",
+                  "builtins.str"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "_get_mcp_server_from_tool_name of MCPServerManager",
+                "ret_type": {
+                  ".class": "UnionType",
+                  "items": [
+                    "litellm.types.mcp_server.mcp_server_manager.MCPServer",
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "uses_pep604_syntax": false
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "_get_tools_from_server": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "server"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager._get_tools_from_server",
+              "name": "_get_tools_from_server",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "server"
+                ],
+                "arg_types": [
+                  "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager",
+                  "litellm.types.mcp_server.mcp_server_manager.MCPServer"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "_get_tools_from_server of MCPServerManager",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "mcp.types.Tool"
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.list"
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "_initialize_tool_name_to_mcp_server_name_mapping": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager._initialize_tool_name_to_mcp_server_name_mapping",
+              "name": "_initialize_tool_name_to_mcp_server_name_mapping",
+              "type": null
+            }
+          },
+          "add_update_server": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "mcp_server"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager.add_update_server",
+              "name": "add_update_server",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "mcp_server"
+                ],
+                "arg_types": [
+                  "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager",
+                  "litellm.proxy._types.LiteLLM_MCPServerTable"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "add_update_server of MCPServerManager",
+                "ret_type": {
+                  ".class": "AnyType",
+                  "missing_import_name": null,
+                  "source_any": null,
+                  "type_of_any": 1
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "call_tool": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "name",
+                "arguments"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager.call_tool",
+              "name": "call_tool",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "name",
+                  "arguments"
+                ],
+                "arg_types": [
+                  "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager",
+                  "builtins.str",
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      "builtins.str",
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 2
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "builtins.dict"
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "call_tool of MCPServerManager",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 1
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "config_mcp_servers": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "explicit_self_type",
+                "is_ready",
+                "is_inferred"
+              ],
+              "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager.config_mcp_servers",
+              "name": "config_mcp_servers",
+              "type": {
+                ".class": "Instance",
+                "args": [
+                  "builtins.str",
+                  "litellm.types.mcp_server.mcp_server_manager.MCPServer"
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            }
+          },
+          "get_mcp_server_by_id": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "server_id"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager.get_mcp_server_by_id",
+              "name": "get_mcp_server_by_id",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "server_id"
+                ],
+                "arg_types": [
+                  "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager",
+                  "builtins.str"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "get_mcp_server_by_id of MCPServerManager",
+                "ret_type": {
+                  ".class": "UnionType",
+                  "items": [
+                    "litellm.types.mcp_server.mcp_server_manager.MCPServer",
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "uses_pep604_syntax": false
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "get_registry": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager.get_registry",
+              "name": "get_registry",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "arg_types": [
+                  "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "get_registry of MCPServerManager",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    "builtins.str",
+                    "litellm.types.mcp_server.mcp_server_manager.MCPServer"
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.dict"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "initialize_tool_name_to_mcp_server_name_mapping": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager.initialize_tool_name_to_mcp_server_name_mapping",
+              "name": "initialize_tool_name_to_mcp_server_name_mapping",
+              "type": null
+            }
+          },
+          "list_tools": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager.list_tools",
+              "name": "list_tools",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "arg_types": [
+                  "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "list_tools of MCPServerManager",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "mcp.types.Tool"
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.list"
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "load_servers_from_config": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "mcp_servers_config"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager.load_servers_from_config",
+              "name": "load_servers_from_config",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "mcp_servers_config"
+                ],
+                "arg_types": [
+                  "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager",
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      "builtins.str",
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 2
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "builtins.dict"
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "load_servers_from_config of MCPServerManager",
+                "ret_type": {
+                  ".class": "AnyType",
+                  "missing_import_name": null,
+                  "source_any": null,
+                  "type_of_any": 1
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "registry": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "explicit_self_type",
+                "is_ready",
+                "is_inferred"
+              ],
+              "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager.registry",
+              "name": "registry",
+              "type": {
+                ".class": "Instance",
+                "args": [
+                  "builtins.str",
+                  "litellm.types.mcp_server.mcp_server_manager.MCPServer"
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            }
+          },
+          "remove_server": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "mcp_server"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager.remove_server",
+              "name": "remove_server",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "mcp_server"
+                ],
+                "arg_types": [
+                  "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager",
+                  "litellm.proxy._types.LiteLLM_MCPServerTable"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "remove_server of MCPServerManager",
+                "ret_type": {
+                  ".class": "AnyType",
+                  "missing_import_name": null,
+                  "source_any": null,
+                  "type_of_any": 1
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "tool_name_to_mcp_server_name_mapping": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "explicit_self_type",
+                "is_ready",
+                "is_inferred"
+              ],
+              "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager.tool_name_to_mcp_server_name_mapping",
+              "name": "tool_name_to_mcp_server_name_mapping",
+              "type": {
+                ".class": "Instance",
+                "args": [
+                  "builtins.str",
+                  "builtins.str"
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "MCPSpecVersion": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "litellm.proxy._types.MCPSpecVersion",
+      "kind": "Gdef"
+    },
+    "MCPSpecVersionType": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "litellm.proxy._types.MCPSpecVersionType",
+      "kind": "Gdef"
+    },
+    "MCPTool": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "mcp.types.Tool",
+      "kind": "Gdef"
+    },
+    "MCPTransport": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "litellm.proxy._types.MCPTransport",
+      "kind": "Gdef"
+    },
+    "MCPTransportType": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "litellm.proxy._types.MCPTransportType",
+      "kind": "Gdef"
+    },
+    "Optional": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Optional",
+      "kind": "Gdef"
+    },
+    "__annotations__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.__annotations__",
+        "name": "__annotations__",
+        "type": {
+          ".class": "Instance",
+          "args": [
+            "builtins.str",
+            {
+              ".class": "AnyType",
+              "missing_import_name": null,
+              "source_any": null,
+              "type_of_any": 6
+            }
+          ],
+          "extra_attrs": null,
+          "type_ref": "builtins.dict"
+        }
+      }
+    },
+    "__doc__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.__doc__",
+        "name": "__doc__",
+        "type": "builtins.str"
+      }
+    },
+    "__file__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.__file__",
+        "name": "__file__",
+        "type": "builtins.str"
+      }
+    },
+    "__name__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.__name__",
+        "name": "__name__",
+        "type": "builtins.str"
+      }
+    },
+    "__package__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.__package__",
+        "name": "__package__",
+        "type": "builtins.str"
+      }
+    },
+    "__spec__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.__spec__",
+        "name": "__spec__",
+        "type": "_frozen_importlib.ModuleSpec"
+      }
+    },
+    "asyncio": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "asyncio",
+      "kind": "Gdef"
+    },
+    "cast": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.cast",
+      "kind": "Gdef"
+    },
+    "global_mcp_server_manager": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready",
+          "has_explicit_value"
+        ],
+        "fullname": "litellm.proxy._experimental.mcp_server.mcp_server_manager.global_mcp_server_manager",
+        "name": "global_mcp_server_manager",
+        "type": "litellm.proxy._experimental.mcp_server.mcp_server_manager.MCPServerManager"
+      }
+    },
+    "json": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "json",
+      "kind": "Gdef"
+    },
+    "sse_client": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "mcp.client.sse.sse_client",
+      "kind": "Gdef"
+    },
+    "uuid": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "uuid",
+      "kind": "Gdef"
+    },
+    "verbose_logger": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "litellm._logging.verbose_logger",
+      "kind": "Gdef"
+    }
+  },
+  "path": "/Users/cosburn/BoarderframeOS/.venv/lib/python3.13/site-packages/litellm/proxy/_experimental/mcp_server/mcp_server_manager.py"
+}

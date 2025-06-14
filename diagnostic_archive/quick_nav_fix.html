@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Navigation Fix</title>
+    <style>
+        body {
+            background: #1a1a2e;
+            color: #fff;
+            font-family: Arial;
+            padding: 20px;
+            text-align: center;
+        }
+        .box {
+            background: #2d2d44;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px auto;
+            max-width: 600px;
+            border: 2px solid #4CAF50;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        pre {
+            background: #333;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: left;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Quick Navigation Fix for Corporate HQ</h1>
+
+    <div class="box">
+        <h2>Instructions:</h2>
+        <ol style="text-align: left;">
+            <li>Click "Open Corporate HQ" below</li>
+            <li>Once the page loads, open the browser console (F12 or right-click → Inspect → Console)</li>
+            <li>Copy and paste this entire code block into the console:</li>
+        </ol>
+
+        <pre id="fix-code">// BoarderframeOS Navigation Fix
+console.log('Applying navigation fix...');
+
+// Define showTab globally
+window.showTab = function(tabName) {
+    console.log('[NAV FIX] Switching to tab:', tabName);
+
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+        tab.style.display = 'none';
+    });
+
+    // Show selected tab
+    const selectedTab = document.getElementById(tabName);
+    if (selectedTab) {
+        selectedTab.classList.add('active');
+        selectedTab.style.display = 'block';
+    }
+
+    // Update nav links
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+    });
+
+    const activeLink = document.querySelector(\`.nav-link[data-tab="\${tabName}"]\`);
+    if (activeLink) {
+        activeLink.classList.add('active');
+    }
+};
+
+// Fix all nav links
+document.querySelectorAll('.nav-link').forEach(link => {
+    link.onclick = function() {
+        const tab = this.getAttribute('data-tab');
+        window.showTab(tab);
+        return false;
+    };
+});
+
+console.log('✅ Navigation fix applied! Try clicking menu items now.');</pre>
+
+        <button onclick="copyFix()">📋 Copy Fix Code</button>
+        <button onclick="window.open('http://localhost:8888', '_blank')">🚀 Open Corporate HQ</button>
+    </div>
+
+    <script>
+        function copyFix() {
+            const code = document.getElementById('fix-code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Fix code copied to clipboard! Paste it in the browser console.');
+            });
+        }
+    </script>
+</body>
+</html>

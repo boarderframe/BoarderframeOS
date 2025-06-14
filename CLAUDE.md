@@ -21,6 +21,7 @@ BoarderframeOS is an AI-Native Operating System with distributed agent coordinat
 - **Redis** (port 6379) - Caching and real-time messaging
 - **Docker** - Containerized infrastructure management
 - **MCP Servers** (ports 8000-8010) - Model Context Protocol tools
+- **Agent Communication Center** (port 8890) - Claude-3 powered agent chat hub
 
 ### Claude Code Integration
 - **MCP Memory System**: Persistent knowledge graph across chat sessions
@@ -43,6 +44,44 @@ python startup.py
 # Alternative via scripts
 ./scripts/start
 ./scripts/start.sh
+
+# Using Make for standardized development
+make start-system      # Complete system startup (docker + startup.py)
+make docker-up        # Start just Docker services (PostgreSQL + Redis)
+make docker-down      # Stop Docker services
+```
+
+### Development Workflow Commands
+```bash
+# Code quality and testing
+make lint            # Run all linting checks (black, isort, flake8, mypy, bandit)
+make format          # Auto-format code with black and isort
+make test            # Run test suite via ./scripts/run/run_tests.sh
+make test-cov        # Run tests with coverage report
+
+# Development setup
+make dev-install     # Install all development dependencies + pre-commit hooks
+make install         # Install production dependencies only
+make clean           # Clean all cache files and temporary artifacts
+
+# Individual linting tools (if needed)
+black --check .                                      # Check formatting
+isort --check-only .                                # Check import sorting
+flake8 . --max-line-length=88 --extend-ignore=E203,W503  # Linting
+mypy . --ignore-missing-imports                     # Type checking
+bandit -r . -ll --skip B101,B601                   # Security checks
+```
+
+### Modern UI Development (React/TypeScript)
+```bash
+cd ui/modern
+
+# Development server
+npm run dev          # Start Vite development server
+npm run build        # Build for production (TypeScript compile + Vite build)
+npm run preview      # Preview production build
+npm run lint         # ESLint for TypeScript/React
+npm run format       # Prettier formatting
 ```
 
 ### Enhanced Startup Features
@@ -114,6 +153,28 @@ python enhanced_department_browser.py  # Department browser interface
 python launch_corporate_headquarters.py # Corporate HQ launcher
 ```
 
+### Organized Scripts Directory
+
+The `scripts/` directory is organized by purpose for easy navigation:
+
+```bash
+# Scripts are organized into subdirectories by function:
+scripts/database/     # Database management (registration, population, migration)
+scripts/enhance/      # Enhancement scripts for existing features
+scripts/integrate/    # Integration scripts for connecting components
+scripts/launch/       # Scripts to launch system components
+scripts/publish/      # Scripts for publishing and deployment
+scripts/run/          # Scripts to run specific components or tests
+scripts/updates/      # Scripts to update existing data or configurations
+scripts/utils/        # General utility scripts (cleanup, restore, etc.)
+scripts/verify/       # Verification and validation scripts
+
+# Common script patterns:
+python scripts/launch/launch_corporate_headquarters.py
+python scripts/verify/verify_system_health.py
+python scripts/utils/cleanup_processes.py
+```
+
 ## Key Development Patterns
 
 ### Adding New Agents
@@ -138,7 +199,7 @@ correlation_id = await send_task_request(
 
 ### Enterprise MCP Infrastructure (PRODUCTION READY)
 
-**8 Operational MCP Servers with Enterprise Optimizations:**
+**9 Operational MCP Servers with Enterprise Optimizations:**
 
 1. **PostgreSQL Database Server** (Port 8010) - ⭐⭐⭐⭐⭐ Enterprise
    - Advanced connection pooling (15-50 connections)
@@ -178,6 +239,12 @@ correlation_id = await send_task_request(
    - Customer relationship management
    - PostgreSQL backend for customer data
 
+9. **Screenshot Server** (Port 8011) - ⭐⭐⭐⭐ Advanced
+   - macOS screenshot capture with pyautogui/screencapture
+   - Annotation support (text, rectangles, circles, arrows)
+   - Base64 encoding for easy integration
+   - Automatic cleanup of old screenshots
+
 ### Performance Achievements & Enterprise Features
 - **83% Database Performance Gain**: Queries optimized from 15ms to 1-3ms average
 - **95% Analytics Throughput Boost**: Background processing with 50-event batching
@@ -204,6 +271,32 @@ correlation_id = await send_task_request(
 ## Corporate Headquarters UI
 
 Access at **http://localhost:8888** after running `python corporate_headquarters.py`
+
+### Capturing Screenshots of Corporate HQ
+
+The system now includes a screenshot server that enables capturing the Corporate HQ UI:
+
+1. **Automatic Method** (via startup.py):
+   ```bash
+   python startup.py  # Screenshot server starts automatically on port 8011
+   ```
+
+2. **Manual Method**:
+   ```bash
+   python mcp/screenshot_server.py
+   # Or use the helper script:
+   ./start_screenshot_server.sh
+   ```
+
+3. **Capture Screenshots**:
+   - Open `capture_corporate_hq.html` in your browser for a visual interface
+   - Or use the test script: `python test_screenshot_capture.py`
+   - Or use curl:
+     ```bash
+     curl -X POST http://localhost:8011/capture \
+       -H "Content-Type: application/json" \
+       -d '{"format": "png", "return_base64": true}'
+     ```
 
 ### Features
 - **System Dashboard**: Overview of system health and metrics with accurate real-time server status
@@ -274,6 +367,26 @@ The metrics layer provides accurate status tracking:
 - `migrations/` - Database migrations
 
 ## Testing Strategy
+
+### Test Framework Structure
+- **Unit Tests**: `tests/` directory with pytest framework
+- **Integration Tests**: Root-level `test_*.py` files for system integration
+- **Coverage**: Configured for `core`, `agents`, `mcp`, `ui` modules
+
+### Running Tests
+```bash
+# Standard test execution
+make test            # Run via scripts/run/run_tests.sh
+make test-cov        # Run with coverage report (HTML + terminal)
+pytest               # Direct pytest execution
+pytest tests/        # Run only unit tests
+pytest test_*.py     # Run integration tests
+
+# Coverage configuration (pyproject.toml)
+# - Source: core, agents, mcp, ui
+# - Omits: tests, migrations, __init__.py files
+# - Precision: 2 decimal places with missing lines shown
+```
 
 ### Component Testing
 - Test individual agents in isolation
@@ -436,3 +549,20 @@ The foundation is exceptionally strong with enterprise-grade orchestration - the
 - Added refresh button for manual metrics updates
 - Implemented comprehensive logging for metrics operations
 - Reordered metrics display: Agents → Leaders → Departments → Divisions → Database → Servers
+
+## User Preferences
+
+### Diagnostic HTML Pages
+When fixing issues or making significant changes, always create diagnostic/verification HTML pages that:
+- Summarize what was fixed and how
+- Provide visual verification that fixes are working
+- Include test buttons and quick diagnostic scripts
+- Show before/after comparisons when relevant
+- Offer manual fix scripts in case automatic fixes don't work
+- Use modern, visually appealing styling with gradients and animations
+
+This helps with:
+- Understanding what changes were made
+- Verifying fixes are working correctly
+- Having fallback options if issues persist
+- Creating a better user experience during troubleshooting

@@ -20,7 +20,7 @@ from core.hq_metrics_layer import (
 logger = logging.getLogger(__name__)
 
 try:
-    from enhance_metrics_visual_integration import VisualMetadataCache
+    from scripts.enhance.enhance_metrics_visual_integration import VisualMetadataCache
 except ImportError:
     VisualMetadataCache = None
 
@@ -141,7 +141,9 @@ class HQMetricsIntegration:
             health_color = (
                 BFColors.SUCCESS
                 if health_percentage >= 80
-                else BFColors.WARNING if health_percentage >= 50 else BFColors.DANGER
+                else BFColors.WARNING
+                if health_percentage >= 50
+                else BFColors.DANGER
             )
 
             cards_html += f"""
@@ -1120,7 +1122,9 @@ class HQMetricsIntegration:
                 status_color = (
                     "#10b981"
                     if status == "active"
-                    else "#3b82f6" if status == "planning" else "var(--accent-color)"
+                    else "#3b82f6"
+                    if status == "planning"
+                    else "var(--accent-color)"
                 )
                 html += f"""
                     <div style="background: var(--secondary-bg); padding: 0.5rem; border-radius: 6px; text-align: center;">

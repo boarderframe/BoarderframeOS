@@ -1,14 +1,5 @@
 {
   "mcpServers": {
-    "boarderframe-fs": {
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "/Users/cosburn/BoarderframeOS"
-      ],
-      "command": "npx",
-      "env": {}
-    },
     "boarderframeos-filesystem": {
       "args": [
         "-y",
@@ -25,19 +16,6 @@
       ],
       "command": "npx",
       "env": {}
-    },
-    "boarderframeos-postgres": {
-      "args": [
-        "/Users/cosburn/BoarderframeOS/mcp/database_server_postgres.py"
-      ],
-      "command": "python",
-      "env": {
-        "POSTGRES_DB": "boarderframeos",
-        "POSTGRES_HOST": "localhost",
-        "POSTGRES_PASSWORD": "boarderframe",
-        "POSTGRES_PORT": "5434",
-        "POSTGRES_USER": "boarderframe"
-      }
     }
   }
 }

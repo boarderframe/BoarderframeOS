@@ -1,0 +1,1358 @@
+{
+  ".class": "MypyFile",
+  "_fullname": "litellm.types.proxy.management_endpoints.ui_sso",
+  "future_import_flags": [],
+  "is_partial_stub_package": false,
+  "is_stub": false,
+  "names": {
+    ".class": "SymbolTable",
+    "DefaultTeamSSOParams": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "litellm.types.utils.LiteLLMPydanticObjectBase"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "litellm.types.proxy.management_endpoints.ui_sso.DefaultTeamSSOParams",
+          "name": "DefaultTeamSSOParams",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "litellm.types.proxy.management_endpoints.ui_sso.DefaultTeamSSOParams",
+        "has_param_spec_type": false,
+        "metaclass_type": "pydantic._internal._model_construction.ModelMetaclass",
+        "metadata": {
+          "dataclass": {
+            "attributes": [
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": false,
+                "is_in_init": false,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": true,
+                "kw_only": true,
+                "line": 214,
+                "name": "__pydantic_extra__",
+                "type": {
+                  ".class": "UnionType",
+                  "items": [
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.str",
+                        {
+                          ".class": "AnyType",
+                          "missing_import_name": null,
+                          "source_any": null,
+                          "type_of_any": 2
+                        }
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.dict"
+                    },
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "uses_pep604_syntax": true
+                }
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": false,
+                "is_in_init": false,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": true,
+                "kw_only": true,
+                "line": 217,
+                "name": "__pydantic_fields_set__",
+                "type": {
+                  ".class": "Instance",
+                  "args": [
+                    "builtins.str"
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.set"
+                }
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": false,
+                "is_in_init": false,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": true,
+                "kw_only": true,
+                "line": 220,
+                "name": "__pydantic_private__",
+                "type": {
+                  ".class": "UnionType",
+                  "items": [
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.str",
+                        {
+                          ".class": "AnyType",
+                          "missing_import_name": null,
+                          "source_any": null,
+                          "type_of_any": 2
+                        }
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.dict"
+                    },
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "uses_pep604_syntax": true
+                }
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": true,
+                "line": 39,
+                "name": "models",
+                "type": {
+                  ".class": "Instance",
+                  "args": [
+                    "builtins.str"
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.list"
+                }
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": true,
+                "line": 43,
+                "name": "max_budget",
+                "type": {
+                  ".class": "UnionType",
+                  "items": [
+                    "builtins.float",
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "uses_pep604_syntax": false
+                }
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": true,
+                "line": 47,
+                "name": "budget_duration",
+                "type": {
+                  ".class": "UnionType",
+                  "items": [
+                    "builtins.str",
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "uses_pep604_syntax": false
+                }
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": true,
+                "line": 51,
+                "name": "tpm_limit",
+                "type": {
+                  ".class": "UnionType",
+                  "items": [
+                    "builtins.int",
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "uses_pep604_syntax": false
+                }
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": true,
+                "line": 55,
+                "name": "rpm_limit",
+                "type": {
+                  ".class": "UnionType",
+                  "items": [
+                    "builtins.int",
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "uses_pep604_syntax": false
+                }
+              }
+            ],
+            "frozen": false
+          },
+          "dataclass_tag": {}
+        },
+        "module_name": "litellm.types.proxy.management_endpoints.ui_sso",
+        "mro": [
+          "litellm.types.proxy.management_endpoints.ui_sso.DefaultTeamSSOParams",
+          "litellm.types.utils.LiteLLMPydanticObjectBase",
+          "pydantic.main.BaseModel",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "__dataclass_fields__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_classvar",
+                "is_ready"
+              ],
+              "fullname": "litellm.types.proxy.management_endpoints.ui_sso.DefaultTeamSSOParams.__dataclass_fields__",
+              "name": "__dataclass_fields__",
+              "type": {
+                ".class": "Instance",
+                "args": [
+                  "builtins.str",
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 2
+                  }
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.dict"
+              }
+            },
+            "plugin_generated": true
+          },
+          "__init__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                5,
+                5,
+                5,
+                5,
+                5
+              ],
+              "arg_names": [
+                "self",
+                "models",
+                "max_budget",
+                "budget_duration",
+                "tpm_limit",
+                "rpm_limit"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "litellm.types.proxy.management_endpoints.ui_sso.DefaultTeamSSOParams.__init__",
+              "name": "__init__",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  5,
+                  5,
+                  5,
+                  5,
+                  5
+                ],
+                "arg_names": [
+                  "self",
+                  "models",
+                  "max_budget",
+                  "budget_duration",
+                  "tpm_limit",
+                  "rpm_limit"
+                ],
+                "arg_types": [
+                  "litellm.types.proxy.management_endpoints.ui_sso.DefaultTeamSSOParams",
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      "builtins.str"
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "builtins.list"
+                  },
+                  {
+                    ".class": "UnionType",
+                    "items": [
+                      "builtins.float",
+                      {
+                        ".class": "NoneType"
+                      }
+                    ],
+                    "uses_pep604_syntax": false
+                  },
+                  {
+                    ".class": "UnionType",
+                    "items": [
+                      "builtins.str",
+                      {
+                        ".class": "NoneType"
+                      }
+                    ],
+                    "uses_pep604_syntax": false
+                  },
+                  {
+                    ".class": "UnionType",
+                    "items": [
+                      "builtins.int",
+                      {
+                        ".class": "NoneType"
+                      }
+                    ],
+                    "uses_pep604_syntax": false
+                  },
+                  {
+                    ".class": "UnionType",
+                    "items": [
+                      "builtins.int",
+                      {
+                        ".class": "NoneType"
+                      }
+                    ],
+                    "uses_pep604_syntax": false
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {},
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "__init__ of DefaultTeamSSOParams",
+                "ret_type": {
+                  ".class": "NoneType"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            },
+            "plugin_generated": true
+          },
+          "__match_args__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_ready",
+                "allow_incompatible_override"
+              ],
+              "fullname": "litellm.types.proxy.management_endpoints.ui_sso.DefaultTeamSSOParams.__match_args__",
+              "name": "__match_args__",
+              "type": {
+                ".class": "TupleType",
+                "implicit": false,
+                "items": [
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "models"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "max_budget"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "budget_duration"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "tpm_limit"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "rpm_limit"
+                  }
+                ],
+                "partial_fallback": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.tuple"
+                }
+              }
+            },
+            "plugin_generated": true
+          },
+          "__mypy-replace": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Decorator",
+              "func": {
+                ".class": "FuncDef",
+                "abstract_status": 0,
+                "arg_kinds": [
+                  5,
+                  5,
+                  5,
+                  5,
+                  5,
+                  5,
+                  5,
+                  5
+                ],
+                "arg_names": [
+                  "__pydantic_extra__",
+                  "__pydantic_fields_set__",
+                  "__pydantic_private__",
+                  "models",
+                  "max_budget",
+                  "budget_duration",
+                  "tpm_limit",
+                  "rpm_limit"
+                ],
+                "dataclass_transform_spec": null,
+                "deprecated": null,
+                "flags": [
+                  "is_static",
+                  "is_decorated"
+                ],
+                "fullname": "litellm.types.proxy.management_endpoints.ui_sso.DefaultTeamSSOParams.__mypy-replace",
+                "name": "__mypy-replace",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5
+                  ],
+                  "arg_names": [
+                    "__pydantic_extra__",
+                    "__pydantic_fields_set__",
+                    "__pydantic_private__",
+                    "models",
+                    "max_budget",
+                    "budget_duration",
+                    "tpm_limit",
+                    "rpm_limit"
+                  ],
+                  "arg_types": [
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        {
+                          ".class": "Instance",
+                          "args": [
+                            "builtins.str",
+                            {
+                              ".class": "AnyType",
+                              "missing_import_name": null,
+                              "source_any": null,
+                              "type_of_any": 2
+                            }
+                          ],
+                          "extra_attrs": null,
+                          "type_ref": "builtins.dict"
+                        },
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.str"
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.set"
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        {
+                          ".class": "Instance",
+                          "args": [
+                            "builtins.str",
+                            {
+                              ".class": "AnyType",
+                              "missing_import_name": null,
+                              "source_any": null,
+                              "type_of_any": 2
+                            }
+                          ],
+                          "extra_attrs": null,
+                          "type_ref": "builtins.dict"
+                        },
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.str"
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.list"
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.float",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.str",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.int",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.int",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    }
+                  ],
+                  "bound_args": [],
+                  "def_extras": {},
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "__mypy-replace of DefaultTeamSSOParams",
+                  "ret_type": {
+                    ".class": "NoneType"
+                  },
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              },
+              "is_overload": false,
+              "var": {
+                ".class": "Var",
+                "flags": [
+                  "is_staticmethod",
+                  "is_ready"
+                ],
+                "fullname": "litellm.types.proxy.management_endpoints.ui_sso.DefaultTeamSSOParams.__mypy-replace",
+                "name": "__mypy-replace",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5
+                  ],
+                  "arg_names": [
+                    "__pydantic_extra__",
+                    "__pydantic_fields_set__",
+                    "__pydantic_private__",
+                    "models",
+                    "max_budget",
+                    "budget_duration",
+                    "tpm_limit",
+                    "rpm_limit"
+                  ],
+                  "arg_types": [
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        {
+                          ".class": "Instance",
+                          "args": [
+                            "builtins.str",
+                            {
+                              ".class": "AnyType",
+                              "missing_import_name": null,
+                              "source_any": null,
+                              "type_of_any": 2
+                            }
+                          ],
+                          "extra_attrs": null,
+                          "type_ref": "builtins.dict"
+                        },
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.str"
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.set"
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        {
+                          ".class": "Instance",
+                          "args": [
+                            "builtins.str",
+                            {
+                              ".class": "AnyType",
+                              "missing_import_name": null,
+                              "source_any": null,
+                              "type_of_any": 2
+                            }
+                          ],
+                          "extra_attrs": null,
+                          "type_ref": "builtins.dict"
+                        },
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.str"
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.list"
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.float",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.str",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.int",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    },
+                    {
+                      ".class": "UnionType",
+                      "items": [
+                        "builtins.int",
+                        {
+                          ".class": "NoneType"
+                        }
+                      ],
+                      "uses_pep604_syntax": false
+                    }
+                  ],
+                  "bound_args": [],
+                  "def_extras": {},
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "__mypy-replace of DefaultTeamSSOParams",
+                  "ret_type": {
+                    ".class": "NoneType"
+                  },
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              }
+            },
+            "plugin_generated": true
+          },
+          "budget_duration": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "litellm.types.proxy.management_endpoints.ui_sso.DefaultTeamSSOParams.budget_duration",
+              "name": "budget_duration",
+              "type": {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.str",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            }
+          },
+          "max_budget": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "litellm.types.proxy.management_endpoints.ui_sso.DefaultTeamSSOParams.max_budget",
+              "name": "max_budget",
+              "type": {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.float",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            }
+          },
+          "models": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "litellm.types.proxy.management_endpoints.ui_sso.DefaultTeamSSOParams.models",
+              "name": "models",
+              "type": {
+                ".class": "Instance",
+                "args": [
+                  "builtins.str"
+                ],
+                "extra_attrs": null,
+                "type_ref": "builtins.list"
+              }
+            }
+          },
+          "rpm_limit": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "litellm.types.proxy.management_endpoints.ui_sso.DefaultTeamSSOParams.rpm_limit",
+              "name": "rpm_limit",
+              "type": {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.int",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            }
+          },
+          "tpm_limit": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "litellm.types.proxy.management_endpoints.ui_sso.DefaultTeamSSOParams.tpm_limit",
+              "name": "tpm_limit",
+              "type": {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.int",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "litellm.types.proxy.management_endpoints.ui_sso.DefaultTeamSSOParams.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "litellm.types.proxy.management_endpoints.ui_sso.DefaultTeamSSOParams",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "Field": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "pydantic.fields.Field",
+      "kind": "Gdef"
+    },
+    "List": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.List",
+      "kind": "Gdef"
+    },
+    "LiteLLMPydanticObjectBase": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "litellm.types.utils.LiteLLMPydanticObjectBase",
+      "kind": "Gdef"
+    },
+    "LitellmUserRoles": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "litellm.proxy._types.LitellmUserRoles",
+      "kind": "Gdef"
+    },
+    "Literal": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Literal",
+      "kind": "Gdef"
+    },
+    "MicrosoftGraphAPIUserGroupDirectoryObject": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "typing._TypedDict"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "litellm.types.proxy.management_endpoints.ui_sso.MicrosoftGraphAPIUserGroupDirectoryObject",
+          "name": "MicrosoftGraphAPIUserGroupDirectoryObject",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "litellm.types.proxy.management_endpoints.ui_sso.MicrosoftGraphAPIUserGroupDirectoryObject",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {},
+        "module_name": "litellm.types.proxy.management_endpoints.ui_sso",
+        "mro": [
+          "litellm.types.proxy.management_endpoints.ui_sso.MicrosoftGraphAPIUserGroupDirectoryObject",
+          "typing._TypedDict",
+          "typing.Mapping",
+          "typing.Collection",
+          "typing.Iterable",
+          "typing.Container",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable"
+        },
+        "self_type": null,
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": {
+          ".class": "TypedDictType",
+          "fallback": "typing._TypedDict",
+          "items": [
+            [
+              "odata_type",
+              {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.str",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            ],
+            [
+              "id",
+              {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.str",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            ],
+            [
+              "deletedDateTime",
+              {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.str",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            ],
+            [
+              "description",
+              {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.str",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            ],
+            [
+              "displayName",
+              {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.str",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            ],
+            [
+              "roleTemplateId",
+              {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.str",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            ]
+          ],
+          "readonly_keys": [],
+          "required_keys": []
+        }
+      }
+    },
+    "MicrosoftGraphAPIUserGroupResponse": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "typing._TypedDict"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "litellm.types.proxy.management_endpoints.ui_sso.MicrosoftGraphAPIUserGroupResponse",
+          "name": "MicrosoftGraphAPIUserGroupResponse",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "litellm.types.proxy.management_endpoints.ui_sso.MicrosoftGraphAPIUserGroupResponse",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {},
+        "module_name": "litellm.types.proxy.management_endpoints.ui_sso",
+        "mro": [
+          "litellm.types.proxy.management_endpoints.ui_sso.MicrosoftGraphAPIUserGroupResponse",
+          "typing._TypedDict",
+          "typing.Mapping",
+          "typing.Collection",
+          "typing.Iterable",
+          "typing.Container",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable"
+        },
+        "self_type": null,
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": {
+          ".class": "TypedDictType",
+          "fallback": "typing._TypedDict",
+          "items": [
+            [
+              "odata_context",
+              {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.str",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            ],
+            [
+              "odata_nextLink",
+              {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.str",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            ],
+            [
+              "value",
+              {
+                ".class": "UnionType",
+                "items": [
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      {
+                        ".class": "TypeAliasType",
+                        "args": [],
+                        "type_ref": "litellm.types.proxy.management_endpoints.ui_sso.MicrosoftGraphAPIUserGroupDirectoryObject"
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "builtins.list"
+                  },
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            ]
+          ],
+          "readonly_keys": [],
+          "required_keys": []
+        }
+      }
+    },
+    "MicrosoftServicePrincipalTeam": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "typing._TypedDict"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "litellm.types.proxy.management_endpoints.ui_sso.MicrosoftServicePrincipalTeam",
+          "name": "MicrosoftServicePrincipalTeam",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [],
+        "fullname": "litellm.types.proxy.management_endpoints.ui_sso.MicrosoftServicePrincipalTeam",
+        "has_param_spec_type": false,
+        "metaclass_type": null,
+        "metadata": {},
+        "module_name": "litellm.types.proxy.management_endpoints.ui_sso",
+        "mro": [
+          "litellm.types.proxy.management_endpoints.ui_sso.MicrosoftServicePrincipalTeam",
+          "typing._TypedDict",
+          "typing.Mapping",
+          "typing.Collection",
+          "typing.Iterable",
+          "typing.Container",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable"
+        },
+        "self_type": null,
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": {
+          ".class": "TypedDictType",
+          "fallback": "typing._TypedDict",
+          "items": [
+            [
+              "principalDisplayName",
+              {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.str",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            ],
+            [
+              "principalId",
+              {
+                ".class": "UnionType",
+                "items": [
+                  "builtins.str",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            ]
+          ],
+          "readonly_keys": [],
+          "required_keys": []
+        }
+      }
+    },
+    "Optional": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.Optional",
+      "kind": "Gdef"
+    },
+    "TypedDict": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing.TypedDict",
+      "kind": "Gdef"
+    },
+    "__annotations__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "litellm.types.proxy.management_endpoints.ui_sso.__annotations__",
+        "name": "__annotations__",
+        "type": {
+          ".class": "Instance",
+          "args": [
+            "builtins.str",
+            {
+              ".class": "AnyType",
+              "missing_import_name": null,
+              "source_any": null,
+              "type_of_any": 6
+            }
+          ],
+          "extra_attrs": null,
+          "type_ref": "builtins.dict"
+        }
+      }
+    },
+    "__doc__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "litellm.types.proxy.management_endpoints.ui_sso.__doc__",
+        "name": "__doc__",
+        "type": "builtins.str"
+      }
+    },
+    "__file__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "litellm.types.proxy.management_endpoints.ui_sso.__file__",
+        "name": "__file__",
+        "type": "builtins.str"
+      }
+    },
+    "__name__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "litellm.types.proxy.management_endpoints.ui_sso.__name__",
+        "name": "__name__",
+        "type": "builtins.str"
+      }
+    },
+    "__package__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "litellm.types.proxy.management_endpoints.ui_sso.__package__",
+        "name": "__package__",
+        "type": "builtins.str"
+      }
+    },
+    "__spec__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "litellm.types.proxy.management_endpoints.ui_sso.__spec__",
+        "name": "__spec__",
+        "type": "_frozen_importlib.ModuleSpec"
+      }
+    }
+  },
+  "path": "/Users/cosburn/BoarderframeOS/.venv/lib/python3.13/site-packages/litellm/types/proxy/management_endpoints/ui_sso.py"
+}

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify Navigation Fix</title>
+    <style>
+        body { background: #222; color: white; font-family: Arial; padding: 20px; }
+        pre { background: #333; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+    </style>
+</head>
+<body>
+    <h1>Verifying Corporate HQ Navigation Fix</h1>
+
+    <h2>Test Results:</h2>
+    <pre id="results">Testing...</pre>
+
+    <h2>Quick Fix (if still broken):</h2>
+    <pre id="quickfix" style="display: none;">
+// Copy and paste this into the browser console at http://localhost:8888
+
+// Define showTab globally
+window.showTab = function(tabName) {
+    console.log('[QUICK FIX] Switching to tab:', tabName);
+
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+        tab.style.display = 'none';
+    });
+
+    // Show selected tab
+    const selectedTab = document.getElementById(tabName);
+    if (selectedTab) {
+        selectedTab.classList.add('active');
+        selectedTab.style.display = 'block';
+    }
+
+    // Update nav links
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+    });
+
+    const activeLink = document.querySelector(`.nav-link[data-tab="${tabName}"]`);
+    if (activeLink) {
+        activeLink.classList.add('active');
+    }
+};
+
+// Fix all nav links
+document.querySelectorAll('.nav-link').forEach(link => {
+    link.onclick = function() {
+        const tab = this.getAttribute('data-tab');
+        window.showTab(tab);
+        return false;
+    };
+});
+
+console.log('[QUICK FIX] Navigation should now work!');
+    </pre>
+
+    <script>
+        async function testNavigation() {
+            const results = document.getElementById('results');
+            const quickfix = document.getElementById('quickfix');
+            let output = '';
+
+            try {
+                const response = await fetch('http://localhost:8888');
+                const html = await response.text();
+
+                // Check for syntax errors
+                const syntaxErrorMatch = html.match(/SyntaxError|Unexpected token/);
+                if (syntaxErrorMatch) {
+                    output += '<span class="error">❌ Syntax errors still present in the page</span>\n';
+                    quickfix.style.display = 'block';
+                } else {
+                    output += '<span class="success">✅ No syntax errors detected</span>\n';
+                }
+
+                // Check if showTab is defined
+                if (html.includes('window.showTab = function')) {
+                    output += '<span class="success">✅ showTab function is properly defined</span>\n';
+                } else {
+                    output += '<span class="error">❌ showTab function not found</span>\n';
+                    quickfix.style.display = 'block';
+                }
+
+                // Check for the problematic template literal
+                if (html.includes("color: {'var(--success-color)'")) {
+                    output += '<span class="error">❌ Template literal issue may still exist</span>\n';
+                    output += '   Line contains: color: {...}\n';
+                    quickfix.style.display = 'block';
+                }
+
+                // Count nav links
+                const navLinkCount = (html.match(/class="nav-link"/g) || []).length;
+                output += `\n📊 Found ${navLinkCount} navigation links\n`;
+
+                // Check onclick handlers
+                const onclickCount = (html.match(/onclick="showTab/g) || []).length;
+                output += `📊 Found ${onclickCount} onclick handlers\n`;
+
+                if (syntaxErrorMatch || !html.includes('window.showTab')) {
+                    output += '\n<span class="error">⚠️ Navigation is likely still broken!</span>\n';
+                    output += 'Use the Quick Fix above by copying it to the browser console.\n';
+                } else {
+                    output += '\n<span class="success">🎉 Navigation should be working now!</span>\n';
+                    output += 'Try refreshing http://localhost:8888 and clicking the menu items.\n';
+                }
+
+            } catch (e) {
+                output += `<span class="error">Error: ${e.message}</span>\n`;
+            }
+
+            results.innerHTML = output;
+        }
+
+        // Run test
+        testNavigation();
+    </script>
+</body>
+</html>

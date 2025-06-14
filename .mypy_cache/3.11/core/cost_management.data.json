@@ -1,0 +1,542 @@
+{
+  ".class": "MypyFile",
+  "_fullname": "core.cost_management",
+  "future_import_flags": [],
+  "is_partial_stub_package": false,
+  "is_stub": false,
+  "names": {
+    ".class": "SymbolTable",
+    "AGENT_COST_POLICIES": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.cost_management.AGENT_COST_POLICIES",
+        "name": "AGENT_COST_POLICIES",
+        "type": {
+          ".class": "Instance",
+          "args": [
+            "builtins.str",
+            {
+              ".class": "Instance",
+              "args": [
+                "builtins.str",
+                "builtins.object"
+              ],
+              "extra_attrs": null,
+              "type_ref": "builtins.dict"
+            }
+          ],
+          "extra_attrs": null,
+          "type_ref": "builtins.dict"
+        }
+      }
+    },
+    "API_COST_SETTINGS": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.cost_management.API_COST_SETTINGS",
+        "name": "API_COST_SETTINGS",
+        "type": {
+          ".class": "Instance",
+          "args": [
+            "builtins.str",
+            "builtins.object"
+          ],
+          "extra_attrs": null,
+          "type_ref": "builtins.dict"
+        }
+      }
+    },
+    "MODEL_COSTS": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.cost_management.MODEL_COSTS",
+        "name": "MODEL_COSTS",
+        "type": {
+          ".class": "Instance",
+          "args": [
+            "builtins.str",
+            {
+              ".class": "Instance",
+              "args": [
+                "builtins.str",
+                "builtins.float"
+              ],
+              "extra_attrs": null,
+              "type_ref": "builtins.dict"
+            }
+          ],
+          "extra_attrs": null,
+          "type_ref": "builtins.dict"
+        }
+      }
+    },
+    "__annotations__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.cost_management.__annotations__",
+        "name": "__annotations__",
+        "type": {
+          ".class": "Instance",
+          "args": [
+            "builtins.str",
+            {
+              ".class": "AnyType",
+              "missing_import_name": null,
+              "source_any": null,
+              "type_of_any": 6
+            }
+          ],
+          "extra_attrs": null,
+          "type_ref": "builtins.dict"
+        }
+      }
+    },
+    "__doc__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.cost_management.__doc__",
+        "name": "__doc__",
+        "type": "builtins.str"
+      }
+    },
+    "__file__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.cost_management.__file__",
+        "name": "__file__",
+        "type": "builtins.str"
+      }
+    },
+    "__name__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.cost_management.__name__",
+        "name": "__name__",
+        "type": "builtins.str"
+      }
+    },
+    "__package__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.cost_management.__package__",
+        "name": "__package__",
+        "type": "builtins.str"
+      }
+    },
+    "__spec__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "core.cost_management.__spec__",
+        "name": "__spec__",
+        "type": "_frozen_importlib.ModuleSpec"
+      }
+    },
+    "calls_after": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready",
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.cost_management.calls_after",
+        "name": "calls_after",
+        "type": "builtins.int"
+      }
+    },
+    "calls_before": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready",
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.cost_management.calls_before",
+        "name": "calls_before",
+        "type": "builtins.int"
+      }
+    },
+    "cost_after_david": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.cost_management.cost_after_david",
+        "name": "cost_after_david",
+        "type": "builtins.float"
+      }
+    },
+    "cost_after_solomon": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.cost_management.cost_after_solomon",
+        "name": "cost_after_solomon",
+        "type": "builtins.float"
+      }
+    },
+    "cost_before_david": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.cost_management.cost_before_david",
+        "name": "cost_before_david",
+        "type": "builtins.float"
+      }
+    },
+    "cost_before_solomon": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.cost_management.cost_before_solomon",
+        "name": "cost_before_solomon",
+        "type": "builtins.float"
+      }
+    },
+    "estimate_daily_cost": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "FuncDef",
+        "abstract_status": 0,
+        "arg_kinds": [
+          0,
+          0,
+          1
+        ],
+        "arg_names": [
+          "agent_name",
+          "calls_per_day",
+          "model"
+        ],
+        "dataclass_transform_spec": null,
+        "deprecated": null,
+        "flags": [],
+        "fullname": "core.cost_management.estimate_daily_cost",
+        "name": "estimate_daily_cost",
+        "type": {
+          ".class": "CallableType",
+          "arg_kinds": [
+            0,
+            0,
+            1
+          ],
+          "arg_names": [
+            "agent_name",
+            "calls_per_day",
+            "model"
+          ],
+          "arg_types": [
+            "builtins.str",
+            "builtins.int",
+            "builtins.str"
+          ],
+          "bound_args": [],
+          "def_extras": {
+            "first_arg": null
+          },
+          "fallback": "builtins.function",
+          "from_concatenate": false,
+          "implicit": false,
+          "imprecise_arg_kinds": false,
+          "is_ellipsis_args": false,
+          "name": "estimate_daily_cost",
+          "ret_type": "builtins.float",
+          "type_guard": null,
+          "type_is": null,
+          "unpack_kwargs": false,
+          "variables": []
+        }
+      }
+    },
+    "get_agent_cost_policy": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "FuncDef",
+        "abstract_status": 0,
+        "arg_kinds": [
+          0
+        ],
+        "arg_names": [
+          "agent_name"
+        ],
+        "dataclass_transform_spec": null,
+        "deprecated": null,
+        "flags": [],
+        "fullname": "core.cost_management.get_agent_cost_policy",
+        "name": "get_agent_cost_policy",
+        "type": {
+          ".class": "CallableType",
+          "arg_kinds": [
+            0
+          ],
+          "arg_names": [
+            "agent_name"
+          ],
+          "arg_types": [
+            "builtins.str"
+          ],
+          "bound_args": [],
+          "def_extras": {
+            "first_arg": null
+          },
+          "fallback": "builtins.function",
+          "from_concatenate": false,
+          "implicit": false,
+          "imprecise_arg_kinds": false,
+          "is_ellipsis_args": false,
+          "name": "get_agent_cost_policy",
+          "ret_type": {
+            ".class": "Instance",
+            "args": [
+              {
+                ".class": "AnyType",
+                "missing_import_name": null,
+                "source_any": null,
+                "type_of_any": 4
+              },
+              {
+                ".class": "AnyType",
+                "missing_import_name": null,
+                "source_any": null,
+                "type_of_any": 4
+              }
+            ],
+            "extra_attrs": null,
+            "type_ref": "builtins.dict"
+          },
+          "type_guard": null,
+          "type_is": null,
+          "unpack_kwargs": false,
+          "variables": []
+        }
+      }
+    },
+    "get_cost_optimization_status": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "FuncDef",
+        "abstract_status": 0,
+        "arg_kinds": [],
+        "arg_names": [],
+        "dataclass_transform_spec": null,
+        "deprecated": null,
+        "flags": [],
+        "fullname": "core.cost_management.get_cost_optimization_status",
+        "name": "get_cost_optimization_status",
+        "type": {
+          ".class": "CallableType",
+          "arg_kinds": [],
+          "arg_names": [],
+          "arg_types": [],
+          "bound_args": [],
+          "def_extras": {
+            "first_arg": null
+          },
+          "fallback": "builtins.function",
+          "from_concatenate": false,
+          "implicit": false,
+          "imprecise_arg_kinds": false,
+          "is_ellipsis_args": false,
+          "name": "get_cost_optimization_status",
+          "ret_type": {
+            ".class": "Instance",
+            "args": [
+              {
+                ".class": "AnyType",
+                "missing_import_name": null,
+                "source_any": null,
+                "type_of_any": 4
+              },
+              {
+                ".class": "AnyType",
+                "missing_import_name": null,
+                "source_any": null,
+                "type_of_any": 4
+              }
+            ],
+            "extra_attrs": null,
+            "type_ref": "builtins.dict"
+          },
+          "type_guard": null,
+          "type_is": null,
+          "unpack_kwargs": false,
+          "variables": []
+        }
+      }
+    },
+    "key": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.cost_management.key",
+        "name": "key",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": null,
+          "source_any": null,
+          "type_of_any": 4
+        }
+      }
+    },
+    "savings_percent": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.cost_management.savings_percent",
+        "name": "savings_percent",
+        "type": "builtins.float"
+      }
+    },
+    "status": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.cost_management.status",
+        "name": "status",
+        "type": {
+          ".class": "Instance",
+          "args": [
+            {
+              ".class": "AnyType",
+              "missing_import_name": null,
+              "source_any": null,
+              "type_of_any": 4
+            },
+            {
+              ".class": "AnyType",
+              "missing_import_name": null,
+              "source_any": null,
+              "type_of_any": 4
+            }
+          ],
+          "extra_attrs": null,
+          "type_ref": "builtins.dict"
+        }
+      }
+    },
+    "total_savings": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.cost_management.total_savings",
+        "name": "total_savings",
+        "type": "builtins.float"
+      }
+    },
+    "value": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "core.cost_management.value",
+        "name": "value",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": null,
+          "source_any": null,
+          "type_of_any": 4
+        }
+      }
+    }
+  },
+  "path": "/Users/cosburn/BoarderframeOS/core/cost_management.py"
+}

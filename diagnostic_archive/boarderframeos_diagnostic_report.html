@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BoarderframeOS Diagnostic Report - June 14, 2025</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00ff88, #00bfff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 1.2em;
+            opacity: 0.8;
+            margin-bottom: 40px;
+        }
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .section h2 {
+            color: #00ff88;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .issue {
+            background: rgba(255, 0, 0, 0.1);
+            border-left: 4px solid #ff4444;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .fix {
+            background: rgba(0, 255, 0, 0.1);
+            border-left: 4px solid #00ff88;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.fixed {
+            background: #00ff88;
+            color: #000;
+        }
+        .status.partial {
+            background: #ffaa00;
+            color: #000;
+        }
+        .status.pending {
+            background: #ff4444;
+            color: #fff;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00ff88;
+        }
+        .stat-label {
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .command {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        ul li:before {
+            content: "▸ ";
+            color: #00ff88;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BoarderframeOS Diagnostic Report</h1>
+        <div class="subtitle">Comprehensive System Analysis - June 14, 2025</div>
+
+        <div class="section">
+            <h2>📊 Executive Summary</h2>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Critical Issues Fixed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">2</div>
+                    <div class="stat-label">Partial Fixes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">4</div>
+                    <div class="stat-label">Optimizations Needed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">85%</div>
+                    <div class="stat-label">System Health</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>✅ Fixed Issues</h2>
+
+            <div class="fix">
+                <h3>1. ACC Health Endpoint <span class="status fixed">FIXED</span></h3>
+                <p>Agent Communication Center (ACC) was showing as "unknown" because it lacked a health endpoint.</p>
+                <strong>Solution:</strong> Added <code>/health</code> endpoint to ACC that returns:
+                <div class="command">
+{
+    "status": "healthy",
+    "service": "agent_communication_center",
+    "port": 8890,
+    "enhanced_agents": 5,
+    "cortex_available": true,
+    "claude_integration": true,
+    "active_connections": 0,
+    "timestamp": "2025-06-14T03:20:14.775257"
+}
+                </div>
+            </div>
+
+            <div class="fix">
+                <h3>2. Database Query Error <span class="status fixed">FIXED</span></h3>
+                <p>Organizational metrics collection was failing with "relation 'leaders' does not exist".</p>
+                <strong>Solution:</strong> Changed query from <code>FROM leaders</code> to <code>FROM department_leaders</code>
+            </div>
+
+            <div class="fix">
+                <h3>3. Agent Count Display <span class="status fixed">FIXED</span></h3>
+                <p>Header and dashboard were showing 0/0 for agents despite 5 agents running.</p>
+                <strong>Solution:</strong> Added code to load agents from startup_status.json and populate unified_data:
+                <ul>
+                    <li>Now correctly shows 5/5 agents running</li>
+                    <li>Services count also updated to show 12/14 healthy</li>
+                    <li>Fixed KeyError in agents display by using .get() method</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⚠️ Partially Fixed Issues</h2>
+
+            <div class="issue">
+                <h3>1. ACC Health Check Integration <span class="status partial">PARTIAL</span></h3>
+                <p>ACC health endpoint exists but Corporate HQ's monitoring isn't checking it properly yet.</p>
+                <strong>Current State:</strong> Added health check logic to _refresh_acc_status() but may need restart to take effect.
+                <strong>Next Steps:</strong> Monitor if ACC shows as "healthy" after next refresh cycle.
+            </div>
+
+            <div class="issue">
+                <h3>2. Agent Cortex Status <span class="status partial">PARTIAL</span></h3>
+                <p>Agent Cortex showing as "unknown" due to missing 'litellm' module.</p>
+                <strong>Workaround:</strong> System continues to function without Agent Cortex.
+                <strong>Fix Required:</strong> <code>pip install litellm</code> to enable Agent Cortex.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔧 Remaining Issues & Recommendations</h2>
+
+            <div class="issue">
+                <h3>1. Missing API Endpoints <span class="status pending">TODO</span></h3>
+                <ul>
+                    <li><code>/api/metrics/summary</code> - Returns 404</li>
+                    <li><code>/api/refresh-all</code> - Returns 404</li>
+                    <li><code>/api/refresh/services_status</code> - Returns 405</li>
+                </ul>
+                <strong>Recommendation:</strong> Implement these endpoints or remove references to them.
+            </div>
+
+            <div class="issue">
+                <h3>2. Excessive Duplicate Operations <span class="status pending">OPTIMIZE</span></h3>
+                <p>Logs show excessive repetition:</p>
+                <ul>
+                    <li>Database health checks running multiple times per cycle</li>
+                    <li>Leaders loaded 5-6 times in succession</li>
+                    <li>Status calculations repeated unnecessarily</li>
+                </ul>
+                <strong>Recommendation:</strong> Implement caching and reduce refresh frequency from 15s to 30-60s.
+            </div>
+
+            <div class="issue">
+                <h3>3. File Cleanup Needed <span class="status pending">CLEANUP</span></h3>
+                <p>Many duplicate and test files found:</p>
+                <ul>
+                    <li>Multiple agent cortex debug/test files</li>
+                    <li>Various HTML diagnostic files</li>
+                    <li>Duplicate agent implementations</li>
+                </ul>
+                <strong>Recommendation:</strong> Archive or remove obsolete files.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🚀 Quick Actions</h2>
+
+            <h3>To Complete ACC Fix:</h3>
+            <div class="command">
+# ACC is already restarted with health endpoint
+# Corporate HQ may need another restart to pick up monitoring changes
+ps aux | grep corporate_headquarters | grep -v grep | awk '{print $2}' | xargs kill
+python corporate_headquarters.py &
+            </div>
+
+            <h3>To Fix Agent Cortex:</h3>
+            <div class="command">
+pip install litellm
+# Then restart startup.py to reinitialize Agent Cortex
+            </div>
+
+            <h3>To Verify All Fixes:</h3>
+            <div class="command">
+# Check ACC health
+curl http://localhost:8890/health
+
+# Check system health summary
+curl http://localhost:8888/api/health-summary | python -m json.tool
+
+# Check UI diagnostics
+curl http://localhost:8888/api/ui/diagnostics | python -m json.tool
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📈 System Status After Fixes</h2>
+            <ul>
+                <li>✅ 5 agents running (solomon, david, adam, eve, bezalel)</li>
+                <li>✅ 12/14 services healthy</li>
+                <li>✅ ACC has health endpoint and is running</li>
+                <li>✅ No more "leaders" table errors</li>
+                <li>✅ Agent counts displaying correctly</li>
+                <li>⚠️ ACC still showing as "unknown" (pending refresh)</li>
+                <li>⚠️ Agent Cortex still offline (needs litellm)</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

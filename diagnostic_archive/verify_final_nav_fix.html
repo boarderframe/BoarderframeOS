@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify Final Navigation Fix</title>
+    <style>
+        body { background: #1a1a2e; color: #eee; font-family: Arial; padding: 20px; }
+        .status { padding: 20px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #2e7d32; }
+        .error { background: #c62828; }
+        .info { background: #1976d2; }
+        pre { background: #333; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Verifying Corporate HQ Navigation Fix</h1>
+
+    <div id="results"></div>
+
+    <button onclick="runFullTest()">Run Complete Test</button>
+    <button onclick="window.open('http://localhost:8888', '_blank')">Open Corporate HQ</button>
+
+    <script>
+        async function runFullTest() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="status info">🔄 Running navigation fix verification...</div>';
+
+            try {
+                const response = await fetch('http://localhost:8888');
+                const html = await response.text();
+
+                let report = '';
+                let hasErrors = false;
+
+                // Check for syntax errors
+                if (html.includes('SyntaxError') || html.includes('Unexpected token')) {
+                    report += '<div class="status error">❌ JavaScript syntax errors detected</div>';
+                    hasErrors = true;
+                } else {
+                    report += '<div class="status success">✅ No syntax errors found</div>';
+                }
+
+                // Check showTab function
+                const showTabExists = html.includes('window.showTab = function');
+                if (showTabExists) {
+                    report += '<div class="status success">✅ showTab function is properly defined</div>';
+                } else {
+                    report += '<div class="status error">❌ showTab function not found</div>';
+                    hasErrors = true;
+                }
+
+                // Check for the problematic color syntax
+                const colorMatch = html.match(/color:\s*{[^}]*var\(--/);
+                if (colorMatch) {
+                    report += '<div class="status error">❌ Found problematic color syntax: ' + colorMatch[0] + '</div>';
+                    hasErrors = true;
+                } else {
+                    report += '<div class="status success">✅ Color syntax appears correct</div>';
+                }
+
+                // Count nav links
+                const navLinks = (html.match(/class="nav-link"/g) || []).length;
+                report += `<div class="status info">📊 Found ${navLinks} navigation links</div>`;
+
+                // Check onclick handlers
+                const onclickHandlers = (html.match(/onclick="showTab/g) || []).length;
+                report += `<div class="status info">📊 Found ${onclickHandlers} onclick handlers</div>`;
+
+                // Extract showTab function for analysis
+                const showTabMatch = html.match(/window\.showTab = function\(tabName\) \{[\s\S]*?\n        \}\}/);
+                if (showTabMatch) {
+                    const funcBody = showTabMatch[0];
+                    const openBraces = (funcBody.match(/\{/g) || []).length;
+                    const closeBraces = (funcBody.match(/\}/g) || []).length;
+
+                    if (openBraces === closeBraces) {
+                        report += '<div class="status success">✅ showTab function braces are balanced</div>';
+                    } else {
+                        report += `<div class="status error">❌ Brace mismatch: ${openBraces} open, ${closeBraces} close</div>`;
+                        hasErrors = true;
+                    }
+                }
+
+                // Final verdict
+                if (!hasErrors) {
+                    report += '<div class="status success" style="font-size: 1.2em; margin-top: 20px;">🎉 Navigation should be working! Click "Open Corporate HQ" to test.</div>';
+                    report += '<pre>To test navigation:\n1. Click "Open Corporate HQ" button\n2. Try clicking: Agents, Leaders, Departments, Divisions, etc.\n3. Each click should switch to the corresponding tab</pre>';
+                } else {
+                    report += '<div class="status error" style="font-size: 1.2em; margin-top: 20px;">⚠️ Issues detected - navigation may not work properly</div>';
+                }
+
+                results.innerHTML = report;
+
+            } catch (e) {
+                results.innerHTML = `<div class="status error">Error: ${e.message}</div>`;
+            }
+        }
+
+        // Run test automatically on load
+        runFullTest();
+    </script>
+</body>
+</html>

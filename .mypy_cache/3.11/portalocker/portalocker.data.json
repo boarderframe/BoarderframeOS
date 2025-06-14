@@ -1,0 +1,568 @@
+{
+  ".class": "MypyFile",
+  "_fullname": "portalocker.portalocker",
+  "future_import_flags": [],
+  "is_partial_stub_package": false,
+  "is_stub": false,
+  "names": {
+    ".class": "SymbolTable",
+    "HasFileno": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [
+          [
+            "fileno",
+            2
+          ]
+        ],
+        "alt_promote": null,
+        "bases": [
+          "builtins.object"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "portalocker.portalocker.HasFileno",
+          "name": "HasFileno",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [
+          "is_abstract",
+          "is_protocol"
+        ],
+        "fullname": "portalocker.portalocker.HasFileno",
+        "has_param_spec_type": false,
+        "metaclass_type": "abc.ABCMeta",
+        "metadata": {},
+        "module_name": "portalocker.portalocker",
+        "mro": [
+          "portalocker.portalocker.HasFileno",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "fileno": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 2,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_trivial_body"
+              ],
+              "fullname": "portalocker.portalocker.HasFileno.fileno",
+              "name": "fileno",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "arg_types": [
+                  "portalocker.portalocker.HasFileno"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "fileno of HasFileno",
+                "ret_type": "builtins.int",
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "portalocker.portalocker.HasFileno.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "portalocker.portalocker.HasFileno",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
+    "LOCKER": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready",
+          "has_explicit_value"
+        ],
+        "fullname": "portalocker.portalocker.LOCKER",
+        "name": "LOCKER",
+        "type": {
+          ".class": "UnionType",
+          "items": [
+            {
+              ".class": "CallableType",
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                null,
+                null
+              ],
+              "arg_types": [
+                {
+                  ".class": "UnionType",
+                  "items": [
+                    "builtins.int",
+                    "portalocker.portalocker.HasFileno"
+                  ],
+                  "uses_pep604_syntax": false
+                },
+                "builtins.int"
+              ],
+              "bound_args": [],
+              "def_extras": {},
+              "fallback": "builtins.function",
+              "from_concatenate": false,
+              "implicit": false,
+              "imprecise_arg_kinds": false,
+              "is_ellipsis_args": false,
+              "name": null,
+              "ret_type": {
+                ".class": "AnyType",
+                "missing_import_name": null,
+                "source_any": null,
+                "type_of_any": 2
+              },
+              "type_guard": null,
+              "type_is": null,
+              "unpack_kwargs": false,
+              "variables": []
+            },
+            {
+              ".class": "NoneType"
+            }
+          ],
+          "uses_pep604_syntax": false
+        }
+      }
+    },
+    "LockFlags": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeAlias",
+        "alias_tvars": [],
+        "column": 0,
+        "fullname": "portalocker.portalocker.LockFlags",
+        "line": 8,
+        "no_args": true,
+        "normalized": false,
+        "python_3_12_type_alias": false,
+        "target": "portalocker.constants.LockFlags"
+      }
+    },
+    "__annotations__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "portalocker.portalocker.__annotations__",
+        "name": "__annotations__",
+        "type": {
+          ".class": "Instance",
+          "args": [
+            "builtins.str",
+            {
+              ".class": "AnyType",
+              "missing_import_name": null,
+              "source_any": null,
+              "type_of_any": 6
+            }
+          ],
+          "extra_attrs": null,
+          "type_ref": "builtins.dict"
+        }
+      }
+    },
+    "__doc__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "portalocker.portalocker.__doc__",
+        "name": "__doc__",
+        "type": "builtins.str"
+      }
+    },
+    "__file__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "portalocker.portalocker.__file__",
+        "name": "__file__",
+        "type": "builtins.str"
+      }
+    },
+    "__name__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "portalocker.portalocker.__name__",
+        "name": "__name__",
+        "type": "builtins.str"
+      }
+    },
+    "__overlapped": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_inferred",
+          "has_explicit_value"
+        ],
+        "fullname": "portalocker.portalocker.__overlapped",
+        "name": "__overlapped",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "portalocker.portalocker.pywintypes",
+          "source_any": {
+            ".class": "AnyType",
+            "missing_import_name": "portalocker.portalocker.pywintypes",
+            "source_any": null,
+            "type_of_any": 3
+          },
+          "type_of_any": 7
+        }
+      }
+    },
+    "__package__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "portalocker.portalocker.__package__",
+        "name": "__package__",
+        "type": "builtins.str"
+      }
+    },
+    "__spec__": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_ready"
+        ],
+        "fullname": "portalocker.portalocker.__spec__",
+        "name": "__spec__",
+        "type": "_frozen_importlib.ModuleSpec"
+      }
+    },
+    "constants": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "portalocker.constants",
+      "kind": "Gdef"
+    },
+    "errno": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "errno",
+      "kind": "Gdef"
+    },
+    "exceptions": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "portalocker.exceptions",
+      "kind": "Gdef"
+    },
+    "fcntl": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "fcntl",
+      "kind": "Gdef"
+    },
+    "lock": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "FuncDef",
+        "abstract_status": 0,
+        "arg_kinds": [
+          0,
+          0
+        ],
+        "arg_names": [
+          "file_",
+          "flags"
+        ],
+        "dataclass_transform_spec": null,
+        "deprecated": null,
+        "flags": [],
+        "fullname": "portalocker.portalocker.lock",
+        "name": "lock",
+        "type": {
+          ".class": "CallableType",
+          "arg_kinds": [
+            0,
+            0
+          ],
+          "arg_names": [
+            "file_",
+            "flags"
+          ],
+          "arg_types": [
+            {
+              ".class": "UnionType",
+              "items": [
+                {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 4
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.IO"
+                },
+                "builtins.int"
+              ],
+              "uses_pep604_syntax": false
+            },
+            "portalocker.constants.LockFlags"
+          ],
+          "bound_args": [],
+          "def_extras": {
+            "first_arg": null
+          },
+          "fallback": "builtins.function",
+          "from_concatenate": false,
+          "implicit": false,
+          "imprecise_arg_kinds": false,
+          "is_ellipsis_args": false,
+          "name": "lock",
+          "ret_type": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 1
+          },
+          "type_guard": null,
+          "type_is": null,
+          "unpack_kwargs": false,
+          "variables": []
+        }
+      }
+    },
+    "msvcrt": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "msvcrt",
+      "kind": "Gdef"
+    },
+    "os": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "os",
+      "kind": "Gdef"
+    },
+    "pywintypes": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_suppressed_import",
+          "is_ready",
+          "is_inferred"
+        ],
+        "fullname": "portalocker.portalocker.pywintypes",
+        "name": "pywintypes",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "portalocker.portalocker.pywintypes",
+          "source_any": null,
+          "type_of_any": 3
+        }
+      }
+    },
+    "typing": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "typing",
+      "kind": "Gdef"
+    },
+    "unlock": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "FuncDef",
+        "abstract_status": 0,
+        "arg_kinds": [
+          0
+        ],
+        "arg_names": [
+          "file_"
+        ],
+        "dataclass_transform_spec": null,
+        "deprecated": null,
+        "flags": [],
+        "fullname": "portalocker.portalocker.unlock",
+        "name": "unlock",
+        "type": {
+          ".class": "CallableType",
+          "arg_kinds": [
+            0
+          ],
+          "arg_names": [
+            "file_"
+          ],
+          "arg_types": [
+            {
+              ".class": "Instance",
+              "args": [
+                {
+                  ".class": "AnyType",
+                  "missing_import_name": null,
+                  "source_any": null,
+                  "type_of_any": 4
+                }
+              ],
+              "extra_attrs": null,
+              "type_ref": "typing.IO"
+            }
+          ],
+          "bound_args": [],
+          "def_extras": {
+            "first_arg": null
+          },
+          "fallback": "builtins.function",
+          "from_concatenate": false,
+          "implicit": false,
+          "imprecise_arg_kinds": false,
+          "is_ellipsis_args": false,
+          "name": "unlock",
+          "ret_type": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 1
+          },
+          "type_guard": null,
+          "type_is": null,
+          "unpack_kwargs": false,
+          "variables": []
+        }
+      }
+    },
+    "win32con": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_suppressed_import",
+          "is_ready",
+          "is_inferred"
+        ],
+        "fullname": "portalocker.portalocker.win32con",
+        "name": "win32con",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "portalocker.portalocker.win32con",
+          "source_any": null,
+          "type_of_any": 3
+        }
+      }
+    },
+    "win32file": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_suppressed_import",
+          "is_ready",
+          "is_inferred"
+        ],
+        "fullname": "portalocker.portalocker.win32file",
+        "name": "win32file",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "portalocker.portalocker.win32file",
+          "source_any": null,
+          "type_of_any": 3
+        }
+      }
+    },
+    "winerror": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "Var",
+        "flags": [
+          "is_suppressed_import",
+          "is_ready",
+          "is_inferred"
+        ],
+        "fullname": "portalocker.portalocker.winerror",
+        "name": "winerror",
+        "type": {
+          ".class": "AnyType",
+          "missing_import_name": "portalocker.portalocker.winerror",
+          "source_any": null,
+          "type_of_any": 3
+        }
+      }
+    }
+  },
+  "path": "/Users/cosburn/BoarderframeOS/.venv/lib/python3.13/site-packages/portalocker/portalocker.py"
+}
