@@ -50,7 +50,7 @@ class EnhancedSystemStartup:
         # Configure clean logging
         logging.basicConfig(level=logging.WARNING, format="%(message)s")  # Reduce noise
         self.logger = logging.getLogger("startup")
-        
+
         # Ensure we use the correct virtual environment Python executable
         self.venv_python = self._get_venv_python_executable()
 
@@ -96,11 +96,11 @@ class EnhancedSystemStartup:
         """Get the correct virtual environment Python executable"""
         # First, try to detect if we're in a virtual environment
         current_python = sys.executable
-        
+
         # Check if we're already using a venv python
-        if '.venv' in current_python or 'venv' in current_python:
+        if ".venv" in current_python or "venv" in current_python:
             return current_python
-            
+
         # Try to find the virtual environment python
         project_root = Path(__file__).parent
         venv_python_paths = [
@@ -108,14 +108,14 @@ class EnhancedSystemStartup:
             project_root / "venv" / "bin" / "python",
             project_root / ".venv" / "Scripts" / "python.exe",  # Windows
         ]
-        
+
         for venv_path in venv_python_paths:
             if venv_path.exists():
                 return str(venv_path)
-                
+
         # Fallback to current python
         return current_python
-    
+
     def _verify_dependencies_for_subprocess(self, required_modules: List[str]) -> bool:
         """Verify that required modules can be imported by subprocess"""
         try:
@@ -126,33 +126,36 @@ class EnhancedSystemStartup:
                     capture_output=True,
                     text=True,
                     timeout=10,
-                    env=env  # Use enhanced environment
+                    env=env,  # Use enhanced environment
                 )
                 if result.returncode != 0:
-                    self.print_step(f"Dependency check failed for {module}: {result.stderr[:100]}", "error")
+                    self.print_step(
+                        f"Dependency check failed for {module}: {result.stderr[:100]}",
+                        "error",
+                    )
                     return False
             return True
         except Exception as e:
             self.print_step(f"Dependency verification error: {str(e)[:50]}", "error")
             return False
-    
+
     def _create_enhanced_subprocess_env(self) -> Dict[str, str]:
         """Create enhanced environment for subprocess calls"""
         env = os.environ.copy()
         project_root = str(Path(__file__).parent)
-        
+
         # Ensure Python path includes project root
         python_path = env.get("PYTHONPATH", "")
         if python_path:
             env["PYTHONPATH"] = f"{project_root}:{python_path}"
         else:
             env["PYTHONPATH"] = project_root
-            
+
         # Ensure virtual environment is properly set
         if ".venv" in self.venv_python:
             venv_root = str(Path(self.venv_python).parent.parent)
             env["VIRTUAL_ENV"] = venv_root
-            
+
         return env
 
     def save_status(self):
@@ -162,14 +165,16 @@ class EnhancedSystemStartup:
                 json.dump(self.status_data, f, indent=2)
         except Exception as e:
             pass  # Silent fail for status file
-    
+
     def refresh_server_status(self):
         """Refresh server status with real-time health checks"""
         try:
             # Import and run the status refresh tool
-            subprocess.run([
-                sys.executable, "fix_server_status.py"
-            ], cwd=str(Path(__file__).parent), check=False)
+            subprocess.run(
+                [sys.executable, "fix_server_status.py"],
+                cwd=str(Path(__file__).parent),
+                check=False,
+            )
             self.print_step("Server status refreshed with real-time data", "success")
         except Exception as e:
             self.print_step(f"Status refresh failed: {str(e)[:50]}", "warning")
@@ -380,15 +385,19 @@ class EnhancedSystemStartup:
                 "Initializing Agent Cortex for intelligent model orchestration...",
                 "starting",
             )
-            
+
             # First, verify critical dependencies for Agent Cortex
             self.print_step("Verifying Agent Cortex dependencies...", "starting")
             cortex_dependencies = ["litellm", "qdrant_client", "core.agent_cortex"]
             if not self._verify_dependencies_for_subprocess(cortex_dependencies):
                 self.print_step("Agent Cortex dependency verification failed", "error")
                 self.update_component_status(
-                    "services", "agent_cortex", "failed", 
-                    {"error": "Missing dependencies: litellm, qdrant_client, or core modules"}
+                    "services",
+                    "agent_cortex",
+                    "failed",
+                    {
+                        "error": "Missing dependencies: litellm, qdrant_client, or core modules"
+                    },
                 )
                 return False
             self.print_step("All Agent Cortex dependencies verified", "success")
@@ -423,17 +432,20 @@ class EnhancedSystemStartup:
             self.print_step(
                 "Starting Agent Cortex Management UI on port 8889...", "starting"
             )
-            
+
             enhanced_env = self._create_enhanced_subprocess_env()
-            
+
             # Kill any existing Agent Cortex UI processes first
             try:
-                subprocess.run(["pkill", "-f", "agent_cortex_management.py"], 
-                              capture_output=True, check=False)
+                subprocess.run(
+                    ["pkill", "-f", "agent_cortex_management.py"],
+                    capture_output=True,
+                    check=False,
+                )
                 await asyncio.sleep(1)  # Give processes time to die
             except:
                 pass
-            
+
             cortex_ui_process = subprocess.Popen(
                 [self.venv_python, "ui/agent_cortex_management.py"],
                 stdout=subprocess.PIPE,
@@ -446,24 +458,35 @@ class EnhancedSystemStartup:
 
             # Wait for Cortex UI to start with better error handling
             ui_started = False
+            self.print_step("Waiting for Agent Cortex UI to become responsive...", "starting")
             for i in range(30):  # Increased timeout to 30 iterations (15 seconds)
                 await asyncio.sleep(0.5)
                 
+                # Progress indicator every 5 seconds
+                if i > 0 and i % 10 == 0:
+                    self.print_step(f"Still waiting for Agent Cortex UI (attempt {i}/30)...", "info")
+
                 # Check if process died
                 if cortex_ui_process.poll() is not None:
                     stdout, stderr = cortex_ui_process.communicate()
                     error_msg = stderr.decode() if stderr else stdout.decode()
                     self.print_step(
-                        f"Agent Cortex UI process died: {error_msg[:100]}", "error"
+                        f"Agent Cortex UI process died early", "error"
                     )
-                    
+                    if error_msg:
+                        # Print more detailed error for debugging
+                        print(f"    Error details: {error_msg[:300]}")
+
                     # Try to restart once if it died due to import issues
                     if "ModuleNotFoundError" in error_msg or "ImportError" in error_msg:
-                        self.print_step("Retrying Agent Cortex UI startup with enhanced environment...", "starting")
-                        
+                        self.print_step(
+                            "Retrying Agent Cortex UI startup with enhanced environment...",
+                            "starting",
+                        )
+
                         # Ensure PYTHONPATH is set correctly
                         enhanced_env["PYTHONPATH"] = str(Path(__file__).parent)
-                        
+
                         cortex_ui_process = subprocess.Popen(
                             [self.venv_python, "ui/agent_cortex_management.py"],
                             stdout=subprocess.PIPE,
@@ -473,13 +496,15 @@ class EnhancedSystemStartup:
                         )
                         self.processes["cortex_ui"] = cortex_ui_process
                         continue
-                    
+
                     self.update_component_status(
-                        "services", "agent_cortex", "failed", 
-                        {"error": f"UI Process died: {error_msg[:200]}"}
+                        "services",
+                        "agent_cortex",
+                        "failed",
+                        {"error": f"UI Process died: {error_msg[:200]}"},
                     )
                     break
-                
+
                 # Check if port is responding
                 try:
                     import socket
@@ -498,8 +523,8 @@ class EnhancedSystemStartup:
                             "agent_cortex",
                             "running",
                             {
-                                "port": 8889, 
-                                "url": "http://localhost:8889", 
+                                "port": 8889,
+                                "url": "http://localhost:8889",
                                 "pid": cortex_ui_process.pid,
                                 "component": "intelligent_orchestration_ui",
                                 "strategy": cortex.current_strategy.value,
@@ -510,15 +535,20 @@ class EnhancedSystemStartup:
                         break
                 except:
                     pass
-            
+
             if not ui_started:
-                self.print_step("Agent Cortex UI startup timeout - will try manual start", "warning")
+                self.print_step(
+                    "Agent Cortex UI startup timeout - will try manual start", "warning"
+                )
                 # Try a final manual start attempt
                 try:
                     manual_process = subprocess.Popen(
-                        [self.venv_python, "-c", 
-                         f"import sys; sys.path.insert(0, '{Path(__file__).parent}'); "
-                         "from ui.agent_cortex_management import app; app.run(host='0.0.0.0', port=8889, debug=False)"],
+                        [
+                            self.venv_python,
+                            "-c",
+                            f"import sys; sys.path.insert(0, '{Path(__file__).parent}'); "
+                            "from ui.agent_cortex_management import app; app.run(host='0.0.0.0', port=8889, debug=False)",
+                        ],
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                         cwd=str(Path(__file__).parent),
@@ -526,31 +556,49 @@ class EnhancedSystemStartup:
                     )
                     self.processes["cortex_ui"] = manual_process
                     await asyncio.sleep(2)
-                    
+
                     # Quick check if manual start worked
                     import socket
+
                     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     sock.settimeout(1)
                     result = sock.connect_ex(("localhost", 8889))
                     sock.close()
                     if result == 0:
-                        self.print_step("Agent Cortex UI started via manual method", "success")
+                        self.print_step(
+                            "Agent Cortex UI started via manual method", "success"
+                        )
                         self.update_component_status(
-                            "services", "agent_cortex", "running", 
-                            {"port": 8889, "url": "http://localhost:8889", "manual_start": True}
+                            "services",
+                            "agent_cortex",
+                            "running",
+                            {
+                                "port": 8889,
+                                "url": "http://localhost:8889",
+                                "manual_start": True,
+                            },
                         )
                         ui_started = True
                 except Exception as manual_e:
-                    self.print_step(f"Manual start also failed: {str(manual_e)[:50]}", "warning")
-                
+                    self.print_step(
+                        f"Manual start also failed: {str(manual_e)[:50]}", "warning"
+                    )
+
                 if not ui_started:
                     self.update_component_status(
-                        "services", "agent_cortex", "timeout", 
-                        {"note": "Core Agent Cortex is operational, UI startup needs manual intervention"}
+                        "services",
+                        "agent_cortex",
+                        "failed",
+                        {
+                            "note": "Core Agent Cortex is operational, but UI failed to start",
+                            "error": "UI startup timeout after multiple retry attempts"
+                        },
                     )
-                    # Don't fail the whole system if UI doesn't start
+                    # Still return True since core Agent Cortex works, just UI failed
+                    self.print_step("Agent Cortex core operational, UI will need manual start", "warning")
+                    self.print_step("Manual start: ./start_agent_cortex.sh", "info")
 
-            return True
+            return ui_started  # Only return True if UI actually started
 
         except Exception as e:
             self.print_step(f"Agent Cortex failed: {str(e)[:50]}", "error")
