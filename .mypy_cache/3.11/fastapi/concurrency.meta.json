@@ -1,5 +1,5 @@
 {
-  "data_mtime": 1749694374,
+  "data_mtime": 1749936676,
   "dep_lines": [
     4,
     6,
@@ -49,13 +49,13 @@
     "typing",
     "anyio",
     "builtins",
-    "qdrant_client.grpc.points_service_pb2",
+    "qdrant_client.grpc.collections_service_pb2",
+    "qdrant_client.grpc.snapshots_service_pb2",
+    "qdrant_client.grpc.qdrant_pb2",
     "qdrant_client.grpc.collections_pb2",
+    "qdrant_client.grpc.points_service_pb2",
     "qdrant_client.grpc.points_pb2",
     "qdrant_client.grpc.json_with_int_pb2",
-    "qdrant_client.grpc.snapshots_service_pb2",
-    "qdrant_client.grpc.collections_service_pb2",
-    "qdrant_client.grpc.qdrant_pb2",
     "_frozen_importlib",
     "abc",
     "anyio._core",
@@ -66,7 +66,7 @@
   "hash": "1a31fba4782116fdc5611e88a41761362153f811",
   "id": "fastapi.concurrency",
   "ignore_all": true,
-  "interface_hash": "e2c94f1564e04b1a198e1fc4359d73b1646e032b",
+  "interface_hash": "a0f288240b941a545e3e7f2d12366ac6ed930137",
   "mtime": 1748194446,
   "options": {
     "allow_redefinition": false,

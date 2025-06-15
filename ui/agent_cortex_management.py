@@ -65,27 +65,27 @@ class AgentCortexManagementUI:
 
         # Initialize variable inspector with current global settings
         self._sync_global_settings_to_inspector()
-        
+
         # Mark as initialized
         self._initialized = True
         self._initializing = False
-    
+
     async def ensure_initialized(self):
         """Ensure Agent Cortex is initialized (lazy initialization)"""
         if self._initialized:
             return
-        
+
         async with self._init_lock:
             # Double-check after acquiring lock
             if self._initialized:
                 return
-            
+
             if self._initializing:
                 # Wait for ongoing initialization
                 while self._initializing:
                     await asyncio.sleep(0.1)
                 return
-            
+
             try:
                 self._initializing = True
                 print("🔄 Lazy initialization of Agent Cortex...")
@@ -198,9 +198,9 @@ class AgentCortexManagementUI:
 
         # Load from Agent Cortex's current state (fallback)
         if not self.cortex_config["model_registry"]:
-            self.cortex_config["model_registry"] = (
-                self.cortex.model_selector.model_registry
-            )
+            self.cortex_config[
+                "model_registry"
+            ] = self.cortex.model_selector.model_registry
 
         self.cortex_config["strategy_settings"] = {
             "current_strategy": self.cortex.current_strategy.value,
@@ -245,6 +245,7 @@ class AgentCortexManagementUI:
 
     def _ensure_initialized_sync(self, func):
         """Decorator to ensure initialization before handling requests"""
+
         def wrapper(*args, **kwargs):
             # Run lazy initialization in a new event loop if needed
             if not self._initialized:
@@ -256,6 +257,7 @@ class AgentCortexManagementUI:
                     loop.close()
                     asyncio.set_event_loop(None)
             return func(*args, **kwargs)
+
         wrapper.__name__ = func.__name__
         return wrapper
 
@@ -267,6 +269,11 @@ class AgentCortexManagementUI:
             """Main Agent Cortex Management dashboard"""
             # No initialization needed for static page
             return render_template("agent_cortex_management.html")
+
+        @self.app.route("/health")
+        def health():
+            """Health check endpoint"""
+            return jsonify({"status": "healthy", "service": "agent_cortex"})
 
         @self.app.route("/test")
         def test_variables():
@@ -1066,18 +1073,18 @@ class AgentCortexManagementUI:
                         and selection.expected_cost > scenario["max_cost"]
                     ):
                         test_detail["passes_constraints"] = False
-                        test_detail["constraint_violation"] = (
-                            f"Cost {selection.expected_cost} > {scenario['max_cost']}"
-                        )
+                        test_detail[
+                            "constraint_violation"
+                        ] = f"Cost {selection.expected_cost} > {scenario['max_cost']}"
 
                     if (
                         scenario.get("max_latency")
                         and selection.expected_latency > scenario["max_latency"]
                     ):
                         test_detail["passes_constraints"] = False
-                        test_detail["constraint_violation"] = (
-                            f"Latency {selection.expected_latency} > {scenario['max_latency']}"
-                        )
+                        test_detail[
+                            "constraint_violation"
+                        ] = f"Latency {selection.expected_latency} > {scenario['max_latency']}"
 
                     test_results["test_details"].append(test_detail)
                     test_results["tests_run"] += 1
@@ -1185,17 +1192,17 @@ class AgentCortexManagementUI:
         if debug is None:
             # If launched from startup.py, disable debug mode
             debug = os.environ.get("BOARDERFRAME_STARTUP") != "1"
-        
+
         print(f"🧠 Starting Agent Cortex Management UI on http://localhost:{self.port}")
         if not self._initialized:
             print("📍 Agent Cortex will be initialized on first API request")
-        
+
         # Run with appropriate settings
         self.app.run(
-            host="0.0.0.0", 
-            port=self.port, 
+            host="0.0.0.0",
+            port=self.port,
             debug=debug,
-            use_reloader=debug  # Only use reloader in debug mode
+            use_reloader=debug,  # Only use reloader in debug mode
         )
 
 

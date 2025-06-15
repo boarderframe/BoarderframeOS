@@ -326,9 +326,11 @@ When responding:
                     current_message,
                     context={
                         "conversation_round": round_num + 1,
-                        "previous_speaker": agents[agents.index(agent) - 1]
-                        if agents.index(agent) > 0
-                        else "moderator",
+                        "previous_speaker": (
+                            agents[agents.index(agent) - 1]
+                            if agents.index(agent) > 0
+                            else "moderator"
+                        ),
                         "topic": topic,
                     },
                 )

@@ -356,9 +356,9 @@ Provide a strategic response."""
                 "type": "alert_response",
                 "alert": message.content,
                 "timestamp": datetime.now().isoformat(),
-                "action_taken": "emergency_team"
-                if severity == "critical"
-                else "monitoring",
+                "action_taken": (
+                    "emergency_team" if severity == "critical" else "monitoring"
+                ),
             }
         )
 

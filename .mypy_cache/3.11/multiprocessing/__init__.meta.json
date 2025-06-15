@@ -1,5 +1,5 @@
 {
-  "data_mtime": 1749694378,
+  "data_mtime": 1749936667,
   "dep_lines": [
     1,
     1,
@@ -61,13 +61,13 @@
     "multiprocessing.queues",
     "multiprocessing.spawn",
     "builtins",
+    "qdrant_client.grpc.collections_service_pb2",
+    "qdrant_client.grpc.snapshots_service_pb2",
+    "qdrant_client.grpc.qdrant_pb2",
     "qdrant_client.grpc.collections_pb2",
+    "qdrant_client.grpc.points_service_pb2",
     "qdrant_client.grpc.points_pb2",
     "qdrant_client.grpc.json_with_int_pb2",
-    "qdrant_client.grpc.collections_service_pb2",
-    "qdrant_client.grpc.points_service_pb2",
-    "qdrant_client.grpc.qdrant_pb2",
-    "qdrant_client.grpc.snapshots_service_pb2",
     "_ctypes",
     "_frozen_importlib",
     "abc",
@@ -84,7 +84,7 @@
   "hash": "f5942c6dd5716d8c7e57f310eb2541a24f7f8bed",
   "id": "multiprocessing",
   "ignore_all": true,
-  "interface_hash": "a82695dd3100a405bb70d46b4db318d89418de59",
+  "interface_hash": "fdd8173d2228190c6c9354b99bb4053a24e0118a",
   "mtime": 1749694287,
   "options": {
     "allow_redefinition": false,

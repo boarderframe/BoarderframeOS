@@ -2077,7 +2077,7 @@ class DashboardData:
                         ].items():
                             # Load all server statuses, not just "running" ones
                             raw_status = server_info.get("status", "unknown")
-                            
+
                             # Map statuses appropriately
                             if raw_status == "running":
                                 display_status = "healthy"
@@ -2087,7 +2087,7 @@ class DashboardData:
                                 display_status = "offline"
                             else:
                                 display_status = raw_status
-                            
+
                             # Add to unified data
                             self.unified_data["services_status"][server_name] = {
                                 "status": display_status,
@@ -2099,14 +2099,20 @@ class DashboardData:
                                     "last_update", datetime.now().isoformat()
                                 ),
                                 "raw_status": raw_status,
-                                "details": server_info.get("details", {})
+                                "details": server_info.get("details", {}),
                             }
                             # Also add to legacy for compatibility
                             self.services_status[server_name] = self.unified_data[
                                 "services_status"
                             ][server_name]
-                            
-                            status_icon = "✅" if display_status == "healthy" else "⚠️" if display_status == "starting" else "❌"
+
+                            status_icon = (
+                                "✅"
+                                if display_status == "healthy"
+                                else "⚠️"
+                                if display_status == "starting"
+                                else "❌"
+                            )
                             print(
                                 f"  {status_icon} Loaded {server_name} as {display_status} on port {server_info.get('details', {}).get('port', 0)}"
                             )
@@ -2118,7 +2124,7 @@ class DashboardData:
                         ].items():
                             # Load all service statuses, not just "running" ones
                             raw_status = service_info.get("status", "unknown")
-                            
+
                             # Map statuses appropriately
                             if raw_status == "running":
                                 display_status = "healthy"
@@ -2128,7 +2134,7 @@ class DashboardData:
                                 display_status = "offline"
                             else:
                                 display_status = raw_status
-                            
+
                             self.unified_data["services_status"][service_name] = {
                                 "status": display_status,
                                 "port": service_info.get("details", {}).get("port", 0),
@@ -2137,13 +2143,19 @@ class DashboardData:
                                     "last_update", datetime.now().isoformat()
                                 ),
                                 "raw_status": raw_status,
-                                "details": service_info.get("details", {})
+                                "details": service_info.get("details", {}),
                             }
                             self.services_status[service_name] = self.unified_data[
                                 "services_status"
                             ][service_name]
-                            
-                            status_icon = "✅" if display_status == "healthy" else "⚠️" if display_status == "starting" else "❌"
+
+                            status_icon = (
+                                "✅"
+                                if display_status == "healthy"
+                                else "⚠️"
+                                if display_status == "starting"
+                                else "❌"
+                            )
                             print(
                                 f"  {status_icon} Loaded service {service_name} as {display_status}"
                             )
@@ -15002,13 +15014,13 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
             # Handle status file reload request
             try:
                 print("🔄 Reloading server status from status file...")
-                
+
                 # Reload the persistent status data
                 dashboard_data._load_persistent_status()
-                
+
                 # Also run a quick health check to update current status
                 dashboard_data._run_initial_health_check()
-                
+
                 self.send_response(200)
                 self.send_header("Content-type", "application/json")
                 self.end_headers()
@@ -15017,11 +15029,15 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                     "status": "success",
                     "message": "Server status reloaded successfully",
                     "timestamp": datetime.now().isoformat(),
-                    "servers_loaded": len(dashboard_data.unified_data.get("services_status", {}))
+                    "servers_loaded": len(
+                        dashboard_data.unified_data.get("services_status", {})
+                    ),
                 }
                 self.wfile.write(json.dumps(response).encode("utf-8"))
-                
-                print(f"✅ Status reload complete - {response['servers_loaded']} servers loaded")
+
+                print(
+                    f"✅ Status reload complete - {response['servers_loaded']} servers loaded"
+                )
 
             except Exception as e:
                 print(f"❌ Status reload failed: {e}")
@@ -15032,7 +15048,7 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 error_response = {
                     "status": "error",
                     "message": str(e),
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
                 }
                 self.wfile.write(json.dumps(error_response).encode("utf-8"))
         else:
@@ -15610,11 +15626,15 @@ def main():
                     "status": acc_status.get("status", "unknown"),
                     "port": acc_status.get("port", 8890),
                     "ui_state": {
-                        "color": "red"
-                        if acc_status.get("status") == "offline"
-                        else "green"
-                        if acc_status.get("status") == "healthy"
-                        else "yellow",
+                        "color": (
+                            "red"
+                            if acc_status.get("status") == "offline"
+                            else (
+                                "green"
+                                if acc_status.get("status") == "healthy"
+                                else "yellow"
+                            )
+                        ),
                         "icon": "fa-comments",
                         "position": "Core Systems section",
                         "priority": 3,
@@ -15630,11 +15650,15 @@ def main():
                     "status": cortex_status.get("status", "unknown"),
                     "port": cortex_status.get("port", 8889),
                     "ui_state": {
-                        "color": "red"
-                        if cortex_status.get("status") == "offline"
-                        else "green"
-                        if cortex_status.get("status") == "healthy"
-                        else "yellow",
+                        "color": (
+                            "red"
+                            if cortex_status.get("status") == "offline"
+                            else (
+                                "green"
+                                if cortex_status.get("status") == "healthy"
+                                else "yellow"
+                            )
+                        ),
                         "icon": "fa-brain",
                         "position": "Core Systems section",
                         "priority": 2,

@@ -1,5 +1,5 @@
 {
-  "data_mtime": 1749694374,
+  "data_mtime": 1749936665,
   "dep_lines": [
     4,
     1,
@@ -48,13 +48,13 @@
     "fractions",
     "typing",
     "builtins",
+    "qdrant_client.grpc.collections_service_pb2",
+    "qdrant_client.grpc.snapshots_service_pb2",
+    "qdrant_client.grpc.qdrant_pb2",
     "qdrant_client.grpc.collections_pb2",
+    "qdrant_client.grpc.points_service_pb2",
     "qdrant_client.grpc.points_pb2",
     "qdrant_client.grpc.json_with_int_pb2",
-    "qdrant_client.grpc.collections_service_pb2",
-    "qdrant_client.grpc.points_service_pb2",
-    "qdrant_client.grpc.qdrant_pb2",
-    "qdrant_client.grpc.snapshots_service_pb2",
     "_frozen_importlib",
     "abc",
     "numbers",
@@ -63,7 +63,7 @@
   "hash": "8b85526921d82ff2831e26468525209cf22747f3",
   "id": "random",
   "ignore_all": true,
-  "interface_hash": "4931c78160bce8061ec68b3bb28a878bd47833d8",
+  "interface_hash": "064950f27241909c572857a97ec63318da2bd8e6",
   "mtime": 1749694287,
   "options": {
     "allow_redefinition": false,

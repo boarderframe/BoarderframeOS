@@ -486,14 +486,16 @@ class EnhancedEve(EnhancedBaseAgent):
 
         health_data = {
             "agents_monitored": len(self.agent_performance_data),
-            "average_performance": statistics.mean(
-                [
-                    self._calculate_performance_score(data)
-                    for data in self.agent_performance_data.values()
-                ]
-            )
-            if self.agent_performance_data
-            else 0,
+            "average_performance": (
+                statistics.mean(
+                    [
+                        self._calculate_performance_score(data)
+                        for data in self.agent_performance_data.values()
+                    ]
+                )
+                if self.agent_performance_data
+                else 0
+            ),
             "evolution_success_rate": 0.95,  # Simulated
             "patterns_applied": self.evolution_metrics["patterns_discovered"],
             "system_learning_rate": 0.15,  # 15% improvement rate

@@ -291,7 +291,7 @@
                       "type_of_any": 4
                     },
                     "fullname": "contextlib._T_co",
-                    "id": 38715,
+                    "id": 19658,
                     "name": "_T_co",
                     "namespace": "",
                     "upper_bound": "builtins.object",
@@ -323,7 +323,7 @@
                     "type_of_any": 4
                   },
                   "fullname": "contextlib._T_co",
-                  "id": 38715,
+                  "id": 19658,
                   "name": "_T_co",
                   "namespace": "",
                   "upper_bound": "builtins.object",
@@ -350,7 +350,7 @@
                   "type_of_any": 4
                 },
                 "fullname": "contextlib._T_co",
-                "id": 38715,
+                "id": 19658,
                 "name": "_T_co",
                 "namespace": "",
                 "upper_bound": "builtins.object",

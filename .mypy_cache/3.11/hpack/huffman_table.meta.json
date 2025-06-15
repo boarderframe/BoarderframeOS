@@ -1,5 +1,5 @@
 {
-  "data_mtime": 1749694373,
+  "data_mtime": 1749917305,
   "dep_lines": [
     72,
     70,
@@ -34,13 +34,13 @@
     "hpack.exceptions",
     "__future__",
     "builtins",
+    "qdrant_client.grpc.collections_service_pb2",
+    "qdrant_client.grpc.snapshots_service_pb2",
+    "qdrant_client.grpc.qdrant_pb2",
     "qdrant_client.grpc.collections_pb2",
+    "qdrant_client.grpc.points_service_pb2",
     "qdrant_client.grpc.points_pb2",
     "qdrant_client.grpc.json_with_int_pb2",
-    "qdrant_client.grpc.collections_service_pb2",
-    "qdrant_client.grpc.points_service_pb2",
-    "qdrant_client.grpc.qdrant_pb2",
-    "qdrant_client.grpc.snapshots_service_pb2",
     "_frozen_importlib",
     "abc",
     "typing"

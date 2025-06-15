@@ -1,5 +1,5 @@
 {
-  "data_mtime": 1749694379,
+  "data_mtime": 1749936668,
   "dep_lines": [
     4,
     5,
@@ -50,13 +50,13 @@
     "configparser",
     "typing",
     "builtins",
+    "qdrant_client.grpc.collections_service_pb2",
+    "qdrant_client.grpc.snapshots_service_pb2",
+    "qdrant_client.grpc.qdrant_pb2",
     "qdrant_client.grpc.collections_pb2",
+    "qdrant_client.grpc.points_service_pb2",
     "qdrant_client.grpc.points_pb2",
     "qdrant_client.grpc.json_with_int_pb2",
-    "qdrant_client.grpc.collections_service_pb2",
-    "qdrant_client.grpc.points_service_pb2",
-    "qdrant_client.grpc.qdrant_pb2",
-    "qdrant_client.grpc.snapshots_service_pb2",
     "_frozen_importlib",
     "_typeshed",
     "abc",
@@ -69,7 +69,7 @@
   "hash": "7791b0b57ea46b63bbc2ae44a2405bd3f5863c69",
   "id": "rich.theme",
   "ignore_all": true,
-  "interface_hash": "fbc8cd4f7a1970695062f81a1a50ee8c4219bae8",
+  "interface_hash": "2839019a541a13c149d1489294b9442fdd336572",
   "mtime": 1748052609,
   "options": {
     "allow_redefinition": false,

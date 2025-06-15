@@ -340,9 +340,11 @@ What should I do next?"""
             task_data = json.loads(task_json)
             target_agent = task_data.get(
                 "agent",
-                self.enhanced_config.preferred_collaborators[0]
-                if self.enhanced_config.preferred_collaborators
-                else "david",
+                (
+                    self.enhanced_config.preferred_collaborators[0]
+                    if self.enhanced_config.preferred_collaborators
+                    else "david"
+                ),
             )
 
             # Send delegation request
@@ -392,9 +394,9 @@ What should I do next?"""
                 "learned_patterns": len(self.learned_patterns),
                 "collaborations": len(self.collaboration_history),
                 "langchain_enabled": self.enhanced_config.use_langchain,
-                "langchain_tools": len(self.langchain_tools)
-                if LANGCHAIN_AVAILABLE
-                else 0,
+                "langchain_tools": (
+                    len(self.langchain_tools) if LANGCHAIN_AVAILABLE else 0
+                ),
             }
         )
 

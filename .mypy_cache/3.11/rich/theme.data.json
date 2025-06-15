@@ -824,7 +824,7 @@
                           "type_of_any": 4
                         },
                         "fullname": "builtins._T",
-                        "id": 22254,
+                        "id": 15867,
                         "name": "_T",
                         "namespace": "",
                         "upper_bound": "builtins.object",
@@ -865,7 +865,7 @@
                             "type_of_any": 4
                           },
                           "fullname": "builtins._T",
-                          "id": 22254,
+                          "id": 15867,
                           "name": "_T",
                           "namespace": "",
                           "upper_bound": "builtins.object",
@@ -888,7 +888,7 @@
                           "type_of_any": 4
                         },
                         "fullname": "builtins._T",
-                        "id": 22254,
+                        "id": 15867,
                         "name": "_T",
                         "namespace": "",
                         "upper_bound": "builtins.object",
