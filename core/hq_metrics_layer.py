@@ -465,6 +465,7 @@ class MetricsCalculator:
                     ("analytics", 8007, "healthy", 20),
                     ("payment", 8006, "healthy", 18),
                     ("customer", 8008, "healthy", 25),
+                    ("screenshot", 8011, "healthy", 14),
                     (
                         "corporate_headquarters",
                         8888,
@@ -472,13 +473,14 @@ class MetricsCalculator:
                         10,
                     ),  # Always healthy if we're running
                     ("agent_cortex", 8889, "healthy", 12),  # Assume healthy
+                    ("agent_communication_center", 8890, "healthy", 16),  # ACC
                 ]
 
             healthy_count = sum(1 for s in servers if s[2] == "healthy")
 
             # Calculate totals including all server categories
-            # We have exactly 8 servers: 3 Core + 3 MCP + 2 Business
-            total_servers = 8
+            # We have exactly 10 servers: 4 Core + 4 MCP + 2 Business
+            total_servers = 10
 
             metrics["summary"] = {
                 "total": MetricValue(
