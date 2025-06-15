@@ -434,7 +434,7 @@ class EnhancedSystemStartup:
             )
 
             enhanced_env = self._create_enhanced_subprocess_env()
-            
+
             # Mark this as a subprocess launch for Agent Cortex
             enhanced_env["BOARDERFRAME_STARTUP"] = "1"
 
@@ -477,21 +477,23 @@ class EnhancedSystemStartup:
 
             # Wait for Cortex UI to start with better error handling
             ui_started = False
-            self.print_step("Waiting for Agent Cortex UI to become responsive...", "starting")
-            for i in range(30):  # Increased timeout to 30 iterations (15 seconds)
+            self.print_step(
+                "Waiting for Agent Cortex UI to become responsive...", "starting"
+            )
+            for i in range(60):  # Increased timeout to 60 iterations (30 seconds)
                 await asyncio.sleep(0.5)
-                
+
                 # Progress indicator every 5 seconds
                 if i > 0 and i % 10 == 0:
-                    self.print_step(f"Still waiting for Agent Cortex UI (attempt {i}/30)...", "info")
+                    self.print_step(
+                        f"Still waiting for Agent Cortex UI (attempt {i}/60)...", "info"
+                    )
 
                 # Check if process died
                 if cortex_ui_process.poll() is not None:
                     stdout, stderr = cortex_ui_process.communicate()
                     error_msg = stderr.decode() if stderr else stdout.decode()
-                    self.print_step(
-                        f"Agent Cortex UI process died early", "error"
-                    )
+                    self.print_step(f"Agent Cortex UI process died early", "error")
                     if error_msg:
                         # Print more detailed error for debugging
                         print(f"    Error details: {error_msg[:300]}")
@@ -567,7 +569,7 @@ class EnhancedSystemStartup:
                     manual_env = enhanced_env.copy()
                     manual_env["FLASK_DEBUG"] = "0"
                     manual_env["WERKZEUG_RUN_MAIN"] = "true"
-                    
+
                     manual_process = subprocess.Popen(
                         [self.venv_python, "ui/agent_cortex_launcher.py"],
                         stdout=subprocess.PIPE,
@@ -612,14 +614,37 @@ class EnhancedSystemStartup:
                         "failed",
                         {
                             "note": "Core Agent Cortex is operational, but UI failed to start",
-                            "error": "UI startup timeout after multiple retry attempts"
+                            "error": "UI startup timeout after multiple retry attempts",
                         },
                     )
                     # Still return True since core Agent Cortex works, just UI failed
-                    self.print_step("Agent Cortex core operational, UI will need manual start", "warning")
+                    self.print_step(
+                        "Agent Cortex core operational, UI will need manual start",
+                        "warning",
+                    )
                     self.print_step("Manual start: ./start_agent_cortex.sh", "info")
 
-            return ui_started  # Only return True if UI actually started
+            # Update the final status based on whether UI started
+            if ui_started:
+                # UI started successfully
+                return True
+            else:
+                # UI didn't start but core is operational
+                # Update status to show core is running even if UI isn't
+                self.update_component_status(
+                    "services",
+                    "agent_cortex",
+                    "running",
+                    {
+                        "component": "intelligent_orchestration",
+                        "strategy": cortex.current_strategy.value,
+                        "providers": len(cortex.multi_provider.providers),
+                        "ui_status": "offline",
+                        "core_status": "operational",
+                        "note": "Core Agent Cortex operational, UI requires manual start",
+                    },
+                )
+                return True  # Return True since core Agent Cortex is operational
 
         except Exception as e:
             self.print_step(f"Agent Cortex failed: {str(e)[:50]}", "error")
@@ -1952,6 +1977,9 @@ class EnhancedSystemStartup:
 
         self.status_data["startup_phase"] = "operational"
         self.save_status()
+
+        # Give Agent Cortex a bit more time to fully initialize if needed
+        await asyncio.sleep(2)
 
         # Refresh server status with real-time health checks
         print("\n🔄 Refreshing server status with real-time health checks...")
