@@ -16,7 +16,7 @@ with open("README.md", "r", encoding="utf-8") as f:
 
 setup(
     name="boarderframeos",
-    version="0.1.0",
+    version="0.2.0",
     author="BoarderFrame",
     author_email="boarderframe@gmail.com",
     description="AI-Native Operating System with distributed agent coordination",

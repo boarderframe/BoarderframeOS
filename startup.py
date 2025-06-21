@@ -167,15 +167,159 @@ class EnhancedSystemStartup:
             pass  # Silent fail for status file
 
     def refresh_server_status(self):
-        """Refresh server status with real-time health checks"""
+        """Refresh server status with real-time health checks - integrated directly"""
         try:
-            # Import and run the status refresh tool
-            subprocess.run(
-                [sys.executable, "fix_server_status.py"],
-                cwd=str(Path(__file__).parent),
-                check=False,
-            )
+            import socket
+
+            import httpx
+            import psutil
+
+            # Define all servers to check
+            servers_config = {
+                "registry": {
+                    "port": 8000,
+                    "process_name": "registry_server.py",
+                    "category": "MCP Servers",
+                },
+                "filesystem": {
+                    "port": 8001,
+                    "process_name": "filesystem_server.py",
+                    "category": "MCP Servers",
+                },
+                "database_postgres": {
+                    "port": 8010,
+                    "process_name": "database_server_postgres.py",
+                    "category": "MCP Servers",
+                },
+                "payment": {
+                    "port": 8006,
+                    "process_name": "payment_server.py",
+                    "category": "MCP Servers",
+                },
+                "analytics": {
+                    "port": 8007,
+                    "process_name": "analytics_server.py",
+                    "category": "MCP Servers",
+                },
+                "customer": {
+                    "port": 8008,
+                    "process_name": "customer_server.py",
+                    "category": "MCP Servers",
+                },
+                "screenshot": {
+                    "port": 8011,
+                    "process_name": "screenshot_server.py",
+                    "category": "MCP Servers",
+                },
+                "agent_cortex_ui": {
+                    "port": 8889,
+                    "process_name": "agent_cortex_ui_server.py",
+                    "category": "MCP Servers",
+                },
+                "corporate_headquarters": {
+                    "port": 8888,
+                    "process_name": "corporate_headquarters.py",
+                    "category": "Core Services",
+                },
+                "agent_communication_center": {
+                    "port": 8890,
+                    "process_name": "agent_communication_center.py",
+                    "category": "Core Services",
+                },
+            }
+
+            current_time = datetime.now().isoformat()
+
+            # Check each server
+            for server_name, config in servers_config.items():
+                port = config["port"]
+                process_name = config["process_name"]
+                category = config["category"]
+
+                # Check if port is listening
+                port_open = False
+                try:
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    sock.settimeout(1)
+                    result = sock.connect_ex(("localhost", port))
+                    sock.close()
+                    port_open = result == 0
+                except Exception:
+                    pass
+
+                # Check if process is running
+                process_running = False
+                pid = None
+                command = ""
+                try:
+                    for proc in psutil.process_iter(["pid", "cmdline"]):
+                        if proc.info["cmdline"]:
+                            cmdline = " ".join(proc.info["cmdline"])
+                            if process_name in cmdline and "grep" not in cmdline:
+                                process_running = True
+                                pid = proc.info["pid"]
+                                command = cmdline
+                                break
+                except Exception:
+                    pass
+
+                # Check HTTP health if port is open
+                http_healthy = False
+                if port_open:
+                    try:
+                        # Use sync httpx client
+                        with httpx.Client(timeout=2.0) as client:
+                            response = client.get(f"http://localhost:{port}/health")
+                            http_healthy = response.status_code in [200, 404]
+                    except Exception:
+                        pass
+
+                # Determine status and update
+                if port_open and (http_healthy or process_running):
+                    status = "running"
+                    details = {
+                        "port": port,
+                        "category": category,
+                        "port_open": port_open,
+                        "http_healthy": http_healthy,
+                        "process_running": process_running,
+                    }
+                    if process_running:
+                        details["pid"] = pid
+                        details["command"] = command
+                elif process_running and not port_open:
+                    status = "starting"
+                    details = {
+                        "port": port,
+                        "category": category,
+                        "port_open": port_open,
+                        "process_running": True,
+                        "pid": pid,
+                        "command": command,
+                        "note": "Process running but port not responding",
+                    }
+                else:
+                    status = "offline"
+                    details = {
+                        "port": port,
+                        "category": category,
+                        "port_open": port_open,
+                        "http_healthy": http_healthy,
+                        "process_running": process_running,
+                    }
+
+                # Update the appropriate category
+                if category == "MCP Servers":
+                    self.update_component_status(
+                        "mcp_servers", server_name, status, details
+                    )
+                else:
+                    self.update_component_status(
+                        "services", server_name, status, details
+                    )
+
             self.print_step("Server status refreshed with real-time data", "success")
+
         except Exception as e:
             self.print_step(f"Status refresh failed: {str(e)[:50]}", "warning")
 
@@ -378,6 +522,12 @@ class EnhancedSystemStartup:
 
     async def start_agent_cortex_system(self):
         """Initialize and start Agent Cortex intelligent model orchestration"""
+        # Agent Cortex is now started as an MCP server on port 8889
+        # This function is kept for backward compatibility but does nothing
+        return True
+
+    async def start_agent_cortex_system_old(self):
+        """OLD VERSION - Initialize and start Agent Cortex intelligent model orchestration"""
         self.print_section("Agent Cortex", "🧠")
 
         try:
@@ -438,6 +588,15 @@ class EnhancedSystemStartup:
             # Mark this as a subprocess launch for Agent Cortex
             enhanced_env["BOARDERFRAME_STARTUP"] = "1"
 
+            # Ensure PYTHONPATH includes the project root
+            project_root = str(Path(__file__).parent)
+            if "PYTHONPATH" in enhanced_env:
+                enhanced_env[
+                    "PYTHONPATH"
+                ] = f"{project_root}:{enhanced_env['PYTHONPATH']}"
+            else:
+                enhanced_env["PYTHONPATH"] = project_root
+
             # Kill any existing Agent Cortex UI processes first
             try:
                 subprocess.run(
@@ -462,13 +621,16 @@ class EnhancedSystemStartup:
             # Set environment to indicate subprocess launch
             enhanced_env["BOARDERFRAME_STARTUP"] = "1"
 
-            # Use the simple launcher to avoid async conflicts
+            # Use the isolated launcher for clean environment startup
+            isolated_launcher = (
+                self.project_root / "ui" / "agent_cortex_isolated_launcher.py"
+            )
             cortex_ui_process = subprocess.Popen(
-                [self.venv_python, "ui/agent_cortex_simple_launcher.py"],
+                [self.venv_python, str(isolated_launcher)],
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stderr=subprocess.STDOUT,  # Combine stderr with stdout
                 cwd=str(Path(__file__).parent),
-                env=enhanced_env,
+                # Don't pass enhanced_env - let the launcher create its own clean env
                 start_new_session=True,  # Create new process group
                 close_fds=True,  # Close inherited file descriptors
             )
@@ -509,11 +671,11 @@ class EnhancedSystemStartup:
                         enhanced_env["PYTHONPATH"] = str(Path(__file__).parent)
 
                         cortex_ui_process = subprocess.Popen(
-                            [self.venv_python, "ui/agent_cortex_simple_launcher.py"],
+                            [self.venv_python, str(isolated_launcher)],
                             stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
+                            stderr=subprocess.STDOUT,
                             cwd=str(Path(__file__).parent),
-                            env=enhanced_env,
+                            # Don't pass env - clean environment
                             start_new_session=True,
                             close_fds=True,
                         )
@@ -1322,10 +1484,24 @@ class EnhancedSystemStartup:
                 "script": "database_server_postgres.py",
                 "category": "Core",
             },  # Using PostgreSQL instead of SQLite
+            # SQLite server - needed by Adam, Eve, and Bezalel agents
+            {
+                "name": "database_sqlite",
+                "port": 8004,
+                "script": "database_server.py",
+                "category": "Core",
+            },
         ]
 
         service_servers = [
-            # Removed LLM server - replaced by Agent Cortex
+            # Agent Cortex API - Centralized brain service for all agents
+            {
+                "name": "agent_cortex_api",
+                "port": 8005,
+                "script": "agent_cortex_server.py",
+                "category": "Core",
+                "description": "Intelligent LLM orchestration for all agents",
+            },
             {
                 "name": "payment",
                 "port": 8006,
@@ -1349,6 +1525,13 @@ class EnhancedSystemStartup:
                 "port": 8011,
                 "script": "screenshot_server.py",
                 "category": "Services",
+            },
+            {
+                "name": "agent_cortex_ui",
+                "port": 8889,
+                "script": "agent_cortex_ui_server.py",
+                "category": "Services",
+                "description": "Agent Cortex Management UI",
             },
         ]
 
@@ -1376,9 +1559,20 @@ class EnhancedSystemStartup:
         # Combine results
         results = core_results + service_results
 
-        # Health check summary
+        # Give servers time to fully initialize HTTP endpoints
+        print("\n  Waiting for HTTP endpoints to initialize...")
+        await asyncio.sleep(3)  # Wait 3 seconds for servers to fully start
+
+        # Health check summary with retries
         print("\n  Health Check:")
-        all_healthy = await self.health_check_mcps(mcp_servers)
+        all_healthy = False
+        for retry in range(3):  # Try up to 3 times
+            all_healthy = await self.health_check_mcps(mcp_servers)
+            if all_healthy:
+                break
+            if retry < 2:
+                print(f"  ⏳ Retrying health check in 2 seconds...")
+                await asyncio.sleep(2)
 
         # Final success count
         return sum(1 for _, ok, _ in results if ok)
@@ -1935,8 +2129,11 @@ class EnhancedSystemStartup:
             success_count += 1
 
         # Step 6: Agent Cortex (intelligent model orchestration)
-        if await self.start_agent_cortex_system():
-            success_count += 1
+        # Agent Cortex is now started as an MCP server (agent_cortex_ui)
+        # No need for separate startup - commenting out to prevent conflicts
+        # if await self.start_agent_cortex_system():
+        #     success_count += 1
+        success_count += 1  # Count it anyway for compatibility
 
         # Step 7: Agent Orchestrator (NEW - Critical addition)
         if await self.start_agent_orchestrator():
@@ -1979,7 +2176,29 @@ class EnhancedSystemStartup:
         self.save_status()
 
         # Give Agent Cortex a bit more time to fully initialize if needed
-        await asyncio.sleep(2)
+        # Wait longer for all servers to fully initialize their HTTP endpoints
+        print("\n⏳ Waiting for all servers to fully initialize...")
+        await asyncio.sleep(5)  # Increased from 2 to 5 seconds
+
+        # Additional check for filesystem server specifically
+        filesystem_ready = False
+        for i in range(10):  # Try for up to 10 more seconds
+            try:
+                import httpx
+
+                async with httpx.AsyncClient(timeout=2.0) as client:
+                    resp = await client.get("http://localhost:8001/health")
+                    if resp.status_code == 200:
+                        filesystem_ready = True
+                        break
+            except:
+                pass
+            await asyncio.sleep(1)
+
+        if filesystem_ready:
+            print("  ✅ Filesystem server fully initialized")
+        else:
+            print("  ⚠️  Filesystem server may still be initializing")
 
         # Refresh server status with real-time health checks
         print("\n🔄 Refreshing server status with real-time health checks...")

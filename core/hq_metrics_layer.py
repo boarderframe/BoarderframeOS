@@ -131,6 +131,16 @@ class MetricsCalculator:
 
         self._visual_cache = VisualMetadataCache(db_config)
 
+        # Get unified data layer instance
+        self._unified_data_layer = None
+        try:
+            from core.hq_unified_data_layer import get_unified_data_layer
+
+            self._unified_data_layer = get_unified_data_layer()
+            logger.info("Connected to unified data layer")
+        except Exception as e:
+            logger.warning(f"Could not connect to unified data layer: {e}")
+
     def _get_db_connection(self):
         """Get database connection"""
         return psycopg2.connect(
@@ -151,6 +161,72 @@ class MetricsCalculator:
                 logger.info(
                     f"Corporate HQ status: {server_status['corporate_headquarters'].get('status', 'unknown')}"
                 )
+
+            # Update unified data layer with server counts
+            if self._unified_data_layer:
+                try:
+                    # Count healthy servers by category
+                    core_servers = [
+                        "corporate_headquarters",
+                        "agent_cortex",
+                        "agent_communication_center",
+                        "registry",
+                    ]
+                    mcp_servers = ["filesystem", "database_postgres", "analytics"]
+                    business_servers = ["payment", "customer", "screenshot"]
+
+                    healthy_core = sum(
+                        1
+                        for s in core_servers
+                        if s in server_status
+                        and server_status[s].get("status")
+                        in ["healthy", "running", "online", "active"]
+                    )
+                    healthy_mcp = sum(
+                        1
+                        for s in mcp_servers
+                        if s in server_status
+                        and server_status[s].get("status")
+                        in ["healthy", "running", "online", "active"]
+                    )
+                    healthy_business = sum(
+                        1
+                        for s in business_servers
+                        if s in server_status
+                        and server_status[s].get("status")
+                        in ["healthy", "running", "online", "active"]
+                    )
+
+                    total_healthy = healthy_core + healthy_mcp + healthy_business
+                    total_servers = 10  # Fixed: 4 core + 3 mcp + 3 business
+
+                    # Update unified data layer
+                    asyncio.create_task(
+                        self._unified_data_layer.update_category(
+                            "servers",
+                            {
+                                "total": total_servers,
+                                "healthy": total_healthy,
+                                "degraded": 0,
+                                "offline": total_servers - total_healthy,
+                                "categories": {
+                                    "core": {"total": 4, "healthy": healthy_core},
+                                    "mcp": {"total": 4, "healthy": healthy_mcp},
+                                    "business": {
+                                        "total": 2,
+                                        "healthy": healthy_business,
+                                    },
+                                },
+                            },
+                        )
+                    )
+                    logger.info(
+                        f"Updated unified data layer: {total_healthy}/{total_servers} servers healthy"
+                    )
+                except Exception as e:
+                    logger.error(
+                        f"Error updating unified data layer with server status: {e}"
+                    )
 
     def calculate_agent_metrics(self) -> Dict[str, Any]:
         """Calculate comprehensive agent metrics"""

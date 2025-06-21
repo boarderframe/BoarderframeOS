@@ -15,6 +15,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 import httpx
 
+from .cortex_client import CortexClient, create_cortex_client
 from .cost_management import (
     API_COST_SETTINGS,
     estimate_daily_cost,
@@ -126,7 +127,9 @@ class BaseAgent(ABC):
 
     def __init__(self, config: Optional[AgentConfig] = None, **kwargs):
         if config is None:
-            allowed = {k: v for k, v in kwargs.items() if k in AgentConfig.__annotations__}
+            allowed = {
+                k: v for k, v in kwargs.items() if k in AgentConfig.__annotations__
+            }
             allowed.setdefault("goals", [])
             allowed.setdefault("tools", [])
             config = AgentConfig(**allowed)
@@ -146,16 +149,17 @@ class BaseAgent(ABC):
         self.daily_cost = 0.0
         self.cost_optimization_enabled = API_COST_SETTINGS["cost_optimization_enabled"]
 
-        # LLM client for reasoning
-        if "claude" in config.model.lower():
-            llm_config = CLAUDE_OPUS_CONFIG
-        else:
-            llm_config = OLLAMA_CONFIG
+        # Use Agent Cortex as centralized brain service
+        # This replaces direct LLM client usage with intelligent orchestration
+        self.llm = create_cortex_client(
+            agent_name=config.name, cortex_url="http://localhost:8005"
+        )
 
-        # Override with agent-specific settings
-        llm_config.model = config.model
-        llm_config.temperature = config.temperature
-        self.llm = LLMClient(llm_config)
+        # Set temperature preference for this agent
+        self.llm.default_temperature = config.temperature
+
+        # Log the change
+        self.logger.info(f"🧠 {config.name} connected to Agent Cortex brain service")
 
         # Performance metrics
         self.metrics = {

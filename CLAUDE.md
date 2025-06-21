@@ -606,3 +606,30 @@ This helps with:
 - Verifying fixes are working correctly
 - Having fallback options if issues persist
 - Creating a better user experience during troubleshooting
+
+## Recent Major Work (June 2025)
+
+### Agent Database Status Alignment (Completed)
+**Problem**: Database showed 195 agents with 50 "active" but only ~5 agents had actual Python files
+**Solution**: Comprehensive database audit and cleanup
+- **Created**: `scripts/database/audit_and_fix_agent_status.py` - Analyzes actual implementation vs database claims
+- **Reset**: 120 agents from fake "operational/deployed" to realistic "planned" status
+- **Identified**: 5 agents with actual code (Solomon, David, Adam, Eve, Bezalel) marked as "in_development"
+- **Cleaned**: Removed 28 duplicate records, total reduced from 195 to 167 agents
+- **Result**: Database now shows honest metrics - 167 total (5 in development, 162 planned, 0 operational)
+
+### Startup Process Cleanup (Completed)
+**Problem**: Agent Cortex showing offline, startup using external fix scripts
+**Solution**: Integrated status checking directly into startup.py
+- **Removed**: External dependency on `fix_server_status.py` script
+- **Integrated**: All port/process/HTTP health checks directly into startup process
+- **Enhanced**: Timing fixes (3-second waits, retry logic, filesystem verification)
+- **Result**: Clean "things just run and work" startup without external scripts needed
+
+**Key Files**:
+- `scripts/database/audit_and_fix_agent_status.py` - Agent implementation analyzer
+- `scripts/database/cleanup_duplicate_agents.py` - Database cleanup utility
+- `agent_status_fix_summary.html` - Visual summary of changes
+- `clean_startup_solution.html` - Startup fix documentation
+
+**Database State**: Now reflects reality with honest agent metrics instead of inflated development roadmap numbers.

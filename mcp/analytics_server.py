@@ -254,7 +254,6 @@ class EventProcessor:
                     len(batch) >= BATCH_SIZE
                     or current_time - self.last_batch_time >= BATCH_TIMEOUT
                 ):
-
                     await self._process_batch(batch)
                     batch = []
                     self.last_batch_time = current_time
@@ -395,7 +394,7 @@ class MCPAnalyticsServer:
         """Initialize the analytics server"""
         self.app = FastAPI(title="MCP Analytics Server")
         self.setup_app()
-        self.database_url = "http://localhost:8004/rpc"  # MCP Database Server
+        self.database_url = "http://localhost:8010/rpc"  # PostgreSQL Database Server
 
         # Background event processor (prefer PostgreSQL)
         self.db_path = "analytics.db"

@@ -103,12 +103,21 @@ class IntelligentModelSelector:
     """Intelligent model selection engine"""
 
     def __init__(self):
+        self.logger = logging.getLogger("agent_cortex.model_selector")
         self.model_registry = self._initialize_model_registry()
         self.performance_history = {}
-        self.logger = logging.getLogger("agent_cortex.model_selector")
 
     def _initialize_model_registry(self) -> Dict[str, Dict]:
         """Initialize comprehensive model registry"""
+        # Import Claude-first configuration
+        try:
+            from .agent_cortex_claude_config import CLAUDE_FIRST_MODEL_REGISTRY
+
+            self.logger.info("Using Claude-first model configuration")
+            return CLAUDE_FIRST_MODEL_REGISTRY
+        except ImportError:
+            self.logger.warning("Claude config not found, using default registry")
+
         return {
             ModelTier.EXECUTIVE.value: {
                 "primary": {
@@ -338,7 +347,17 @@ class IntelligentModelSelector:
         """Estimate cost for the request"""
         # Rough estimation based on context size and complexity
         estimated_tokens = len(str(request.context)) // 4 + (request.complexity * 100)
-        cost_per_token = model_config["cost_per_1k"] / 1000
+
+        # Handle both old format (cost_per_1k) and new format (input/output costs)
+        if "cost_per_1k" in model_config:
+            cost_per_token = model_config["cost_per_1k"] / 1000
+        else:
+            # Use average of input and output costs for estimation
+            input_cost = model_config.get("input_cost_per_1k", 0)
+            output_cost = model_config.get("output_cost_per_1k", 0)
+            avg_cost_per_1k = (input_cost + output_cost) / 2
+            cost_per_token = avg_cost_per_1k / 1000
+
         return estimated_tokens * cost_per_token
 
     async def _generate_selection_reasoning(
@@ -356,7 +375,7 @@ class IntelligentModelSelector:
             f"Selected: {selected_config['model']} ({selected_config['provider']})",
             f"Strategy: {strategy.value}",
             f"Quality score: {selected_config['quality_score']:.2f}",
-            f"Estimated cost: ${selected_config['cost_per_1k']:.4f}/1k tokens",
+            f"Estimated cost: ${selected_config.get('cost_per_1k', selected_config.get('input_cost_per_1k', 0)):.4f}/1k tokens",
         ]
 
         return " | ".join(reasoning_parts)

@@ -1522,6 +1522,13 @@ class DashboardData:
             "health_history": {},  # Historical health data
             "last_refresh": None,  # Global last refresh timestamp
             "refresh_in_progress": False,  # Global refresh state
+            "servers": {  # Server summary data
+                "total": 0,
+                "healthy": 0,
+                "core": {"total": 0, "healthy": 0},
+                "mcp": {"total": 0, "healthy": 0},
+                "business": {"total": 0, "healthy": 0},
+            },
         }
 
         # === LEGACY COMPATIBILITY ===
@@ -1547,7 +1554,7 @@ class DashboardData:
                 # Fix port values
                 port_map = {
                     "corporate_headquarters": 8888,
-                    "agent_cortex": 8889,
+                    "agent_cortex_ui": 8889,  # Updated to match actual service name
                     "agent_communication_center": 8890,
                     "registry": 8000,
                     "filesystem": 8001,
@@ -1642,6 +1649,9 @@ class DashboardData:
             "services_status"
         ]["corporate_headquarters"]
 
+        # Update servers summary in unified_data
+        self._update_servers_summary()
+
         # Initialize metrics layer
         self.metrics_layer = None
         if METRICS_AVAILABLE:
@@ -1695,6 +1705,67 @@ class DashboardData:
             print(f"✅ Health summary working: {len(test_data)} keys")
         except Exception as e:
             print(f"❌ Health summary failed: {e}")
+
+    def _update_servers_summary(self):
+        """Update the servers summary in unified_data based on current services_status"""
+        try:
+            # Define server categories
+            # Note: agent_cortex is tracked as agent_cortex_ui in the startup status
+            core_servers = [
+                "corporate_headquarters",
+                "agent_cortex_ui",
+                "agent_communication_center",
+                "registry",
+            ]
+            mcp_servers = ["filesystem", "database_postgres", "analytics"]
+            business_servers = ["payment", "customer", "screenshot"]
+
+            # Count healthy servers
+            services_data = self.unified_data.get(
+                "services_status", self.services_status
+            )
+
+            healthy_core = sum(
+                1
+                for s in core_servers
+                if s in services_data
+                and services_data[s].get("status")
+                in ["healthy", "running", "online", "active"]
+            )
+            healthy_mcp = sum(
+                1
+                for s in mcp_servers
+                if s in services_data
+                and services_data[s].get("status")
+                in ["healthy", "running", "online", "active"]
+            )
+            healthy_business = sum(
+                1
+                for s in business_servers
+                if s in services_data
+                and services_data[s].get("status")
+                in ["healthy", "running", "online", "active"]
+            )
+
+            total_healthy = healthy_core + healthy_mcp + healthy_business
+            total_servers = 10  # 4 Core + 3 MCP + 3 Business
+
+            # Update unified_data
+            self.unified_data["servers"] = {
+                "total": total_servers,
+                "healthy": total_healthy,
+                "core": {"total": len(core_servers), "healthy": healthy_core},
+                "mcp": {"total": len(mcp_servers), "healthy": healthy_mcp},
+                "business": {
+                    "total": len(business_servers),
+                    "healthy": healthy_business,
+                },
+            }
+
+            print(f"📊 Updated servers summary: {total_healthy}/{total_servers} healthy")
+
+        except Exception as e:
+            print(f"❌ Error updating servers summary: {e}")
 
     def _load_department_data(self):
         """Load department data from JSON file"""
@@ -2996,7 +3067,7 @@ class DashboardData:
                 "status": "unknown",
                 "last_check": "Initializing...",
                 "category": "Business Services",
-                "priority": 8,
+                "priority": 9,
                 "description": "Revenue and billing management",
             },
             "customer": {
@@ -3005,8 +3076,17 @@ class DashboardData:
                 "status": "unknown",
                 "last_check": "Initializing...",
                 "category": "Business Services",
-                "priority": 9,
+                "priority": 10,
                 "description": "Customer relationship management",
+            },
+            "screenshot": {
+                "name": "Screenshot Server",
+                "port": 8011,
+                "status": "unknown",
+                "last_check": "Initializing...",
+                "category": "Business Services",
+                "priority": 11,
+                "description": "Screenshot capture service",
             },
         }
 
@@ -3305,16 +3385,16 @@ class DashboardData:
         if not services_data:
             services_data = self.services_status
 
-        # Define server categories
+        # Define server categories with all servers
         category_servers = {
-            "Core Systems": [
+            "Core Infrastructure": [
                 "corporate_headquarters",
                 "agent_cortex",
                 "agent_communication_center",
                 "registry",
             ],
             "MCP Servers": ["filesystem", "database_postgres", "analytics"],
-            "Business Services": ["payment", "customer"],
+            "Business Services": ["payment", "customer", "screenshot"],
         }
 
         servers = category_servers.get(category_name, [])
@@ -3501,6 +3581,13 @@ class DashboardData:
             or self.services_status
         )
 
+        # Debug what we have
+        print(
+            f"🔍 unified_data services_status: {len(self.unified_data.get('services_status', {}))}"
+        )
+        print(f"🔍 self.services_status: {len(getattr(self, 'services_status', {}))}")
+        print(f"🔍 services_data: {len(services_data) if services_data else 0}")
+
         # If unified_data is empty, try services_status
         if not services_data and hasattr(self, "services_status"):
             services_data = self.services_status
@@ -3510,7 +3597,10 @@ class DashboardData:
             print("⚠️ WARNING: No services data found, using defaults")
             services_data = {
                 "corporate_headquarters": {"status": "healthy", "port": 8888},
-                "agent_cortex": {"status": "healthy", "port": 8889},
+                "agent_cortex_ui": {
+                    "status": "healthy",
+                    "port": 8889,
+                },  # Updated to match actual service name
                 "agent_communication_center": {"status": "healthy", "port": 8890},
                 "registry": {"status": "healthy", "port": 8000},
                 "filesystem": {"status": "healthy", "port": 8001},
@@ -3521,19 +3611,20 @@ class DashboardData:
                 "screenshot": {"status": "healthy", "port": 8011},
             }
         # Core infrastructure servers
+        # Note: agent_cortex is tracked as agent_cortex_ui in the startup status
         core_servers = [
             "corporate_headquarters",
-            "agent_cortex",
+            "agent_cortex_ui",
             "agent_communication_center",
             "registry",
         ]
         # MCP (Model Context Protocol) servers
-        mcp_servers = ["filesystem", "database_postgres", "analytics", "screenshot"]
+        mcp_servers = ["filesystem", "database_postgres", "analytics"]
         # Business services
-        business_servers = ["payment", "customer"]
+        business_servers = ["payment", "customer", "screenshot"]
 
         # Calculate totals - we have exactly 10 servers in the system
-        total_servers = 10  # 4 Core + 4 MCP + 2 Business = 10 servers
+        total_servers = 10  # 4 Core + 3 MCP + 3 Business = 10 servers
 
         # Count healthy servers from each category
         # TRACE: Debug server counting
@@ -3574,29 +3665,81 @@ class DashboardData:
         # Total healthy servers across all categories
         total_healthy_servers = healthy_core + healthy_mcp + healthy_business
 
-        # PATCH: If no servers found but system is running, set to 10
+        # Debug logging
+        print(
+            f"🔍 Server counts - Core: {healthy_core}, MCP: {healthy_mcp}, Business: {healthy_business}, Total: {total_healthy_servers}"
+        )
+        print(f"🔍 Services data has {len(services_data)} entries")
+
+        # Log actual counts instead of patching
         if total_healthy_servers == 0:
             print(
-                "⚠️ PATCH: No healthy servers detected, but system is running. Setting to 10/10"
+                "⚠️ WARNING: No healthy servers detected. This may indicate a startup issue."
             )
-            total_healthy_servers = 10
-            healthy_core = 4
-            healthy_mcp = 4
-            healthy_business = 2
+            # Don't patch - show the real status
 
-        # Override with unified data if available
+        # Ensure unified_data has servers summary
+        print(
+            f"🔍 DEBUG: UNIFIED_DATA_LAYER={UNIFIED_DATA_LAYER}, unified_data is None={unified_data is None}"
+        )
         if UNIFIED_DATA_LAYER and unified_data is not None:
+            print(
+                f"🔍 DEBUG: unified_data keys before check: {list(unified_data.keys())}"
+            )
+            print(f"🔍 DEBUG: 'servers' in unified_data: {'servers' in unified_data}")
+
+            # Update servers summary in unified_data
+            if "servers" in unified_data:
+                # Update the existing structure with our calculated values
+                unified_data["servers"]["total"] = total_servers
+                unified_data["servers"]["healthy"] = total_healthy_servers
+                if "categories" in unified_data["servers"]:
+                    unified_data["servers"]["categories"]["core"][
+                        "healthy"
+                    ] = healthy_core
+                    unified_data["servers"]["categories"]["mcp"][
+                        "healthy"
+                    ] = healthy_mcp
+                    unified_data["servers"]["categories"]["business"][
+                        "healthy"
+                    ] = healthy_business
+                print(
+                    f"📊 Updated servers in unified_data: {total_healthy_servers}/{total_servers}"
+                )
+            else:
+                # Create new structure if missing
+                unified_data["servers"] = {
+                    "total": total_servers,
+                    "healthy": total_healthy_servers,
+                    "core": {"total": len(core_servers), "healthy": healthy_core},
+                    "mcp": {"total": len(mcp_servers), "healthy": healthy_mcp},
+                    "business": {
+                        "total": len(business_servers),
+                        "healthy": healthy_business,
+                    },
+                }
+                print(
+                    f"📊 Added servers summary to unified_data: {total_healthy_servers}/{total_servers}"
+                )
+
             try:
                 total_services = unified_data["servers"]["total"]
                 healthy_services = unified_data["servers"]["healthy"]
+                print(
+                    f"🔍 DEBUG: Using unified_data values: {healthy_services}/{total_services}"
+                )
             except Exception as e:
                 # Fallback to calculated values
-                total_services = total_servers  # Use our fixed count of 10
-                healthy_services = total_healthy_servers  # Use calculated healthy count
+                print(f"🔍 DEBUG: Exception getting servers from unified_data: {e}")
+                total_services = total_servers
+                healthy_services = total_healthy_servers
         else:
-            # Update to use our calculated server counts
-            total_services = total_servers  # Use our fixed count of 10
-            healthy_services = total_healthy_servers  # Use calculated healthy count
+            # Use actual calculated server counts
+            print(
+                f"🔍 DEBUG: Using calculated values: {total_healthy_servers}/{total_servers}"
+            )
+            total_services = total_servers
+            healthy_services = total_healthy_servers
 
         # For backward compatibility with narrative
         total_mcp_servers = len(mcp_servers)
@@ -3699,16 +3842,82 @@ class DashboardData:
         registry_status = health_summary["registry"]["status"]
         overall_status = health_summary["overall_status"]
 
-        # Get health score from unified layer
-        # FIXED: Since all 10 servers are running, health score should reflect this
-        health_score = 100  # All servers operational = 100% health
+        # Calculate health score based on actual server status
+        health_score = 0  # Start with 0 and calculate based on actual metrics
+
+        # Use unified data layer as primary source if available
         if UNIFIED_DATA_LAYER and unified_data is not None:
             try:
-                calculated_score = unified_data["system"]["health_score"]
-                if calculated_score > 0:
-                    health_score = calculated_score
+                # Calculate based on unified data
+                server_health = 0
+                if unified_data["servers"]["total"] > 0:
+                    server_health = int(
+                        (
+                            unified_data["servers"]["healthy"]
+                            / unified_data["servers"]["total"]
+                        )
+                        * 100
+                    )
+
+                # Get other health components
+                agent_health = 0
+                if unified_data["agents"]["total"] > 0:
+                    agent_health = int(
+                        (
+                            unified_data["agents"]["active"]
+                            / unified_data["agents"]["total"]
+                        )
+                        * 100
+                    )
+
+                dept_health = 0
+                if unified_data["departments"]["total"] > 0:
+                    dept_health = int(
+                        (
+                            unified_data["departments"]["active"]
+                            / unified_data["departments"]["total"]
+                        )
+                        * 100
+                    )
+
+                # Weighted health score: 40% servers, 30% agents, 30% departments
+                health_score = int(
+                    server_health * 0.4 + agent_health * 0.3 + dept_health * 0.3
+                )
+
+                # Don't hardcode to 100 - use actual calculated score
+                # If score is too low but servers are healthy, bump it up reasonably
+                if health_score < 50 and server_health >= 90:
+                    health_score = int(
+                        server_health * 0.8
+                    )  # Use 80% of server health as minimum
+            except Exception as e:
+                print(f"Error calculating health score from unified data: {e}")
+                # Fallback to service status
+                try:
+                    healthy_count = sum(
+                        1
+                        for service in self.services.values()
+                        if service.get("status") in ["online", "healthy"]
+                    )
+                    total_count = len(self.services) if self.services else 10
+                    if total_count > 0:
+                        health_score = int((healthy_count / total_count) * 100)
+                except:
+                    health_score = 0
+        else:
+            # Fallback calculation without unified data layer
+            try:
+                healthy_count = sum(
+                    1
+                    for service in self.services.values()
+                    if service.get("status") in ["online", "healthy"]
+                )
+                total_count = len(self.services) if self.services else 10
+                if total_count > 0:
+                    health_score = int((healthy_count / total_count) * 100)
             except:
-                pass  # Keep default of 100
+                health_score = 0
 
         # Override overall status based on servers being operational
         overall_status = "online"  # All 10 servers running = online status
@@ -6680,10 +6889,10 @@ class DashboardData:
                                 display: flex; align-items: center; justify-content: center;
                                 flex-direction: column;
                             ">
-                                <div style="font-size: 1.5rem; font-weight: 700; color: {'#10b981' if health_score >= 90 else '#f59e0b' if health_score >= 70 else '#ef4444'};">
+                                <div style="font-size: 0.75rem; font-weight: 700; color: {'#10b981' if health_score >= 90 else '#f59e0b' if health_score >= 70 else '#ef4444'};">
                                     {health_score}%
                                 </div>
-                                <div style="font-size: 0.6rem; color: var(--secondary-text); text-transform: uppercase;">Health</div>
+                                <div style="font-size: 0.4rem; color: var(--secondary-text); text-transform: uppercase;">Health</div>
                             </div>
                         </div>
 
@@ -6719,9 +6928,9 @@ class DashboardData:
                                 <strong style="color: {'#10b981' if active_agents == total_agents else '#f59e0b' if active_agents > 0 else '#ef4444'};">🤖 Agent Workforce:</strong> {active_agents} of {total_agents} agents are operational
                                 {' - all agents responding' if active_agents == total_agents else f' - {total_agents - active_agents} agents offline' if active_agents > 0 else ' - critical: no agents responding'}
                             </div>
-                            <div style="background: #10b98110; padding: 1rem; border-radius: 8px; border: 1px solid #10b98140;">
-                                <strong style="color: #10b981;">⚡ Infrastructure:</strong> 10 of 10 servers online
-                                 - all systems operational
+                            <div style="background: {'#10b98110' if healthy_services == total_services else '#f59e0b10' if healthy_services >= total_services * 0.7 else '#ef444410'}; padding: 1rem; border-radius: 8px; border: 1px solid {'#10b981' if healthy_services == total_services else '#f59e0b' if healthy_services >= total_services * 0.7 else '#ef4444'}40;">
+                                <strong style="color: {'#10b981' if healthy_services == total_services else '#f59e0b' if healthy_services >= total_services * 0.7 else '#ef4444'};">⚡ Infrastructure:</strong> {healthy_services} of {total_services} servers online
+                                {' - all systems operational' if healthy_services == total_services else f' - {total_services - healthy_services} servers offline' if healthy_services > 0 else ' - critical: infrastructure failure'}
                             </div>
                         </div>
                         <p style="margin: 0;">
@@ -7622,6 +7831,7 @@ class DashboardData:
                             <option value="agents">Agents</option>
                             <option value="divisions">Divisions</option>
                             <option value="departments">Departments</option>
+                            <option value="llm_cost_tracking">LLM Cost Tracking</option>
                             <option value="registry">Registry</option>
                             <option value="messaging">Messaging</option>
                             <option value="migrations">Migrations</option>
@@ -7696,6 +7906,9 @@ class DashboardData:
                                 </th>
                                 <th style="text-align: left; padding: 0.75rem; color: var(--primary-text); font-weight: 600; cursor: pointer;" onclick="sortTables('columns')">
                                     Columns <i class="fas fa-sort" style="margin-left: 0.5rem; opacity: 0.5;"></i>
+                                </th>
+                                <th style="text-align: left; padding: 0.75rem; color: var(--primary-text); font-weight: 600; cursor: pointer;" onclick="sortTables('records')">
+                                    Records <i class="fas fa-sort" style="margin-left: 0.5rem; opacity: 0.5;"></i>
                                 </th>
                                 <th style="text-align: left; padding: 0.75rem; color: var(--primary-text); font-weight: 600; cursor: pointer;" onclick="sortTables('category')">
                                     Category <i class="fas fa-sort" style="margin-left: 0.5rem; opacity: 0.5;"></i>
@@ -7807,6 +8020,19 @@ class DashboardData:
                         <div style="font-size: 1rem; font-weight: 600; color: {'#10b981' if healthy_services == total_services else '#f59e0b' if healthy_services > 0 else '#ef4444'};">
                             {healthy_services}/{total_services} Online
                         </div>
+                        <button onclick="refreshServerStatus()" style="
+                            margin-top: 0.5rem;
+                            padding: 0.5rem 1rem;
+                            background: var(--accent-color);
+                            color: white;
+                            border: none;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 0.85rem;
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                            <i class="fas fa-sync-alt"></i> Refresh Status
+                        </button>
                     </div>
                 </div>
 
@@ -7880,7 +8106,7 @@ class DashboardData:
                             <span style="font-size: 0.8rem; color: var(--secondary-text); font-weight: normal;">Infrastructure Services</span>
                         </h4>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
-                            {self._generate_server_cards('Core Systems')}
+                            {self._generate_server_cards('Core Infrastructure')}
                         </div>
                     </div>
 
@@ -8674,9 +8900,14 @@ ${{JSON.stringify(data.data, null, 2)}}
                         aValue = parseInt(a.cells[3].textContent.trim()) || 0;
                         bValue = parseInt(b.cells[3].textContent.trim()) || 0;
                         break;
+                    case 'records':
+                        // Parse records, removing commas
+                        aValue = parseInt(a.cells[4].textContent.trim().replace(/,/g, '')) || 0;
+                        bValue = parseInt(b.cells[4].textContent.trim().replace(/,/g, '')) || 0;
+                        break;
                     case 'category':
-                        aValue = a.cells[4].textContent.trim();
-                        bValue = b.cells[4].textContent.trim();
+                        aValue = a.cells[5].textContent.trim();
+                        bValue = b.cells[5].textContent.trim();
                         break;
                     default:
                         return 0;
@@ -8702,7 +8933,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 // Group by category when sorting by category
                 const categoryGroups = {{}};
                 dataRows.forEach(row => {{
-                    const category = row.cells[4].textContent.trim();
+                    const category = row.cells[5].textContent.trim();
                     if (!categoryGroups[category]) {{
                         categoryGroups[category] = [];
                     }}
@@ -13572,12 +13803,22 @@ ${{JSON.stringify(data.data, null, 2)}}
 
             table_info = []
             for row in tables_result:
+                # Get row count for each table
+                try:
+                    count_query = f"SELECT COUNT(*) as count FROM {row['schemaname']}.{row['tablename']}"
+                    count_result = await conn.fetchrow(count_query)
+                    record_count = count_result["count"] if count_result else 0
+                except:
+                    # If we can't count (e.g., permission issues), set to 0
+                    record_count = 0
+
                 table_info.append(
                     {
                         "schema": row["schemaname"],
                         "name": row["tablename"],
                         "size": row["size"],
                         "columns": row["columns"],
+                        "records": record_count,
                     }
                 )
 
@@ -13787,6 +14028,13 @@ ${{JSON.stringify(data.data, null, 2)}}
         ):
             return "migrations", "fas fa-database", "#ef4444"
 
+        # LLM Cost Tracking tables
+        if any(
+            keyword in table_name_lower
+            for keyword in ["llm_cost", "llm_budget", "llm_model_performance"]
+        ):
+            return "llm_cost_tracking", "fas fa-dollar-sign", "#22c55e"
+
         # Default category
         return "other", "fas fa-table", "#6b7280"
 
@@ -13795,7 +14043,7 @@ ${{JSON.stringify(data.data, null, 2)}}
         if not hasattr(self, "database_health_metrics"):
             return """
                 <tr>
-                    <td colspan="5" style="text-align: center; padding: 2rem; color: var(--secondary-text);">
+                    <td colspan="6" style="text-align: center; padding: 2rem; color: var(--secondary-text);">
                         <i class="fas fa-spinner fa-spin"></i> Loading database table information...
                     </td>
                 </tr>
@@ -13805,7 +14053,7 @@ ${{JSON.stringify(data.data, null, 2)}}
         if not tables:
             return """
                 <tr>
-                    <td colspan="5" style="text-align: center; padding: 2rem; color: var(--secondary-text);">
+                    <td colspan="6" style="text-align: center; padding: 2rem; color: var(--secondary-text);">
                         No tables found or database connection error
                     </td>
                 </tr>
@@ -13828,6 +14076,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             "agents",
             "divisions",
             "departments",
+            "llm_cost_tracking",
             "registry",
             "messaging",
             "migrations",
@@ -13849,7 +14098,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             category_display = category.replace("_", " ").title()
             rows_html += f"""
                 <tr style="background: rgba(255,255,255,0.03);">
-                    <td colspan="5" style="padding: 1rem 0.75rem; font-weight: 600; color: {category_data['color']}; border-top: 2px solid {category_data['color']}20;">
+                    <td colspan="6" style="padding: 1rem 0.75rem; font-weight: 600; color: {category_data['color']}; border-top: 2px solid {category_data['color']}20;">
                         <i class="{category_data['icon']}" style="margin-right: 0.5rem;"></i>
                         {category_display} ({len(category_tables)} tables)
                     </td>
@@ -13858,6 +14107,14 @@ ${{JSON.stringify(data.data, null, 2)}}
 
             # Add tables in this category
             for table in category_tables:
+                # Format record count with thousands separator
+                record_count = table.get("records", 0)
+                formatted_records = (
+                    f"{record_count:,}"
+                    if isinstance(record_count, int)
+                    else str(record_count)
+                )
+
                 rows_html += f"""
                     <tr style="border-bottom: 1px solid var(--border-color);">
                         <td style="padding: 0.75rem; color: var(--primary-text); padding-left: 2rem;">
@@ -13872,6 +14129,9 @@ ${{JSON.stringify(data.data, null, 2)}}
                         </td>
                         <td style="padding: 0.75rem; color: var(--secondary-text);">
                             {table.get('columns', 'N/A')}
+                        </td>
+                        <td style="padding: 0.75rem; color: var(--secondary-text);">
+                            {formatted_records}
                         </td>
                         <td style="padding: 0.75rem; color: var(--secondary-text); font-size: 0.8rem;">
                             <span style="background: {category_data['color']}20; color: {category_data['color']}; padding: 0.2rem 0.5rem; border-radius: 4px;">
@@ -15490,6 +15750,490 @@ ${{JSON.stringify(data.data, null, 2)}}
             </div>
         """
 
+    def generate_servers_page_html(self):
+        """Generate dedicated servers monitoring page"""
+        # Get real-time server health data
+        services_data = (
+            self.unified_data.get("services_status", self.services_status) or {}
+        )
+
+        # Group servers by category
+        core_servers = []
+        mcp_servers = []
+        business_servers = []
+
+        # Define server categories (matching our health checker)
+        server_categories = {
+            "corporate_headquarters": ("Core", "Corporate Headquarters", 8888),
+            "agent_cortex_ui": (
+                "Core",
+                "Agent Cortex",
+                8889,
+            ),  # Updated to match actual service name
+            "agent_communication_center": ("Core", "Agent Communication Center", 8890),
+            "registry": ("Core", "Registry Server", 8000),
+            "filesystem": ("MCP", "Filesystem Server", 8001),
+            "database_postgres": ("MCP", "PostgreSQL Database", 8010),
+            "database_sqlite": ("MCP", "SQLite Database", 8004),
+            "llm": ("MCP", "LLM Server", 8005),
+            "screenshot": ("MCP", "Screenshot Server", 8011),
+            "analytics": ("Business", "Analytics Server", 8007),
+            "payment": ("Business", "Payment Server", 8006),
+            "customer": ("Business", "Customer Server", 8008),
+        }
+
+        # Process each server
+        for server_id, (
+            category,
+            display_name,
+            default_port,
+        ) in server_categories.items():
+            server_data = services_data.get(server_id, {})
+
+            # Get server info with defaults
+            server_info = {
+                "id": server_id,
+                "name": server_data.get("name", display_name),
+                "port": server_data.get("port", default_port),
+                "status": server_data.get("status", "unknown"),
+                "response_time": server_data.get("response_time", 0),
+                "last_check": server_data.get("last_check", "Never"),
+                "error": server_data.get("error", None),
+                "icon": server_data.get("icon", "fa-server"),
+                "url": f"http://localhost:{server_data.get('port', default_port)}",
+            }
+
+            # Add to appropriate category
+            if category == "Core":
+                core_servers.append(server_info)
+            elif category == "MCP":
+                mcp_servers.append(server_info)
+            else:
+                business_servers.append(server_info)
+
+        # Calculate statistics
+        total_servers = len(server_categories)
+        healthy_servers = sum(
+            1 for s in services_data.values() if s.get("status") == "healthy"
+        )
+        offline_servers = sum(
+            1 for s in services_data.values() if s.get("status") in ["offline", "error"]
+        )
+
+        # Generate HTML
+        html_content = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Monitoring - BoarderframeOS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>{self._get_css()}</style>
+    <style>
+        /* Additional styles for servers page */
+        .servers-container {{
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }}
+
+        .server-category {{
+            margin-bottom: 3rem;
+        }}
+
+        .server-category h2 {{
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }}
+
+        .server-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }}
+
+        .server-card {{
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }}
+
+        .server-card:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }}
+
+        .server-card.healthy {{
+            border-left: 4px solid #10b981;
+        }}
+
+        .server-card.error, .server-card.offline {{
+            border-left: 4px solid #ef4444;
+        }}
+
+        .server-card.unknown {{
+            border-left: 4px solid #6b7280;
+        }}
+
+        .server-header {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }}
+
+        .server-name {{
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-text);
+        }}
+
+        .server-status {{
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }}
+
+        .server-status.healthy {{
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }}
+
+        .server-status.error, .server-status.offline {{
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }}
+
+        .server-details {{
+            display: grid;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+        }}
+
+        .server-detail {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--secondary-text);
+        }}
+
+        .server-detail strong {{
+            color: var(--primary-text);
+        }}
+
+        .server-actions {{
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 0.5rem;
+        }}
+
+        .server-action {{
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: transparent;
+            color: var(--primary-text);
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }}
+
+        .server-action:hover {{
+            background: var(--hover-bg);
+            border-color: var(--primary);
+        }}
+
+        .summary-stats {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }}
+
+        .stat-card {{
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }}
+
+        .stat-value {{
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }}
+
+        .stat-label {{
+            color: var(--secondary-text);
+            font-size: 0.9rem;
+        }}
+
+        .refresh-button {{
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            transition: all 0.3s ease;
+        }}
+
+        .refresh-button:hover {{
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }}
+
+        .refresh-button.spinning {{
+            animation: spin 1s linear infinite;
+        }}
+
+        @keyframes spin {{
+            100% {{ transform: rotate(360deg); }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="header-gradient"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <h1>🏢 BoarderframeOS Server Monitoring</h1>
+            </div>
+            <nav class="nav-links">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                <a href="/servers" class="nav-link active">
+                    <i class="fas fa-server"></i> Servers
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="servers-container">
+        <!-- Summary Statistics -->
+        <div class="summary-stats">
+            <div class="stat-card">
+                <div class="stat-value" style="color: var(--primary);">{total_servers}</div>
+                <div class="stat-label">Total Servers</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: #10b981;">{healthy_servers}</div>
+                <div class="stat-label">Healthy</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: #ef4444;">{offline_servers}</div>
+                <div class="stat-label">Offline/Error</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: #f59e0b;">{round((healthy_servers/total_servers)*100) if total_servers > 0 else 0}%</div>
+                <div class="stat-label">Health Score</div>
+            </div>
+        </div>
+
+        <!-- Core Infrastructure Servers -->
+        <div class="server-category">
+            <h2><i class="fas fa-building"></i> Core Infrastructure ({len(core_servers)} servers)</h2>
+            <div class="server-grid">
+                {"".join(self._generate_server_card_html(server) for server in core_servers)}
+            </div>
+        </div>
+
+        <!-- MCP Servers -->
+        <div class="server-category">
+            <h2><i class="fas fa-plug"></i> MCP Servers ({len(mcp_servers)} servers)</h2>
+            <div class="server-grid">
+                {"".join(self._generate_server_card_html(server) for server in mcp_servers)}
+            </div>
+        </div>
+
+        <!-- Business Services -->
+        <div class="server-category">
+            <h2><i class="fas fa-briefcase"></i> Business Services ({len(business_servers)} servers)</h2>
+            <div class="server-grid">
+                {"".join(self._generate_server_card_html(server) for server in business_servers)}
+            </div>
+        </div>
+    </div>
+
+    <!-- Refresh Button -->
+    <button class="refresh-button" onclick="refreshServers()" title="Refresh server status">
+        <i class="fas fa-sync-alt"></i>
+    </button>
+
+    <script>
+        async function refreshServers() {{
+            const button = document.querySelector('.refresh-button');
+            button.classList.add('spinning');
+
+            try {{
+                const response = await fetch('/api/servers/refresh', {{
+                    method: 'POST'
+                }});
+
+                if (response.ok) {{
+                    // Reload the page to show updated data
+                    setTimeout(() => {{
+                        window.location.reload();
+                    }}, 1000);
+                }} else {{
+                    console.error('Refresh failed:', response.status);
+                }}
+            }} catch (error) {{
+                console.error('Refresh error:', error);
+            }} finally {{
+                setTimeout(() => {{
+                    button.classList.remove('spinning');
+                }}, 1000);
+            }}
+        }}
+
+        // Refresh server status specifically
+        async function refreshServerStatus() {{
+            const button = event.target.closest('button');
+            const originalHTML = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+            button.disabled = true;
+
+            try {{
+                // Get real-time health status
+                const response = await fetch('/api/servers/realtime-health');
+                const data = await response.json();
+
+                // Update UI with results
+                console.log('Server health:', data);
+
+                // Refresh the page to show updated data
+                setTimeout(() => {{
+                    window.location.reload();
+                }}, 500);
+            }} catch (error) {{
+                console.error('Server refresh error:', error);
+                button.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                setTimeout(() => {{
+                    button.innerHTML = originalHTML;
+                    button.disabled = false;
+                }}, 2000);
+            }}
+        }}
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {{
+            window.location.reload();
+        }}, 30000);
+
+        // Check individual server health
+        async function checkServerHealth(serverId, port) {{
+            try {{
+                const response = await fetch(`http://localhost:${{port}}/health`, {{
+                    mode: 'no-cors'
+                }});
+                console.log(`${{serverId}} health check:`, response);
+            }} catch (error) {{
+                console.log(`${{serverId}} health check failed:`, error);
+            }}
+        }}
+    </script>
+</body>
+</html>"""
+
+        return html_content
+
+    def _generate_server_card_html(self, server):
+        """Generate HTML for individual server card"""
+        status_class = server["status"]
+        status_icon = (
+            "fa-check-circle" if server["status"] == "healthy" else "fa-times-circle"
+        )
+
+        # Format response time
+        response_time = (
+            f"{int(server['response_time'] * 1000)}ms"
+            if server["response_time"]
+            else "N/A"
+        )
+
+        # Format last check time
+        last_check = server["last_check"]
+        if last_check != "Never":
+            try:
+                from datetime import datetime
+
+                check_time = datetime.fromisoformat(last_check.replace("Z", "+00:00"))
+                last_check = check_time.strftime("%H:%M:%S")
+            except:
+                pass
+
+        error_section = ""
+        if server.get("error"):
+            error_section = f"""
+                <div class="server-detail" style="color: #ef4444;">
+                    <span>Error:</span>
+                    <strong>{server['error']}</strong>
+                </div>
+            """
+
+        return f"""
+            <div class="server-card {status_class}">
+                <div class="server-header">
+                    <div class="server-name">
+                        <i class="{server['icon']}"></i> {server['name']}
+                    </div>
+                    <div class="server-status {status_class}">
+                        <i class="fas {status_icon}"></i>
+                        {server['status'].title()}
+                    </div>
+                </div>
+                <div class="server-details">
+                    <div class="server-detail">
+                        <span>Port:</span>
+                        <strong>{server['port']}</strong>
+                    </div>
+                    <div class="server-detail">
+                        <span>Response Time:</span>
+                        <strong>{response_time}</strong>
+                    </div>
+                    <div class="server-detail">
+                        <span>Last Check:</span>
+                        <strong>{last_check}</strong>
+                    </div>
+                    {error_section}
+                </div>
+                <div class="server-actions">
+                    <button class="server-action" onclick="window.open('{server['url']}', '_blank')">
+                        <i class="fas fa-external-link-alt"></i> Open
+                    </button>
+                    <button class="server-action" onclick="checkServerHealth('{server['id']}', {server['port']})">
+                        <i class="fas fa-heartbeat"></i> Check
+                    </button>
+                </div>
+            </div>
+        """
+
 
 # Global dashboard data instance
 dashboard_data = DashboardData()
@@ -15503,6 +16247,14 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
 
             html_content = dashboard_data.generate_dashboard_html()
+            self.wfile.write(html_content.encode("utf-8"))
+        elif self.path == "/servers":
+            # Dedicated servers monitoring page
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+
+            html_content = dashboard_data.generate_servers_page_html()
             self.wfile.write(html_content.encode("utf-8"))
         elif self.path == "/health":
             # Health endpoint for the dashboard itself
@@ -15863,6 +16615,63 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
             # Handle specific component refresh requests
             component = self.path.split("/")[-1]
             self._handle_component_refresh(component)
+        elif self.path == "/api/servers/refresh":
+            # Handle server status refresh request
+            try:
+                # Run the server health checker
+                import subprocess
+                import sys
+                from pathlib import Path
+
+                # Run the refresh script
+                script_path = (
+                    Path(__file__).parent / "utils" / "refresh_server_status.py"
+                )
+                result = subprocess.run(
+                    [sys.executable, str(script_path)],
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
+                )
+
+                if result.returncode == 0:
+                    self.send_response(200)
+                    self.send_header("Content-type", "application/json")
+                    self.end_headers()
+
+                    response = {
+                        "status": "success",
+                        "message": "Server status refreshed successfully",
+                        "timestamp": datetime.now().isoformat(),
+                        "output": result.stdout[-500:]
+                        if result.stdout
+                        else "",  # Last 500 chars
+                    }
+                    self.wfile.write(json.dumps(response).encode("utf-8"))
+                else:
+                    self.send_response(500)
+                    self.send_header("Content-type", "application/json")
+                    self.end_headers()
+
+                    response = {
+                        "status": "error",
+                        "message": "Server refresh failed",
+                        "error": result.stderr[-500:]
+                        if result.stderr
+                        else "Unknown error",
+                    }
+                    self.wfile.write(json.dumps(response).encode("utf-8"))
+
+            except Exception as e:
+                self.send_response(500)
+                self.send_header("Content-type", "application/json")
+                self.end_headers()
+
+                response = {
+                    "status": "error",
+                    "message": f"Server refresh error: {str(e)}",
+                }
+                self.wfile.write(json.dumps(response).encode("utf-8"))
         elif self.path == "/api/database/refresh":
             # Handle database refresh request
             try:
@@ -17487,6 +18296,63 @@ def main():
                     )
                 except Exception as e:
                     return jsonify({"status": "error", "message": str(e)}), 500
+
+            @app.route("/api/servers/realtime-health", methods=["GET"])
+            async def realtime_server_health():
+                """Get real-time server health status"""
+                from datetime import datetime
+
+                import requests
+
+                results = {}
+                total_healthy = 0
+                total_servers = 0
+
+                # Check all servers
+                for server_id, server_info in self.services_status.items():
+                    port = server_info.get("port")
+
+                    # Special handling for Agent Communication Center
+                    if server_id == "agent_communication_center":
+                        url = f"http://localhost:{port}/"
+                    else:
+                        url = f"http://localhost:{port}/health"
+
+                    try:
+                        response = requests.get(url, timeout=2)
+                        if response.status_code == 200:
+                            status = "healthy"
+                            total_healthy += 1
+                        else:
+                            status = "degraded"
+                    except:
+                        status = "offline"
+
+                    total_servers += 1
+                    results[server_id] = {
+                        "status": status,
+                        "port": port,
+                        "name": server_info.get("name"),
+                        "last_check": datetime.now().isoformat(),
+                    }
+
+                # Calculate health score
+                health_score = int(
+                    (total_healthy / total_servers * 100) if total_servers > 0 else 0
+                )
+
+                return jsonify(
+                    {
+                        "servers": results,
+                        "summary": {
+                            "total": total_servers,
+                            "healthy": total_healthy,
+                            "offline": total_servers - total_healthy,
+                            "health_score": health_score,
+                        },
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                )
 
             @app.route("/api/refresh/services_status", methods=["POST"])
             async def refresh_services_status():

@@ -65,7 +65,7 @@ class MCPCustomerServer:
         """Initialize the customer server"""
         self.app = FastAPI(title="MCP Customer Server")
         self.setup_app()
-        self.database_url = "http://localhost:8004/rpc"  # MCP Database Server
+        self.database_url = "http://localhost:8010/rpc"  # PostgreSQL Database Server
         self.payment_url = "http://localhost:8006"  # MCP Payment Server
         self.customers = {}
         self.interactions = []

@@ -60,7 +60,7 @@ class MCPPaymentServer:
         self.setup_app()
         self.stripe_key = os.environ.get("STRIPE_API_KEY", "")
         self.stripe_enabled = bool(self.stripe_key)
-        self.database_url = "http://localhost:8004/rpc"  # MCP Database Server
+        self.database_url = "http://localhost:8010/rpc"  # PostgreSQL Database Server
         self.customers = {}
         self.subscriptions = {}
         self.transactions = []
