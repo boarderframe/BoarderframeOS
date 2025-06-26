@@ -74,7 +74,7 @@ pytest==7.4.3
 pytest-asyncio==0.21.1
 black==23.11.0
 isort==5.12.0
-mypy==1.7.1
+mypy==1.16.1
 
 # Security
 passlib[bcrypt]==1.7.4
