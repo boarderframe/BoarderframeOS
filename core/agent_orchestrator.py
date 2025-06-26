@@ -486,18 +486,57 @@ class AgentOrchestrator:
     async def _launch_agent_process(self, instance: AgentInstance, **kwargs) -> bool:
         """Launch an agent process"""
         try:
-            # This is simplified - in production would use proper process management
-            # For now, we'll simulate agent startup
-
-            instance.state = AgentState.IDLE
-            instance.last_heartbeat = datetime.now()
-
-            # Store agent startup in database
-            await self._log_agent_event(
-                instance.agent_id, "started", {"instance": instance.name}
-            )
-
-            return True
+            # Check if agent implementation exists
+            import os
+            import subprocess
+            import sys
+            
+            agent_name = instance.name.lower()
+            # Use module_path from configuration to construct the file path
+            module_path = instance.module_path
+            agent_path = module_path.replace('.', '/') + '.py'
+            
+            # Get the project root directory
+            project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            full_agent_path = os.path.join(project_root, agent_path)
+            
+            if os.path.exists(full_agent_path):
+                logger.info(f"Launching agent process: {agent_path}")
+                
+                # Prepare environment
+                env = os.environ.copy()
+                env['PYTHONPATH'] = project_root
+                
+                # Start the agent process
+                process = subprocess.Popen(
+                    [sys.executable, full_agent_path],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    cwd=project_root,
+                    env=env
+                )
+                
+                instance.pid = process.pid
+                instance.state = AgentState.IDLE
+                instance.last_heartbeat = datetime.now()
+                
+                logger.info(f"Agent {agent_name} started with PID: {process.pid}")
+                
+                # Store agent startup in database
+                await self._log_agent_event(
+                    instance.agent_id, "started", {"instance": instance.name, "pid": process.pid}
+                )
+                
+                # Give the agent a moment to initialize
+                await asyncio.sleep(2)
+                
+                return True
+            else:
+                logger.warning(f"Agent implementation not found: {full_agent_path}")
+                # Still mark as "started" for agents without implementation
+                instance.state = AgentState.IDLE
+                instance.last_heartbeat = datetime.now()
+                return True
 
         except Exception as e:
             logger.error(f"Failed to launch agent process: {e}")

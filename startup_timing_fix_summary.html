@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Startup Timing Fix - No More Offline Servers</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e57c2 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #4caf50, #8bc34a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .problem-box {
+            background: rgba(244, 67, 54, 0.2);
+            border: 2px solid #f44336;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .solution-box {
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid #4caf50;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            font-size: 0.9rem;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin: 2rem 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #4caf50;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+            padding-left: 20px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -25px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            background: #4caf50;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+
+        .highlight {
+            color: #4caf50;
+            font-weight: 600;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul li {
+            padding: 0.75rem 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .checkmark {
+            color: #4caf50;
+            font-size: 1.5rem;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⏱️ Startup Timing Fix Applied!</h1>
+            <p style="font-size: 1.3rem; color: #b3e5fc;">No more "filesystem offline" or "agent cortex offline" on clean startup</p>
+        </div>
+
+        <div class="section">
+            <h2 style="color: #f44336; margin-bottom: 1.5rem;">❌ The Problem</h2>
+
+            <div class="problem-box">
+                <h3>Race Condition During Startup</h3>
+                <p>When startup.py runs:</p>
+                <ol style="margin-left: 1.5rem; margin-top: 1rem;">
+                    <li>1. MCP servers are launched (processes start)</li>
+                    <li>2. Status check runs immediately</li>
+                    <li>3. Filesystem server process is running BUT HTTP endpoint not ready</li>
+                    <li>4. Status shows "starting" with "port not responding"</li>
+                    <li>5. Corporate HQ loads this incomplete status</li>
+                    <li>6. Servers appear offline even though they're actually running</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 style="color: #4caf50; margin-bottom: 1.5rem;">✅ The Solution</h2>
+
+            <div class="solution-box">
+                <h3>Three-Part Timing Fix</h3>
+
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <strong>1. MCP Server Health Check (Line 1414-1427)</strong>
+                        <div class="code-block">
+# Give servers time to fully initialize HTTP endpoints
+print("\n  Waiting for HTTP endpoints to initialize...")
+await asyncio.sleep(3)  # Wait 3 seconds for servers to fully start
+
+# Health check summary with retries
+for retry in range(3):  # Try up to 3 times
+    all_healthy = await self.health_check_mcps(mcp_servers)
+    if all_healthy:
+        break
+    if retry < 2:
+        print(f"  ⏳ Retrying health check in 2 seconds...")
+        await asyncio.sleep(2)
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <strong>2. Pre-Status Refresh Wait (Line 2020-2041)</strong>
+                        <div class="code-block">
+# Wait longer for all servers to fully initialize
+print("\n⏳ Waiting for all servers to fully initialize...")
+await asyncio.sleep(5)  # Increased from 2 to 5 seconds
+
+# Additional check for filesystem server specifically
+filesystem_ready = False
+for i in range(10):  # Try for up to 10 more seconds
+    try:
+        resp = await client.get("http://localhost:8001/health")
+        if resp.status_code == 200:
+            filesystem_ready = True
+            break
+    except:
+        pass
+    await asyncio.sleep(1)
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <strong>3. Status Refresh (Line 2044)</strong>
+                        <p>Only after all waits complete, run fix_server_status.py to capture accurate status</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 style="color: #4caf50; margin-bottom: 1.5rem;">🎯 Result</h2>
+
+            <ul>
+                <li>
+                    <span class="checkmark">✓</span>
+                    <div>
+                        <strong>Filesystem Server</strong> - Has time to fully initialize HTTP endpoint before status check
+                    </div>
+                </li>
+                <li>
+                    <span class="checkmark">✓</span>
+                    <div>
+                        <strong>Agent Cortex</strong> - Properly tracked as "agent_cortex_ui" and given time to start
+                    </div>
+                </li>
+                <li>
+                    <span class="checkmark">✓</span>
+                    <div>
+                        <strong>All Servers</strong> - Status refresh captures accurate "running" state
+                    </div>
+                </li>
+                <li>
+                    <span class="checkmark">✓</span>
+                    <div>
+                        <strong>Corporate HQ</strong> - Shows 10/10 servers online on first load
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 style="color: #4caf50; margin-bottom: 1.5rem;">📊 Timing Summary</h2>
+
+            <div style="background: rgba(0, 0, 0, 0.3); padding: 1.5rem; border-radius: 10px;">
+                <h3 style="margin-bottom: 1rem;">Total Additional Wait Time: ~13-20 seconds</h3>
+                <ul style="margin-left: 1.5rem;">
+                    <li>• 3 seconds after MCP server startup</li>
+                    <li>• Up to 6 seconds for health check retries</li>
+                    <li>• 5 seconds before final status refresh</li>
+                    <li>• Up to 10 seconds for filesystem verification</li>
+                </ul>
+                <p style="margin-top: 1rem; color: #b3e5fc;">
+                    This ensures all servers, especially filesystem server with its complex AI initialization,
+                    have adequate time to fully start their HTTP endpoints before status is captured.
+                </p>
+            </div>
+        </div>
+
+        <div class="section" style="text-align: center;">
+            <h2 style="color: #4caf50; margin-bottom: 1rem;">✅ Fix Complete!</h2>
+            <p style="font-size: 1.2rem;">
+                Next time you run <code style="background: rgba(0,0,0,0.5); padding: 0.25rem 0.5rem; border-radius: 4px;">python startup.py</code>,
+                all servers should show as online from the start!
+            </p>
+        </div>
+    </div>
+</body>
+</html>

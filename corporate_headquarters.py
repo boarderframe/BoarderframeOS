@@ -32,6 +32,15 @@ except ImportError:
     UNIFIED_DATA_LAYER = None
 
 
+
+# Import metrics optimization
+try:
+    from corp_hq_metrics_optimization import integrate_optimized_metrics
+    METRICS_OPTIMIZATION_AVAILABLE = True
+except ImportError:
+    print("⚠️ Metrics optimization module not available")
+    METRICS_OPTIMIZATION_AVAILABLE = False
+
 PORT = 8888
 
 
@@ -604,10 +613,11 @@ class HealthDataManager:
                             "last_check": datetime.now().isoformat(),
                         }
                         # Update both unified_data and services_status for consistency
+                        # Use agent_cortex_ui to match the server list
                         self.dashboard.unified_data["services_status"][
-                            "agent_cortex"
+                            "agent_cortex_ui"
                         ] = cortex_status
-                        self.dashboard.services_status["agent_cortex"] = cortex_status
+                        self.dashboard.services_status["agent_cortex_ui"] = cortex_status
                         print(f"✅ Agent Cortex system is healthy (integrated)")
                     else:
                         cortex_status = {
@@ -617,10 +627,11 @@ class HealthDataManager:
                             "last_check": datetime.now().isoformat(),
                         }
                         # Update both unified_data and services_status for consistency
+                        # Use agent_cortex_ui to match the server list
                         self.dashboard.unified_data["services_status"][
-                            "agent_cortex"
+                            "agent_cortex_ui"
                         ] = cortex_status
-                        self.dashboard.services_status["agent_cortex"] = cortex_status
+                        self.dashboard.services_status["agent_cortex_ui"] = cortex_status
                         print(f"⚠️ Agent Cortex degraded: {cortex_data.get('error')}")
                 else:
                     cortex_status = {
@@ -630,9 +641,9 @@ class HealthDataManager:
                     }
                     # Update both unified_data and services_status for consistency
                     self.dashboard.unified_data["services_status"][
-                        "agent_cortex"
+                        "agent_cortex_ui"
                     ] = cortex_status
-                    self.dashboard.services_status["agent_cortex"] = cortex_status
+                    self.dashboard.services_status["agent_cortex_ui"] = cortex_status
                     print(f"⚠️ Agent Cortex API returned status {response.status_code}")
         except Exception as e:
             # Try to check if Agent Cortex instance exists even if UI is not running
@@ -650,9 +661,9 @@ class HealthDataManager:
                 }
                 # Update both unified_data and services_status for consistency
                 self.dashboard.unified_data["services_status"][
-                    "agent_cortex"
+                    "agent_cortex_ui"
                 ] = cortex_status
-                self.dashboard.services_status["agent_cortex"] = cortex_status
+                self.dashboard.services_status["agent_cortex_ui"] = cortex_status
                 print(f"✅ Agent Cortex operational (direct check)")
             except Exception as fallback_error:
                 cortex_status = {
@@ -664,9 +675,9 @@ class HealthDataManager:
                 }
                 # Update both unified_data and services_status for consistency
                 self.dashboard.unified_data["services_status"][
-                    "agent_cortex"
+                    "agent_cortex_ui"
                 ] = cortex_status
-                self.dashboard.services_status["agent_cortex"] = cortex_status
+                self.dashboard.services_status["agent_cortex_ui"] = cortex_status
                 print(f"❌ Agent Cortex offline: {fallback_error}")
 
     async def _refresh_acc_status(self):
@@ -1226,7 +1237,7 @@ class HealthDataManager:
             services_data = self.dashboard.unified_data.get("services_status", {})
             core_servers = [
                 "corporate_headquarters",
-                "agent_cortex",
+                "agent_cortex_ui",
                 "agent_communication_center",
                 "registry",
             ]
@@ -1576,7 +1587,7 @@ class DashboardData:
             # Initialize with basic structure
             self.services_status = {
                 "corporate_headquarters": {"status": "healthy", "port": 8888},
-                "agent_cortex": {"status": "healthy", "port": 8889},
+                "agent_cortex_ui": {"status": "healthy", "port": 8889},
                 "agent_communication_center": {"status": "healthy", "port": 8890},
                 "registry": {"status": "healthy", "port": 8000},
                 "filesystem": {"status": "healthy", "port": 8001},
@@ -1607,7 +1618,7 @@ class DashboardData:
         if not self.services_status:
             self.services_status = {
                 "corporate_headquarters": {"status": "healthy", "port": 8888},
-                "agent_cortex": {"status": "healthy", "port": 8889},
+                "agent_cortex_ui": {"status": "healthy", "port": 8889},
                 "agent_communication_center": {"status": "healthy", "port": 8890},
                 "registry": {"status": "healthy", "port": 8000},
                 "filesystem": {"status": "healthy", "port": 8001},
@@ -1625,7 +1636,7 @@ class DashboardData:
         self.alert_conditions = {}
         self.monitoring_config = {
             "update_interval": 30,  # seconds - optimized for performance
-            "health_check_timeout": 8,  # seconds
+            "health_check_timeout": 15,  # seconds - increased for slower MCP servers
             "max_history_entries": 100,
             "global_refresh_steps": 16,  # Total steps in global refresh
             "alert_thresholds": {
@@ -1685,7 +1696,17 @@ class DashboardData:
         self._initialize_basic_server_data()
 
         # Run initial health check to populate real server status
-        # NOTE: Commented out because it marks servers as offline before they have time to start
+        
+        
+        # Integrate optimized metrics handler
+        if METRICS_OPTIMIZATION_AVAILABLE:
+            try:
+                integrate_optimized_metrics(self)
+                print("✅ Optimized metrics handler integrated")
+            except Exception as e:
+                print(f"⚠️ Failed to integrate optimized metrics: {e}")
+        
+# NOTE: Commented out because it marks servers as offline before they have time to start
         # The background refresh will update the status properly
         # self._run_initial_health_check()
 
@@ -2158,7 +2179,7 @@ class DashboardData:
         category_servers = {
             "Core Systems": [
                 "corporate_headquarters",
-                "agent_cortex",
+                "agent_cortex_ui",
                 "agent_communication_center",
                 "registry",
             ],
@@ -2187,7 +2208,7 @@ class DashboardData:
         category_servers = {
             "Core Systems": [
                 "corporate_headquarters",
-                "agent_cortex",
+                "agent_cortex_ui",
                 "agent_communication_center",
                 "registry",
             ],
@@ -2336,7 +2357,7 @@ class DashboardData:
                 "icon": "fas fa-users-cog",
                 "category": "Core Systems",
             },
-            "agent_cortex": {
+            "agent_cortex_ui": {
                 "port": 8889,
                 "name": "Agent Cortex",
                 "icon": "fas fa-brain",
@@ -3005,7 +3026,7 @@ class DashboardData:
                 "priority": 1,
                 "description": "Main management interface",
             },
-            "agent_cortex": {
+            "agent_cortex_ui": {
                 "name": "Agent Cortex",
                 "port": 8889,
                 "status": "unknown",
@@ -3121,7 +3142,7 @@ class DashboardData:
         # Check servers in order of priority (most important first)
         servers_to_check = [
             ("corporate_headquarters", 8888),
-            ("agent_cortex", 8889),
+            ("agent_cortex_ui", 8889),
             ("agent_communication_center", 8890),
             ("registry", 8000),
             ("filesystem", 8001),
@@ -3389,7 +3410,7 @@ class DashboardData:
         category_servers = {
             "Core Infrastructure": [
                 "corporate_headquarters",
-                "agent_cortex",
+                "agent_cortex_ui",
                 "agent_communication_center",
                 "registry",
             ],
@@ -11649,7 +11670,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 ],
                 "color": "#f59e0b",
             },
-            "agent_cortex": {
+            "agent_cortex_ui": {
                 "tools": [
                     "🧠 Intelligent Orchestration",
                     "🔄 Model Selection",
@@ -12286,7 +12307,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 "icon": "fas fa-database",
                 "port": 8010,
             },
-            "agent_cortex": {
+            "agent_cortex_ui": {
                 "name": "Agent Cortex",
                 "icon": "fas fa-brain",
                 "port": 8889,
@@ -12572,7 +12593,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                         "emoji": "🏢",
                         "priority": 1,
                     },
-                    "agent_cortex": {
+                    "agent_cortex_ui": {
                         "name": "Agent Cortex",
                         "icon": "fas fa-brain",
                         "port": 8889,
@@ -12756,7 +12777,7 @@ ${{JSON.stringify(data.data, null, 2)}}
                 server_details = ""
                 if server_id == "corporate_headquarters":
                     server_details = "🏢 Main control center"
-                elif server_id == "agent_cortex":
+                elif server_id == "agent_cortex_ui":
                     server_details = "🧠 AI orchestration"
                 elif server_id == "registry":
                     server_details = "📋 Service discovery"
@@ -13646,7 +13667,7 @@ ${{JSON.stringify(data.data, null, 2)}}
             elif service_id == "database":
                 widget_content = self._generate_database_widget_content()
                 server_title = f"{service.get('name', service_id.title())} Details"
-            elif service_id == "agent_cortex":
+            elif service_id == "agent_cortex_ui":
                 widget_content = self._generate_agent_cortex_widget_content()
                 server_title = f"{service.get('name', service_id.title())} Details"
             else:
@@ -14184,7 +14205,7 @@ ${{JSON.stringify(data.data, null, 2)}}
 
     def _generate_agent_cortex_widget_content(self):
         """Generate Cortex widget content"""
-        agent_cortex_service = self.services_status.get("agent_cortex", {})
+        agent_cortex_service = self.services_status.get("agent_cortex_ui", {})
         details = agent_cortex_service.get("details", {})
 
         return f"""
@@ -16434,6 +16455,54 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                 "timestamp": datetime.now().isoformat(),
             }
             self.wfile.write(json.dumps(response).encode("utf-8"))
+        elif self.path == "/api/agents":
+            # Return agent status data
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.end_headers()
+            
+            agents_data = dashboard_data.unified_data.get("agents_status", {})
+            self.wfile.write(json.dumps(agents_data).encode("utf-8"))
+        elif self.path == "/api/servers":
+            # Return server status data
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.end_headers()
+            
+            servers_data = dashboard_data.unified_data.get("services_status", {})
+            self.wfile.write(json.dumps(servers_data).encode("utf-8"))
+        elif self.path == "/api/departments":
+            # Return departments data
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.end_headers()
+            
+            departments_data = dashboard_data.unified_data.get("departments_data", {})
+            self.wfile.write(json.dumps(departments_data).encode("utf-8"))
+        elif self.path == "/api/services":
+            # Alias for servers endpoint
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.end_headers()
+            
+            servers_data = dashboard_data.unified_data.get("services_status", {})
+            self.wfile.write(json.dumps(servers_data).encode("utf-8"))
+        elif self.path == "/api/department/hierarchy":
+            # Return department hierarchy
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.end_headers()
+            
+            # Build hierarchy from departments data
+            departments_data = dashboard_data.unified_data.get("departments_data", {})
+            hierarchy = {}
+            for dept_key, dept_info in departments_data.items():
+                category = dept_info.get("category", "Other")
+                if category not in hierarchy:
+                    hierarchy[category] = []
+                hierarchy[category].append(dept_info)
+            
+            self.wfile.write(json.dumps(hierarchy).encode("utf-8"))
         else:
             super().do_GET()
 
@@ -16852,6 +16921,91 @@ class EnhancedHandler(http.server.SimpleHTTPRequestHandler):
                     "status": "error",
                     "message": str(e),
                     "timestamp": datetime.now().isoformat(),
+                }
+                self.wfile.write(json.dumps(error_response).encode("utf-8"))
+        elif self.path == "/api/metrics/data":
+            # Handle metrics data request with caching
+            try:
+                # Use optimized metrics if available
+                if hasattr(dashboard_data, 'optimized_metrics'):
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    metrics = loop.run_until_complete(
+                        dashboard_data.optimized_metrics.get_metrics_data()
+                    )
+                    loop.close()
+                else:
+                    # Fallback to basic metrics
+                    metrics = dashboard_data._get_centralized_metrics()
+                
+                self.send_response(200)
+                self.send_header("Content-type", "application/json")
+                self.send_header("Cache-Control", "max-age=30")
+                self.end_headers()
+                
+                self.wfile.write(json.dumps(metrics).encode("utf-8"))
+                
+            except Exception as e:
+                self.send_response(500)
+                self.send_header("Content-type", "application/json")
+                self.end_headers()
+                
+                error_response = {
+                    "status": "error",
+                    "message": str(e),
+                    "timestamp": datetime.now().isoformat()
+                }
+                self.wfile.write(json.dumps(error_response).encode("utf-8"))
+                
+        elif self.path == "/api/metrics/refresh":
+            # Handle metrics refresh request
+            try:
+                # Force refresh of metrics data
+                if hasattr(dashboard_data, 'optimized_metrics'):
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    metrics = loop.run_until_complete(
+                        dashboard_data.optimized_metrics.get_metrics_data(force_refresh=True)
+                    )
+                    loop.close()
+                    
+                    self.send_response(200)
+                    self.send_header("Content-type", "application/json")
+                    self.end_headers()
+                    
+                    response = {
+                        "status": "success",
+                        "message": "Metrics refreshed successfully",
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    self.wfile.write(json.dumps(response).encode("utf-8"))
+                else:
+                    # Trigger standard refresh
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    loop.run_until_complete(dashboard_data._async_update())
+                    loop.close()
+                    
+                    self.send_response(200)
+                    self.send_header("Content-type", "application/json")
+                    self.end_headers()
+                    
+                    response = {
+                        "status": "success",
+                        "message": "Metrics refreshed (no cache)",
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    self.wfile.write(json.dumps(response).encode("utf-8"))
+                    
+            except Exception as e:
+                self.send_response(500)
+                self.send_header("Content-type", "application/json")
+                self.end_headers()
+                
+                error_response = {
+                    "status": "error",
+                    "message": str(e),
+                    "timestamp": datetime.now().isoformat()
                 }
                 self.wfile.write(json.dumps(error_response).encode("utf-8"))
         else:
@@ -17447,9 +17601,9 @@ def main():
                 }
 
                 # Analyze Agent Cortex display state
-                cortex_status = services_data.get("agent_cortex", {})
+                cortex_status = services_data.get("agent_cortex_ui", {})
                 cortex_diagnostics = {
-                    "displayed": "agent_cortex" in services_data,
+                    "displayed": "agent_cortex_ui" in services_data,
                     "status": cortex_status.get("status", "unknown"),
                     "port": cortex_status.get("port", 8889),
                     "ui_state": {
@@ -17499,7 +17653,7 @@ def main():
                             if k
                             in [
                                 "corporate_headquarters",
-                                "agent_cortex",
+                                "agent_cortex_ui",
                                 "agent_communication_center",
                                 "registry",
                             ]
@@ -18372,6 +18526,91 @@ def main():
                     )
                 except Exception as e:
                     return jsonify({"status": "error", "message": str(e)}), 500
+
+            # Task Queue API endpoints
+            @app.route('/api/tasks', methods=['GET'])
+            def get_tasks():
+                """Get task queue statistics"""
+                from core.task_queue import get_task_manager
+                
+                task_manager = get_task_manager()
+                stats = task_manager.get_queue_stats()
+                
+                return jsonify({
+                    'queue_stats': stats,
+                    'timestamp': datetime.now().isoformat()
+                })
+
+            @app.route('/api/tasks/<task_id>', methods=['GET'])
+            def get_task_status(task_id):
+                """Get status of a specific task"""
+                from core.task_queue import get_task_manager
+                
+                task_manager = get_task_manager()
+                
+                try:
+                    result = task_manager.get_task_status(task_id)
+                    return jsonify(result.to_dict() if hasattr(result, 'to_dict') else {
+                        'task_id': task_id,
+                        'status': result.status.value,
+                        'result': result.result,
+                        'error': result.error
+                    })
+                except Exception as e:
+                    return jsonify({'error': str(e)}), 404
+
+            @app.route('/api/tasks', methods=['POST'])
+            def submit_task():
+                """Submit a new task to the queue"""
+                from core.task_queue import get_task_manager, TaskPriority
+                
+                data = request.json
+                task_name = data.get('task_name')
+                args = data.get('args', [])
+                kwargs = data.get('kwargs', {})
+                priority = data.get('priority', 'normal')
+                
+                if not task_name:
+                    return jsonify({'error': 'task_name required'}), 400
+                
+                # Map priority
+                priority_map = {
+                    'critical': TaskPriority.CRITICAL,
+                    'high': TaskPriority.HIGH,
+                    'normal': TaskPriority.NORMAL,
+                    'low': TaskPriority.LOW,
+                    'background': TaskPriority.BACKGROUND
+                }
+                
+                task_manager = get_task_manager()
+                
+                try:
+                    task_id = task_manager.submit_task(
+                        task_name,
+                        *args,
+                        priority=priority_map.get(priority, TaskPriority.NORMAL),
+                        **kwargs
+                    )
+                    
+                    return jsonify({
+                        'task_id': task_id,
+                        'status': 'submitted'
+                    })
+                except Exception as e:
+                    return jsonify({'error': str(e)}), 500
+
+            @app.route('/api/tasks/<task_id>', methods=['DELETE'])
+            def cancel_task(task_id):
+                """Cancel a task"""
+                from core.task_queue import get_task_manager
+                
+                task_manager = get_task_manager()
+                
+                try:
+                    task_manager.cancel_task(task_id)
+                    return jsonify({'status': 'cancelled'})
+                except Exception as e:
+                    return jsonify({'error': str(e)}), 500
 
             # Run Flask with development features
             app.run(

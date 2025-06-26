@@ -6,6 +6,9 @@ The foundation for all AI agents in the system
 import asyncio
 import json
 import logging
+from core.governance import get_governance_controller, PolicyAction
+from core.task_queue import get_task_manager, TaskPriority
+from core.agent_health import get_health_monitor
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -558,6 +561,48 @@ class BaseAgent(ABC):
                 f,
                 default=str,
             )
+    async def submit_task(self, task_name: str, *args, 
+                         priority: TaskPriority = TaskPriority.NORMAL,
+                         **kwargs) -> str:
+        """Submit a task to the distributed queue"""
+        task_manager = get_task_manager()
+        
+        # Add agent context
+        kwargs['agent_id'] = f"agent-{self.name.lower().replace(' ', '-')}"
+        kwargs['agent_name'] = self.name
+        
+        task_id = task_manager.submit_task(
+            task_name, 
+            *args,
+            priority=priority,
+            **kwargs
+        )
+        
+        logger.info(f"Agent {self.name} submitted task {task_id}: {task_name}")
+        return task_id
+    
+    async def offload_heavy_computation(self, computation_func, *args, **kwargs):
+        """Offload heavy computation to task queue"""
+        # This would serialize the function and arguments
+        # For now, use predefined tasks
+        return await self.submit_task(
+            'core.task_queue.agent_think',
+            f"agent-{self.name.lower().replace(' ', '-')}",
+            {'computation': computation_func.__name__, 'args': args},
+            priority=TaskPriority.NORMAL
+        )
+    
+    async def schedule_periodic_task(self, task_name: str, interval: int, 
+                                   *args, **kwargs):
+        """Schedule a periodic task"""
+        # This would set up a periodic task
+        # Implementation depends on Celery beat configuration
+        logger.info(f"Agent {self.name} scheduling periodic task: {task_name}")
+        
+    def get_task_status(self, task_id: str):
+        """Get status of a submitted task"""
+        task_manager = get_task_manager()
+        return task_manager.get_task_status(task_id)
 
         self.state = AgentState.TERMINATED
         self.log(f"{self.config.name} terminated successfully")

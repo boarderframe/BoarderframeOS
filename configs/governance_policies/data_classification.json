@@ -1,0 +1,30 @@
+{
+  "id": "policy-data-002",
+  "name": "Data Classification Policy",
+  "type": "data_privacy",
+  "description": "Enforces data handling based on classification",
+  "enabled": true,
+  "priority": 2,
+  "rules": [
+    {
+      "classification": "confidential",
+      "allowed_storage": [
+        "encrypted_db"
+      ],
+      "retention_days": 365,
+      "access_logging": true
+    },
+    {
+      "classification": "public",
+      "allowed_storage": [
+        "any"
+      ],
+      "retention_days": -1,
+      "access_logging": false
+    }
+  ],
+  "actions": [
+    "restrict",
+    "remediate"
+  ]
+}

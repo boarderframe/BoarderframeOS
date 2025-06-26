@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Server Status Verification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e57c2 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #4caf50, #8bc34a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .server-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .server-name {
+            font-weight: 500;
+        }
+
+        .server-status {
+            font-size: 0.9rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .status-online {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+
+        .status-offline {
+            background: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #4caf50, #8bc34a);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            margin: 0.5rem;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.2s;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+        }
+
+        .button.refresh {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+        }
+
+        .logs {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-top: 1rem;
+        }
+
+        .timestamp {
+            color: #81c784;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Server Status Verification</h1>
+            <p>Real-time check of all BoarderframeOS servers</p>
+            <div class="timestamp">Last updated: <span id="lastUpdate">Loading...</span></div>
+        </div>
+
+        <div class="status-grid">
+            <div class="status-card">
+                <h2 style="margin-bottom: 1rem; color: #4caf50;">🔧 Core Services</h2>
+                <div id="coreServices">Loading...</div>
+            </div>
+
+            <div class="status-card">
+                <h2 style="margin-bottom: 1rem; color: #2196f3;">🖥️ MCP Servers</h2>
+                <div id="mcpServers">Loading...</div>
+            </div>
+        </div>
+
+        <div class="status-card">
+            <h2 style="margin-bottom: 1rem; color: #ff9800;">📋 Raw Status Data</h2>
+            <button class="button refresh" onclick="loadStatus()">🔄 Refresh Status</button>
+            <button class="button" onclick="openCorpHQ()">🏢 Open Corporate HQ</button>
+            <div id="rawData" class="logs">Loading...</div>
+        </div>
+
+        <div class="status-card">
+            <h2 style="margin-bottom: 1rem; color: #9c27b0;">🔍 Direct Port Checks</h2>
+            <button class="button refresh" onclick="checkPorts()">🔌 Test Ports</button>
+            <div id="portCheck" class="logs">Click "Test Ports" to check direct connectivity</div>
+        </div>
+    </div>
+
+    <script>
+        const servers = {
+            core: [
+                {name: 'Corporate HQ', port: 8888, id: 'corporate_headquarters'},
+                {name: 'Agent Cortex UI', port: 8889, id: 'agent_cortex_ui'},
+                {name: 'Agent Comm Center', port: 8890, id: 'agent_communication_center'},
+                {name: 'Registry', port: 8000, id: 'registry'}
+            ],
+            mcp: [
+                {name: 'Filesystem', port: 8001, id: 'filesystem'},
+                {name: 'Database Postgres', port: 8010, id: 'database_postgres'},
+                {name: 'Payment', port: 8006, id: 'payment'},
+                {name: 'Analytics', port: 8007, id: 'analytics'},
+                {name: 'Customer', port: 8008, id: 'customer'},
+                {name: 'Screenshot', port: 8011, id: 'screenshot'}
+            ]
+        };
+
+        function renderServers(containerId, serverList, statusData) {
+            const container = document.getElementById(containerId);
+            let html = '';
+
+            serverList.forEach(server => {
+                const status = getServerStatus(server.id, statusData);
+                const statusClass = status.online ? 'status-online' : 'status-offline';
+                const statusText = status.online ? 'ONLINE' : 'OFFLINE';
+
+                html += `
+                    <div class="server-item">
+                        <div>
+                            <div class="server-name">${server.name}</div>
+                            <div style="font-size: 0.8rem; opacity: 0.7;">Port ${server.port}</div>
+                        </div>
+                        <div class="server-status ${statusClass}">${statusText}</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function getServerStatus(serverId, statusData) {
+            // Check in both mcp_servers and services
+            const mcpStatus = statusData.mcp_servers && statusData.mcp_servers[serverId];
+            const serviceStatus = statusData.services && statusData.services[serverId];
+
+            if (mcpStatus) {
+                return {
+                    online: mcpStatus.status === 'running',
+                    details: mcpStatus.details
+                };
+            }
+
+            if (serviceStatus) {
+                return {
+                    online: serviceStatus.status === 'running',
+                    details: serviceStatus.details
+                };
+            }
+
+            return { online: false, details: null };
+        }
+
+        async function loadStatus() {
+            try {
+                document.getElementById('lastUpdate').textContent = 'Loading...';
+
+                // Load status from file (we'll simulate this since we can't read files directly)
+                const response = await fetch('/api/debug/status').catch(() => null);
+
+                // For now, we'll check ports directly
+                await checkPorts();
+
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+
+            } catch (error) {
+                document.getElementById('rawData').textContent = `Error loading status: ${error.message}`;
+            }
+        }
+
+        async function checkPorts() {
+            const portCheck = document.getElementById('portCheck');
+            portCheck.innerHTML = 'Checking ports...\n';
+
+            const allServers = [...servers.core, ...servers.mcp];
+            let results = [];
+
+            for (const server of allServers) {
+                try {
+                    const startTime = Date.now();
+                    const response = await fetch(`http://localhost:${server.port}/health`, {
+                        method: 'GET',
+                        timeout: 2000
+                    });
+                    const endTime = Date.now();
+
+                    if (response.ok) {
+                        results.push(`✅ ${server.name} (${server.port}): HEALTHY (${endTime - startTime}ms)`);
+                    } else {
+                        results.push(`⚠️ ${server.name} (${server.port}): HTTP ${response.status}`);
+                    }
+                } catch (error) {
+                    results.push(`❌ ${server.name} (${server.port}): ${error.message}`);
+                }
+            }
+
+            portCheck.innerHTML = results.join('\n');
+
+            // Also update the server displays
+            const mockStatusData = {
+                mcp_servers: {},
+                services: {}
+            };
+
+            // Parse results to create mock status
+            allServers.forEach((server, index) => {
+                const isOnline = results[index] && results[index].startsWith('✅');
+                const category = servers.core.includes(server) ? 'services' : 'mcp_servers';
+
+                mockStatusData[category][server.id] = {
+                    status: isOnline ? 'running' : 'offline'
+                };
+            });
+
+            renderServers('coreServices', servers.core, mockStatusData);
+            renderServers('mcpServers', servers.mcp, mockStatusData);
+
+            document.getElementById('rawData').textContent = JSON.stringify(mockStatusData, null, 2);
+        }
+
+        function openCorpHQ() {
+            window.open('http://localhost:8888', '_blank');
+        }
+
+        // Auto-load on page load
+        window.addEventListener('load', () => {
+            loadStatus();
+        });
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadStatus, 30000);
+    </script>
+</body>
+</html>

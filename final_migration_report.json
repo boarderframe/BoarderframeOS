@@ -1,0 +1,52 @@
+{
+  "estimated_size": 71554858987,
+  "findings": {
+    "boarderframeos": {
+      ".env": {
+        "exists": true,
+        "size": 565
+      },
+      "CLAUDE.md": {
+        "exists": true,
+        "size": 27933
+      },
+      "docker-compose.yml": {
+        "exists": true,
+        "size": 4469
+      },
+      "git_clean": false,
+      "requirements.txt": {
+        "exists": true,
+        "size": 1655
+      },
+      "startup.py": {
+        "exists": true,
+        "size": 92945
+      }
+    },
+    "development": {},
+    "docker": {
+      "docker_raw_size": 63999836160
+    },
+    "other_projects": {
+      "total": 7,
+      "with_changes": 5
+    },
+    "recommendations": [
+      "\u26a0\ufe0f  Commit or stash changes in BoarderframeOS before migration",
+      "\u26a0\ufe0f  Review and commit changes in other git repositories",
+      "\u2713 Use the enhanced migration guide: BOARDERFRAMEOS_MIGRATION_GUIDE_ENHANCED.md",
+      "\u2713 Run pre-migration verification: python scripts/verify/pre_migration_verification.py",
+      "\u2713 Create a Time Machine backup as additional safety",
+      "\u2713 Document any custom system configurations",
+      "\u2713 Export browser bookmarks and passwords",
+      "\u2713 Note down any licensed software serial numbers"
+    ],
+    "system": {}
+  },
+  "system": {
+    "hostname": "CarlsMacBook.local",
+    "user": "cosburn"
+  },
+  "timestamp": "2025-06-19T16:28:34.938524"
+}

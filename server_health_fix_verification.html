@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Health Fix - Verification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1a1c2e 0%, #2d3561 50%, #5b548a 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a8b2d1;
+        }
+
+        .fixes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .fix-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.8s ease-out;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .fix-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+            border-color: #10b981;
+        }
+
+        .fix-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .fix-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .fix-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .fix-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .fix-list li {
+            padding: 0.75rem 0;
+            display: flex;
+            align-items: start;
+            gap: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .fix-list li:last-child {
+            border-bottom: none;
+        }
+
+        .checkmark {
+            color: #10b981;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .server-status {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .status-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-label {
+            color: #a8b2d1;
+            font-size: 0.9rem;
+        }
+
+        .online {
+            color: #10b981;
+        }
+
+        .offline {
+            color: #ef4444;
+        }
+
+        .warning {
+            color: #f59e0b;
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .removed {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .fixed {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Server Health Status Fixed</h1>
+            <p class="subtitle">SQLite removed, real health status restored, all servers properly configured</p>
+        </div>
+
+        <div class="server-status">
+            <h2 style="margin-bottom: 1rem;">📊 Current Server Status</h2>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-value online">10</div>
+                    <div class="status-label">Total Servers</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value online">8-9</div>
+                    <div class="status-label">Expected Online</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value offline">0</div>
+                    <div class="status-label">SQLite (Removed)</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value warning">Real</div>
+                    <div class="status-label">Health Display</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="fixes-grid">
+            <div class="fix-card removed">
+                <div class="fix-header">
+                    <div class="fix-icon">❌</div>
+                    <div class="fix-title">SQLite Server Removed</div>
+                </div>
+                <ul class="fix-list">
+                    <li>
+                        <span class="checkmark">✓</span>
+                        <span>Removed from server configuration</span>
+                    </li>
+                    <li>
+                        <span class="checkmark">✓</span>
+                        <span>Removed from all server lists</span>
+                    </li>
+                    <li>
+                        <span class="checkmark">✓</span>
+                        <span>Stopped SQLite server process</span>
+                    </li>
+                    <li>
+                        <span class="checkmark">✓</span>
+                        <span>Updated total server count to 10</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="fix-card fixed">
+                <div class="fix-header">
+                    <div class="fix-icon">🔄</div>
+                    <div class="fix-title">PostgreSQL Migration</div>
+                </div>
+                <ul class="fix-list">
+                    <li>
+                        <span class="checkmark">✓</span>
+                        <span>Analytics server → PostgreSQL (8010)</span>
+                    </li>
+                    <li>
+                        <span class="checkmark">✓</span>
+                        <span>Payment server → PostgreSQL (8010)</span>
+                    </li>
+                    <li>
+                        <span class="checkmark">✓</span>
+                        <span>Customer server → PostgreSQL (8010)</span>
+                    </li>
+                    <li>
+                        <span class="checkmark">✓</span>
+                        <span>All servers use unified database</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="fix-card fixed">
+                <div class="fix-header">
+                    <div class="fix-icon">📊</div>
+                    <div class="fix-title">Health Calculation Fixed</div>
+                </div>
+                <ul class="fix-list">
+                    <li>
+                        <span class="checkmark">✓</span>
+                        <span>Removed hardcoded fallback values</span>
+                    </li>
+                    <li>
+                        <span class="checkmark">✓</span>
+                        <span>Shows actual server health status</span>
+                    </li>
+                    <li>
+                        <span class="checkmark">✓</span>
+                        <span>No more fake "10/11" servers</span>
+                    </li>
+                    <li>
+                        <span class="checkmark">✓</span>
+                        <span>Real-time health monitoring</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="fix-card">
+                <div class="fix-header">
+                    <div class="fix-icon">🏗️</div>
+                    <div class="fix-title">Server Configuration</div>
+                </div>
+                <ul class="fix-list">
+                    <li>
+                        <span class="checkmark">✓</span>
+                        <span><strong>Core (4):</strong> HQ, Cortex, ACC, Registry</span>
+                    </li>
+                    <li>
+                        <span class="checkmark">✓</span>
+                        <span><strong>MCP (3):</strong> Filesystem, PostgreSQL, Analytics</span>
+                    </li>
+                    <li>
+                        <span class="checkmark">✓</span>
+                        <span><strong>Business (3):</strong> Payment, Customer, Screenshot</span>
+                    </li>
+                    <li>
+                        <span class="checkmark">✓</span>
+                        <span><strong>Total:</strong> 10 servers (correct count)</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="server-status">
+            <h2 style="margin-bottom: 1rem;">💻 Code Changes Applied</h2>
+
+            <div class="code-block">
+                <strong>1. Removed SQLite from configuration:</strong><br>
+                - Deleted "database_sqlite" entry from services<br>
+                - Removed from MCP server list<br>
+                - Removed from hardcoded status data<br><br>
+
+                <strong>2. Updated MCP servers to use PostgreSQL:</strong><br>
+                - analytics_server.py: port 8004 → 8010<br>
+                - payment_server.py: port 8004 → 8010<br>
+                - customer_server.py: port 8004 → 8010<br><br>
+
+                <strong>3. Fixed server counts:</strong><br>
+                - mcp_servers = ["filesystem", "database_postgres", "analytics"]<br>
+                - business_servers = ["payment", "customer", "screenshot"]<br>
+                - total_servers = 10  # 4 Core + 3 MCP + 3 Business<br><br>
+
+                <strong>4. Removed hardcoded health fallback:</strong><br>
+                - No more "if total_healthy_servers == 0: set to 10"<br>
+                - Shows real server status instead of fake values
+            </div>
+        </div>
+
+        <div class="server-status">
+            <h2 style="margin-bottom: 1rem;">⚠️ Remaining Tasks</h2>
+            <ul style="line-height: 1.8; padding-left: 1.5rem;">
+                <li><strong>Agent Cortex:</strong> May need to start UI on port 8889</li>
+                <li><strong>Registry Server:</strong> Should be running on port 8009</li>
+                <li><strong>Welcome Page:</strong> Should now show actual server health %</li>
+                <li><strong>Server Status Page:</strong> Should show correct 10 server count</li>
+            </ul>
+        </div>
+
+        <div class="action-buttons">
+            <a href="http://localhost:8888" class="btn btn-primary" target="_blank">
+                <span>🏢</span> Open Corporate HQ
+            </a>
+            <button class="btn btn-secondary" onclick="checkHealth()">
+                <span>🔍</span> Check Server Health
+            </button>
+            <button class="btn btn-secondary" onclick="showStartupCommands()">
+                <span>🚀</span> Show Startup Commands
+            </button>
+        </div>
+    </div>
+
+    <script>
+        async function checkHealth() {
+            try {
+                const response = await fetch('http://localhost:8888/api/services/status');
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(`✅ Server Health Check\n\nTotal Servers: ${Object.keys(data).length}\nHealthy: ${Object.values(data).filter(s => s.status === 'healthy').length}\n\nThe welcome page should now show real health percentages!`);
+                } else {
+                    alert('❌ Failed to check server health');
+                }
+            } catch (error) {
+                alert('❌ Cannot connect to Corporate HQ');
+            }
+        }
+
+        function showStartupCommands() {
+            alert(`🚀 Missing Server Startup Commands\n\n1. Registry Server:\n   python mcp/registry_server.py\n\n2. Agent Cortex UI:\n   python scripts/launch/launch_agent_cortex_ui.py\n\n3. Full System:\n   python startup.py`);
+        }
+    </script>
+</body>
+</html>

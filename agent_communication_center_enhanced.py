@@ -1,0 +1,1877 @@
+#!/usr/bin/env python3
+"""
+BoarderframeOS Enhanced Agent Communication Center (ACC)
+A fully-featured messaging system for agent-to-agent and human-to-agent communication
+"""
+
+import asyncio
+import json
+import os
+import sys
+import time
+import uuid
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set
+from enum import Enum
+
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent))
+
+# Load environment variables
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
+import uvicorn
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Query
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+import asyncpg
+
+# Import core components
+from core.claude_integration import get_claude_integration
+from core.message_bus import AgentMessage, MessagePriority, MessageType, message_bus
+
+# Try to import agent orchestrator (singleton, may not be available)
+try:
+    from core.agent_orchestrator import agent_orchestrator
+    ORCHESTRATOR_AVAILABLE = True
+except ImportError:
+    ORCHESTRATOR_AVAILABLE = False
+    agent_orchestrator = None
+
+# Try to import optional components
+try:
+    from core.agent_cortex import (
+        AgentRequest,
+        ModelTier,
+        SelectionStrategy,
+        get_agent_cortex_instance,
+    )
+    AGENT_CORTEX_AVAILABLE = True
+except ImportError:
+    AGENT_CORTEX_AVAILABLE = False
+    get_agent_cortex_instance = None
+
+
+class PresenceStatus(Enum):
+    ONLINE = "online"
+    BUSY = "busy"
+    AWAY = "away"
+    OFFLINE = "offline"
+
+
+class MessageFormat(Enum):
+    TEXT = "text"
+    MARKDOWN = "markdown"
+    CODE = "code"
+    FILE = "file"
+    VOICE = "voice"
+
+
+class ChannelType(Enum):
+    DIRECT = "direct"
+    DEPARTMENT = "department"
+    TOPIC = "topic"
+    BROADCAST = "broadcast"
+
+
+class ChatMessage(BaseModel):
+    from_agent: Optional[str] = None  # Added: sender agent
+    channel: Optional[str] = None
+    to_agent: Optional[str] = None
+    content: str
+    format: MessageFormat = MessageFormat.TEXT
+    thread_id: Optional[str] = None
+    mentions: List[str] = []
+    attachments: List[Dict[str, Any]] = []
+    correlation_id: Optional[str] = None  # Added: link to original message
+    is_response: bool = False  # Added: flag for agent responses
+
+
+class ChannelCreate(BaseModel):
+    name: str
+    description: str
+    channel_type: ChannelType
+    members: List[str] = []
+
+
+class PresenceUpdate(BaseModel):
+    agent_name: str
+    status: PresenceStatus
+    current_channel: Optional[str] = None
+
+
+class EnhancedAgentCommunicationCenter:
+    """Enhanced ACC with full messaging capabilities"""
+
+    def __init__(self):
+        self.app = FastAPI(title="Enhanced BoarderframeOS ACC")
+        self.claude = get_claude_integration()
+        self.agent_cortex = None
+        self.db_pool = None
+        
+        # WebSocket management
+        self.websocket_connections: Dict[str, WebSocket] = {}
+        self.agent_websockets: Dict[str, Set[WebSocket]] = {}
+        
+        # Cache
+        self.presence_cache: Dict[str, PresenceStatus] = {}
+        self.channel_members: Dict[str, Set[str]] = {}
+        
+        # Setup
+        self.setup_routes()
+        self.setup_message_bus_integration()
+
+    async def initialize(self):
+        """Initialize database and services"""
+        # Initialize database pool
+        self.db_pool = await asyncpg.create_pool(
+            host="localhost",
+            port=5434,
+            database="boarderframeos",
+            user="boarderframe",
+            password=os.getenv("POSTGRES_PASSWORD", "boarderframe_secure_2025"),
+            min_size=5,
+            max_size=20
+        )
+        
+        # Create tables if needed
+        await self.create_database_schema()
+        
+        # Initialize Agent Cortex if available
+        if AGENT_CORTEX_AVAILABLE and get_agent_cortex_instance:
+            try:
+                self.agent_cortex = await get_agent_cortex_instance()
+                print("🧠 ACC: Agent Cortex integration initialized")
+            except Exception as e:
+                print(f"⚠️ ACC: Could not initialize Agent Cortex: {e}")
+        
+        # Start message bus if not already running
+        if not message_bus.running:
+            await message_bus.start()
+            print("🚌 ACC: Started message bus for agent communication")
+        
+        # Subscribe to message bus
+        await message_bus.register_agent("acc_system")
+        await message_bus.subscribe("acc_system", self.handle_message_bus_message)
+        
+        # Load initial data
+        await self.load_channels()
+        await self.load_agent_presence()
+
+    async def create_database_schema(self):
+        """Create necessary database tables"""
+        async with self.db_pool.acquire() as conn:
+            # Enable UUID extension
+            await conn.execute("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"")
+            
+            # Messages table
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS acc_messages (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    from_agent VARCHAR(255) NOT NULL,
+                    to_agent VARCHAR(255),
+                    channel_id VARCHAR(255),
+                    message_type VARCHAR(50) DEFAULT 'text',
+                    content JSONB NOT NULL,
+                    format VARCHAR(50) DEFAULT 'text',
+                    attachments JSONB DEFAULT '[]',
+                    thread_id UUID,
+                    mentions JSONB DEFAULT '[]',
+                    reactions JSONB DEFAULT '{}',
+                    timestamp TIMESTAMP DEFAULT NOW(),
+                    updated_at TIMESTAMP DEFAULT NOW(),
+                    is_edited BOOLEAN DEFAULT FALSE,
+                    is_deleted BOOLEAN DEFAULT FALSE
+                )
+            """)
+            
+            # Channels table
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS acc_channels (
+                    id VARCHAR(255) PRIMARY KEY,
+                    name VARCHAR(255) NOT NULL,
+                    description TEXT,
+                    channel_type VARCHAR(50) NOT NULL,
+                    members JSONB DEFAULT '[]',
+                    created_by VARCHAR(255),
+                    created_at TIMESTAMP DEFAULT NOW(),
+                    updated_at TIMESTAMP DEFAULT NOW(),
+                    metadata JSONB DEFAULT '{}',
+                    is_archived BOOLEAN DEFAULT FALSE
+                )
+            """)
+            
+            # Agent presence table
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS acc_presence (
+                    agent_name VARCHAR(255) PRIMARY KEY,
+                    status VARCHAR(50) DEFAULT 'offline',
+                    last_seen TIMESTAMP DEFAULT NOW(),
+                    current_channel VARCHAR(255),
+                    status_message TEXT,
+                    metadata JSONB DEFAULT '{}'
+                )
+            """)
+            
+            # Create indexes
+            await conn.execute("CREATE INDEX IF NOT EXISTS idx_messages_channel ON acc_messages(channel_id)")
+            await conn.execute("CREATE INDEX IF NOT EXISTS idx_messages_thread ON acc_messages(thread_id)")
+            await conn.execute("CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON acc_messages(timestamp DESC)")
+
+    def setup_message_bus_integration(self):
+        """Setup integration with the BoarderframeOS message bus"""
+        # This will be called after initialization
+        pass
+
+    async def handle_message_bus_message(self, message: AgentMessage):
+        """Handle messages from the message bus"""
+        # Convert message bus message to ACC format
+        acc_message = {
+            "id": str(uuid.uuid4()),
+            "from_agent": message.from_agent,
+            "to_agent": message.to_agent,
+            "content": message.content,
+            "timestamp": message.timestamp.isoformat(),
+            "type": message.message_type.value,
+            "correlation_id": message.correlation_id
+        }
+        
+        # Store in database
+        await self.store_message(acc_message)
+        
+        # Broadcast to relevant WebSocket connections
+        if message.to_agent:
+            # Direct message
+            await self.send_to_agent_websockets(message.to_agent, {
+                "type": "message",
+                "data": acc_message
+            })
+        else:
+            # Broadcast or channel message
+            channel = message.content.get("channel", "general")
+            await self.broadcast_to_channel(channel, {
+                "type": "message",
+                "data": acc_message
+            })
+
+    async def store_message(self, message: Dict[str, Any]) -> str:
+        """Store a message in the database"""
+        async with self.db_pool.acquire() as conn:
+            result = await conn.fetchrow("""
+                INSERT INTO acc_messages (
+                    from_agent, to_agent, channel_id, message_type,
+                    content, format, attachments, thread_id, mentions
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                RETURNING id
+            """,
+                message.get("from_agent"),
+                message.get("to_agent"),
+                message.get("channel_id"),
+                message.get("type", "text"),
+                json.dumps(message.get("content", {})),
+                message.get("format", "text"),
+                json.dumps(message.get("attachments", [])),
+                message.get("thread_id"),
+                json.dumps(message.get("mentions", []))
+            )
+            return str(result["id"])
+
+    async def load_channels(self):
+        """Load channels from database"""
+        async with self.db_pool.acquire() as conn:
+            channels = await conn.fetch("SELECT * FROM acc_channels WHERE NOT is_archived")
+            for channel in channels:
+                self.channel_members[channel["id"]] = set(json.loads(channel["members"]))
+
+    async def load_agent_presence(self):
+        """Load agent presence from database"""
+        async with self.db_pool.acquire() as conn:
+            presence_records = await conn.fetch("SELECT * FROM acc_presence")
+            for record in presence_records:
+                self.presence_cache[record["agent_name"]] = PresenceStatus(record["status"])
+
+    def setup_routes(self):
+        """Setup FastAPI routes"""
+        
+        @self.app.get("/", response_class=HTMLResponse)
+        async def home():
+            return self.generate_enhanced_ui()
+        
+        @self.app.websocket("/ws")
+        async def websocket_endpoint(websocket: WebSocket):
+            await self.handle_websocket_connection(websocket)
+        
+        @self.app.post("/api/messages")
+        async def send_message(message: ChatMessage):
+            """Send a message to a channel or agent"""
+            return await self.handle_send_message(message)
+        
+        @self.app.get("/api/messages")
+        async def get_messages(
+            channel: Optional[str] = Query(None),
+            agent: Optional[str] = Query(None),
+            limit: int = Query(50, le=200),
+            before: Optional[str] = Query(None)
+        ):
+            """Get message history"""
+            return await self.get_message_history(channel, agent, limit, before)
+        
+        @self.app.get("/api/agents")
+        async def get_agents():
+            """Get all available agents"""
+            return await self.get_all_agents()
+        
+        @self.app.get("/api/agents/{agent_name}/presence")
+        async def get_agent_presence(agent_name: str):
+            """Get agent presence status"""
+            return await self.get_presence(agent_name)
+        
+        @self.app.put("/api/agents/{agent_name}/presence")
+        async def update_agent_presence(agent_name: str, update: PresenceUpdate):
+            """Update agent presence"""
+            return await self.update_presence(agent_name, update)
+        
+        @self.app.get("/api/channels")
+        async def get_channels():
+            """Get all channels"""
+            return await self.get_all_channels()
+        
+        @self.app.post("/api/channels")
+        async def create_channel(channel: ChannelCreate):
+            """Create a new channel"""
+            return await self.create_new_channel(channel)
+        
+        @self.app.post("/api/channels/{channel_id}/join")
+        async def join_channel(channel_id: str, agent_name: str):
+            """Join a channel"""
+            return await self.join_channel(channel_id, agent_name)
+        
+        @self.app.post("/api/channels/{channel_id}/leave")
+        async def leave_channel(channel_id: str, agent_name: str):
+            """Leave a channel"""
+            return await self.leave_channel(channel_id, agent_name)
+        
+        @self.app.get("/health")
+        async def health():
+            """Health check endpoint"""
+            return JSONResponse({
+                "status": "healthy",
+                "service": "enhanced_acc",
+                "port": 8890,
+                "websocket_connections": len(self.websocket_connections),
+                "database": "connected" if self.db_pool else "disconnected",
+                "timestamp": datetime.now().isoformat()
+            })
+
+    async def handle_websocket_connection(self, websocket: WebSocket):
+        """Handle WebSocket connections"""
+        await websocket.accept()
+        connection_id = str(uuid.uuid4())
+        self.websocket_connections[connection_id] = websocket
+        
+        # Send initial data
+        await websocket.send_json({
+            "type": "connection",
+            "connection_id": connection_id,
+            "timestamp": datetime.now().isoformat()
+        })
+        
+        try:
+            while True:
+                data = await websocket.receive_text()
+                message = json.loads(data)
+                await self.handle_websocket_message(websocket, connection_id, message)
+        except WebSocketDisconnect:
+            self.websocket_connections.pop(connection_id, None)
+            # Remove from agent websockets
+            for agent_set in self.agent_websockets.values():
+                agent_set.discard(websocket)
+        except Exception as e:
+            print(f"WebSocket error: {e}")
+            self.websocket_connections.pop(connection_id, None)
+
+    async def handle_websocket_message(self, websocket: WebSocket, connection_id: str, message: Dict[str, Any]):
+        """Handle incoming WebSocket messages"""
+        msg_type = message.get("type")
+        
+        if msg_type == "auth":
+            # Agent authentication
+            agent_name = message.get("agent_name")
+            if agent_name:
+                if agent_name not in self.agent_websockets:
+                    self.agent_websockets[agent_name] = set()
+                self.agent_websockets[agent_name].add(websocket)
+                
+                # Update presence
+                await self.update_presence(agent_name, PresenceUpdate(
+                    agent_name=agent_name,
+                    status=PresenceStatus.ONLINE
+                ))
+                
+                await websocket.send_json({
+                    "type": "auth_success",
+                    "agent_name": agent_name
+                })
+        
+        elif msg_type == "message":
+            # Handle chat message
+            chat_msg = ChatMessage(**message.get("data", {}))
+            await self.handle_send_message(chat_msg, connection_id)
+        
+        elif msg_type == "typing":
+            # Broadcast typing indicator
+            channel = message.get("channel")
+            agent = message.get("agent")
+            if channel and agent:
+                await self.broadcast_to_channel(channel, {
+                    "type": "typing",
+                    "agent": agent,
+                    "channel": channel
+                }, exclude_connection=connection_id)
+        
+        elif msg_type == "presence":
+            # Update presence
+            update = PresenceUpdate(**message.get("data", {}))
+            await self.update_presence(update.agent_name, update)
+
+    async def handle_send_message(self, message: ChatMessage, connection_id: Optional[str] = None) -> Dict[str, Any]:
+        """Process and route a message"""
+        # Generate message ID
+        message_id = str(uuid.uuid4())
+        
+        # Determine sender
+        sender = message.from_agent or "user"
+        
+        # If this is an agent response, handle it specially
+        if message.is_response and message.from_agent:
+            print(f"🤖 ACC: Processing response from {message.from_agent} to {message.to_agent}")
+        
+        # Prepare message data
+        message_data = {
+            "id": message_id,
+            "from_agent": sender,
+            "to_agent": message.to_agent,
+            "channel_id": message.channel,
+            "content": {"text": message.content},
+            "format": message.format.value,
+            "attachments": message.attachments,
+            "thread_id": message.thread_id,
+            "mentions": message.mentions,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        # Store in database
+        await self.store_message(message_data)
+        
+        # Route message
+        if message.to_agent:
+            # Check if this is an agent response back to user
+            if message.is_response and message.to_agent == "user":
+                # Broadcast to all WebSocket connections (UI)
+                print(f"📡 ACC: Broadcasting agent response from {sender} to all WebSocket clients")
+                disconnected = []
+                for conn_id, ws in self.websocket_connections.items():
+                    try:
+                        await ws.send_json({
+                            "type": "message",
+                            "data": message_data
+                        })
+                        print(f"✅ ACC: Sent response to WebSocket {conn_id}")
+                    except Exception as e:
+                        print(f"❌ ACC: Failed to send to WebSocket {conn_id}: {e}")
+                        disconnected.append(conn_id)
+                
+                # Clean up disconnected
+                for conn_id in disconnected:
+                    self.websocket_connections.pop(conn_id, None)
+            else:
+                # Normal message to agent - send via message bus
+                agent_msg = AgentMessage(
+                    from_agent=sender,
+                    to_agent=message.to_agent,
+                    message_type=MessageType.TASK_REQUEST,
+                    content={"type": "user_chat", "message": message.content},
+                    correlation_id=message.correlation_id or message_id
+                )
+                await message_bus.send_message(agent_msg)
+                print(f"🚌 ACC: Sent message to {message.to_agent} via message bus")
+                
+                # Also send to agent's WebSocket if connected
+                print(f"🔌 ACC: Checking WebSocket connections for {message.to_agent}")
+                print(f"   Agent WebSockets: {list(self.agent_websockets.keys())}")
+                await self.send_to_agent_websockets(message.to_agent, {
+                    "type": "message",
+                    "data": message_data
+                })
+        
+        elif message.channel:
+            # Channel message
+            await self.broadcast_to_channel(message.channel, {
+                "type": "message",
+                "data": message_data
+            })
+            
+            # Notify mentioned agents via message bus
+            for mention in message.mentions:
+                if mention.startswith("@"):
+                    agent_name = mention[1:]
+                    notification = AgentMessage(
+                        from_agent="acc_system",
+                        to_agent=agent_name,
+                        message_type=MessageType.ALERT,
+                        content={
+                            "type": "mention",
+                            "channel": message.channel,
+                            "message": message.content,
+                            "from": sender
+                        }
+                    )
+                    await message_bus.send_message(notification)
+        
+        return {"success": True, "message_id": message_id}
+
+    async def send_to_agent_websockets(self, agent_name: str, data: Dict[str, Any]):
+        """Send data to all WebSocket connections for an agent"""
+        if agent_name in self.agent_websockets:
+            disconnected = []
+            for ws in self.agent_websockets[agent_name]:
+                try:
+                    await ws.send_json(data)
+                except:
+                    disconnected.append(ws)
+            
+            # Clean up disconnected websockets
+            for ws in disconnected:
+                self.agent_websockets[agent_name].discard(ws)
+
+    async def broadcast_to_channel(self, channel: str, data: Dict[str, Any], exclude_connection: Optional[str] = None):
+        """Broadcast to all members of a channel"""
+        if channel in self.channel_members:
+            for member in self.channel_members[channel]:
+                if member in self.agent_websockets:
+                    await self.send_to_agent_websockets(member, data)
+
+    async def get_message_history(
+        self, 
+        channel: Optional[str] = None, 
+        agent: Optional[str] = None,
+        limit: int = 50,
+        before: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Retrieve message history"""
+        async with self.db_pool.acquire() as conn:
+            query = """
+                SELECT id, from_agent, to_agent, channel_id, message_type,
+                       content, format, attachments, thread_id, mentions,
+                       reactions, timestamp, is_edited
+                FROM acc_messages
+                WHERE NOT is_deleted
+            """
+            params = []
+            param_count = 0
+            
+            if channel:
+                param_count += 1
+                query += f" AND channel_id = ${param_count}"
+                params.append(channel)
+            
+            if agent:
+                param_count += 1
+                query += f" AND (from_agent = ${param_count} OR to_agent = ${param_count})"
+                params.append(agent)
+            
+            if before:
+                param_count += 1
+                query += f" AND timestamp < ${param_count}"
+                params.append(before)
+            
+            query += " ORDER BY timestamp DESC LIMIT $" + str(param_count + 1)
+            params.append(limit)
+            
+            rows = await conn.fetch(query, *params)
+            
+            messages = []
+            for row in rows:
+                messages.append({
+                    "id": str(row["id"]),
+                    "from_agent": row["from_agent"],
+                    "to_agent": row["to_agent"],
+                    "channel_id": row["channel_id"],
+                    "type": row["message_type"],
+                    "content": json.loads(row["content"]),
+                    "format": row["format"],
+                    "attachments": json.loads(row["attachments"]),
+                    "thread_id": str(row["thread_id"]) if row["thread_id"] else None,
+                    "mentions": json.loads(row["mentions"]),
+                    "reactions": json.loads(row["reactions"]),
+                    "timestamp": row["timestamp"].isoformat(),
+                    "is_edited": row["is_edited"]
+                })
+            
+            return list(reversed(messages))  # Return in chronological order
+
+    async def get_all_agents(self) -> List[Dict[str, Any]]:
+        """Get all available agents from the orchestrator"""
+        agents = []
+        
+        # Get from agent orchestrator if available
+        try:
+            # This would integrate with the actual agent registry
+            # For now, return a mix of known agents and dynamic discovery
+            known_agents = ["solomon", "david", "adam", "eve", "bezalel"]
+            
+            for agent_name in known_agents:
+                presence = self.presence_cache.get(agent_name, PresenceStatus.OFFLINE)
+                agents.append({
+                    "name": agent_name,
+                    "status": presence.value,
+                    "role": self.get_agent_role(agent_name),
+                    "department": self.get_agent_department(agent_name)
+                })
+            
+            # TODO: Add dynamic agent discovery from orchestrator
+            
+        except Exception as e:
+            print(f"Error getting agents: {e}")
+        
+        return agents
+
+    async def get_all_channels(self) -> List[Dict[str, Any]]:
+        """Get all available channels"""
+        async with self.db_pool.acquire() as conn:
+            rows = await conn.fetch("""
+                SELECT id, name, description, channel_type, members, created_by, created_at
+                FROM acc_channels
+                WHERE NOT is_archived
+                ORDER BY name
+            """)
+            
+            channels = []
+            for row in rows:
+                channels.append({
+                    "id": row["id"],
+                    "name": row["name"],
+                    "description": row["description"],
+                    "type": row["channel_type"],
+                    "member_count": len(json.loads(row["members"])),
+                    "created_by": row["created_by"],
+                    "created_at": row["created_at"].isoformat()
+                })
+            
+            return channels
+
+    async def create_new_channel(self, channel: ChannelCreate) -> Dict[str, Any]:
+        """Create a new channel"""
+        
+        async with self.db_pool.acquire() as conn:
+            try:
+                # Let PostgreSQL generate the UUID
+                result = await conn.fetchrow("""
+                    INSERT INTO acc_channels (name, description, channel_type, members, created_by)
+                    VALUES ($1, $2, $3, $4, $5)
+                    RETURNING id
+                """,
+                    channel.name,
+                    channel.description,
+                    channel.channel_type.value,
+                    json.dumps(channel.members),
+                    "system"  # TODO: Get actual creator
+                )
+                
+                channel_id = str(result['id'])
+                
+                # Update cache
+                self.channel_members[channel_id] = set(channel.members)
+                
+                return {
+                    "success": True,
+                    "id": channel_id,
+                    "name": channel.name
+                }
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=str(e))
+
+    async def join_channel(self, channel_id: str, agent_name: str) -> Dict[str, Any]:
+        """Add an agent to a channel"""
+        async with self.db_pool.acquire() as conn:
+            # Get current members
+            result = await conn.fetchrow(
+                "SELECT members FROM acc_channels WHERE id = $1",
+                channel_id
+            )
+            
+            if not result:
+                raise HTTPException(status_code=404, detail="Channel not found")
+            
+            members = json.loads(result["members"])
+            if agent_name not in members:
+                members.append(agent_name)
+                
+                # Update database
+                await conn.execute(
+                    "UPDATE acc_channels SET members = $1 WHERE id = $2",
+                    json.dumps(members),
+                    channel_id
+                )
+                
+                # Update cache
+                if channel_id not in self.channel_members:
+                    self.channel_members[channel_id] = set()
+                self.channel_members[channel_id].add(agent_name)
+            
+            return {"success": True, "channel_id": channel_id, "agent": agent_name}
+
+    async def leave_channel(self, channel_id: str, agent_name: str) -> Dict[str, Any]:
+        """Remove an agent from a channel"""
+        async with self.db_pool.acquire() as conn:
+            # Get current members
+            result = await conn.fetchrow(
+                "SELECT members FROM acc_channels WHERE id = $1",
+                channel_id
+            )
+            
+            if not result:
+                raise HTTPException(status_code=404, detail="Channel not found")
+            
+            members = json.loads(result["members"])
+            if agent_name in members:
+                members.remove(agent_name)
+                
+                # Update database
+                await conn.execute(
+                    "UPDATE acc_channels SET members = $1 WHERE id = $2",
+                    json.dumps(members),
+                    channel_id
+                )
+                
+                # Update cache
+                if channel_id in self.channel_members:
+                    self.channel_members[channel_id].discard(agent_name)
+            
+            return {"success": True, "channel_id": channel_id, "agent": agent_name}
+
+    async def get_presence(self, agent_name: str) -> Dict[str, Any]:
+        """Get agent presence information"""
+        async with self.db_pool.acquire() as conn:
+            result = await conn.fetchrow(
+                "SELECT * FROM acc_presence WHERE agent_name = $1",
+                agent_name
+            )
+            
+            if result:
+                return {
+                    "agent_name": result["agent_name"],
+                    "status": result["status"],
+                    "last_seen": result["last_seen"].isoformat(),
+                    "current_channel": result["current_channel"],
+                    "status_message": result["status_message"]
+                }
+            else:
+                return {
+                    "agent_name": agent_name,
+                    "status": "offline",
+                    "last_seen": None,
+                    "current_channel": None,
+                    "status_message": None
+                }
+
+    async def update_presence(self, agent_name: str, update: PresenceUpdate) -> Dict[str, Any]:
+        """Update agent presence"""
+        async with self.db_pool.acquire() as conn:
+            await conn.execute("""
+                INSERT INTO acc_presence (agent_name, status, last_seen, current_channel)
+                VALUES ($1, $2, NOW(), $3)
+                ON CONFLICT (agent_name)
+                DO UPDATE SET status = $2, last_seen = NOW(), current_channel = $3
+            """,
+                agent_name,
+                update.status.value,
+                update.current_channel
+            )
+            
+            # Update cache
+            self.presence_cache[agent_name] = update.status
+            
+            # Broadcast presence update
+            await self.broadcast_presence_update(agent_name, update.status)
+            
+            return {"success": True, "agent": agent_name, "status": update.status.value}
+
+    async def broadcast_presence_update(self, agent_name: str, status: PresenceStatus):
+        """Broadcast presence update to all connected clients"""
+        update_data = {
+            "type": "presence_update",
+            "agent": agent_name,
+            "status": status.value,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        # Send to all WebSocket connections
+        disconnected = []
+        for conn_id, ws in self.websocket_connections.items():
+            try:
+                await ws.send_json(update_data)
+            except:
+                disconnected.append(conn_id)
+        
+        # Clean up disconnected
+        for conn_id in disconnected:
+            self.websocket_connections.pop(conn_id, None)
+
+    def get_agent_role(self, agent_name: str) -> str:
+        """Get agent role description"""
+        roles = {
+            "solomon": "Chief of Staff & Digital Twin",
+            "david": "Chief Executive Officer",
+            "adam": "The Creator - Agent Factory",
+            "eve": "The Evolver",
+            "bezalel": "Master Programmer"
+        }
+        return roles.get(agent_name, "Agent")
+
+    def get_agent_department(self, agent_name: str) -> str:
+        """Get agent department"""
+        departments = {
+            "solomon": "Executive Leadership",
+            "david": "Executive Leadership",
+            "adam": "Primordials",
+            "eve": "Primordials",
+            "bezalel": "Primordials"
+        }
+        return departments.get(agent_name, "Unknown")
+
+    def generate_enhanced_ui(self) -> str:
+        """Generate the enhanced UI HTML"""
+        return """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced ACC - BoarderframeOS Communication Hub</title>
+    <style>
+        :root {
+            --primary: #4fc3f7;
+            --secondary: #81c784;
+            --accent: #ffb74d;
+            --bg-dark: #0f0f23;
+            --bg-medium: #1a1a3e;
+            --bg-light: #2a2a4e;
+            --text-light: #ffffff;
+            --text-dim: #aaaaaa;
+            --border: rgba(255, 255, 255, 0.1);
+            --success: #4caf50;
+            --warning: #ff9800;
+            --error: #f44336;
+            --info: #2196f3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-medium) 100%);
+            color: var(--text-light);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.03);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.5em;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .sidebar-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px;
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-button:hover {
+            color: var(--text-light);
+        }
+
+        .tab-button.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        /* Channel/Agent List */
+        .list-item {
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .list-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .list-item.active {
+            background: rgba(79, 195, 247, 0.2);
+            border-left: 3px solid var(--primary);
+        }
+
+        .list-item-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .list-item-info {
+            flex: 1;
+        }
+
+        .list-item-name {
+            font-weight: 500;
+        }
+
+        .list-item-status {
+            font-size: 0.85em;
+            color: var(--text-dim);
+        }
+
+        .presence-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .presence-indicator.offline {
+            background: var(--text-dim);
+        }
+
+        .presence-indicator.busy {
+            background: var(--warning);
+        }
+
+        .presence-indicator.away {
+            background: var(--accent);
+        }
+
+        /* Main Chat Area */
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-title {
+            font-size: 1.2em;
+            font-weight: 500;
+        }
+
+        .chat-subtitle {
+            font-size: 0.9em;
+            color: var(--text-dim);
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-button {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .icon-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+
+        /* Messages Area */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: messageSlide 0.3s ease-out;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--bg-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .message-author {
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .message-time {
+            font-size: 0.85em;
+            color: var(--text-dim);
+        }
+
+        .message-text {
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .message-text code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+
+        .message-text pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .message-input {
+            width: 100%;
+            background: none;
+            border: none;
+            color: var(--text-light);
+            resize: none;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.5;
+            outline: none;
+            min-height: 20px;
+            max-height: 120px;
+        }
+
+        .input-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, var(--primary) 0%, #29b6f6 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .send-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(79, 195, 247, 0.4);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Thread View */
+        .thread-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.85em;
+            color: var(--text-dim);
+            margin-top: 5px;
+            cursor: pointer;
+        }
+
+        .thread-indicator:hover {
+            color: var(--primary);
+        }
+
+        /* Reactions */
+        .message-reactions {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .reaction {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reaction:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .reaction.active {
+            background: rgba(79, 195, 247, 0.2);
+            border: 1px solid var(--primary);
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 0;
+            font-size: 0.9em;
+            color: var(--text-dim);
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--text-dim);
+            border-radius: 50%;
+            animation: typingDot 1.4s ease-in-out infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingDot {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.5;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Mentions */
+        .mention {
+            color: var(--primary);
+            background: rgba(79, 195, 247, 0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .mention:hover {
+            background: rgba(79, 195, 247, 0.2);
+        }
+
+        /* File Attachments */
+        .attachment {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .attachment:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .attachment-icon {
+            font-size: 24px;
+        }
+
+        .attachment-info {
+            flex: 1;
+        }
+
+        .attachment-name {
+            font-weight: 500;
+        }
+
+        .attachment-size {
+            font-size: 0.85em;
+            color: var(--text-dim);
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>🔗 Enhanced ACC</h1>
+            <div style="font-size: 0.9em; color: var(--text-dim);">Agent Communication Hub</div>
+        </div>
+        
+        <div class="sidebar-tabs">
+            <button class="tab-button active" onclick="showTab('channels')">Channels</button>
+            <button class="tab-button" onclick="showTab('agents')">Agents</button>
+            <button class="tab-button" onclick="showTab('threads')">Threads</button>
+        </div>
+        
+        <div class="tab-content" id="channels-tab">
+            <div class="list-item active" onclick="selectChannel('general')">
+                <div class="list-item-icon">#</div>
+                <div class="list-item-info">
+                    <div class="list-item-name">general</div>
+                    <div class="list-item-status">All agents</div>
+                </div>
+            </div>
+            
+            <div class="list-item" onclick="selectChannel('engineering')">
+                <div class="list-item-icon">#</div>
+                <div class="list-item-info">
+                    <div class="list-item-name">engineering</div>
+                    <div class="list-item-status">Tech discussions</div>
+                </div>
+            </div>
+            
+            <div class="list-item" onclick="selectChannel('executive')">
+                <div class="list-item-icon">🔒</div>
+                <div class="list-item-info">
+                    <div class="list-item-name">executive</div>
+                    <div class="list-item-status">Leadership only</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="agents-tab" style="display: none;">
+            <!-- Agents will be loaded dynamically -->
+        </div>
+        
+        <div class="tab-content" id="threads-tab" style="display: none;">
+            <!-- Active threads will be shown here -->
+        </div>
+    </div>
+    
+    <div class="main-area">
+        <div class="chat-header">
+            <div>
+                <div class="chat-title" id="chat-title">#general</div>
+                <div class="chat-subtitle" id="chat-subtitle">All agents can participate</div>
+            </div>
+            <div class="chat-actions">
+                <button class="icon-button" title="Search">🔍</button>
+                <button class="icon-button" title="Info">ℹ️</button>
+                <button class="icon-button" title="Settings">⚙️</button>
+            </div>
+        </div>
+        
+        <div class="messages-container" id="messages">
+            <!-- Messages will be loaded here -->
+        </div>
+        
+        <div class="input-area">
+            <div class="typing-indicator" id="typing-indicator" style="display: none;">
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+                <span id="typing-text">Someone is typing...</span>
+            </div>
+            
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <textarea
+                        class="message-input"
+                        id="message-input"
+                        placeholder="Type a message..."
+                        rows="1"
+                    ></textarea>
+                    <div class="input-actions">
+                        <button class="icon-button" title="Attach file">📎</button>
+                        <button class="icon-button" title="Emoji">😊</button>
+                        <button class="icon-button" title="Voice message">🎤</button>
+                    </div>
+                </div>
+                <button class="send-button" id="send-button" onclick="sendMessage()">
+                    Send
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let currentChannel = 'general';
+        let currentAgent = null;
+        let connectionId = null;
+        let typingTimer = null;
+        let isTyping = false;
+        let agents = {};
+        let channels = {};
+
+        // Initialize WebSocket connection
+        function initWebSocket() {
+            const wsUrl = `ws://${window.location.host}/ws`;
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                console.log('WebSocket connected');
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleWebSocketMessage(data);
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+
+            ws.onclose = () => {
+                console.log('WebSocket disconnected');
+                setTimeout(initWebSocket, 3000);
+            };
+        }
+
+        function handleWebSocketMessage(data) {
+            switch (data.type) {
+                case 'connection':
+                    connectionId = data.connection_id;
+                    // Authenticate if we have a stored agent identity
+                    const agentName = localStorage.getItem('agent_name');
+                    if (agentName) {
+                        ws.send(JSON.stringify({
+                            type: 'auth',
+                            agent_name: agentName
+                        }));
+                    }
+                    break;
+
+                case 'message':
+                    displayMessage(data.data);
+                    break;
+
+                case 'presence_update':
+                    updateAgentPresence(data.agent, data.status);
+                    break;
+
+                case 'typing':
+                    showTypingIndicator(data.agent);
+                    break;
+
+                case 'auth_success':
+                    console.log('Authenticated as:', data.agent_name);
+                    break;
+            }
+        }
+
+        function displayMessage(message) {
+            const messagesContainer = document.getElementById('messages');
+            const messageEl = createMessageElement(message);
+            messagesContainer.appendChild(messageEl);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function createMessageElement(message) {
+            const div = document.createElement('div');
+            div.className = 'message';
+            div.innerHTML = `
+                <div class="message-avatar">${getAgentInitials(message.from_agent)}</div>
+                <div class="message-content">
+                    <div class="message-header">
+                        <span class="message-author">${message.from_agent}</span>
+                        <span class="message-time">${formatTime(message.timestamp)}</span>
+                    </div>
+                    <div class="message-text">${formatMessageContent(message.content)}</div>
+                    ${message.attachments?.length ? createAttachmentsHTML(message.attachments) : ''}
+                    ${message.reactions ? createReactionsHTML(message.reactions) : ''}
+                </div>
+            `;
+            return div;
+        }
+
+        function getAgentInitials(agentName) {
+            return agentName.split('_').map(word => word[0]).join('').toUpperCase().slice(0, 2);
+        }
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            if (diffMins < 1) return 'just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
+            
+            return date.toLocaleDateString();
+        }
+
+        function formatMessageContent(content) {
+            if (typeof content === 'string') {
+                return escapeHtml(content);
+            }
+            return escapeHtml(content.text || JSON.stringify(content));
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function createAttachmentsHTML(attachments) {
+            return attachments.map(att => `
+                <div class="attachment">
+                    <div class="attachment-icon">📄</div>
+                    <div class="attachment-info">
+                        <div class="attachment-name">${att.name}</div>
+                        <div class="attachment-size">${formatFileSize(att.size)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function createReactionsHTML(reactions) {
+            return Object.entries(reactions).map(([emoji, users]) => `
+                <span class="reaction ${users.includes(currentAgent) ? 'active' : ''}" onclick="toggleReaction('${emoji}')">
+                    ${emoji} ${users.length}
+                </span>
+            `).join('');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const content = input.value.trim();
+            
+            if (!content) return;
+            
+            console.log('Sending message - currentAgent:', currentAgent, 'currentChannel:', currentChannel);
+            
+            // Determine if this is a DM or channel message
+            const message = currentAgent ? {
+                to_agent: currentAgent,
+                content: content,
+                format: 'text'
+            } : {
+                channel: currentChannel,
+                content: content,
+                format: 'text'
+            };
+            
+            console.log('Message payload:', message);
+            
+            // Send via API
+            try {
+                const response = await fetch('/api/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(message)
+                });
+                
+                const responseData = await response.json();
+                console.log('Response:', response.status, responseData);
+                
+                if (response.ok) {
+                    input.value = '';
+                    input.style.height = 'auto';
+                    
+                    // Show the message was sent (since we might not have WebSocket echo)
+                    const tempMessage = {
+                        id: responseData.message_id,
+                        from_agent: 'user',
+                        to_agent: currentAgent,
+                        content: {text: content},
+                        timestamp: new Date().toISOString()
+                    };
+                    displayMessage(tempMessage);
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Failed to send message. Check console for details.');
+            }
+        }
+
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // Show selected tab
+            document.getElementById(`${tabName}-tab`).style.display = 'block';
+            
+            // Update active button
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Load data if needed
+            if (tabName === 'agents') {
+                loadAgents();
+            }
+        }
+
+        async function loadAgents() {
+            try {
+                const response = await fetch('/api/agents');
+                const agentsList = await response.json();
+                
+                const agentsTab = document.getElementById('agents-tab');
+                agentsTab.innerHTML = agentsList.map(agent => `
+                    <div class="list-item" onclick="selectAgent('${agent.name}')">
+                        <div class="presence-indicator ${agent.status}"></div>
+                        <div class="list-item-icon">${getAgentInitials(agent.name)}</div>
+                        <div class="list-item-info">
+                            <div class="list-item-name">${agent.name}</div>
+                            <div class="list-item-status">${agent.role}</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Store agents data
+                agentsList.forEach(agent => {
+                    agents[agent.name] = agent;
+                });
+            } catch (error) {
+                console.error('Error loading agents:', error);
+            }
+        }
+
+        async function loadMessages() {
+            try {
+                const params = new URLSearchParams({
+                    limit: 50
+                });
+                
+                // Add appropriate filter based on current mode
+                if (currentAgent) {
+                    params.append('agent', currentAgent);
+                } else if (currentChannel) {
+                    params.append('channel', currentChannel);
+                }
+                
+                const response = await fetch(`/api/messages?${params}`);
+                const messages = await response.json();
+                
+                const messagesContainer = document.getElementById('messages');
+                messagesContainer.innerHTML = '';
+                
+                messages.forEach(msg => displayMessage(msg));
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        }
+
+        function selectChannel(channelId) {
+            currentChannel = channelId;
+            document.getElementById('chat-title').textContent = `#${channelId}`;
+            
+            // Update active state
+            document.querySelectorAll('.list-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // Load messages for this channel
+            loadMessages();
+        }
+
+        function selectAgent(agentName) {
+            // Start direct message with agent
+            currentAgent = agentName;
+            currentChannel = null;  // Clear channel selection
+            
+            document.getElementById('chat-title').textContent = agentName;
+            document.getElementById('chat-subtitle').textContent = agents[agentName]?.role || 'Direct Message';
+            
+            // Update active state
+            document.querySelectorAll('.list-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Find and highlight the selected agent
+            const agentElements = document.querySelectorAll('.list-item');
+            agentElements.forEach(el => {
+                if (el.textContent.includes(agentName)) {
+                    el.classList.add('active');
+                }
+            });
+            
+            // Clear messages and load agent conversation
+            const messagesContainer = document.getElementById('messages');
+            messagesContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">Start a conversation with ' + agentName + '</div>';
+            
+            // Load previous messages with this agent
+            loadMessages();
+            
+            // Focus on input
+            document.getElementById('message-input').focus();
+        }
+
+        function showTypingIndicator(agentName) {
+            const indicator = document.getElementById('typing-indicator');
+            const text = document.getElementById('typing-text');
+            
+            text.textContent = `${agentName} is typing...`;
+            indicator.style.display = 'flex';
+            
+            // Hide after 3 seconds
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => {
+                indicator.style.display = 'none';
+            }, 3000);
+        }
+
+        function updateAgentPresence(agentName, status) {
+            // Update in agents list
+            if (agents[agentName]) {
+                agents[agentName].status = status;
+            }
+            
+            // Update UI if visible
+            const agentEls = document.querySelectorAll(`[data-agent="${agentName}"]`);
+            agentEls.forEach(el => {
+                const indicator = el.querySelector('.presence-indicator');
+                if (indicator) {
+                    indicator.className = `presence-indicator ${status}`;
+                }
+            });
+        }
+
+        // Handle input typing
+        document.getElementById('message-input').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            
+            // Send typing indicator
+            if (!isTyping && ws && ws.readyState === WebSocket.OPEN) {
+                isTyping = true;
+                ws.send(JSON.stringify({
+                    type: 'typing',
+                    channel: currentChannel,
+                    agent: currentAgent || 'user'
+                }));
+                
+                setTimeout(() => {
+                    isTyping = false;
+                }, 2000);
+            }
+        });
+
+        // Handle enter key
+        document.getElementById('message-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            initWebSocket();
+            loadMessages();
+            loadAgents();
+        });
+    </script>
+</body>
+</html>
+        """
+
+
+# Create FastAPI app instance
+acc = EnhancedAgentCommunicationCenter()
+app = acc.app
+
+
+async def startup_event():
+    """Initialize ACC on startup"""
+    await acc.initialize()
+    print("🔗 Enhanced ACC initialized with database and message bus integration")
+
+
+async def shutdown_event():
+    """Cleanup on shutdown"""
+    if acc.db_pool:
+        await acc.db_pool.close()
+    await message_bus.unregister_agent("acc_system")
+
+
+app.add_event_handler("startup", startup_event)
+app.add_event_handler("shutdown", shutdown_event)
+
+
+def main():
+    """Run the enhanced Agent Communication Center"""
+    print("=" * 60)
+    print("🔗 Enhanced BoarderframeOS Agent Communication Center")
+    print("=" * 60)
+    print("✨ Features:")
+    print("  - Real-time WebSocket communication")
+    print("  - Persistent message history")
+    print("  - Agent-to-agent messaging")
+    print("  - Channels and threads")
+    print("  - Message bus integration")
+    print("  - Rich media support")
+    print("\n🌐 Access at: http://localhost:8890")
+    print("=" * 60)
+    
+    uvicorn.run(app, host="0.0.0.0", port=8890, log_level="info")
+
+
+if __name__ == "__main__":
+    main()

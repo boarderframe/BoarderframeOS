@@ -1,0 +1,60 @@
+{
+  "timestamp": "2025-06-24T18:24:59.934006",
+  "tests": {
+    "initialization": {
+      "success": true
+    },
+    "basic_messaging": {
+      "success": true,
+      "details": {
+        "message_delivery": "success"
+      }
+    },
+    "priority_handling": {
+      "success": true,
+      "details": {
+        "priority_order": "not_enforced"
+      }
+    },
+    "correlation_tracking": {
+      "success": false,
+      "details": {
+        "error": "'MessageBus' object has no attribute 'publish'"
+      }
+    },
+    "topic_routing": {
+      "success": false,
+      "details": {
+        "topic_routing": "tested"
+      }
+    },
+    "error_handling": {
+      "success": true,
+      "details": {
+        "errors_handled": 1,
+        "retry_success": false
+      }
+    },
+    "database_storage": {
+      "success": true,
+      "message_count": 1
+    }
+  },
+  "performance": {
+    "messages_sent": 1000,
+    "messages_received": 1000,
+    "duration_seconds": 1.023,
+    "throughput_per_second": 978.0,
+    "average_latency_ms": 1.023,
+    "success_rate": 100.0
+  },
+  "summary": {
+    "total_tests": 7,
+    "passed": 5,
+    "failed": 2,
+    "success_rate": 71.4,
+    "total_successes": 8,
+    "total_warnings": 3,
+    "total_errors": 4
+  }
+}

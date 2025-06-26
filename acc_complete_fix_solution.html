@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACC Complete Fix Solution</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .status-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .problem-section {
+            background: rgba(248, 113, 113, 0.1);
+            border: 2px solid #f87171;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .solution-section {
+            background: rgba(74, 222, 128, 0.1);
+            border: 2px solid #4ade80;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .code-block {
+            background: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .code-label {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #667eea;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .flow-diagram {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 40px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .flow-step {
+            display: inline-block;
+            background: linear-gradient(135deg, #2a2a3e 0%, #3a3a4e 100%);
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        
+        .flow-arrow {
+            display: inline-block;
+            margin: 0 15px;
+            color: #667eea;
+            font-size: 2em;
+        }
+        
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            margin: 10px;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+        
+        .checklist {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .checklist li {
+            margin: 15px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        
+        .checklist li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4ade80;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .warning {
+            background: rgba(251, 191, 36, 0.1);
+            border: 2px solid #fbbf24;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .info { color: #60a5fa; }
+        .warning-text { color: #fbbf24; }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .live-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #4ade80;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 ACC Complete Fix Solution</h1>
+            <p style="font-size: 1.3em; margin-top: 10px;">Enable Real-Time Chat with Solomon & David</p>
+        </div>
+        
+        <div class="problem-section">
+            <h2 style="margin-bottom: 20px;">🔴 The Problem</h2>
+            <p style="font-size: 1.1em; line-height: 1.6;">
+                Agent responses are being sent but not appearing in the ACC UI. From the logs:
+            </p>
+            <ul style="margin: 20px 0; margin-left: 30px;">
+                <li>✅ Solomon receives messages: <code>"📥 Received ACC message"</code></li>
+                <li>✅ Solomon sends responses: <code>"📤 Sent response via ACC"</code></li>
+                <li>❌ Responses don't appear in the UI chat window</li>
+            </ul>
+            <p>The issue: Responses are sent via HTTP API but not broadcast to WebSocket clients.</p>
+        </div>
+        
+        <div class="flow-diagram">
+            <h3 style="margin-bottom: 30px;">Message Flow Architecture</h3>
+            <div>
+                <div class="flow-step">User Types Message</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">ACC WebSocket</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">Message Bus</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">Agent Process</div>
+            </div>
+            <div style="margin-top: 20px;">
+                <div class="flow-step">UI Shows Response</div>
+                <span class="flow-arrow">←</span>
+                <div class="flow-step error">❌ WebSocket Broadcast</div>
+                <span class="flow-arrow">←</span>
+                <div class="flow-step">ACC HTTP API</div>
+                <span class="flow-arrow">←</span>
+                <div class="flow-step">Agent Response</div>
+            </div>
+        </div>
+        
+        <div class="solution-section">
+            <h2 style="margin-bottom: 20px;">✅ The Solution</h2>
+            <p style="font-size: 1.1em; line-height: 1.6; margin-bottom: 20px;">
+                The ACC already has the code to broadcast responses, but agents must be running 
+                with ACC integration (<code>solomon_acc.py</code> not <code>solomon.py</code>).
+            </p>
+            
+            <div class="status-grid">
+                <div class="status-card">
+                    <h3>🔧 Step 1: Stop Everything</h3>
+                    <div class="code-block">
+                        <span class="code-label">Terminal</span>
+                        <pre># Stop all ACC and agent processes
+pkill -f "agent_communication_center"
+pkill -f "solomon"
+pkill -f "david"</pre>
+                    </div>
+                </div>
+                
+                <div class="status-card">
+                    <h3>🌐 Step 2: Start ACC</h3>
+                    <div class="code-block">
+                        <span class="code-label">Terminal</span>
+                        <pre># Start the ACC server
+python agent_communication_center_enhanced.py</pre>
+                    </div>
+                    <p style="margin-top: 10px;">Wait for: "Uvicorn running on http://0.0.0.0:8890"</p>
+                </div>
+                
+                <div class="status-card">
+                    <h3>🤖 Step 3: Start Agents with ACC</h3>
+                    <div class="code-block">
+                        <span class="code-label">Terminal (new tab)</span>
+                        <pre># Start Solomon with ACC integration
+python agents/solomon/solomon_acc.py</pre>
+                    </div>
+                    <div class="code-block">
+                        <span class="code-label">Terminal (new tab)</span>
+                        <pre># Start David with ACC integration
+python agents/david/david_acc.py</pre>
+                    </div>
+                </div>
+                
+                <div class="status-card">
+                    <h3>💬 Step 4: Test Chat</h3>
+                    <ol style="margin-left: 20px; margin-top: 10px;">
+                        <li>Open <a href="http://localhost:8890" target="_blank">http://localhost:8890</a></li>
+                        <li>Click on Solomon or David</li>
+                        <li>Type a message and press Enter</li>
+                        <li>See the response appear!</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <div class="checklist">
+            <h3 style="margin-bottom: 20px;">✅ Verification Checklist</h3>
+            <ul style="list-style: none;">
+                <li><span class="live-indicator"></span> ACC running on port 8890</li>
+                <li><span class="live-indicator"></span> Solomon shows "Connected to ACC via WebSocket"</li>
+                <li><span class="live-indicator"></span> David shows "Connected to ACC via WebSocket"</li>
+                <li><span class="live-indicator"></span> ACC UI shows agents as "online"</li>
+                <li><span class="live-indicator"></span> Messages appear in chat when sent</li>
+            </ul>
+        </div>
+        
+        <div class="warning">
+            <h3 style="margin-bottom: 15px;">⚠️ Common Issues</h3>
+            <ul style="margin-left: 30px;">
+                <li><strong>Agents offline:</strong> Make sure to use <code>solomon_acc.py</code> NOT <code>solomon.py</code></li>
+                <li><strong>No responses:</strong> Check ACC logs for "Broadcasting agent response" messages</li>
+                <li><strong>Connection errors:</strong> Ensure ACC is fully started before launching agents</li>
+                <li><strong>Port conflicts:</strong> Make sure port 8890 is free</li>
+            </ul>
+        </div>
+        
+        <div style="text-align: center; margin-top: 40px;">
+            <button class="button" onclick="testSystem()">🧪 Test System</button>
+            <button class="button" onclick="showLogs()">📋 View Logs</button>
+            <button class="button" onclick="monitorFlow()">🔍 Monitor Messages</button>
+        </div>
+        
+        <div id="output" style="margin-top: 30px;"></div>
+    </div>
+    
+    <script>
+        async function testSystem() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<div class="code-block"><pre>Testing system...</pre></div>';
+            
+            try {
+                // Test ACC health
+                const health = await fetch('http://localhost:8890/health');
+                if (health.ok) {
+                    const data = await health.json();
+                    output.innerHTML += `<div class="success">✅ ACC is running - WebSocket connections: ${data.websocket_connections}</div>`;
+                    
+                    // Test agents
+                    const agents = await fetch('http://localhost:8890/api/agents');
+                    const agentData = await agents.json();
+                    const online = agentData.filter(a => a.status === 'online');
+                    output.innerHTML += `<div class="success">✅ Online agents: ${online.map(a => a.name).join(', ')}</div>`;
+                    
+                    if (online.length === 0) {
+                        output.innerHTML += '<div class="error">❌ No agents online! Start them with solomon_acc.py and david_acc.py</div>';
+                    }
+                } else {
+                    output.innerHTML = '<div class="error">❌ ACC is not running! Start it first.</div>';
+                }
+            } catch (e) {
+                output.innerHTML = '<div class="error">❌ Cannot connect to ACC. Make sure it\'s running on port 8890</div>';
+            }
+        }
+        
+        function showLogs() {
+            const output = document.getElementById('output');
+            output.innerHTML = `
+                <div class="code-block">
+                    <span class="code-label">Log Locations</span>
+                    <pre>ACC Logs:
+tail -f logs/acc_startup.log
+
+Solomon Logs:
+tail -f logs/solomon_acc_live.log
+
+David Logs:
+tail -f logs/david_acc_live.log
+
+Agent Logs Directory:
+ls -la logs/agents/</pre>
+                </div>
+            `;
+        }
+        
+        function monitorFlow() {
+            const output = document.getElementById('output');
+            output.innerHTML = `
+                <div class="code-block">
+                    <span class="code-label">Monitor Message Flow</span>
+                    <pre># Run this to see real-time message flow:
+python monitor_acc_flow.py
+
+# Or watch ACC logs for:
+grep -E "(Broadcasting|Received|Sent)" logs/acc_startup.log</pre>
+                </div>
+            `;
+        }
+        
+        // Auto-test on load
+        window.onload = () => {
+            setTimeout(testSystem, 1000);
+        };
+    </script>
+</body>
+</html>

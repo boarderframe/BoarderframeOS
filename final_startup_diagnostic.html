@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BoarderframeOS - Final Startup Diagnostic</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #141e30 0%, #243b55 50%, #141e30 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 40px auto;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            font-size: 3.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+        .status-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .status-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-fixed {
+            background: #68d391;
+            color: white;
+        }
+        .status-running {
+            background: #4299e1;
+            color: white;
+        }
+        .status-warning {
+            background: #f6ad55;
+            color: white;
+        }
+        .fix-summary {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            border-left: 5px solid #667eea;
+        }
+        .fix-list {
+            list-style: none;
+            padding: 0;
+        }
+        .fix-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+        }
+        .fix-list li:last-child {
+            border-bottom: none;
+        }
+        .fix-icon {
+            width: 24px;
+            height: 24px;
+            background: #68d391;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        .command-box {
+            background: #2d3748;
+            color: #f7fafc;
+            padding: 25px;
+            border-radius: 10px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            margin: 20px 0;
+            position: relative;
+            overflow-x: auto;
+        }
+        .copy-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+        .copy-button:hover {
+            background: #5a67d8;
+        }
+        .remaining-issues {
+            background: #fff5f5;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 30px 0;
+            border-left: 5px solid #fc8181;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 40px 0;
+        }
+        .action-button {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-size: 1.1em;
+        }
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        .diagnostic-result {
+            background: #f0fff4;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #68d391;
+        }
+        .error-detail {
+            background: #2d3748;
+            color: #fc8181;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9em;
+            margin: 10px 0;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            color: #667eea;
+            text-decoration: underline dotted;
+        }
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2d3748;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            white-space: nowrap;
+            font-size: 0.85em;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 BoarderframeOS Final Startup Diagnostic</h1>
+        
+        <p style="text-align: center; font-size: 1.3em; color: #4a5568; margin: 20px 0;">
+            Comprehensive summary of all fixes applied and current system status
+        </p>
+
+        <div class="fix-summary">
+            <h2>✅ Issues Fixed During Session</h2>
+            <ul class="fix-list">
+                <li>
+                    <span class="fix-icon">✓</span>
+                    <div>
+                        <strong>Kill Process Script:</strong> Protected VS Code, Claude, and Docker from being killed
+                        <br><small style="color: #718096;">Modified kill_all_processes.py with exclusions</small>
+                    </div>
+                </li>
+                <li>
+                    <span class="fix-icon">✓</span>
+                    <div>
+                        <strong>Virtual Environment Auto-Detection:</strong> startup.py now auto-activates venv
+                        <br><small style="color: #718096;">No need for wrapper scripts or manual activation</small>
+                    </div>
+                </li>
+                <li>
+                    <span class="fix-icon">✓</span>
+                    <div>
+                        <strong>OpenTelemetry Dependencies:</strong> Installed all missing instrumentation packages
+                        <br><small style="color: #718096;">jaeger, prometheus, httpx, psycopg2, logging</small>
+                    </div>
+                </li>
+                <li>
+                    <span class="fix-icon">✓</span>
+                    <div>
+                        <strong>Celery Workers:</strong> Fixed manage_workers.py to find celery in venv
+                        <br><small style="color: #718096;">Added get_celery_path() function</small>
+                    </div>
+                </li>
+                <li>
+                    <span class="fix-icon">✓</span>
+                    <div>
+                        <strong>Multi-tenancy UUID Types:</strong> Fixed UUID/text type mismatches in RLS policies
+                        <br><small style="color: #718096;">Added ::uuid casts to current_setting() calls</small>
+                    </div>
+                </li>
+                <li>
+                    <span class="fix-icon">✓</span>
+                    <div>
+                        <strong>Agent Cortex Status:</strong> Fixed service key consistency (agent_cortex_ui)
+                        <br><small style="color: #718096;">Now shows correct status in Corporate HQ</small>
+                    </div>
+                </li>
+                <li>
+                    <span class="fix-icon">✓</span>
+                    <div>
+                        <strong>Agent Registry:</strong> Added Solomon and David to PostgreSQL database
+                        <br><small style="color: #718096;">Orchestrator now loads 2 agents successfully</small>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <h2 style="text-align: center; margin: 40px 0;">📊 Current System Status</h2>
+
+        <div class="status-grid">
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">🐳 Docker Infrastructure</span>
+                    <span class="status-badge status-running">RUNNING</span>
+                </div>
+                <p>PostgreSQL (port 5434) and Redis (port 6379) containers are operational</p>
+            </div>
+
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">📡 Message Bus</span>
+                    <span class="status-badge status-running">RUNNING</span>
+                </div>
+                <p>Core communication system for agent messaging is active</p>
+            </div>
+
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">🔐 Secret Management</span>
+                    <span class="status-badge status-running">RUNNING</span>
+                </div>
+                <p>Fernet encryption with 5 security categories configured</p>
+            </div>
+
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">💰 Cost Management</span>
+                    <span class="status-badge status-running">RUNNING</span>
+                </div>
+                <p>API cost optimization tracking 3 models with smart features</p>
+            </div>
+
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">🎯 LLM Policy Engine</span>
+                    <span class="status-badge status-running">RUNNING</span>
+                </div>
+                <p>7 policies loaded with 4 model tiers and caching enabled</p>
+            </div>
+
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">🎭 Agent Orchestrator</span>
+                    <span class="status-badge status-running">RUNNING</span>
+                </div>
+                <p>Managing 2 agents (Solomon, David) in development mode</p>
+            </div>
+
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">📊 HQ Metrics Layer</span>
+                    <span class="status-badge status-running">RUNNING</span>
+                </div>
+                <p>Real-time metrics calculation with cache warming active</p>
+            </div>
+
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">🔄 Multi-tenancy</span>
+                    <span class="status-badge status-fixed">FIXED</span>
+                </div>
+                <p>Row-level security enabled with resource quotas</p>
+            </div>
+
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">🚀 Hot Reload</span>
+                    <span class="status-badge status-running">RUNNING</span>
+                </div>
+                <p>Blue-green deployment with zero downtime enabled</p>
+            </div>
+
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">📋 Task Queue</span>
+                    <span class="status-badge status-running">RUNNING</span>
+                </div>
+                <p>2 Celery workers processing Redis-backed tasks</p>
+            </div>
+
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">🏛️ Corporate HQ</span>
+                    <span class="status-badge status-running">RUNNING</span>
+                </div>
+                <p>Web UI available at <a href="http://localhost:8888" target="_blank">http://localhost:8888</a></p>
+            </div>
+
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">🤖 MCP Servers</span>
+                    <span class="status-badge status-running">10/10</span>
+                </div>
+                <p>All Model Context Protocol servers operational</p>
+            </div>
+        </div>
+
+        <div class="remaining-issues">
+            <h3>⚠️ Remaining Non-Critical Issues</h3>
+            <p>These issues don't prevent the system from running:</p>
+            <ul>
+                <li><strong>Missing agents in registry:</strong> Adam, Eve, and Bezalel need to be added to PostgreSQL</li>
+                <li><strong>OpenTelemetry warnings:</strong> Some instrumentation modules may still be missing</li>
+            </ul>
+        </div>
+
+        <div class="command-box">
+            <button class="copy-button" onclick="copyCommand()">📋 Copy</button>
+            <div id="command">python startup.py</div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="action-button" onclick="runStartup()">
+                🚀 Run Startup
+            </button>
+            <button class="action-button" onclick="openHQ()">
+                🏢 Open Corporate HQ
+            </button>
+            <button class="action-button" onclick="checkHealth()">
+                🩺 Check System Health
+            </button>
+        </div>
+
+        <div class="diagnostic-result">
+            <h3>📈 System Improvements</h3>
+            <p><strong>Before fixes:</strong></p>
+            <ul>
+                <li>❌ Startup required manual venv activation</li>
+                <li>❌ Multiple missing dependencies</li>
+                <li>❌ Agent Cortex showing offline</li>
+                <li>❌ No agents in orchestrator</li>
+                <li>❌ Multi-tenancy failing</li>
+            </ul>
+            <p><strong>After fixes:</strong></p>
+            <ul>
+                <li>✅ Simple "python startup.py" works</li>
+                <li>✅ All critical dependencies installed</li>
+                <li>✅ Agent Cortex status correct</li>
+                <li>✅ 2 agents loaded in orchestrator</li>
+                <li>✅ Multi-tenancy operational</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; padding: 20px; background: #f7fafc; border-radius: 10px;">
+            <h3>🎯 Quick Actions</h3>
+            <p>
+                <strong>Add missing agents:</strong>
+                <span class="tooltip" data-tooltip="Run the script to add Adam, Eve, and Bezalel to database">
+                    python scripts/database/add_missing_agents.py
+                </span>
+            </p>
+            <p>
+                <strong>View logs:</strong>
+                <span class="tooltip" data-tooltip="Check startup logs for any issues">
+                    tail -f /tmp/corp_hq*.log
+                </span>
+            </p>
+            <p>
+                <strong>Manual health check:</strong>
+                <span class="tooltip" data-tooltip="Run comprehensive health check">
+                    python system_status.py
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function copyCommand() {
+            const command = document.getElementById('command').textContent;
+            navigator.clipboard.writeText(command).then(() => {
+                const button = document.querySelector('.copy-button');
+                button.textContent = '✅ Copied!';
+                setTimeout(() => {
+                    button.textContent = '📋 Copy';
+                }, 2000);
+            });
+        }
+
+        function runStartup() {
+            alert('To run startup:\n\n1. Open Terminal\n2. Navigate to BoarderframeOS directory\n3. Run: python startup.py\n\nThe system will auto-activate the virtual environment!');
+        }
+
+        function openHQ() {
+            window.open('http://localhost:8888', '_blank');
+        }
+
+        function checkHealth() {
+            alert('To check system health:\n\n1. Run: python system_status.py\n2. Or visit: http://localhost:8888/api/health\n3. Check the Metrics tab in Corporate HQ');
+        }
+    </script>
+</body>
+</html>

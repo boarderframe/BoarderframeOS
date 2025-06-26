@@ -1,0 +1,141 @@
+{
+  "metrics": {
+    "system": {
+      "cpu_usage": {
+        "type": "gauge",
+        "help": "CPU usage percentage",
+        "labels": [
+          "host"
+        ]
+      },
+      "memory_usage": {
+        "type": "gauge",
+        "help": "Memory usage percentage",
+        "labels": [
+          "host"
+        ]
+      },
+      "disk_usage": {
+        "type": "gauge",
+        "help": "Disk usage percentage",
+        "labels": [
+          "host",
+          "mount"
+        ]
+      }
+    },
+    "agents": {
+      "agent_response_time": {
+        "type": "histogram",
+        "help": "Agent response time in milliseconds",
+        "labels": [
+          "agent_name",
+          "method"
+        ],
+        "buckets": [
+          10,
+          50,
+          100,
+          500,
+          1000,
+          5000
+        ]
+      },
+      "agent_tasks_total": {
+        "type": "counter",
+        "help": "Total number of tasks processed by agent",
+        "labels": [
+          "agent_name",
+          "status"
+        ]
+      },
+      "active_agents": {
+        "type": "gauge",
+        "help": "Number of active agents",
+        "labels": [
+          "department"
+        ]
+      }
+    },
+    "api": {
+      "http_requests_total": {
+        "type": "counter",
+        "help": "Total HTTP requests",
+        "labels": [
+          "method",
+          "endpoint",
+          "status"
+        ]
+      },
+      "http_request_duration": {
+        "type": "histogram",
+        "help": "HTTP request duration in seconds",
+        "labels": [
+          "method",
+          "endpoint"
+        ],
+        "buckets": [
+          0.005,
+          0.01,
+          0.025,
+          0.05,
+          0.1,
+          0.25,
+          0.5,
+          1.0,
+          2.5,
+          5.0
+        ]
+      }
+    },
+    "database": {
+      "db_connections": {
+        "type": "gauge",
+        "help": "Number of database connections",
+        "labels": [
+          "database",
+          "state"
+        ]
+      },
+      "db_query_duration": {
+        "type": "histogram",
+        "help": "Database query duration in seconds",
+        "labels": [
+          "database",
+          "query_type"
+        ],
+        "buckets": [
+          0.001,
+          0.005,
+          0.01,
+          0.05,
+          0.1,
+          0.5,
+          1.0
+        ]
+      }
+    },
+    "message_bus": {
+      "messages_processed_total": {
+        "type": "counter",
+        "help": "Total messages processed",
+        "labels": [
+          "priority",
+          "status"
+        ]
+      },
+      "message_queue_size": {
+        "type": "gauge",
+        "help": "Current message queue size",
+        "labels": [
+          "priority"
+        ]
+      }
+    }
+  },
+  "export": {
+    "format": "prometheus",
+    "endpoint": "/metrics",
+    "port": 9090
+  }
+}

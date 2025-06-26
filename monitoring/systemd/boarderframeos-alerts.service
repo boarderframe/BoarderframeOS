@@ -1,0 +1,14 @@
+[Unit]
+Description=BoarderframeOS Alert Manager
+After=network.target
+
+[Service]
+Type=simple
+User=cosburn
+WorkingDirectory=/Users/cosburn/BoarderframeOS
+ExecStart=/opt/homebrew/opt/python@3.13/bin/python3.13 /Users/cosburn/BoarderframeOS/monitoring/alert_manager.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

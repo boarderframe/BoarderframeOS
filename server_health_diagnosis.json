@@ -1,0 +1,27 @@
+{
+  "issues": [
+    "registry server not running",
+    "agent_cortex not running",
+    "SQLite server still in configuration but not needed"
+  ],
+  "recommendations": [
+    "Remove SQLite server from configuration",
+    "Update MCP servers to use PostgreSQL on port 8010",
+    "Start Agent Cortex if needed",
+    "Fix health calculation logic"
+  ],
+  "running_servers": [
+    "filesystem (port 8001)",
+    "database_postgres (port 8010)",
+    "analytics (port 8007)",
+    "payment (port 8006)",
+    "customer (port 8008)",
+    "screenshot (port 8011)",
+    "llm (port 8005)",
+    "database_sqlite (port 8004)",
+    "corporate_headquarters (port 8888)",
+    "agent_communication_center (port 8890)"
+  ],
+  "timestamp": 1750218055.164288,
+  "total_configured": 10
+}

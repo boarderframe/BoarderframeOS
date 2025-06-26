@@ -9,15 +9,16 @@ import json
 import logging
 import subprocess
 import uuid
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
 import httpx
 
-from ...core.base_agent import AgentConfig, AgentState, BaseAgent
-from ...core.llm_client import CLAUDE_OPUS_CONFIG, LLMClient
-from ...core.message_bus import broadcast_status, send_task_request
+from core.base_agent import AgentConfig, AgentState, BaseAgent
+from core.llm_client import CLAUDE_OPUS_CONFIG, LLMClient
+from core.message_bus import broadcast_status, send_task_request
 
 logger = logging.getLogger("bezalel")
 

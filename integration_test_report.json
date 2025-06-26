@@ -1,0 +1,83 @@
+{
+  "timestamp": "2025-06-24T17:47:33.759038",
+  "scenarios": {
+    "Agent Message Flow": {
+      "success": false,
+      "steps": {
+        "message_sent": false,
+        "message_persisted": false,
+        "agent_response": false
+      },
+      "duration_ms": 3007.88
+    },
+    "Agent Task Execution": {
+      "success": false,
+      "steps": {
+        "task_submitted": false
+      },
+      "execution_time_ms": null
+    },
+    "Database Persistence": {
+      "success": true,
+      "steps": {
+        "sqlite_tables": [
+          "agents",
+          "agent_memories",
+          "agent_interactions",
+          "metrics",
+          "evolution_log",
+          "tasks",
+          "revenue_transactions",
+          "customers",
+          "api_usage"
+        ],
+        "sqlite_data": true
+      },
+      "databases_tested": [
+        "SQLite"
+      ]
+    },
+    "UI Real-time Updates": {
+      "success": false,
+      "steps": {},
+      "update_latency_ms": null
+    },
+    "Multi-Agent Coordination": {
+      "success": false,
+      "steps": {},
+      "agents_tested": []
+    },
+    "Cost Management Integration": {
+      "success": false,
+      "steps": {
+        "module_loaded": false
+      },
+      "cost_savings": null
+    },
+    "MCP Server Integration": {
+      "success": true,
+      "steps": {
+        "registry_accessible": false,
+        "analytics_accessible": false,
+        "database_server_accessible": false
+      },
+      "servers_tested": []
+    }
+  },
+  "workflows": {},
+  "integration_points": {},
+  "summary": {
+    "total_scenarios": 7,
+    "scenarios_tested": 7,
+    "scenarios_passed": 2,
+    "scenarios_failed": 5,
+    "success_rate": 28.6,
+    "critical_scenarios_passed": "2/4",
+    "total_integration_steps": 10,
+    "passed_integration_steps": 1,
+    "integration_health_score": 10.0,
+    "total_successes": 6,
+    "total_warnings": 0,
+    "total_errors": 7
+  }
+}

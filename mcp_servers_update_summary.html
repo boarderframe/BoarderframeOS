@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Servers & UI Update Summary - BoarderframeOS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            color: #e0e0e0;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h2 {
+            color: #6366f1;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-complete {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .status-partial {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .status-pending {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .card h3 {
+            color: #8b5cf6;
+            margin-bottom: 0.5rem;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        li:last-child {
+            border-bottom: none;
+        }
+
+        .success { color: #10b981; }
+        .warning { color: #f59e0b; }
+        .error { color: #ef4444; }
+        .info { color: #3b82f6; }
+
+        .code {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.875rem;
+        }
+
+        .actions {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .button-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+        .button-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .button-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .button-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2.5rem;
+            top: 0.5rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #6366f1;
+            border: 2px solid #1a1a1a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 MCP Servers & UI Update Summary</h1>
+
+        <div class="section">
+            <h2>📊 Overall Status</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Server Health</h3>
+                    <ul>
+                        <li class="success">✅ 10/12 servers healthy (83%)</li>
+                        <li class="success">✅ All core infrastructure online</li>
+                        <li class="success">✅ All business services operational</li>
+                        <li class="warning">⚠️ 2 MCP servers not implemented (SQLite, LLM)</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Key Fixes</h3>
+                    <ul>
+                        <li class="success">✅ Agent Cortex now responding on port 8889</li>
+                        <li class="success">✅ Registry server status corrected</li>
+                        <li class="success">✅ Real-time health checks implemented</li>
+                        <li class="success">✅ System status auto-refresh working</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>New Features</h3>
+                    <ul>
+                        <li class="success">✅ Comprehensive server health checker</li>
+                        <li class="success">✅ Dedicated servers monitoring page</li>
+                        <li class="success">✅ Server status refresh API</li>
+                        <li class="success">✅ Agent Cortex health server</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🛠️ Components Created/Updated</h2>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h3>Server Health Checker</h3>
+                    <p><span class="code">utils/server_health_checker.py</span></p>
+                    <p>Comprehensive health monitoring for all 12 BoarderframeOS servers with real-time status updates.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <h3>Agent Cortex Health Server</h3>
+                    <p><span class="code">ui/agent_cortex_health_server.py</span></p>
+                    <p>Lightweight health endpoint for Agent Cortex that starts quickly and provides status without full initialization.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <h3>Server Status Refresh Utility</h3>
+                    <p><span class="code">utils/refresh_server_status.py</span></p>
+                    <p>Automated script to refresh server status, update system_status.json, and notify Corporate HQ.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <h3>Dedicated Servers Page</h3>
+                    <p><span class="code">/servers</span> route in Corporate HQ</p>
+                    <p>Beautiful monitoring page with real-time status, response times, and management actions for all servers.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔧 Technical Details</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Server Categories</h3>
+                    <ul>
+                        <li><strong>Core Infrastructure (4):</strong> Corporate HQ, Agent Cortex, ACC, Registry</li>
+                        <li><strong>MCP Servers (5):</strong> Filesystem, PostgreSQL, SQLite*, LLM*, Screenshot</li>
+                        <li><strong>Business Services (3):</strong> Analytics, Payment, Customer</li>
+                    </ul>
+                    <p style="margin-top: 1rem; font-size: 0.875rem; color: #888;">* Not yet implemented</p>
+                </div>
+
+                <div class="card">
+                    <h3>Health Check Process</h3>
+                    <ol style="list-style: decimal; padding-left: 1.5rem;">
+                        <li>HTTP request to /health endpoint</li>
+                        <li>Timeout: 2 seconds per server</li>
+                        <li>Status: healthy, error, timeout, offline</li>
+                        <li>Updates system_status.json</li>
+                        <li>Notifies metrics layer</li>
+                        <li>Triggers UI refresh</li>
+                    </ol>
+                </div>
+
+                <div class="card">
+                    <h3>API Endpoints</h3>
+                    <ul>
+                        <li><span class="code">GET /servers</span> - Servers monitoring page</li>
+                        <li><span class="code">POST /api/servers/refresh</span> - Refresh server status</li>
+                        <li><span class="code">GET /health</span> - Individual server health</li>
+                        <li><span class="code">POST /api/global/refresh</span> - Global system refresh</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🚦 Current Server Status</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3 class="success">✅ Healthy Servers (10)</h3>
+                    <ul>
+                        <li>Corporate Headquarters (:8888)</li>
+                        <li>Agent Cortex (:8889)</li>
+                        <li>Agent Communication Center (:8890)</li>
+                        <li>Registry Server (:8000)</li>
+                        <li>Filesystem Server (:8001)</li>
+                        <li>PostgreSQL Database (:8010)</li>
+                        <li>Screenshot Server (:8011)</li>
+                        <li>Analytics Server (:8007)</li>
+                        <li>Payment Server (:8006)</li>
+                        <li>Customer Server (:8008)</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3 class="error">❌ Offline/Error Servers (2)</h3>
+                    <ul>
+                        <li>SQLite Database (:8004) - Not implemented</li>
+                        <li>LLM Server (:8005) - Not implemented</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📋 Next Steps</h2>
+            <ul>
+                <li>🔲 Implement SQLite database server (port 8004)</li>
+                <li>🔲 Implement LLM server (port 8005)</li>
+                <li>🔲 Add WebSocket support for real-time updates</li>
+                <li>🔲 Create server start/stop controls</li>
+                <li>🔲 Add server log viewing capability</li>
+                <li>🔲 Implement server performance graphs</li>
+                <li>🔲 Add server configuration management</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Actions</h2>
+            <div class="actions">
+                <a href="http://localhost:8888" class="button button-primary" target="_blank">
+                    Open Corporate HQ
+                </a>
+                <a href="http://localhost:8888/servers" class="button button-primary" target="_blank">
+                    View Servers Page
+                </a>
+                <button class="button button-secondary" onclick="testRefresh()">
+                    Test Server Refresh
+                </button>
+                <button class="button button-secondary" onclick="checkHealth()">
+                    Run Health Check
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testRefresh() {
+            console.log('Testing server refresh...');
+            try {
+                const response = await fetch('http://localhost:8888/api/servers/refresh', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                console.log('Refresh response:', data);
+                alert(`Server refresh ${data.status}: ${data.message}`);
+            } catch (error) {
+                console.error('Refresh error:', error);
+                alert('Error refreshing servers: ' + error.message);
+            }
+        }
+
+        async function checkHealth() {
+            console.log('Running health check...');
+            const servers = [
+                { name: 'Corporate HQ', port: 8888 },
+                { name: 'Agent Cortex', port: 8889 },
+                { name: 'Registry', port: 8000 },
+                { name: 'Filesystem', port: 8001 }
+            ];
+
+            for (const server of servers) {
+                try {
+                    const response = await fetch(`http://localhost:${server.port}/health`);
+                    const data = await response.json();
+                    console.log(`${server.name} health:`, data);
+                } catch (error) {
+                    console.error(`${server.name} health check failed:`, error);
+                }
+            }
+            alert('Health check complete - check console for results');
+        }
+    </script>
+</body>
+</html>

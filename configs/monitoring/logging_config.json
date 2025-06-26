@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "formatters": {
+    "detailed": {
+      "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+      "datefmt": "%Y-%m-%d %H:%M:%S"
+    },
+    "json": {
+      "format": "{\"timestamp\": \"%(asctime)s\", \"name\": \"%(name)s\", \"level\": \"%(levelname)s\", \"message\": \"%(message)s\"}",
+      "datefmt": "%Y-%m-%d %H:%M:%S"
+    }
+  },
+  "handlers": {
+    "console": {
+      "class": "logging.StreamHandler",
+      "level": "INFO",
+      "formatter": "detailed",
+      "stream": "ext://sys.stdout"
+    },
+    "file_all": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "DEBUG",
+      "formatter": "detailed",
+      "filename": "/Users/cosburn/BoarderframeOS/logs/boarderframeos.log",
+      "maxBytes": 10485760,
+      "backupCount": 5
+    },
+    "file_errors": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "ERROR",
+      "formatter": "detailed",
+      "filename": "/Users/cosburn/BoarderframeOS/logs/errors/errors.log",
+      "maxBytes": 10485760,
+      "backupCount": 5
+    },
+    "file_agents": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "DEBUG",
+      "formatter": "json",
+      "filename": "/Users/cosburn/BoarderframeOS/logs/agents/agents.log",
+      "maxBytes": 10485760,
+      "backupCount": 3
+    },
+    "file_api": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "INFO",
+      "formatter": "json",
+      "filename": "/Users/cosburn/BoarderframeOS/logs/api/api.log",
+      "maxBytes": 10485760,
+      "backupCount": 3
+    }
+  },
+  "loggers": {
+    "boarderframeos": {
+      "level": "DEBUG",
+      "handlers": [
+        "console",
+        "file_all"
+      ],
+      "propagate": false
+    },
+    "boarderframeos.agents": {
+      "level": "DEBUG",
+      "handlers": [
+        "file_agents"
+      ],
+      "propagate": true
+    },
+    "boarderframeos.api": {
+      "level": "INFO",
+      "handlers": [
+        "file_api"
+      ],
+      "propagate": true
+    },
+    "boarderframeos.errors": {
+      "level": "ERROR",
+      "handlers": [
+        "file_errors"
+      ],
+      "propagate": true
+    }
+  },
+  "root": {
+    "level": "INFO",
+    "handlers": [
+      "console",
+      "file_all"
+    ]
+  }
+}

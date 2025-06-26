@@ -57,7 +57,7 @@
                 "is_init_var": false,
                 "is_neither_frozen_nor_nonfrozen": false,
                 "kw_only": false,
-                "line": 50,
+                "line": 68,
                 "name": "name",
                 "type": "builtins.str"
               },
@@ -69,7 +69,7 @@
                 "is_init_var": false,
                 "is_neither_frozen_nor_nonfrozen": false,
                 "kw_only": false,
-                "line": 51,
+                "line": 69,
                 "name": "role",
                 "type": "builtins.str"
               },
@@ -81,7 +81,7 @@
                 "is_init_var": false,
                 "is_neither_frozen_nor_nonfrozen": false,
                 "kw_only": false,
-                "line": 52,
+                "line": 70,
                 "name": "goals",
                 "type": {
                   ".class": "Instance",
@@ -100,7 +100,7 @@
                 "is_init_var": false,
                 "is_neither_frozen_nor_nonfrozen": false,
                 "kw_only": false,
-                "line": 53,
+                "line": 71,
                 "name": "tools",
                 "type": {
                   ".class": "Instance",
@@ -119,7 +119,19 @@
                 "is_init_var": false,
                 "is_neither_frozen_nor_nonfrozen": false,
                 "kw_only": false,
-                "line": 54,
+                "line": 72,
+                "name": "department",
+                "type": "builtins.str"
+              },
+              {
+                "alias": null,
+                "column": 4,
+                "has_default": true,
+                "is_in_init": true,
+                "is_init_var": false,
+                "is_neither_frozen_nor_nonfrozen": false,
+                "kw_only": false,
+                "line": 73,
                 "name": "compute_allocation",
                 "type": "builtins.float"
               },
@@ -131,7 +143,7 @@
                 "is_init_var": false,
                 "is_neither_frozen_nor_nonfrozen": false,
                 "kw_only": false,
-                "line": 55,
+                "line": 74,
                 "name": "memory_limit_gb",
                 "type": "builtins.float"
               },
@@ -143,7 +155,7 @@
                 "is_init_var": false,
                 "is_neither_frozen_nor_nonfrozen": false,
                 "kw_only": false,
-                "line": 56,
+                "line": 75,
                 "name": "zone",
                 "type": "builtins.str"
               },
@@ -155,7 +167,7 @@
                 "is_init_var": false,
                 "is_neither_frozen_nor_nonfrozen": false,
                 "kw_only": false,
-                "line": 57,
+                "line": 76,
                 "name": "model",
                 "type": "builtins.str"
               },
@@ -167,7 +179,7 @@
                 "is_init_var": false,
                 "is_neither_frozen_nor_nonfrozen": false,
                 "kw_only": false,
-                "line": 58,
+                "line": 77,
                 "name": "temperature",
                 "type": "builtins.float"
               },
@@ -179,7 +191,7 @@
                 "is_init_var": false,
                 "is_neither_frozen_nor_nonfrozen": false,
                 "kw_only": false,
-                "line": 59,
+                "line": 78,
                 "name": "max_concurrent_tasks",
                 "type": "builtins.int"
               }
@@ -247,6 +259,7 @@
                 1,
                 1,
                 1,
+                1,
                 1
               ],
               "arg_names": [
@@ -255,6 +268,7 @@
                 "role",
                 "goals",
                 "tools",
+                "department",
                 "compute_allocation",
                 "memory_limit_gb",
                 "zone",
@@ -280,6 +294,7 @@
                   1,
                   1,
                   1,
+                  1,
                   1
                 ],
                 "arg_names": [
@@ -288,6 +303,7 @@
                   "role",
                   "goals",
                   "tools",
+                  "department",
                   "compute_allocation",
                   "memory_limit_gb",
                   "zone",
@@ -315,6 +331,7 @@
                     "extra_attrs": null,
                     "type_ref": "builtins.list"
                   },
+                  "builtins.str",
                   "builtins.float",
                   "builtins.float",
                   "builtins.str",
@@ -375,6 +392,11 @@
                     ".class": "LiteralType",
                     "fallback": "builtins.str",
                     "value": "tools"
+                  },
+                  {
+                    ".class": "LiteralType",
+                    "fallback": "builtins.str",
+                    "value": "department"
                   },
                   {
                     ".class": "LiteralType",
@@ -442,6 +464,7 @@
                   5,
                   5,
                   5,
+                  5,
                   5
                 ],
                 "arg_names": [
@@ -449,6 +472,7 @@
                   "role",
                   "goals",
                   "tools",
+                  "department",
                   "compute_allocation",
                   "memory_limit_gb",
                   "zone",
@@ -476,6 +500,7 @@
                     5,
                     5,
                     5,
+                    5,
                     5
                   ],
                   "arg_names": [
@@ -483,6 +508,7 @@
                     "role",
                     "goals",
                     "tools",
+                    "department",
                     "compute_allocation",
                     "memory_limit_gb",
                     "zone",
@@ -509,6 +535,7 @@
                       "extra_attrs": null,
                       "type_ref": "builtins.list"
                     },
+                    "builtins.str",
                     "builtins.float",
                     "builtins.float",
                     "builtins.str",
@@ -554,6 +581,7 @@
                     5,
                     5,
                     5,
+                    5,
                     5
                   ],
                   "arg_names": [
@@ -561,6 +589,7 @@
                     "role",
                     "goals",
                     "tools",
+                    "department",
                     "compute_allocation",
                     "memory_limit_gb",
                     "zone",
@@ -587,6 +616,7 @@
                       "extra_attrs": null,
                       "type_ref": "builtins.list"
                     },
+                    "builtins.str",
                     "builtins.float",
                     "builtins.float",
                     "builtins.str",
@@ -627,6 +657,21 @@
               "fullname": "core.base_agent.AgentConfig.compute_allocation",
               "name": "compute_allocation",
               "type": "builtins.float"
+            }
+          },
+          "department": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_ready",
+                "has_explicit_value"
+              ],
+              "fullname": "core.base_agent.AgentConfig.department",
+              "name": "department",
+              "type": "builtins.str"
             }
           },
           "goals": {
@@ -837,7 +882,7 @@
                 "is_init_var": false,
                 "is_neither_frozen_nor_nonfrozen": false,
                 "kw_only": false,
-                "line": 66,
+                "line": 85,
                 "name": "short_term",
                 "type": {
                   ".class": "Instance",
@@ -869,7 +914,7 @@
                 "is_init_var": false,
                 "is_neither_frozen_nor_nonfrozen": false,
                 "kw_only": false,
-                "line": 67,
+                "line": 86,
                 "name": "long_term",
                 "type": {
                   ".class": "Instance",
@@ -901,7 +946,7 @@
                 "is_init_var": false,
                 "is_neither_frozen_nor_nonfrozen": false,
                 "kw_only": false,
-                "line": 68,
+                "line": 87,
                 "name": "max_short_term",
                 "type": "builtins.int"
               }
@@ -951,6 +996,70 @@
               }
             },
             "plugin_generated": true
+          },
+          "__getitem__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                null,
+                null
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.base_agent.AgentMemory.__getitem__",
+              "name": "__getitem__",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  null,
+                  null
+                ],
+                "arg_types": [
+                  "core.base_agent.AgentMemory",
+                  "builtins.int"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "__getitem__ of AgentMemory",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    "builtins.str",
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 2
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "builtins.dict"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
           },
           "__init__": {
             ".class": "SymbolTableNode",
@@ -1053,6 +1162,52 @@
               }
             },
             "plugin_generated": true
+          },
+          "__len__": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                null
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [],
+              "fullname": "core.base_agent.AgentMemory.__len__",
+              "name": "__len__",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  null
+                ],
+                "arg_types": [
+                  "core.base_agent.AgentMemory"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "__len__ of AgentMemory",
+                "ret_type": "builtins.int",
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
           },
           "__match_args__": {
             ".class": "SymbolTableNode",
@@ -1695,6 +1850,60 @@
               }
             }
           },
+          "RUNNING": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.base_agent.AgentState.RUNNING",
+              "name": "RUNNING",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "running"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          },
+          "STOPPED": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.base_agent.AgentState.STOPPED",
+              "name": "STOPPED",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "stopped"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          },
           "TERMINATED": {
             ".class": "SymbolTableNode",
             "kind": "Mdef",
@@ -1799,6 +2008,200 @@
         "typeddict_type": null
       }
     },
+    "AgentStatus": {
+      ".class": "SymbolTableNode",
+      "kind": "Gdef",
+      "node": {
+        ".class": "TypeInfo",
+        "_promote": [],
+        "abstract_attributes": [],
+        "alt_promote": null,
+        "bases": [
+          "enum.Enum"
+        ],
+        "dataclass_transform_spec": null,
+        "declared_metaclass": null,
+        "defn": {
+          ".class": "ClassDef",
+          "fullname": "core.base_agent.AgentStatus",
+          "name": "AgentStatus",
+          "type_vars": []
+        },
+        "deletable_attributes": [],
+        "deprecated": null,
+        "flags": [
+          "is_enum"
+        ],
+        "fullname": "core.base_agent.AgentStatus",
+        "has_param_spec_type": false,
+        "metaclass_type": "enum.EnumMeta",
+        "metadata": {},
+        "module_name": "core.base_agent",
+        "mro": [
+          "core.base_agent.AgentStatus",
+          "enum.Enum",
+          "builtins.object"
+        ],
+        "names": {
+          ".class": "SymbolTable",
+          "ERROR": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.base_agent.AgentStatus.ERROR",
+              "name": "ERROR",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "error"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          },
+          "IDLE": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.base_agent.AgentStatus.IDLE",
+              "name": "IDLE",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "idle"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          },
+          "INITIALIZING": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.base_agent.AgentStatus.INITIALIZING",
+              "name": "INITIALIZING",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "initializing"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          },
+          "RUNNING": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.base_agent.AgentStatus.RUNNING",
+              "name": "RUNNING",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "running"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          },
+          "STOPPED": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_initialized_in_class",
+                "is_final",
+                "is_ready",
+                "is_inferred",
+                "has_explicit_value"
+              ],
+              "fullname": "core.base_agent.AgentStatus.STOPPED",
+              "name": "STOPPED",
+              "type": {
+                ".class": "Instance",
+                "args": [],
+                "extra_attrs": null,
+                "last_known_value": {
+                  ".class": "LiteralType",
+                  "fallback": "builtins.str",
+                  "value": "stopped"
+                },
+                "type_ref": "builtins.str"
+              }
+            }
+          }
+        },
+        "self_type": {
+          ".class": "TypeVarType",
+          "default": {
+            ".class": "AnyType",
+            "missing_import_name": null,
+            "source_any": null,
+            "type_of_any": 4
+          },
+          "fullname": "core.base_agent.AgentStatus.Self",
+          "id": 0,
+          "name": "Self",
+          "namespace": "",
+          "upper_bound": "core.base_agent.AgentStatus",
+          "values": [],
+          "variance": 0
+        },
+        "slots": null,
+        "tuple_type": null,
+        "type_vars": [],
+        "typeddict_type": null
+      }
+    },
     "Any": {
       ".class": "SymbolTableNode",
       "cross_ref": "typing.Any",
@@ -1810,16 +2213,7 @@
       "node": {
         ".class": "TypeInfo",
         "_promote": [],
-        "abstract_attributes": [
-          [
-            "act",
-            1
-          ],
-          [
-            "think",
-            1
-          ]
-        ],
+        "abstract_attributes": [],
         "alt_promote": null,
         "bases": [
           "abc.ABC"
@@ -1834,9 +2228,7 @@
         },
         "deletable_attributes": [],
         "deprecated": null,
-        "flags": [
-          "is_abstract"
-        ],
+        "flags": [],
         "fullname": "core.base_agent.BaseAgent",
         "has_param_spec_type": false,
         "metaclass_type": "abc.ABCMeta",
@@ -1857,11 +2249,13 @@
               "abstract_status": 0,
               "arg_kinds": [
                 0,
-                0
+                1,
+                4
               ],
               "arg_names": [
                 "self",
-                "config"
+                "config",
+                "kwargs"
               ],
               "dataclass_transform_spec": null,
               "deprecated": null,
@@ -1872,15 +2266,32 @@
                 ".class": "CallableType",
                 "arg_kinds": [
                   0,
-                  0
+                  1,
+                  4
                 ],
                 "arg_names": [
                   "self",
-                  "config"
+                  "config",
+                  "kwargs"
                 ],
                 "arg_types": [
                   "core.base_agent.BaseAgent",
-                  "core.base_agent.AgentConfig"
+                  {
+                    ".class": "UnionType",
+                    "items": [
+                      "core.base_agent.AgentConfig",
+                      {
+                        ".class": "NoneType"
+                      }
+                    ],
+                    "uses_pep604_syntax": false
+                  },
+                  {
+                    ".class": "AnyType",
+                    "missing_import_name": null,
+                    "source_any": null,
+                    "type_of_any": 1
+                  }
                 ],
                 "bound_args": [],
                 "def_extras": {
@@ -2407,10 +2818,27 @@
             ".class": "SymbolTableNode",
             "kind": "Mdef",
             "node": {
-              ".class": "Decorator",
-              "func": {
-                ".class": "FuncDef",
-                "abstract_status": 1,
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "thought",
+                "context"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.base_agent.BaseAgent.act",
+              "name": "act",
+              "type": {
+                ".class": "CallableType",
                 "arg_kinds": [
                   0,
                   0,
@@ -2421,30 +2849,49 @@
                   "thought",
                   "context"
                 ],
-                "dataclass_transform_spec": null,
-                "deprecated": null,
-                "flags": [
-                  "is_coroutine",
-                  "is_decorated",
-                  "is_trivial_body"
+                "arg_types": [
+                  "core.base_agent.BaseAgent",
+                  "builtins.str",
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      "builtins.str",
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 2
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "builtins.dict"
+                  }
                 ],
-                "fullname": "core.base_agent.BaseAgent.act",
-                "name": "act",
-                "type": {
-                  ".class": "CallableType",
-                  "arg_kinds": [
-                    0,
-                    0,
-                    0
-                  ],
-                  "arg_names": [
-                    "self",
-                    "thought",
-                    "context"
-                  ],
-                  "arg_types": [
-                    "core.base_agent.BaseAgent",
-                    "builtins.str",
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "act of BaseAgent",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
                     {
                       ".class": "Instance",
                       "args": [
@@ -2460,143 +2907,13 @@
                       "type_ref": "builtins.dict"
                     }
                   ],
-                  "bound_args": [],
-                  "def_extras": {
-                    "first_arg": "self"
-                  },
-                  "fallback": "builtins.function",
-                  "from_concatenate": false,
-                  "implicit": false,
-                  "imprecise_arg_kinds": false,
-                  "is_ellipsis_args": false,
-                  "name": "act of BaseAgent",
-                  "ret_type": {
-                    ".class": "Instance",
-                    "args": [
-                      {
-                        ".class": "AnyType",
-                        "missing_import_name": null,
-                        "source_any": null,
-                        "type_of_any": 6
-                      },
-                      {
-                        ".class": "AnyType",
-                        "missing_import_name": null,
-                        "source_any": null,
-                        "type_of_any": 6
-                      },
-                      {
-                        ".class": "Instance",
-                        "args": [
-                          "builtins.str",
-                          {
-                            ".class": "AnyType",
-                            "missing_import_name": null,
-                            "source_any": null,
-                            "type_of_any": 2
-                          }
-                        ],
-                        "extra_attrs": null,
-                        "type_ref": "builtins.dict"
-                      }
-                    ],
-                    "extra_attrs": null,
-                    "type_ref": "typing.Coroutine"
-                  },
-                  "type_guard": null,
-                  "type_is": null,
-                  "unpack_kwargs": false,
-                  "variables": []
-                }
-              },
-              "is_overload": false,
-              "var": {
-                ".class": "Var",
-                "flags": [
-                  "is_initialized_in_class",
-                  "is_ready",
-                  "is_inferred"
-                ],
-                "fullname": "core.base_agent.BaseAgent.act",
-                "name": "act",
-                "type": {
-                  ".class": "CallableType",
-                  "arg_kinds": [
-                    0,
-                    0,
-                    0
-                  ],
-                  "arg_names": [
-                    "self",
-                    "thought",
-                    "context"
-                  ],
-                  "arg_types": [
-                    "core.base_agent.BaseAgent",
-                    "builtins.str",
-                    {
-                      ".class": "Instance",
-                      "args": [
-                        "builtins.str",
-                        {
-                          ".class": "AnyType",
-                          "missing_import_name": null,
-                          "source_any": null,
-                          "type_of_any": 2
-                        }
-                      ],
-                      "extra_attrs": null,
-                      "type_ref": "builtins.dict"
-                    }
-                  ],
-                  "bound_args": [],
-                  "def_extras": {
-                    "first_arg": "self"
-                  },
-                  "fallback": "builtins.function",
-                  "from_concatenate": false,
-                  "implicit": false,
-                  "imprecise_arg_kinds": false,
-                  "is_ellipsis_args": false,
-                  "name": "act of BaseAgent",
-                  "ret_type": {
-                    ".class": "Instance",
-                    "args": [
-                      {
-                        ".class": "AnyType",
-                        "missing_import_name": null,
-                        "source_any": null,
-                        "type_of_any": 6
-                      },
-                      {
-                        ".class": "AnyType",
-                        "missing_import_name": null,
-                        "source_any": null,
-                        "type_of_any": 6
-                      },
-                      {
-                        ".class": "Instance",
-                        "args": [
-                          "builtins.str",
-                          {
-                            ".class": "AnyType",
-                            "missing_import_name": null,
-                            "source_any": null,
-                            "type_of_any": 2
-                          }
-                        ],
-                        "extra_attrs": null,
-                        "type_ref": "builtins.dict"
-                      }
-                    ],
-                    "extra_attrs": null,
-                    "type_ref": "typing.Coroutine"
-                  },
-                  "type_guard": null,
-                  "type_is": null,
-                  "unpack_kwargs": false,
-                  "variables": []
-                }
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
               }
             }
           },
@@ -2646,6 +2963,98 @@
                 ],
                 "extra_attrs": null,
                 "type_ref": "builtins.list"
+              }
+            }
+          },
+          "add_memory": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0,
+                1
+              ],
+              "arg_names": [
+                "self",
+                "item",
+                "permanent"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.base_agent.BaseAgent.add_memory",
+              "name": "add_memory",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0,
+                  1
+                ],
+                "arg_names": [
+                  "self",
+                  "item",
+                  "permanent"
+                ],
+                "arg_types": [
+                  "core.base_agent.BaseAgent",
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      "builtins.str",
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 2
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "builtins.dict"
+                  },
+                  "builtins.bool"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "add_memory of BaseAgent",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
               }
             }
           },
@@ -2757,6 +3166,97 @@
               "fullname": "core.base_agent.BaseAgent.daily_cost",
               "name": "daily_cost",
               "type": "builtins.float"
+            }
+          },
+          "department": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Decorator",
+              "func": {
+                ".class": "FuncDef",
+                "abstract_status": 0,
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "dataclass_transform_spec": null,
+                "deprecated": null,
+                "flags": [
+                  "is_property",
+                  "is_decorated"
+                ],
+                "fullname": "core.base_agent.BaseAgent.department",
+                "name": "department",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    0
+                  ],
+                  "arg_names": [
+                    "self"
+                  ],
+                  "arg_types": [
+                    "core.base_agent.BaseAgent"
+                  ],
+                  "bound_args": [],
+                  "def_extras": {
+                    "first_arg": "self"
+                  },
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "department of BaseAgent",
+                  "ret_type": "builtins.str",
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              },
+              "is_overload": false,
+              "var": {
+                ".class": "Var",
+                "flags": [
+                  "is_initialized_in_class",
+                  "is_property",
+                  "is_ready",
+                  "is_inferred"
+                ],
+                "fullname": "core.base_agent.BaseAgent.department",
+                "name": "department",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    0
+                  ],
+                  "arg_names": [
+                    "self"
+                  ],
+                  "arg_types": [
+                    "core.base_agent.BaseAgent"
+                  ],
+                  "bound_args": [],
+                  "def_extras": {
+                    "first_arg": "self"
+                  },
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "department of BaseAgent",
+                  "ret_type": "builtins.str",
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              }
             }
           },
           "get_context": {
@@ -2890,6 +3390,253 @@
                   ],
                   "extra_attrs": null,
                   "type_ref": "builtins.dict"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "handle_message": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "message"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.base_agent.BaseAgent.handle_message",
+              "name": "handle_message",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "message"
+                ],
+                "arg_types": [
+                  "core.base_agent.BaseAgent",
+                  {
+                    ".class": "Instance",
+                    "args": [
+                      "builtins.str",
+                      {
+                        ".class": "AnyType",
+                        "missing_import_name": null,
+                        "source_any": null,
+                        "type_of_any": 2
+                      }
+                    ],
+                    "extra_attrs": null,
+                    "type_ref": "builtins.dict"
+                  }
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "handle_message of BaseAgent",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.str",
+                        {
+                          ".class": "AnyType",
+                          "missing_import_name": null,
+                          "source_any": null,
+                          "type_of_any": 2
+                        }
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.dict"
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "health_check": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.base_agent.BaseAgent.health_check",
+              "name": "health_check",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "arg_types": [
+                  "core.base_agent.BaseAgent"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "health_check of BaseAgent",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        "builtins.str",
+                        {
+                          ".class": "AnyType",
+                          "missing_import_name": null,
+                          "source_any": null,
+                          "type_of_any": 2
+                        }
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.dict"
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
+          "initialize": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.base_agent.BaseAgent.initialize",
+              "name": "initialize",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "arg_types": [
+                  "core.base_agent.BaseAgent"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "initialize of BaseAgent",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
                 },
                 "type_guard": null,
                 "type_is": null,
@@ -3117,6 +3864,97 @@
               }
             }
           },
+          "name": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Decorator",
+              "func": {
+                ".class": "FuncDef",
+                "abstract_status": 0,
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "dataclass_transform_spec": null,
+                "deprecated": null,
+                "flags": [
+                  "is_property",
+                  "is_decorated"
+                ],
+                "fullname": "core.base_agent.BaseAgent.name",
+                "name": "name",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    0
+                  ],
+                  "arg_names": [
+                    "self"
+                  ],
+                  "arg_types": [
+                    "core.base_agent.BaseAgent"
+                  ],
+                  "bound_args": [],
+                  "def_extras": {
+                    "first_arg": "self"
+                  },
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "name of BaseAgent",
+                  "ret_type": "builtins.str",
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              },
+              "is_overload": false,
+              "var": {
+                ".class": "Var",
+                "flags": [
+                  "is_initialized_in_class",
+                  "is_property",
+                  "is_ready",
+                  "is_inferred"
+                ],
+                "fullname": "core.base_agent.BaseAgent.name",
+                "name": "name",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    0
+                  ],
+                  "arg_names": [
+                    "self"
+                  ],
+                  "arg_types": [
+                    "core.base_agent.BaseAgent"
+                  ],
+                  "bound_args": [],
+                  "def_extras": {
+                    "first_arg": "self"
+                  },
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "name of BaseAgent",
+                  "ret_type": "builtins.str",
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              }
+            }
+          },
           "register_message_handler": {
             ".class": "SymbolTableNode",
             "kind": "Mdef",
@@ -3236,6 +4074,97 @@
               }
             }
           },
+          "role": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Decorator",
+              "func": {
+                ".class": "FuncDef",
+                "abstract_status": 0,
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "dataclass_transform_spec": null,
+                "deprecated": null,
+                "flags": [
+                  "is_property",
+                  "is_decorated"
+                ],
+                "fullname": "core.base_agent.BaseAgent.role",
+                "name": "role",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    0
+                  ],
+                  "arg_names": [
+                    "self"
+                  ],
+                  "arg_types": [
+                    "core.base_agent.BaseAgent"
+                  ],
+                  "bound_args": [],
+                  "def_extras": {
+                    "first_arg": "self"
+                  },
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "role of BaseAgent",
+                  "ret_type": "builtins.str",
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              },
+              "is_overload": false,
+              "var": {
+                ".class": "Var",
+                "flags": [
+                  "is_initialized_in_class",
+                  "is_property",
+                  "is_ready",
+                  "is_inferred"
+                ],
+                "fullname": "core.base_agent.BaseAgent.role",
+                "name": "role",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    0
+                  ],
+                  "arg_names": [
+                    "self"
+                  ],
+                  "arg_types": [
+                    "core.base_agent.BaseAgent"
+                  ],
+                  "bound_args": [],
+                  "def_extras": {
+                    "first_arg": "self"
+                  },
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "role of BaseAgent",
+                  "ret_type": "builtins.str",
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              }
+            }
+          },
           "run": {
             ".class": "SymbolTableNode",
             "kind": "Mdef",
@@ -3256,6 +4185,98 @@
               "fullname": "core.base_agent.BaseAgent.run",
               "name": "run",
               "type": null
+            }
+          },
+          "search_memory": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "query"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.base_agent.BaseAgent.search_memory",
+              "name": "search_memory",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0,
+                  0
+                ],
+                "arg_names": [
+                  "self",
+                  "query"
+                ],
+                "arg_types": [
+                  "core.base_agent.BaseAgent",
+                  "builtins.str"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "search_memory of BaseAgent",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "Instance",
+                      "args": [
+                        {
+                          ".class": "Instance",
+                          "args": [
+                            "builtins.str",
+                            {
+                              ".class": "AnyType",
+                              "missing_import_name": null,
+                              "source_any": null,
+                              "type_of_any": 2
+                            }
+                          ],
+                          "extra_attrs": null,
+                          "type_ref": "builtins.dict"
+                        }
+                      ],
+                      "extra_attrs": null,
+                      "type_ref": "builtins.list"
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
             }
           },
           "send_task_to_agent": {
@@ -3362,6 +4383,75 @@
               }
             }
           },
+          "start": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.base_agent.BaseAgent.start",
+              "name": "start",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "arg_types": [
+                  "core.base_agent.BaseAgent"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "start of BaseAgent",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
+            }
+          },
           "state": {
             ".class": "SymbolTableNode",
             "implicit": true,
@@ -3374,6 +4464,166 @@
               "fullname": "core.base_agent.BaseAgent.state",
               "name": "state",
               "type": "core.base_agent.AgentState"
+            }
+          },
+          "status": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "Decorator",
+              "func": {
+                ".class": "FuncDef",
+                "abstract_status": 0,
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "dataclass_transform_spec": null,
+                "deprecated": null,
+                "flags": [
+                  "is_property",
+                  "is_decorated"
+                ],
+                "fullname": "core.base_agent.BaseAgent.status",
+                "name": "status",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    0
+                  ],
+                  "arg_names": [
+                    "self"
+                  ],
+                  "arg_types": [
+                    "core.base_agent.BaseAgent"
+                  ],
+                  "bound_args": [],
+                  "def_extras": {
+                    "first_arg": "self"
+                  },
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "status of BaseAgent",
+                  "ret_type": "core.base_agent.AgentStatus",
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              },
+              "is_overload": false,
+              "var": {
+                ".class": "Var",
+                "flags": [
+                  "is_initialized_in_class",
+                  "is_property",
+                  "is_ready",
+                  "is_inferred"
+                ],
+                "fullname": "core.base_agent.BaseAgent.status",
+                "name": "status",
+                "type": {
+                  ".class": "CallableType",
+                  "arg_kinds": [
+                    0
+                  ],
+                  "arg_names": [
+                    "self"
+                  ],
+                  "arg_types": [
+                    "core.base_agent.BaseAgent"
+                  ],
+                  "bound_args": [],
+                  "def_extras": {
+                    "first_arg": "self"
+                  },
+                  "fallback": "builtins.function",
+                  "from_concatenate": false,
+                  "implicit": false,
+                  "imprecise_arg_kinds": false,
+                  "is_ellipsis_args": false,
+                  "name": "status of BaseAgent",
+                  "ret_type": "core.base_agent.AgentStatus",
+                  "type_guard": null,
+                  "type_is": null,
+                  "unpack_kwargs": false,
+                  "variables": []
+                }
+              }
+            }
+          },
+          "stop": {
+            ".class": "SymbolTableNode",
+            "kind": "Mdef",
+            "node": {
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0
+              ],
+              "arg_names": [
+                "self"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.base_agent.BaseAgent.stop",
+              "name": "stop",
+              "type": {
+                ".class": "CallableType",
+                "arg_kinds": [
+                  0
+                ],
+                "arg_names": [
+                  "self"
+                ],
+                "arg_types": [
+                  "core.base_agent.BaseAgent"
+                ],
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "stop of BaseAgent",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "NoneType"
+                    }
+                  ],
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
+              }
             }
           },
           "terminate": {
@@ -3402,10 +4652,25 @@
             ".class": "SymbolTableNode",
             "kind": "Mdef",
             "node": {
-              ".class": "Decorator",
-              "func": {
-                ".class": "FuncDef",
-                "abstract_status": 1,
+              ".class": "FuncDef",
+              "abstract_status": 0,
+              "arg_kinds": [
+                0,
+                0
+              ],
+              "arg_names": [
+                "self",
+                "context"
+              ],
+              "dataclass_transform_spec": null,
+              "deprecated": null,
+              "flags": [
+                "is_coroutine"
+              ],
+              "fullname": "core.base_agent.BaseAgent.think",
+              "name": "think",
+              "type": {
+                ".class": "CallableType",
                 "arg_kinds": [
                   0,
                   0
@@ -3414,150 +4679,57 @@
                   "self",
                   "context"
                 ],
-                "dataclass_transform_spec": null,
-                "deprecated": null,
-                "flags": [
-                  "is_coroutine",
-                  "is_decorated",
-                  "is_trivial_body"
-                ],
-                "fullname": "core.base_agent.BaseAgent.think",
-                "name": "think",
-                "type": {
-                  ".class": "CallableType",
-                  "arg_kinds": [
-                    0,
-                    0
-                  ],
-                  "arg_names": [
-                    "self",
-                    "context"
-                  ],
-                  "arg_types": [
-                    "core.base_agent.BaseAgent",
-                    {
-                      ".class": "Instance",
-                      "args": [
-                        "builtins.str",
-                        {
-                          ".class": "AnyType",
-                          "missing_import_name": null,
-                          "source_any": null,
-                          "type_of_any": 2
-                        }
-                      ],
-                      "extra_attrs": null,
-                      "type_ref": "builtins.dict"
-                    }
-                  ],
-                  "bound_args": [],
-                  "def_extras": {
-                    "first_arg": "self"
-                  },
-                  "fallback": "builtins.function",
-                  "from_concatenate": false,
-                  "implicit": false,
-                  "imprecise_arg_kinds": false,
-                  "is_ellipsis_args": false,
-                  "name": "think of BaseAgent",
-                  "ret_type": {
+                "arg_types": [
+                  "core.base_agent.BaseAgent",
+                  {
                     ".class": "Instance",
                     "args": [
+                      "builtins.str",
                       {
                         ".class": "AnyType",
                         "missing_import_name": null,
                         "source_any": null,
-                        "type_of_any": 6
-                      },
-                      {
-                        ".class": "AnyType",
-                        "missing_import_name": null,
-                        "source_any": null,
-                        "type_of_any": 6
-                      },
-                      "builtins.str"
+                        "type_of_any": 2
+                      }
                     ],
                     "extra_attrs": null,
-                    "type_ref": "typing.Coroutine"
-                  },
-                  "type_guard": null,
-                  "type_is": null,
-                  "unpack_kwargs": false,
-                  "variables": []
-                }
-              },
-              "is_overload": false,
-              "var": {
-                ".class": "Var",
-                "flags": [
-                  "is_initialized_in_class",
-                  "is_ready",
-                  "is_inferred"
+                    "type_ref": "builtins.dict"
+                  }
                 ],
-                "fullname": "core.base_agent.BaseAgent.think",
-                "name": "think",
-                "type": {
-                  ".class": "CallableType",
-                  "arg_kinds": [
-                    0,
-                    0
-                  ],
-                  "arg_names": [
-                    "self",
-                    "context"
-                  ],
-                  "arg_types": [
-                    "core.base_agent.BaseAgent",
+                "bound_args": [],
+                "def_extras": {
+                  "first_arg": "self"
+                },
+                "fallback": "builtins.function",
+                "from_concatenate": false,
+                "implicit": false,
+                "imprecise_arg_kinds": false,
+                "is_ellipsis_args": false,
+                "name": "think of BaseAgent",
+                "ret_type": {
+                  ".class": "Instance",
+                  "args": [
                     {
-                      ".class": "Instance",
-                      "args": [
-                        "builtins.str",
-                        {
-                          ".class": "AnyType",
-                          "missing_import_name": null,
-                          "source_any": null,
-                          "type_of_any": 2
-                        }
-                      ],
-                      "extra_attrs": null,
-                      "type_ref": "builtins.dict"
-                    }
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    {
+                      ".class": "AnyType",
+                      "missing_import_name": null,
+                      "source_any": null,
+                      "type_of_any": 6
+                    },
+                    "builtins.str"
                   ],
-                  "bound_args": [],
-                  "def_extras": {
-                    "first_arg": "self"
-                  },
-                  "fallback": "builtins.function",
-                  "from_concatenate": false,
-                  "implicit": false,
-                  "imprecise_arg_kinds": false,
-                  "is_ellipsis_args": false,
-                  "name": "think of BaseAgent",
-                  "ret_type": {
-                    ".class": "Instance",
-                    "args": [
-                      {
-                        ".class": "AnyType",
-                        "missing_import_name": null,
-                        "source_any": null,
-                        "type_of_any": 6
-                      },
-                      {
-                        ".class": "AnyType",
-                        "missing_import_name": null,
-                        "source_any": null,
-                        "type_of_any": 6
-                      },
-                      "builtins.str"
-                    ],
-                    "extra_attrs": null,
-                    "type_ref": "typing.Coroutine"
-                  },
-                  "type_guard": null,
-                  "type_is": null,
-                  "unpack_kwargs": false,
-                  "variables": []
-                }
+                  "extra_attrs": null,
+                  "type_ref": "typing.Coroutine"
+                },
+                "type_guard": null,
+                "type_is": null,
+                "unpack_kwargs": false,
+                "variables": []
               }
             }
           },
@@ -3693,6 +4865,11 @@
     "MessageType": {
       ".class": "SymbolTableNode",
       "cross_ref": "core.message_bus.MessageType",
+      "kind": "Gdef"
+    },
+    "OLLAMA_CONFIG": {
+      ".class": "SymbolTableNode",
+      "cross_ref": "core.llm_client.OLLAMA_CONFIG",
       "kind": "Gdef"
     },
     "Optional": {

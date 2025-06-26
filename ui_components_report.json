@@ -1,0 +1,158 @@
+{
+  "timestamp": "2025-06-24T17:54:36.401602",
+  "ui_systems": {
+    "Corporate HQ": {
+      "port": 8888,
+      "critical": true,
+      "description": "Main system dashboard and control center",
+      "features_list": [
+        "Dashboard",
+        "Metrics",
+        "Agent Registry",
+        "Department Browser"
+      ],
+      "integration": {
+        "tests": {}
+      },
+      "overall_status": "partial"
+    },
+    "Agent Cortex": {
+      "port": 8889,
+      "critical": true,
+      "description": "LLM orchestration and agent brain interface",
+      "features_list": [
+        "LLM Management",
+        "Agent Coordination",
+        "Model Selection"
+      ],
+      "integration": {
+        "tests": {}
+      },
+      "overall_status": "partially_functional"
+    },
+    "Agent Communication Center": {
+      "port": 8890,
+      "critical": false,
+      "description": "Inter-agent communication hub with Claude-3",
+      "features_list": [
+        "Agent Chat",
+        "Message History",
+        "Real-time Communication"
+      ],
+      "integration": {
+        "tests": {}
+      },
+      "overall_status": "partially_functional"
+    }
+  },
+  "connectivity": {
+    "Corporate HQ": {
+      "port_open": true,
+      "process_running": true,
+      "http_accessible": false,
+      "websocket_accessible": false,
+      "status": "partial",
+      "process_id": 1108,
+      "websocket_message": "timed out during opening handshake"
+    },
+    "Agent Cortex": {
+      "port_open": true,
+      "process_running": true,
+      "http_accessible": true,
+      "websocket_accessible": false,
+      "status": "online",
+      "process_id": 1963
+    },
+    "Agent Communication Center": {
+      "port_open": true,
+      "process_running": true,
+      "http_accessible": true,
+      "websocket_accessible": true,
+      "status": "online",
+      "process_id": 2012,
+      "websocket_message": "Connected and responsive"
+    }
+  },
+  "features": {
+    "Corporate HQ": {
+      "tested": 5,
+      "passed": 0,
+      "features": {
+        "System Status API": "failed: None",
+        "Metrics API": "failed: None",
+        "Agent Registry API": "failed: None",
+        "Department Browser API": "failed: None",
+        "Dashboard Page": "not_accessible"
+      }
+    },
+    "Agent Cortex": {
+      "tested": 4,
+      "passed": 1,
+      "features": {
+        "Main Interface": "accessible",
+        "LLM Status API": "failed: 404",
+        "Agent List API": "failed: 404",
+        "Model Management": "failed: 404"
+      }
+    },
+    "Agent Communication Center": {
+      "tested": 4,
+      "passed": 3,
+      "features": {
+        "Main Chat Interface": "accessible",
+        "Agent List API": "accessible",
+        "Message History API": "accessible",
+        "Send Message API": "failed: 404"
+      }
+    }
+  },
+  "performance": {
+    "Corporate HQ": {},
+    "Agent Cortex": {
+      "page_load": {
+        "average_ms": 0.8,
+        "min_ms": 0.75,
+        "max_ms": 0.86,
+        "samples": 5
+      },
+      "api_/api/status": {
+        "average_ms": 0.68,
+        "samples": 3
+      },
+      "api_/api/agents": {
+        "average_ms": 0.82,
+        "samples": 3
+      }
+    },
+    "Agent Communication Center": {
+      "page_load": {
+        "average_ms": 0.9,
+        "min_ms": 0.81,
+        "max_ms": 0.98,
+        "samples": 5
+      },
+      "api_/api/agents": {
+        "average_ms": 0.83,
+        "samples": 3
+      },
+      "api_/api/messages": {
+        "average_ms": 2.0,
+        "samples": 3
+      }
+    }
+  },
+  "summary": {
+    "total_systems": 3,
+    "online_systems": 3,
+    "offline_systems": 0,
+    "fully_functional": 0,
+    "critical_systems_online": "2/2",
+    "total_features_tested": 13,
+    "total_features_passed": 4,
+    "feature_success_rate": 30.8,
+    "total_successes": 16,
+    "total_warnings": 2,
+    "total_errors": 10,
+    "average_page_load_ms": 0.85
+  }
+}

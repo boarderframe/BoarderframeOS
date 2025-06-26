@@ -3081,6 +3081,29 @@
               }
             }
           },
+          "_unified_data_layer": {
+            ".class": "SymbolTableNode",
+            "implicit": true,
+            "kind": "Mdef",
+            "node": {
+              ".class": "Var",
+              "flags": [
+                "is_inferred"
+              ],
+              "fullname": "core.hq_metrics_layer.MetricsCalculator._unified_data_layer",
+              "name": "_unified_data_layer",
+              "type": {
+                ".class": "UnionType",
+                "items": [
+                  "core.hq_unified_data_layer.UnifiedDataLayer",
+                  {
+                    ".class": "NoneType"
+                  }
+                ],
+                "uses_pep604_syntax": false
+              }
+            }
+          },
           "_visual_cache": {
             ".class": "SymbolTableNode",
             "implicit": true,

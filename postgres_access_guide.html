@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PostgreSQL Database Access Guide</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #3d7eaa 100%);
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5em;
+            color: #fff;
+        }
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        h2 {
+            color: #87ceeb;
+            border-bottom: 2px solid #87ceeb;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .connection-info {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            font-family: monospace;
+            margin: 20px 0;
+        }
+        .connection-info table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .connection-info td {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .connection-info td:first-child {
+            font-weight: bold;
+            color: #87ceeb;
+            width: 150px;
+        }
+        .code-block {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .copy-btn:hover {
+            background: #45a049;
+        }
+        .tool-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .tool-card h3 {
+            color: #87ceeb;
+            margin-top: 0;
+        }
+        .warning {
+            background: rgba(255, 193, 7, 0.2);
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .warning h4 {
+            color: #ffc107;
+            margin-top: 0;
+        }
+        a {
+            color: #87ceeb;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .button {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin: 10px 10px 10px 0;
+        }
+        .button:hover {
+            background: #45a049;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗄️ PostgreSQL Database Access Guide</h1>
+            <p style="font-size: 1.2em; margin-top: 20px;">
+                BoarderframeOS Database Connection Information & Tools
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>🔌 Connection Details</h2>
+            <div class="connection-info">
+                <table>
+                    <tr>
+                        <td>Host:</td>
+                        <td>localhost</td>
+                    </tr>
+                    <tr>
+                        <td>Port:</td>
+                        <td>5434 <em>(custom port, not default 5432)</em></td>
+                    </tr>
+                    <tr>
+                        <td>Database:</td>
+                        <td>boarderframeos</td>
+                    </tr>
+                    <tr>
+                        <td>Username:</td>
+                        <td>boarderframe</td>
+                    </tr>
+                    <tr>
+                        <td>Password:</td>
+                        <td>boarderframe_secure_2025</td>
+                    </tr>
+                    <tr>
+                        <td>Container:</td>
+                        <td>boarderframeos_postgres</td>
+                    </tr>
+                </table>
+            </div>
+
+            <h3>Connection URL:</h3>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyToClipboard('postgresql://boarderframe:boarderframe_secure_2025@localhost:5434/boarderframeos')">Copy</button>
+                postgresql://boarderframe:boarderframe_secure_2025@localhost:5434/boarderframeos
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🖥️ PostgreSQL Control Panel Options</h2>
+
+            <div class="tool-card">
+                <h3>1. pgAdmin 4 (Recommended GUI)</h3>
+                <p>The most popular PostgreSQL management tool with a web interface.</p>
+                <a href="https://www.pgadmin.org/download/" class="button" target="_blank">Download pgAdmin</a>
+
+                <h4>Quick Setup:</h4>
+                <ol>
+                    <li>Install pgAdmin 4</li>
+                    <li>Add New Server with these settings:
+                        <ul>
+                            <li>Name: BoarderframeOS</li>
+                            <li>Host: localhost</li>
+                            <li>Port: 5434</li>
+                            <li>Database: boarderframeos</li>
+                            <li>Username: boarderframe</li>
+                            <li>Password: boarderframe_secure_2025</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <div class="tool-card">
+                <h3>2. TablePlus (Premium Option)</h3>
+                <p>Modern, native database management tool for macOS, Windows, and Linux.</p>
+                <a href="https://tableplus.com/" class="button" target="_blank">Get TablePlus</a>
+
+                <h4>Connection String for TablePlus:</h4>
+                <div class="code-block">
+                    postgresql://boarderframe:boarderframe_secure_2025@localhost:5434/boarderframeos?sslmode=disable
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <h3>3. DBeaver (Free & Open Source)</h3>
+                <p>Universal database tool supporting PostgreSQL and many other databases.</p>
+                <a href="https://dbeaver.io/download/" class="button" target="_blank">Download DBeaver</a>
+            </div>
+
+            <div class="tool-card">
+                <h3>4. Adminer (Lightweight Web UI)</h3>
+                <p>Simple PHP-based database management in a single file.</p>
+
+                <h4>Quick Docker Setup:</h4>
+                <div class="code-block">
+                    docker run -d -p 8080:8080 --network boarderframeos_default adminer
+                </div>
+                <p>Access at: <a href="http://localhost:8080" target="_blank">http://localhost:8080</a></p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔧 Command Line Access</h2>
+
+            <h3>Using Docker:</h3>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyToClipboard('docker exec -it boarderframeos_postgres psql -U boarderframe -d boarderframeos')">Copy</button>
+                docker exec -it boarderframeos_postgres psql -U boarderframe -d boarderframeos
+            </div>
+
+            <h3>Using psql directly:</h3>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyToClipboard('PGPASSWORD=boarderframe_secure_2025 psql -h localhost -p 5434 -U boarderframe -d boarderframeos')">Copy</button>
+                PGPASSWORD=boarderframe_secure_2025 psql -h localhost -p 5434 -U boarderframe -d boarderframeos
+            </div>
+
+            <h3>Useful psql commands:</h3>
+            <div class="code-block">
+\dt              # List all tables
+\d table_name    # Describe table structure
+\l               # List all databases
+\du              # List all users/roles
+\q               # Quit psql
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 BoarderframeOS Specific Tables</h2>
+
+            <h3>Core Tables:</h3>
+            <ul>
+                <li><strong>agents</strong> - Agent registry and configuration</li>
+                <li><strong>departments</strong> - Department structure</li>
+                <li><strong>divisions</strong> - Division organization</li>
+                <li><strong>leaders</strong> - Leadership registry</li>
+                <li><strong>llm_cost_tracking</strong> - LLM API usage and costs</li>
+                <li><strong>llm_budget_tracking</strong> - Budget limits per agent</li>
+                <li><strong>analytics_events</strong> - System analytics</li>
+                <li><strong>payments</strong> - Payment records</li>
+                <li><strong>customers</strong> - Customer information</li>
+            </ul>
+
+            <h3>View LLM Costs Example:</h3>
+            <div class="code-block">
+SELECT agent_name, model_used, SUM(total_cost) as total_cost, COUNT(*) as requests
+FROM llm_cost_tracking
+GROUP BY agent_name, model_used
+ORDER BY total_cost DESC;
+            </div>
+        </div>
+
+        <div class="warning">
+            <h4>⚠️ Important Notes:</h4>
+            <ul>
+                <li>The PostgreSQL server runs on port <strong>5434</strong>, not the default 5432</li>
+                <li>Make sure Docker is running before attempting to connect</li>
+                <li>The database is containerized in Docker as <code>boarderframeos_postgres</code></li>
+                <li>For production use, consider changing the default password</li>
+            </ul>
+        </div>
+
+        <div class="section" style="text-align: center;">
+            <h2>🚀 Quick Start</h2>
+            <p>The easiest way to get started is to use pgAdmin 4 or TablePlus with the connection details above.</p>
+            <p>For command-line access, use the Docker exec command provided.</p>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                alert('Copied to clipboard!');
+            }, function(err) {
+                console.error('Could not copy text: ', err);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BoarderframeOS Complete Server Inventory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #58a6ff;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 0 0 10px rgba(88, 166, 255, 0.5);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .summary-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .summary-card h3 {
+            color: #58a6ff;
+            margin-bottom: 10px;
+        }
+
+        .summary-number {
+            font-size: 3em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #58a6ff, #79c0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .category-section {
+            margin-bottom: 40px;
+        }
+
+        .category-header {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px 8px 0 0;
+            padding: 15px 20px;
+            margin-bottom: 0;
+        }
+
+        .category-header h2 {
+            color: #58a6ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .server-table {
+            width: 100%;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
+        }
+
+        .server-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .server-table th {
+            background: #1f2937;
+            color: #58a6ff;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #30363d;
+        }
+
+        .server-table td {
+            padding: 15px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .server-table tr:hover {
+            background: #161b22;
+        }
+
+        .server-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-healthy {
+            background: #238636;
+            color: #fff;
+        }
+
+        .status-error {
+            background: #da3633;
+            color: #fff;
+        }
+
+        .status-not-running {
+            background: #6e7681;
+            color: #fff;
+        }
+
+        .port-badge {
+            background: #1f6feb;
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .file-path {
+            font-family: monospace;
+            font-size: 0.85em;
+            color: #7ee787;
+        }
+
+        .purpose {
+            font-size: 0.9em;
+            color: #8b949e;
+        }
+
+        .notes {
+            margin-top: 40px;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .notes h3 {
+            color: #f85149;
+            margin-bottom: 15px;
+        }
+
+        .notes ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .notes li {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .notes li:before {
+            content: "⚠️";
+            position: absolute;
+            left: 0;
+        }
+
+        .legend {
+            margin-top: 30px;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .server-table {
+                overflow-x: auto;
+            }
+
+            .server-table table {
+                min-width: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏰 BoarderframeOS Complete Server Inventory</h1>
+
+        <div class="summary-grid">
+            <div class="summary-card">
+                <h3>Total Servers</h3>
+                <div class="summary-number">12</div>
+            </div>
+            <div class="summary-card">
+                <h3>MCP Servers</h3>
+                <div class="summary-number">9</div>
+            </div>
+            <div class="summary-card">
+                <h3>UI Services</h3>
+                <div class="summary-number">3</div>
+            </div>
+            <div class="summary-card">
+                <h3>Currently Running</h3>
+                <div class="summary-number">10</div>
+            </div>
+        </div>
+
+        <!-- Core Infrastructure -->
+        <div class="category-section">
+            <div class="category-header">
+                <h2>🔧 Core Infrastructure</h2>
+            </div>
+            <div class="server-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Port</th>
+                            <th>Purpose</th>
+                            <th>File Location</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>PostgreSQL</strong></td>
+                            <td><span class="port-badge">5434</span></td>
+                            <td class="purpose">Primary database with pgvector for embeddings</td>
+                            <td class="file-path">Docker Container (boarderframeos_postgres)</td>
+                            <td><span class="status-badge status-healthy">Healthy</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Redis</strong></td>
+                            <td><span class="port-badge">6379</span></td>
+                            <td class="purpose">Caching and real-time messaging</td>
+                            <td class="file-path">Docker Container (boarderframeos_redis)</td>
+                            <td><span class="status-badge status-healthy">Healthy</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- MCP Servers -->
+        <div class="category-section">
+            <div class="category-header">
+                <h2>🔌 MCP (Model Context Protocol) Servers</h2>
+            </div>
+            <div class="server-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Port</th>
+                            <th>Purpose</th>
+                            <th>File Location</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Registry Server</strong></td>
+                            <td><span class="port-badge">8000</span></td>
+                            <td class="purpose">Service discovery and health monitoring</td>
+                            <td class="file-path">mcp/registry_server.py</td>
+                            <td><span class="status-badge status-healthy">Healthy</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Filesystem Server</strong></td>
+                            <td><span class="port-badge">8001</span></td>
+                            <td class="purpose">AI-enhanced file operations with transformers</td>
+                            <td class="file-path">mcp/filesystem_server.py</td>
+                            <td><span class="status-badge status-healthy">Healthy</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>SQLite Database Server</strong></td>
+                            <td><span class="port-badge">8004</span></td>
+                            <td class="purpose">Legacy compatibility with modern optimizations</td>
+                            <td class="file-path">mcp/database_server.py</td>
+                            <td><span class="status-badge status-not-running">Not Started</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>LLM Server</strong></td>
+                            <td><span class="port-badge">8005</span></td>
+                            <td class="purpose">OpenAI-compatible language model proxy</td>
+                            <td class="file-path">mcp/llm_server.py</td>
+                            <td><span class="status-badge status-not-running">Not Implemented</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Payment Server</strong></td>
+                            <td><span class="port-badge">8006</span></td>
+                            <td class="purpose">Revenue management and billing</td>
+                            <td class="file-path">mcp/payment_server.py</td>
+                            <td><span class="status-badge status-healthy">Healthy</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Analytics Server</strong></td>
+                            <td><span class="port-badge">8007</span></td>
+                            <td class="purpose">System metrics with PostgreSQL backend</td>
+                            <td class="file-path">mcp/analytics_server.py</td>
+                            <td><span class="status-badge status-healthy">Healthy</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Customer Server</strong></td>
+                            <td><span class="port-badge">8008</span></td>
+                            <td class="purpose">Customer relationship management</td>
+                            <td class="file-path">mcp/customer_server.py</td>
+                            <td><span class="status-badge status-healthy">Healthy</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Registry Server (Duplicate)</strong></td>
+                            <td><span class="port-badge">8009</span></td>
+                            <td class="purpose">Agent and service discovery (old port)</td>
+                            <td class="file-path">mcp/registry_server.py</td>
+                            <td><span class="status-badge status-not-running">Moved to 8000</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>PostgreSQL Database Server</strong></td>
+                            <td><span class="port-badge">8010</span></td>
+                            <td class="purpose">Enterprise PostgreSQL operations</td>
+                            <td class="file-path">mcp/database_server_postgres.py</td>
+                            <td><span class="status-badge status-healthy">Healthy</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Screenshot Server</strong></td>
+                            <td><span class="port-badge">8011</span></td>
+                            <td class="purpose">macOS screenshot capture with annotations</td>
+                            <td class="file-path">mcp/screenshot_server.py</td>
+                            <td><span class="status-badge status-healthy">Healthy</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- UI Services -->
+        <div class="category-section">
+            <div class="category-header">
+                <h2>🎛️ UI Services</h2>
+            </div>
+            <div class="server-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Port</th>
+                            <th>Purpose</th>
+                            <th>File Location</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Corporate Headquarters</strong></td>
+                            <td><span class="port-badge">8888</span></td>
+                            <td class="purpose">Main dashboard and system monitoring UI</td>
+                            <td class="file-path">corporate_headquarters.py</td>
+                            <td><span class="status-badge status-healthy">Running</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Agent Cortex Management</strong></td>
+                            <td><span class="port-badge">8889</span></td>
+                            <td class="purpose">Intelligent model orchestration UI</td>
+                            <td class="file-path">ui/agent_cortex_management.py</td>
+                            <td><span class="status-badge status-error">Not Accessible</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Agent Communication Center</strong></td>
+                            <td><span class="port-badge">8890</span></td>
+                            <td class="purpose">Claude-3 powered agent chat hub</td>
+                            <td class="file-path">agent_communication_center.py</td>
+                            <td><span class="status-badge status-healthy">Running</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Additional MCP Servers Found -->
+        <div class="category-section">
+            <div class="category-header">
+                <h2>📁 Additional MCP Servers (Not in Startup)</h2>
+            </div>
+            <div class="server-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>File Location</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Browser Server</strong></td>
+                            <td class="file-path">mcp/browser_server.py</td>
+                            <td class="purpose">Web browsing automation</td>
+                            <td><span class="status-badge status-not-running">Available</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Git Server</strong></td>
+                            <td class="file-path">mcp/git_server.py</td>
+                            <td class="purpose">Version control operations</td>
+                            <td><span class="status-badge status-not-running">Available</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Department Server</strong></td>
+                            <td class="file-path">mcp/department_server.py</td>
+                            <td class="purpose">Department management</td>
+                            <td><span class="status-badge status-not-running">Available</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Terminal Server</strong></td>
+                            <td class="file-path">mcp/terminal_server.py</td>
+                            <td class="purpose">Terminal/shell operations</td>
+                            <td><span class="status-badge status-not-running">Available</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="notes">
+            <h3>Important Notes</h3>
+            <ul>
+                <li>The Registry Server was moved from port 8009 to port 8000 to fix port conflicts</li>
+                <li>SQLite Database Server (8004) and LLM Server (8005) are mentioned in CLAUDE.md but not currently started by startup.py</li>
+                <li>Agent Cortex Management UI has PYTHONPATH issues preventing proper startup</li>
+                <li>Corporate HQ and Agent Communication Center processes are running but showing as "Not Accessible" in health checks</li>
+                <li>Additional MCP servers (Browser, Git, Department, Terminal) exist but are not included in the startup sequence</li>
+            </ul>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span class="status-badge status-healthy">Healthy</span>
+                <span>Server is running and responding to health checks</span>
+            </div>
+            <div class="legend-item">
+                <span class="status-badge status-error">Error</span>
+                <span>Server has issues or is not accessible</span>
+            </div>
+            <div class="legend-item">
+                <span class="status-badge status-not-running">Not Running</span>
+                <span>Server is not started or not implemented</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

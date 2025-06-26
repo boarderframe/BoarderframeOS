@@ -1,0 +1,73 @@
+{
+  "timestamp": "2025-06-24T17:52:28.096328",
+  "postgresql": {
+    "container_status": {
+      "running": true,
+      "status": "Up 11 minutes (healthy)",
+      "ports": "0.0.0.0:5434->5432/tcp, [::]:5434->5432/tcp",
+      "created": "2025-06-23 21:49:02 -0400 EDT"
+    },
+    "version": "PostgreSQL 16.8 (Debian 16.8-1.pgdg120+1) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 12.2.0-14) 12.2.0, 64-bit",
+    "pgvector": true,
+    "max_connections": "100",
+    "database_size_mb": 16.0,
+    "table_count": 32,
+    "simple_query_ms": 0.247955322265625,
+    "important_tables": [
+      "agents",
+      "departments",
+      "divisions"
+    ]
+  },
+  "redis": {
+    "container_status": {
+      "running": true,
+      "status": "Up 11 minutes (healthy)",
+      "ports": "0.0.0.0:6379->6379/tcp, [::]:6379->6379/tcp",
+      "created": "2025-06-23 21:49:02 -0400 EDT"
+    },
+    "version": "7.4.4",
+    "used_memory_human": "1.21M",
+    "connected_clients": 2,
+    "persistence": true,
+    "pubsub_working": true,
+    "operations_working": true,
+    "eviction_policy": "allkeys-lru"
+  },
+  "overall_status": "healthy_with_warnings",
+  "docker_version": "Version:           28.2.2",
+  "summary": {
+    "successes": 23,
+    "warnings": 1,
+    "errors": 0,
+    "success_messages": [
+      "Docker is running",
+      "docker-compose.yml found",
+      "docker-compose.yml is valid",
+      "PostgreSQL container is running: Up 11 minutes (healthy)",
+      "PostgreSQL connection successful",
+      "PostgreSQL version: PostgreSQL 16.8 (Debian 16.8-1.pgdg120+1) on aarch64-unknown-linux-gnu",
+      "pgvector extension is installed",
+      "Max connections: 100",
+      "Database size: 16.00 MB",
+      "Number of tables: 32",
+      "Query performance: 0.25ms (\u2713 meets <3ms target)",
+      "Table 'agents' exists",
+      "Table 'departments' exists",
+      "Table 'divisions' exists",
+      "Redis container is running: Up 11 minutes (healthy)",
+      "Redis connection successful (PING: PONG)",
+      "Redis version: 7.4.4",
+      "Memory usage: 1.21M",
+      "Connected clients: 2",
+      "Redis persistence is configured",
+      "Redis pub/sub functionality working",
+      "Redis read/write operations working",
+      "Eviction policy: allkeys-lru"
+    ],
+    "warning_messages": [
+      "Table 'messages' not found"
+    ],
+    "error_messages": []
+  }
+}

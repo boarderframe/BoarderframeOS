@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infrastructure Health Fix - Verification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e8ba3 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a8b2d1;
+        }
+
+        .status-overview {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .status-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-label {
+            color: #a8b2d1;
+            font-size: 0.9rem;
+        }
+
+        .online {
+            color: #10b981;
+        }
+
+        .offline {
+            color: #ef4444;
+        }
+
+        .warning {
+            color: #f59e0b;
+        }
+
+        .fix-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .fix-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.8s ease-out;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .fix-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .fix-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .fix-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-size: 0.9rem;
+        }
+
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .test-result {
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .test-success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.5);
+        }
+
+        .test-error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+            margin: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Infrastructure Health Display Fixed</h1>
+            <p class="subtitle">Server status now shows actual health metrics instead of 0/10</p>
+        </div>
+
+        <div class="status-overview">
+            <h2 style="margin-bottom: 1rem;">📊 Current Infrastructure Status</h2>
+            <div id="currentStatus" class="status-grid">
+                <div class="status-card">
+                    <div class="status-value">
+                        <span class="loading">⏳</span>
+                    </div>
+                    <div class="status-label">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="fix-details">
+            <div class="fix-card">
+                <div class="fix-header">
+                    <div class="fix-icon">🔍</div>
+                    <div class="fix-title">Problem Identified</div>
+                </div>
+                <ul style="line-height: 1.8; padding-left: 1.5rem;">
+                    <li>Infrastructure Health showed "0/10 Online" in red</li>
+                    <li>unified_data["servers"] key was missing</li>
+                    <li>Server counts weren't being calculated properly</li>
+                    <li>No automatic update of server summary data</li>
+                </ul>
+            </div>
+
+            <div class="fix-card">
+                <div class="fix-header">
+                    <div class="fix-icon">✅</div>
+                    <div class="fix-title">Solution Applied</div>
+                </div>
+                <ul style="line-height: 1.8; padding-left: 1.5rem;">
+                    <li>Added "servers" key to unified_data structure</li>
+                    <li>Created _update_servers_summary() method</li>
+                    <li>Auto-populates server counts on initialization</li>
+                    <li>Properly tracks healthy vs total servers</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="fix-card">
+            <h3 style="margin-bottom: 1rem;">🛠️ Code Changes Applied</h3>
+
+            <div class="code-block">
+<strong>1. Added servers key to unified_data initialization:</strong>
+"servers": {
+    "total": 0,
+    "healthy": 0,
+    "core": {"total": 0, "healthy": 0},
+    "mcp": {"total": 0, "healthy": 0},
+    "business": {"total": 0, "healthy": 0}
+}
+
+<strong>2. Created _update_servers_summary() method:</strong>
+- Counts servers by category (Core, MCP, Business)
+- Checks health status for each server
+- Updates unified_data["servers"] with totals
+
+<strong>3. Auto-calculation in generate_dashboard_html:</strong>
+if "servers" not in unified_data:
+    unified_data["servers"] = {
+        "total": total_servers,
+        "healthy": total_healthy_servers,
+        ...
+    }
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3 style="margin-bottom: 1rem;">🧪 Live Infrastructure Health Test</h3>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="checkHealth()">
+                    <span>🔍</span> Check Health Status
+                </button>
+                <button class="btn btn-secondary" onclick="refreshCorporateHQ()">
+                    <span>🔄</span> Trigger Global Refresh
+                </button>
+                <button class="btn btn-secondary" onclick="checkServersAPI()">
+                    <span>📡</span> Check Services API
+                </button>
+            </div>
+            <div id="testResult" class="test-result" style="display: none;"></div>
+        </div>
+
+        <div class="fix-card">
+            <h3 style="margin-bottom: 1rem;">✅ Expected Results</h3>
+            <ul style="line-height: 1.8; padding-left: 1.5rem;">
+                <li><strong>Infrastructure Health:</strong> Should show "9/10 Online" or similar (not 0/10)</li>
+                <li><strong>Welcome Page:</strong> Should show actual health percentage (e.g., 90%)</li>
+                <li><strong>Server Categories:</strong> Should show correct counts for Core, MCP, and Business servers</li>
+                <li><strong>Auto-refresh:</strong> Status should update every 30 seconds automatically</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Check current infrastructure status
+        async function loadCurrentStatus() {
+            try {
+                const response = await fetch('http://localhost:8888/api/services/status');
+                const data = await response.json();
+
+                // Count servers by status
+                const servers = Object.entries(data);
+                const healthy = servers.filter(([_, s]) => s.status === 'healthy').length;
+                const total = servers.length;
+
+                // Update display
+                document.getElementById('currentStatus').innerHTML = `
+                    <div class="status-card">
+                        <div class="status-value ${total > 0 ? 'online' : 'offline'}">${total}</div>
+                        <div class="status-label">Total Servers</div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-value ${healthy > 0 ? 'online' : 'offline'}">${healthy}</div>
+                        <div class="status-label">Healthy Servers</div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-value ${healthy === total ? 'online' : healthy > 0 ? 'warning' : 'offline'}">
+                            ${healthy}/${total}
+                        </div>
+                        <div class="status-label">Infrastructure Health</div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-value ${healthy > 0 ? 'online' : 'offline'}">
+                            ${total > 0 ? Math.round((healthy / total) * 100) : 0}%
+                        </div>
+                        <div class="status-label">Health Percentage</div>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('currentStatus').innerHTML = `
+                    <div class="status-card">
+                        <div class="status-value offline">ERROR</div>
+                        <div class="status-label">Failed to load status</div>
+                    </div>
+                `;
+            }
+        }
+
+        async function checkHealth() {
+            const result = document.getElementById('testResult');
+            result.style.display = 'block';
+            result.className = 'test-result';
+            result.textContent = 'Checking health status...';
+
+            try {
+                const response = await fetch('http://localhost:8888/health');
+                const data = await response.json();
+
+                result.className = 'test-result test-success';
+                result.textContent = `✅ Corporate HQ Health Check:\n${JSON.stringify(data, null, 2)}`;
+
+                // Reload current status
+                loadCurrentStatus();
+            } catch (error) {
+                result.className = 'test-result test-error';
+                result.textContent = `❌ Health check failed:\n${error.message}`;
+            }
+        }
+
+        async function refreshCorporateHQ() {
+            const result = document.getElementById('testResult');
+            result.style.display = 'block';
+            result.className = 'test-result';
+            result.textContent = 'Triggering global refresh...';
+
+            try {
+                const response = await fetch('http://localhost:8888/api/global/refresh', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                result.className = 'test-result test-success';
+                result.textContent = `✅ Global Refresh Completed:\n${JSON.stringify(data, null, 2)}\n\nThe Infrastructure Health display should now show the correct server counts!`;
+
+                // Reload current status after a delay
+                setTimeout(loadCurrentStatus, 1000);
+            } catch (error) {
+                result.className = 'test-result test-error';
+                result.textContent = `❌ Refresh failed:\n${error.message}`;
+            }
+        }
+
+        async function checkServersAPI() {
+            const result = document.getElementById('testResult');
+            result.style.display = 'block';
+            result.className = 'test-result';
+            result.textContent = 'Checking services API...';
+
+            try {
+                const response = await fetch('http://localhost:8888/api/services/status');
+                const data = await response.json();
+
+                // Count servers
+                const servers = Object.entries(data);
+                const healthy = servers.filter(([_, s]) => s.status === 'healthy').length;
+
+                result.className = 'test-result test-success';
+                result.textContent = `✅ Services Status:\nTotal: ${servers.length} servers\nHealthy: ${healthy} servers\n\nServer Details:\n${servers.map(([name, info]) => `- ${name}: ${info.status} (port ${info.port})`).join('\n')}`;
+            } catch (error) {
+                result.className = 'test-result test-error';
+                result.textContent = `❌ API check failed:\n${error.message}`;
+            }
+        }
+
+        // Load status on page load
+        loadCurrentStatus();
+
+        // Auto-refresh every 10 seconds
+        setInterval(loadCurrentStatus, 10000);
+    </script>
+</body>
+</html>

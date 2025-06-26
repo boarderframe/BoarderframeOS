@@ -1,5 +1,5 @@
 {
-  "data_mtime": 1749917306,
+  "data_mtime": 1750080926,
   "dep_lines": [
     5,
     1,
@@ -31,13 +31,13 @@
   "dependencies": [
     "markdown_it.common.utils",
     "builtins",
-    "qdrant_client.grpc.collections_service_pb2",
-    "qdrant_client.grpc.snapshots_service_pb2",
+    "qdrant_client.grpc.points_service_pb2",
     "qdrant_client.grpc.qdrant_pb2",
     "qdrant_client.grpc.collections_pb2",
-    "qdrant_client.grpc.points_service_pb2",
-    "qdrant_client.grpc.points_pb2",
     "qdrant_client.grpc.json_with_int_pb2",
+    "qdrant_client.grpc.points_pb2",
+    "qdrant_client.grpc.snapshots_service_pb2",
+    "qdrant_client.grpc.collections_service_pb2",
     "_frozen_importlib",
     "abc",
     "typing"

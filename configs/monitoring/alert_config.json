@@ -1,0 +1,59 @@
+{
+  "rules": [
+    {
+      "name": "high_cpu_usage",
+      "condition": "system.cpu > 90",
+      "duration": "5m",
+      "severity": "warning",
+      "message": "CPU usage is above 90% for 5 minutes"
+    },
+    {
+      "name": "critical_memory",
+      "condition": "system.memory > 95",
+      "duration": "2m",
+      "severity": "critical",
+      "message": "Memory usage is critically high"
+    },
+    {
+      "name": "service_down",
+      "condition": "service.healthy == false",
+      "duration": "1m",
+      "severity": "critical",
+      "message": "Service {service_name} is down"
+    },
+    {
+      "name": "agent_unresponsive",
+      "condition": "agent.last_seen > 5m",
+      "duration": "0s",
+      "severity": "warning",
+      "message": "Agent {agent_name} is unresponsive"
+    },
+    {
+      "name": "high_error_rate",
+      "condition": "error_rate > 10",
+      "duration": "5m",
+      "severity": "warning",
+      "message": "Error rate is above 10% for 5 minutes"
+    }
+  ],
+  "channels": {
+    "console": {
+      "type": "console",
+      "enabled": true
+    },
+    "file": {
+      "type": "file",
+      "path": "monitoring/alerts/alerts.log",
+      "enabled": true
+    },
+    "webhook": {
+      "type": "webhook",
+      "url": "http://localhost:8888/api/alerts",
+      "enabled": false
+    }
+  },
+  "settings": {
+    "check_interval": 30,
+    "alert_cooldown": 300
+  }
+}

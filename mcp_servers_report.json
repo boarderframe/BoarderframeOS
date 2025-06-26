@@ -1,0 +1,401 @@
+{
+  "timestamp": "2025-06-24T18:24:23.593178",
+  "servers": {
+    "PostgreSQL Database Server": {
+      "name": "PostgreSQL Database Server",
+      "port": 8010,
+      "priority": "Enterprise",
+      "file": "mcp/database_server_postgres.py",
+      "status": "healthy",
+      "checks": {
+        "port_open": true,
+        "process_id": 1934,
+        "health_endpoint": {
+          "success": true,
+          "status_code": 200,
+          "response": "{\"status\":\"healthy\",\"database\":\"healthy\",\"redis\":\"disabled\",\"pool_size\":1,\"active_connections\":50,\"timestamp\":\"2025-06-24T22:24:23.886163\"}"
+        },
+        "health_data": {
+          "status": "healthy",
+          "database": "healthy",
+          "redis": "disabled",
+          "pool_size": 1,
+          "active_connections": 50,
+          "timestamp": "2025-06-24T22:24:23.886163"
+        },
+        "endpoint_/tools": {
+          "success": true,
+          "status_code": 404
+        },
+        "endpoint_/query": {
+          "success": true,
+          "status_code": 405
+        },
+        "query_performance": {
+          "average_latency_ms": 1.05,
+          "samples": 5
+        }
+      },
+      "features": [
+        "Connection pooling (15-50)",
+        "Query cache (99.99%)",
+        "pgvector",
+        "1-3ms queries"
+      ]
+    },
+    "Filesystem Server": {
+      "name": "Filesystem Server",
+      "port": 8001,
+      "priority": "Enterprise",
+      "file": "mcp/filesystem_server.py",
+      "status": "healthy",
+      "checks": {
+        "port_open": true,
+        "process_id": 1910,
+        "health_endpoint": {
+          "success": true,
+          "status_code": 200,
+          "response": "{\"status\":\"healthy\",\"uptime\":2147.94588303566,\"base_path\":\"/Users/cosburn/BoarderframeOS\",\"ai_available\":true,\"active_operations\":0,\"connected_clients\":0,\"fs_watchers\":0,\"features\":{\"aiofiles\":true,\"x"
+        },
+        "health_data": {
+          "status": "healthy",
+          "uptime": 2147.94588303566,
+          "base_path": "/Users/cosburn/BoarderframeOS",
+          "ai_available": true,
+          "active_operations": 0,
+          "connected_clients": 0,
+          "fs_watchers": 0,
+          "features": {
+            "aiofiles": true,
+            "xxhash": true,
+            "watchdog": true,
+            "numpy": true,
+            "transformers": true,
+            "sqlite": true,
+            "tiktoken": true,
+            "pygments": true,
+            "blake3": true
+          }
+        },
+        "endpoint_/tools": {
+          "success": true,
+          "status_code": 404
+        },
+        "endpoint_/files": {
+          "success": true,
+          "status_code": 404
+        }
+      },
+      "features": [
+        "AI-enhanced operations",
+        "4-tier rate limiting",
+        "Semantic search",
+        "Security"
+      ]
+    },
+    "Analytics Server": {
+      "name": "Analytics Server",
+      "port": 8007,
+      "priority": "Enterprise",
+      "file": "mcp/analytics_server.py",
+      "status": "healthy",
+      "checks": {
+        "port_open": true,
+        "process_id": 1954,
+        "health_endpoint": {
+          "success": true,
+          "status_code": 200,
+          "response": "{\"status\":\"healthy\",\"timestamp\":\"2025-06-24T18:24:23.884965\",\"tracked_events\":0,\"metrics_count\":0,\"server\":\"mcp_analytics\",\"background_processing\":{\"queue_size\":0,\"events_processed\":0,\"batches_process"
+        },
+        "health_data": {
+          "status": "healthy",
+          "timestamp": "2025-06-24T18:24:23.884965",
+          "tracked_events": 0,
+          "metrics_count": 0,
+          "server": "mcp_analytics",
+          "background_processing": {
+            "queue_size": 0,
+            "events_processed": 0,
+            "batches_processed": 0
+          },
+          "database_available": true,
+          "postgresql_available": true,
+          "sqlite_available": true
+        },
+        "endpoint_/tools": {
+          "success": true,
+          "status_code": 404
+        },
+        "endpoint_/events": {
+          "success": true,
+          "status_code": 404
+        }
+      },
+      "features": [
+        "Event batching (50/5s)",
+        "JSONB storage",
+        "95% throughput",
+        "BI pipeline"
+      ]
+    },
+    "Registry Server": {
+      "name": "Registry Server",
+      "port": 8000,
+      "priority": "Standard",
+      "file": "mcp/registry_server.py",
+      "status": "healthy",
+      "checks": {
+        "port_open": true,
+        "process_id": 1905,
+        "health_endpoint": {
+          "success": true,
+          "status_code": 200,
+          "response": "{\"status\":\"healthy\",\"agents\":{\"total\":0,\"online\":0,\"healthy\":0},\"servers\":{\"total\":0,\"online\":0,\"healthy\":0},\"timestamp\":\"2025-06-24T22:24:23.886047\"}"
+        },
+        "health_data": {
+          "status": "healthy",
+          "agents": {
+            "total": 0,
+            "online": 0,
+            "healthy": 0
+          },
+          "servers": {
+            "total": 0,
+            "online": 0,
+            "healthy": 0
+          },
+          "timestamp": "2025-06-24T22:24:23.886047"
+        },
+        "endpoint_/tools": {
+          "success": true,
+          "status_code": 404
+        },
+        "endpoint_/agents": {
+          "success": true,
+          "status_code": 404
+        }
+      },
+      "features": [
+        "Agent registration",
+        "Service discovery",
+        "Redis events"
+      ]
+    },
+    "Payment Server": {
+      "name": "Payment Server",
+      "port": 8006,
+      "priority": "Standard",
+      "file": "mcp/payment_server.py",
+      "status": "healthy",
+      "checks": {
+        "port_open": true,
+        "process_id": 1952,
+        "health_endpoint": {
+          "success": true,
+          "status_code": 200,
+          "response": "{\"status\":\"healthy\",\"timestamp\":\"2025-06-24T18:24:23.885036\",\"stripe_integration\":\"disabled\",\"transactions\":0,\"active_subscriptions\":0,\"server\":\"mcp_payment\"}"
+        },
+        "health_data": {
+          "status": "healthy",
+          "timestamp": "2025-06-24T18:24:23.885036",
+          "stripe_integration": "disabled",
+          "transactions": 0,
+          "active_subscriptions": 0,
+          "server": "mcp_payment"
+        },
+        "endpoint_/tools": {
+          "success": true,
+          "status_code": 404
+        },
+        "endpoint_/payments": {
+          "success": true,
+          "status_code": 404
+        }
+      },
+      "features": [
+        "Revenue tracking",
+        "Stripe integration",
+        "Customer tracking"
+      ]
+    },
+    "LLM Server": {
+      "name": "LLM Server",
+      "port": 8005,
+      "priority": "Standard",
+      "file": "mcp_stdio/llm_server_stdio.py",
+      "status": "healthy",
+      "checks": {
+        "port_open": true,
+        "process_id": 1947,
+        "health_endpoint": {
+          "success": true,
+          "status_code": 200,
+          "response": "{\"status\":\"healthy\",\"service\":\"Agent Cortex API\",\"version\":\"1.0.0\",\"cortex_initialized\":true,\"uptime\":2144.0699298381805}"
+        },
+        "health_data": {
+          "status": "healthy",
+          "service": "Agent Cortex API",
+          "version": "1.0.0",
+          "cortex_initialized": true,
+          "uptime": 2144.0699298381805
+        },
+        "endpoint_/tools": {
+          "success": true,
+          "status_code": 404
+        },
+        "endpoint_/models": {
+          "success": true,
+          "status_code": 200
+        }
+      },
+      "features": [
+        "OpenAI compatibility",
+        "Multi-provider",
+        "Model management"
+      ]
+    },
+    "SQLite Database Server": {
+      "name": "SQLite Database Server",
+      "port": 8004,
+      "priority": "Advanced",
+      "file": "mcp/database_server.py",
+      "status": "healthy",
+      "checks": {
+        "port_open": true,
+        "process_id": 1941,
+        "health_endpoint": {
+          "success": true,
+          "status_code": 200,
+          "response": "{\"status\":\"healthy\",\"service\":\"database_server\",\"db_path\":\"/Users/cosburn/BoarderframeOS/data/boarderframe.db\"}"
+        },
+        "health_data": {
+          "status": "healthy",
+          "service": "database_server",
+          "db_path": "/Users/cosburn/BoarderframeOS/data/boarderframe.db"
+        },
+        "endpoint_/tools": {
+          "success": true,
+          "status_code": 404
+        },
+        "endpoint_/query": {
+          "success": true,
+          "status_code": 405
+        },
+        "query_performance": {
+          "average_latency_ms": 1.02,
+          "samples": 5
+        }
+      },
+      "features": [
+        "Legacy compatibility",
+        "Connection pooling",
+        "Query caching"
+      ]
+    },
+    "Customer Server": {
+      "name": "Customer Server",
+      "port": 8008,
+      "priority": "Standard",
+      "file": "mcp/customer_server.py",
+      "status": "healthy",
+      "checks": {
+        "port_open": true,
+        "process_id": 1956,
+        "health_endpoint": {
+          "success": true,
+          "status_code": 200,
+          "response": "{\"status\":\"healthy\",\"timestamp\":\"2025-06-24T18:24:23.885230\",\"customers_count\":0,\"interactions_count\":0,\"server\":\"mcp_customer\"}"
+        },
+        "health_data": {
+          "status": "healthy",
+          "timestamp": "2025-06-24T18:24:23.885230",
+          "customers_count": 0,
+          "interactions_count": 0,
+          "server": "mcp_customer"
+        },
+        "endpoint_/tools": {
+          "success": true,
+          "status_code": 404
+        },
+        "endpoint_/customers": {
+          "success": true,
+          "status_code": 200
+        }
+      },
+      "features": [
+        "CRM functionality",
+        "PostgreSQL backend",
+        "Customer operations"
+      ]
+    },
+    "Screenshot Server": {
+      "name": "Screenshot Server",
+      "port": 8011,
+      "priority": "Advanced",
+      "file": "mcp/screenshot_server.py",
+      "status": "healthy",
+      "checks": {
+        "port_open": true,
+        "process_id": 1957,
+        "health_endpoint": {
+          "success": true,
+          "status_code": 200,
+          "response": "{\"status\":\"healthy\",\"timestamp\":\"2025-06-24T18:24:23.885366\",\"server\":\"mcp_screenshot\",\"dependencies\":{\"PIL\":true,\"pyautogui\":true,\"platform\":\"darwin\"},\"screenshot_cache_size\":0,\"screenshots_directory"
+        },
+        "health_data": {
+          "status": "healthy",
+          "timestamp": "2025-06-24T18:24:23.885366",
+          "server": "mcp_screenshot",
+          "dependencies": {
+            "PIL": true,
+            "pyautogui": true,
+            "platform": "darwin"
+          },
+          "screenshot_cache_size": 0,
+          "screenshots_directory": "/Users/cosburn/BoarderframeOS/screenshots"
+        },
+        "endpoint_/tools": {
+          "success": true,
+          "status_code": 404
+        },
+        "endpoint_/capture": {
+          "success": true,
+          "status_code": 405
+        }
+      },
+      "features": [
+        "Screenshot capture",
+        "Annotation support",
+        "Base64 encoding",
+        "Auto cleanup"
+      ]
+    }
+  },
+  "summary": {
+    "total_servers": 9,
+    "healthy": 9,
+    "unhealthy": 0,
+    "offline": 0,
+    "health_percentage": 100.0,
+    "priority_breakdown": {
+      "Enterprise": {
+        "healthy": 3,
+        "unhealthy": 0,
+        "offline": 0
+      },
+      "Standard": {
+        "healthy": 4,
+        "unhealthy": 0,
+        "offline": 0
+      },
+      "Advanced": {
+        "healthy": 2,
+        "unhealthy": 0,
+        "offline": 0
+      }
+    },
+    "total_successes": 28,
+    "total_warnings": 0,
+    "total_errors": 0
+  }
+}

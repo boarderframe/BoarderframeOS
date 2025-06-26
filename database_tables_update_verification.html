@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Tables Update - Verification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1a1c2e 0%, #2d3561 50%, #424874 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a0aec0;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .success-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border-color: #667eea;
+        }
+
+        .info-card h3 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .table-list {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .table-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .table-item:last-child {
+            border-bottom: none;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        .llm-category {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            border: 1px solid #22c55e;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+
+        .icon {
+            font-size: 1.2rem;
+        }
+
+        .checkmark {
+            color: #10b981;
+        }
+
+        .dollar {
+            color: #22c55e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗄️ Database Tables Update Complete</h1>
+            <p class="subtitle">Corporate HQ now displays all PostgreSQL tables with LLM Cost Tracking category</p>
+        </div>
+
+        <div class="status-card">
+            <div class="success-badge">✅ Update Successful</div>
+
+            <h2 style="margin-bottom: 1.5rem;">What Was Updated</h2>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3><span class="icon">📝</span> Code Changes</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 0.5rem;">
+                            <span class="checkmark">✓</span> Updated <code>_categorize_table</code> method
+                        </li>
+                        <li style="margin-bottom: 0.5rem;">
+                            <span class="checkmark">✓</span> Added LLM Cost Tracking category
+                        </li>
+                        <li style="margin-bottom: 0.5rem;">
+                            <span class="checkmark">✓</span> Updated category filter dropdown
+                        </li>
+                        <li>
+                            <span class="checkmark">✓</span> Updated category priority order
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="info-card">
+                    <h3><span class="icon">📊</span> Database Status</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 0.5rem;">
+                            <strong>Total Tables:</strong> 48
+                        </li>
+                        <li style="margin-bottom: 0.5rem;">
+                            <strong>LLM Tables:</strong> 4
+                        </li>
+                        <li style="margin-bottom: 0.5rem;">
+                            <strong>Categories:</strong> 9
+                        </li>
+                        <li>
+                            <strong>Status:</strong> <span style="color: #10b981;">All tables visible</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem 0; color: #22c55e;">
+                <span class="dollar">💰</span> LLM Cost Tracking Tables
+            </h3>
+
+            <div class="table-list">
+                <div class="table-item">
+                    <span class="icon">📊</span>
+                    <strong>llm_cost_tracking</strong>
+                    <span class="category-badge llm-category">LLM Cost Tracking</span>
+                </div>
+                <div class="table-item">
+                    <span class="icon">📈</span>
+                    <strong>llm_cost_summary</strong>
+                    <span class="category-badge llm-category">LLM Cost Tracking</span>
+                </div>
+                <div class="table-item">
+                    <span class="icon">💳</span>
+                    <strong>llm_budget_tracking</strong>
+                    <span class="category-badge llm-category">LLM Cost Tracking</span>
+                </div>
+                <div class="table-item">
+                    <span class="icon">⚡</span>
+                    <strong>llm_model_performance</strong>
+                    <span class="category-badge llm-category">LLM Cost Tracking</span>
+                </div>
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem 0;">How to Verify</h3>
+
+            <ol style="line-height: 1.8; padding-left: 1.5rem;">
+                <li>Open Corporate HQ at <code>http://localhost:8888</code></li>
+                <li>Click on the <strong>Database</strong> tab</li>
+                <li>Look for the <strong>LLM Cost Tracking</strong> category section</li>
+                <li>Use the category filter dropdown to filter by "LLM Cost Tracking"</li>
+                <li>Click the "Refresh Data" button to update the table list</li>
+            </ol>
+
+            <div class="code-block">
+                <strong>Category Recognition Logic:</strong><br>
+                if any(keyword in table_name_lower for keyword in ["llm_cost", "llm_budget", "llm_model_performance"]):<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;return "llm_cost_tracking", "fas fa-dollar-sign", "#22c55e"
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="http://localhost:8888" class="btn btn-primary" target="_blank">
+                <span>🏢</span> Open Corporate HQ
+            </a>
+            <button class="btn btn-secondary" onclick="refreshDatabase()">
+                <span>🔄</span> Trigger Database Refresh
+            </button>
+            <a href="http://localhost:8081" class="btn btn-secondary" target="_blank">
+                <span>🗄️</span> Open Adminer
+            </a>
+        </div>
+    </div>
+
+    <script>
+        async function refreshDatabase() {
+            try {
+                const response = await fetch('http://localhost:8888/api/database/refresh', {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    alert('✅ Database refresh triggered successfully!');
+                } else {
+                    alert('❌ Failed to refresh database. Is Corporate HQ running?');
+                }
+            } catch (error) {
+                alert('❌ Cannot connect to Corporate HQ. Please ensure it is running.');
+            }
+        }
+
+        // Add visual feedback on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.info-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+    </script>
+</body>
+</html>

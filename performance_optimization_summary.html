@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Optimization Scripts - BoarderframeOS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #141e30 0%, #243b55 50%, #141e30 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #f39c12, #e74c3c, #9b59b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            margin: 20px 0;
+            font-size: 1.2em;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .section h2 {
+            color: #f39c12;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+        
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .tool-card {
+            background: linear-gradient(135deg, rgba(243, 156, 18, 0.1), rgba(231, 76, 60, 0.1));
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid rgba(243, 156, 18, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(243, 156, 18, 0.3);
+            border-color: rgba(243, 156, 18, 0.5);
+        }
+        
+        .tool-card h3 {
+            color: #e74c3c;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        
+        .metrics-showcase {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .metric-box {
+            display: inline-block;
+            margin: 10px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            min-width: 150px;
+        }
+        
+        .metric-box .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2ecc71;
+        }
+        
+        .metric-box .label {
+            color: #bbb;
+            margin-top: 5px;
+        }
+        
+        .command-box {
+            background: #000;
+            color: #00ff88;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: monospace;
+            margin: 15px 0;
+            border: 1px solid #00ff88;
+            overflow-x: auto;
+        }
+        
+        .file-list {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        
+        .file-list ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+        
+        .file-list li {
+            padding: 8px 0;
+            color: #f39c12;
+            position: relative;
+        }
+        
+        .file-list li::before {
+            content: "⚡";
+            position: absolute;
+            left: -25px;
+        }
+        
+        .optimization-areas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .optimization-item {
+            background: rgba(155, 89, 182, 0.1);
+            border: 1px solid rgba(155, 89, 182, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .monitor-preview {
+            background: #1a1a2e;
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: monospace;
+            color: #00ff88;
+        }
+        
+        .feature-highlights {
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(52, 152, 219, 0.1));
+            border: 2px solid rgba(46, 204, 113, 0.3);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        
+        .feature-highlights ul {
+            list-style: none;
+            line-height: 2;
+        }
+        
+        .feature-highlights li::before {
+            content: "✨ ";
+            color: #f39c12;
+        }
+        
+        .next-steps {
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.1), rgba(155, 89, 182, 0.1));
+            border: 2px solid #e74c3c;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+        
+        .success-icon {
+            color: #2ecc71;
+            font-size: 1.2em;
+            margin-right: 10px;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+        
+        .live-badge {
+            display: inline-block;
+            background: #e74c3c;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ Performance Optimization Scripts</h1>
+        <div style="text-align: center;">
+            <span class="status-badge">✅ SUCCESSFULLY IMPLEMENTED</span>
+            <span class="live-badge">LIVE MONITORING</span>
+        </div>
+        
+        <div class="section">
+            <h2>🎯 What Was Accomplished</h2>
+            <p>BoarderframeOS now has comprehensive performance optimization tools covering:</p>
+            <ul style="margin: 20px 0; line-height: 1.8;">
+                <li><span class="success-icon">✓</span>Database performance optimization (PostgreSQL & SQLite)</li>
+                <li><span class="success-icon">✓</span>Agent performance profiling and optimization</li>
+                <li><span class="success-icon">✓</span>System-wide resource optimization</li>
+                <li><span class="success-icon">✓</span>Real-time performance monitoring dashboard</li>
+                <li><span class="success-icon">✓</span>Automated optimization configurations</li>
+                <li><span class="success-icon">✓</span>Bottleneck detection and recommendations</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>🛠️ Performance Tools Created</h2>
+            <div class="tool-grid">
+                <div class="tool-card">
+                    <h3>Database Optimizer</h3>
+                    <p><strong>optimize_database.py</strong></p>
+                    <p>Optimizes PostgreSQL and SQLite performance through index management, query analysis, and configuration tuning.</p>
+                    <ul style="margin-top: 10px;">
+                        <li>• Automatic index creation</li>
+                        <li>• VACUUM and ANALYZE operations</li>
+                        <li>• Cache hit ratio optimization</li>
+                        <li>• Query performance analysis</li>
+                    </ul>
+                </div>
+                
+                <div class="tool-card">
+                    <h3>Agent Optimizer</h3>
+                    <p><strong>optimize_agents.py</strong></p>
+                    <p>Profiles and optimizes agent performance, memory usage, and response times.</p>
+                    <ul style="margin-top: 10px;">
+                        <li>• Memory profiling with tracemalloc</li>
+                        <li>• Message batching configuration</li>
+                        <li>• LLM call optimization</li>
+                        <li>• Concurrency settings</li>
+                    </ul>
+                </div>
+                
+                <div class="tool-card">
+                    <h3>System Optimizer</h3>
+                    <p><strong>optimize_system.py</strong></p>
+                    <p>System-wide optimization including Docker, network, Redis, and Python runtime.</p>
+                    <ul style="margin-top: 10px;">
+                        <li>• Docker resource allocation</li>
+                        <li>• Network TCP optimization</li>
+                        <li>• Redis configuration tuning</li>
+                        <li>• Python runtime flags</li>
+                    </ul>
+                </div>
+                
+                <div class="tool-card">
+                    <h3>Performance Monitor</h3>
+                    <p><strong>monitor_performance.py</strong></p>
+                    <p>Real-time performance monitoring with rich terminal dashboard.</p>
+                    <ul style="margin-top: 10px;">
+                        <li>• Live system metrics</li>
+                        <li>• MCP server health checks</li>
+                        <li>• Database performance stats</li>
+                        <li>• Agent resource tracking</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="metrics-showcase">
+            <h2>📊 Performance Targets</h2>
+            <div class="metric-box">
+                <div class="value">&lt;70%</div>
+                <div class="label">CPU Usage</div>
+            </div>
+            <div class="metric-box">
+                <div class="value">&lt;80%</div>
+                <div class="label">Memory Usage</div>
+            </div>
+            <div class="metric-box">
+                <div class="value">&gt;90%</div>
+                <div class="label">Cache Hit Ratio</div>
+            </div>
+            <div class="metric-box">
+                <div class="value">&lt;200ms</div>
+                <div class="label">Agent Response</div>
+            </div>
+            <div class="metric-box">
+                <div class="value">&gt;1000/s</div>
+                <div class="label">Messages/sec</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🚀 Master Optimization Script</h2>
+            <p><strong>optimize_performance.py</strong> - Runs all optimizations with a single command:</p>
+            <div class="command-box"># Run all optimizations
+./optimize_performance.py
+
+# Optimize specific component
+./optimize_performance.py --component database
+./optimize_performance.py --component agents
+./optimize_performance.py --component system
+
+# Run with monitoring
+./optimize_performance.py --monitor</div>
+        </div>
+        
+        <div class="section">
+            <h2>📁 Generated Configurations</h2>
+            <div class="file-list">
+                <h3>Optimization Outputs:</h3>
+                <ul>
+                    <li><strong>docker-compose.override.yml</strong> - Docker resource limits</li>
+                    <li><strong>performance/nginx_optimized.conf</strong> - Nginx reverse proxy config</li>
+                    <li><strong>performance/redis_optimized.conf</strong> - Redis performance settings</li>
+                    <li><strong>performance/optimized_settings.py</strong> - Python optimization constants</li>
+                    <li><strong>performance/optimized_startup.sh</strong> - Optimized startup script</li>
+                    <li><strong>performance/agent_optimization_config.json</strong> - Agent settings</li>
+                    <li><strong>performance/database_optimization_report.json</strong> - DB analysis</li>
+                    <li><strong>performance/system_optimization_report.json</strong> - System analysis</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="monitor-preview">
+            <h3>🖥️ Performance Monitor Preview</h3>
+            <pre>
+╭─────────────────── System Metrics ────────────────────╮
+│ Metric          Value                    Status        │
+│ CPU Usage       45.2%                    🟢            │
+│ Memory Usage    62.3% (15.7GB used)      🟢            │
+│ Disk I/O        R: 12.5 MB/s, W: 8.3 MB/s 🟢          │
+│ Network I/O     In: 2.1 MB/s, Out: 1.8 MB/s 🟢        │
+╰────────────────────────────────────────────────────────╯
+
+╭─────────────────── MCP Server Status ─────────────────╮
+│ Server              Status      Response Time          │
+│ Registry Server     🟢 healthy  12.3ms                 │
+│ Filesystem Server   🟢 healthy  8.7ms                  │
+│ Analytics Server    🟢 healthy  15.2ms                 │
+╰────────────────────────────────────────────────────────╯
+            </pre>
+        </div>
+        
+        <div class="section">
+            <h2>🔧 Optimization Areas</h2>
+            <div class="optimization-areas">
+                <div class="optimization-item">
+                    <h4>Database</h4>
+                    <p>Index optimization, query caching, connection pooling</p>
+                </div>
+                <div class="optimization-item">
+                    <h4>Memory</h4>
+                    <p>GC tuning, object pooling, cache management</p>
+                </div>
+                <div class="optimization-item">
+                    <h4>Network</h4>
+                    <p>TCP optimization, compression, connection reuse</p>
+                </div>
+                <div class="optimization-item">
+                    <h4>Concurrency</h4>
+                    <p>Thread pools, async I/O, semaphores</p>
+                </div>
+                <div class="optimization-item">
+                    <h4>LLM Calls</h4>
+                    <p>Response caching, token optimization, model routing</p>
+                </div>
+                <div class="optimization-item">
+                    <h4>Resources</h4>
+                    <p>CPU limits, memory allocation, I/O throttling</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="feature-highlights">
+            <h3>✨ Key Features</h3>
+            <ul>
+                <li>Automatic bottleneck detection and recommendations</li>
+                <li>Real-time performance monitoring with alerts</li>
+                <li>Comprehensive profiling of all system components</li>
+                <li>Generated optimization configurations</li>
+                <li>Before/after performance comparisons</li>
+                <li>HTML dashboards and JSON reports</li>
+                <li>Integration with existing BoarderframeOS infrastructure</li>
+                <li>Production-ready optimization settings</li>
+            </ul>
+        </div>
+        
+        <div class="next-steps">
+            <h2>💡 Next Steps</h2>
+            <ol style="line-height: 2;">
+                <li><strong>Run optimization:</strong> <code>./optimize_performance.py</code></li>
+                <li><strong>Review reports:</strong> Check <code>performance/</code> directory</li>
+                <li><strong>Apply configurations:</strong> Restart services with optimized settings</li>
+                <li><strong>Monitor performance:</strong> <code>./performance/monitor_performance.py</code></li>
+                <li><strong>Set up alerts:</strong> Configure thresholds in monitoring</li>
+                <li><strong>Schedule regular optimization:</strong> Add to cron for weekly runs</li>
+            </ol>
+        </div>
+        
+        <div style="text-align: center; margin-top: 40px; color: #888;">
+            <p>Performance optimization implementation completed at <?= new Date().toLocaleString() ?></p>
+            <p style="margin-top: 10px;">BoarderframeOS - Optimized for Maximum Performance</p>
+        </div>
+    </div>
+    
+    <script>
+        // Add current timestamp
+        document.body.innerHTML = document.body.innerHTML.replace('<?= new Date().toLocaleString() ?>', new Date().toLocaleString());
+    </script>
+</body>
+</html>

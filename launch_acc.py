@@ -55,7 +55,7 @@ def main():
 
     # Import and run the ACC
     try:
-        from agent_communication_center import main as run_acc
+        from agent_communication_center_enhanced import main as run_acc
 
         run_acc()
     except ImportError as e:

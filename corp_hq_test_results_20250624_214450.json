@@ -1,0 +1,290 @@
+{
+  "test_run": {
+    "timestamp": "2025-06-24T21:44:50.873322",
+    "duration": 0.59718918800354,
+    "total_tests": 28,
+    "passed": 12,
+    "failed": 16,
+    "success_rate": "42.9%"
+  },
+  "results": [
+    {
+      "test_name": "Agent List API",
+      "passed": false,
+      "error": "Status code: 404",
+      "details": {
+        "response_time": 0.0026268959045410156
+      },
+      "timestamp": "2025-06-24T21:44:50.442134"
+    },
+    {
+      "test_name": "Services Status API",
+      "passed": false,
+      "error": "Status code: 404",
+      "details": {
+        "response_time": 0.0016219615936279297
+      },
+      "timestamp": "2025-06-24T21:44:50.443767"
+    },
+    {
+      "test_name": "Departments API",
+      "passed": false,
+      "error": "Status code: 404",
+      "details": {
+        "response_time": 0.0014529228210449219
+      },
+      "timestamp": "2025-06-24T21:44:50.445229"
+    },
+    {
+      "test_name": "Department Hierarchy API",
+      "passed": false,
+      "error": "Status code: 404",
+      "details": {
+        "response_time": 0.001622915267944336
+      },
+      "timestamp": "2025-06-24T21:44:50.446860"
+    },
+    {
+      "test_name": "Servers Status API",
+      "passed": false,
+      "error": "Status code: 404",
+      "details": {
+        "response_time": 0.0022780895233154297
+      },
+      "timestamp": "2025-06-24T21:44:50.449144"
+    },
+    {
+      "test_name": "Metrics Data API",
+      "passed": false,
+      "error": "Status code: 404",
+      "details": {
+        "response_time": 0.004126071929931641
+      },
+      "timestamp": "2025-06-24T21:44:50.453277"
+    },
+    {
+      "test_name": "Metrics Endpoint",
+      "passed": true,
+      "error": null,
+      "details": {
+        "response_time": 0.0017096996307373047,
+        "status_code": 200,
+        "data_keys": [
+          "metrics",
+          "timestamp"
+        ]
+      },
+      "timestamp": "2025-06-24T21:44:50.455017"
+    },
+    {
+      "test_name": "Health Check",
+      "passed": true,
+      "error": null,
+      "details": {
+        "response_time": 0.0013277530670166016,
+        "status_code": 200,
+        "data_keys": [
+          "agents",
+          "services",
+          "status",
+          "uptime"
+        ]
+      },
+      "timestamp": "2025-06-24T21:44:50.456362"
+    },
+    {
+      "test_name": "Global Refresh API",
+      "passed": true,
+      "error": null,
+      "details": {
+        "response_time": 0.004024028778076172,
+        "status_code": 200,
+        "data_keys": [
+          "components_refreshed",
+          "message",
+          "status",
+          "timestamp"
+        ]
+      },
+      "timestamp": "2025-06-24T21:44:50.460396"
+    },
+    {
+      "test_name": "Metrics Refresh API",
+      "passed": false,
+      "error": "Status code: 404",
+      "details": {
+        "response_time": 0.002290964126586914
+      },
+      "timestamp": "2025-06-24T21:44:50.462694"
+    },
+    {
+      "test_name": "Servers Refresh API",
+      "passed": false,
+      "error": "Status code: 404",
+      "details": {
+        "response_time": 0.0012829303741455078
+      },
+      "timestamp": "2025-06-24T21:44:50.463985"
+    },
+    {
+      "test_name": "Database Refresh API",
+      "passed": true,
+      "error": null,
+      "details": {
+        "response_time": 0.0020148754119873047,
+        "status_code": 200,
+        "data_keys": [
+          "message",
+          "status",
+          "timestamp"
+        ]
+      },
+      "timestamp": "2025-06-24T21:44:50.466010"
+    },
+    {
+      "test_name": "Reload Status API",
+      "passed": false,
+      "error": "Status code: 404",
+      "details": {
+        "response_time": 0.0012199878692626953
+      },
+      "timestamp": "2025-06-24T21:44:50.467235"
+    },
+    {
+      "test_name": "Homepage Load",
+      "passed": true,
+      "error": null,
+      "details": {
+        "response_time": 0.135529
+      },
+      "timestamp": "2025-06-24T21:44:50.571807"
+    },
+    {
+      "test_name": "UI - Dashboard View",
+      "passed": false,
+      "error": "Missing elements: ['Quick Actions']",
+      "details": {},
+      "timestamp": "2025-06-24T21:44:50.707806"
+    },
+    {
+      "test_name": "UI - Navigation Menu",
+      "passed": true,
+      "error": null,
+      "details": {
+        "elements_found": [
+          "Dashboard",
+          "Agents",
+          "Departments",
+          "Metrics"
+        ]
+      },
+      "timestamp": "2025-06-24T21:44:50.707914"
+    },
+    {
+      "test_name": "UI - System Status Cards",
+      "passed": true,
+      "error": null,
+      "details": {
+        "elements_found": [
+          "Agents",
+          "Leaders",
+          "Departments",
+          "Servers"
+        ]
+      },
+      "timestamp": "2025-06-24T21:44:50.708036"
+    },
+    {
+      "test_name": "Department System",
+      "passed": false,
+      "error": "Status code: 404",
+      "details": {},
+      "timestamp": "2025-06-24T21:44:50.722880"
+    },
+    {
+      "test_name": "Metrics System - Refresh",
+      "passed": false,
+      "error": "Refresh failed: 404",
+      "details": {},
+      "timestamp": "2025-06-24T21:44:50.723072"
+    },
+    {
+      "test_name": "Agent Chat API - Solomon",
+      "passed": true,
+      "error": null,
+      "details": {
+        "agent": "solomon",
+        "response_length": 79,
+        "response_preview": "Message sent to Solomon successfully. Real-time responses coming in next phase!..."
+      },
+      "timestamp": "2025-06-24T21:44:50.724658"
+    },
+    {
+      "test_name": "Agent Chat API - David",
+      "passed": true,
+      "error": null,
+      "details": {
+        "agent": "david",
+        "response_length": 77,
+        "response_preview": "Message sent to David successfully. Real-time responses coming in next phase!..."
+      },
+      "timestamp": "2025-06-24T21:44:50.726026"
+    },
+    {
+      "test_name": "Performance Benchmarks - Homepage",
+      "passed": true,
+      "error": null,
+      "details": {
+        "response_time": "0.129s",
+        "threshold": "2.0s"
+      },
+      "timestamp": "2025-06-24T21:44:50.858575"
+    },
+    {
+      "test_name": "Performance Benchmarks - Agent List",
+      "passed": false,
+      "error": "Status code: 404",
+      "details": {},
+      "timestamp": "2025-06-24T21:44:50.860525"
+    },
+    {
+      "test_name": "Performance Benchmarks - Services Status",
+      "passed": false,
+      "error": "Status code: 404",
+      "details": {},
+      "timestamp": "2025-06-24T21:44:50.862303"
+    },
+    {
+      "test_name": "Performance Benchmarks - Metrics Data",
+      "passed": false,
+      "error": "Status code: 404",
+      "details": {},
+      "timestamp": "2025-06-24T21:44:50.863918"
+    },
+    {
+      "test_name": "Error Handling - 404 Error",
+      "passed": true,
+      "error": null,
+      "details": {
+        "status_code": 404
+      },
+      "timestamp": "2025-06-24T21:44:50.869698"
+    },
+    {
+      "test_name": "Error Handling - Missing Payload",
+      "passed": false,
+      "error": "Expected status 500, got 200",
+      "details": {},
+      "timestamp": "2025-06-24T21:44:50.871467"
+    },
+    {
+      "test_name": "Error Handling - Invalid Agent",
+      "passed": true,
+      "error": null,
+      "details": {
+        "status_code": 200
+      },
+      "timestamp": "2025-06-24T21:44:50.873076"
+    }
+  ]
+}

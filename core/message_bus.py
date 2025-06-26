@@ -229,12 +229,19 @@ class MessageBus:
                         for message in messages:
                             # Check if agent has callbacks for this message type
                             topic = message.message_type.value
+                            
+                            # Try specific topic first, then default
+                            callbacks_to_run = []
                             if topic in topics:
-                                for callback in topics[topic]:
-                                    try:
-                                        await callback(message)
-                                    except Exception as e:
-                                        self.logger.error(f"Callback error: {e}")
+                                callbacks_to_run.extend(topics[topic])
+                            if "default" in topics:
+                                callbacks_to_run.extend(topics["default"])
+                                
+                            for callback in callbacks_to_run:
+                                try:
+                                    await callback(message)
+                                except Exception as e:
+                                    self.logger.error(f"Callback error: {e}")
 
                 await asyncio.sleep(0.1)
 

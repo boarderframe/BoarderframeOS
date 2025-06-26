@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Web UI - Quick Access</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #2c3e50;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            margin: 0 0 30px 0;
+            font-size: 2.5em;
+        }
+        .access-button {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 20px 40px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 1.5em;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+        .access-button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        .info-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 30px 0;
+            text-align: left;
+        }
+        .info-box h3 {
+            color: #3498db;
+            margin-top: 0;
+        }
+        .info-box table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .info-box td {
+            padding: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .info-box td:first-child {
+            font-weight: bold;
+            color: #3498db;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #27ae60;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+        .warning {
+            background: rgba(241, 196, 15, 0.2);
+            border: 1px solid #f1c40f;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗄️ PostgreSQL Database Web UI</h1>
+
+        <div class="status">✅ Adminer is Running</div>
+
+        <a href="http://localhost:8081" class="access-button" target="_blank">
+            Open Database Control Panel
+        </a>
+
+        <div class="info-box">
+            <h3>Login Credentials:</h3>
+            <table>
+                <tr>
+                    <td>System:</td>
+                    <td>PostgreSQL</td>
+                </tr>
+                <tr>
+                    <td>Server:</td>
+                    <td>boarderframeos_postgres</td>
+                </tr>
+                <tr>
+                    <td>Username:</td>
+                    <td>boarderframe</td>
+                </tr>
+                <tr>
+                    <td>Password:</td>
+                    <td>boarderframe_secure_2025</td>
+                </tr>
+                <tr>
+                    <td>Database:</td>
+                    <td>boarderframeos</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Note:</strong> Use "boarderframeos_postgres" as the Server name (not localhost) since Adminer runs inside Docker.
+        </div>
+
+        <div style="margin-top: 30px; font-size: 0.9em; opacity: 0.8;">
+            To stop the web UI: <code>docker-compose -f docker-compose.adminer.yml down</code>
+        </div>
+    </div>
+
+    <script>
+        // Auto-redirect to Adminer after 2 seconds
+        setTimeout(() => {
+            window.location.href = 'http://localhost:8081';
+        }, 2000);
+    </script>
+</body>
+</html>

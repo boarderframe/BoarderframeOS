@@ -28,7 +28,6 @@ from core.message_bus import broadcast_status, send_task_request
 logger = logging.getLogger("eve")
 
 
-@dataclass
 class EvolutionMetrics:
     """Metrics for tracking evolution performance"""
 
@@ -41,7 +40,6 @@ class EvolutionMetrics:
     biome_rank: int  # Rank within biome
 
 
-@dataclass
 class MutationCandidate:
     """Candidate mutation for agent improvement"""
 

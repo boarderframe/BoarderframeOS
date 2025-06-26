@@ -17,6 +17,34 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
+# Check if we're using the virtual environment Python
+# If not, re-execute with the venv Python
+venv_path = Path(__file__).parent / ".venv"
+current_python = sys.executable
+
+# Check if we're already in the virtual environment
+if not (venv_path / "bin" / "python" in Path(current_python).parents or 
+        str(venv_path) in current_python or
+        (hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix))):
+    
+    # We're not in a virtual environment
+    venv_python = venv_path / "bin" / "python"
+    if not venv_python.exists():
+        # Try Windows path
+        venv_python = venv_path / "Scripts" / "python.exe"
+    
+    if venv_python.exists():
+        # Re-execute this script with the virtual environment Python
+        print("🔄 Restarting with virtual environment Python...")
+        print(f"   Current: {current_python}")
+        print(f"   Target:  {venv_python}")
+        os.execv(str(venv_python), [str(venv_python)] + sys.argv)
+    else:
+        print("⚠️  Virtual environment not found. Some features may not work.")
+        print("    Please create it with: python3 -m venv .venv")
+        print("    Or install missing packages with:")
+        print("    pip install fastapi docker cryptography celery opentelemetry-api")
+
 import psutil
 
 # Load environment variables from .env file
@@ -46,6 +74,7 @@ class EnhancedSystemStartup:
         }
         self.running = False
         self.status_file = "/tmp/boarderframe_startup_status.json"
+        self.project_root = Path(__file__).parent
 
         # Configure clean logging
         logging.basicConfig(level=logging.WARNING, format="%(message)s")  # Reduce noise
@@ -223,7 +252,7 @@ class EnhancedSystemStartup:
                 },
                 "agent_communication_center": {
                     "port": 8890,
-                    "process_name": "agent_communication_center.py",
+                    "process_name": "agent_communication_center_enhanced.py",
                     "category": "Core Services",
                 },
             }
@@ -349,24 +378,46 @@ class EnhancedSystemStartup:
 
             import docker
 
-            client = docker.from_env()
+            try:
+                client = docker.from_env()
+            except Exception as e:
+                # Fallback: Try with explicit socket URL
+                try:
+                    client = docker.DockerClient(base_url='unix:///var/run/docker.sock')
+                except:
+                    # If Docker client fails, use subprocess as fallback
+                    self.print_step("Using subprocess to check Docker containers", "info")
+                    client = None
 
             # Check for required containers
             required_containers = ["boarderframeos_postgres", "boarderframeos_redis"]
             running_containers = []
 
             for container_name in required_containers:
-                try:
-                    container = client.containers.get(container_name)
-                    if container.status == "running":
+                if client:
+                    try:
+                        container = client.containers.get(container_name)
+                        if container.status == "running":
+                            running_containers.append(container_name)
+                            self.print_step(f"✓ {container_name} is running", "success")
+                        else:
+                            self.print_step(
+                                f"⚠️ {container_name} is {container.status}", "warning"
+                            )
+                    except:
+                        self.print_step(f"❌ {container_name} not found", "error")
+                else:
+                    # Use subprocess to check container status
+                    result = subprocess.run(
+                        ["docker", "ps", "--filter", f"name={container_name}", "--format", "{{.Names}}"],
+                        capture_output=True,
+                        text=True
+                    )
+                    if container_name in result.stdout:
                         running_containers.append(container_name)
                         self.print_step(f"✓ {container_name} is running", "success")
                     else:
-                        self.print_step(
-                            f"⚠️ {container_name} is {container.status}", "warning"
-                        )
-                except:
-                    self.print_step(f"❌ {container_name} not found", "error")
+                        self.print_step(f"❌ {container_name} not found", "error")
 
             if len(running_containers) < 2:
                 self.print_step("Starting Docker infrastructure...", "starting")
@@ -1612,7 +1663,7 @@ class EnhancedSystemStartup:
             # Start the ACC with enhanced subprocess setup
             enhanced_env = self._create_enhanced_subprocess_env()
             acc_process = subprocess.Popen(
-                [self.venv_python, "agent_communication_center.py"],
+                [self.venv_python, "agent_communication_center_enhanced.py"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 cwd=str(Path(__file__).parent),
@@ -2082,6 +2133,346 @@ class EnhancedSystemStartup:
             self.log_status(f"Agent startup error: {str(e)}", "agents", "error")
             return True
 
+    async def initialize_secret_management(self):
+        """Initialize secret management system"""
+        self.print_section("Secret Management", "🔐")
+        
+        try:
+            self.print_step("Initializing secure secret management system...", "starting")
+            
+            # Import and initialize secret manager
+            from core.secret_manager import SecretManager
+            
+            # Initialize the secret manager
+            self.secret_manager = SecretManager()
+            
+            # Verify encryption is working
+            test_secret = self.secret_manager.set_secret("startup_test", "test_value", "system")
+            if self.secret_manager.get_secret("startup_test", "system") == "test_value":
+                self.print_step("Secret encryption verified", "success")
+                self.secret_manager.delete_secret("startup_test")
+            
+            self.print_step("Secret Management initialized successfully", "success")
+            self.update_component_status(
+                "services",
+                "secret_management",
+                "running",
+                {
+                    "component": "security",
+                    "encryption": "Fernet",
+                    "categories": ["database", "api_keys", "infrastructure", "authentication", "external_services"]
+                }
+            )
+            return True
+            
+        except Exception as e:
+            self.print_step(f"Secret Management failed: {str(e)[:50]}", "error")
+            self.update_component_status(
+                "services", "secret_management", "failed", {"error": str(e)[:100]}
+            )
+            return False
+
+    async def initialize_llm_policy_engine(self):
+        """Initialize LLM policy engine for cost optimization"""
+        self.print_section("LLM Policy Engine", "🎯")
+        
+        try:
+            self.print_step("Initializing LLM policy engine for intelligent cost optimization...", "starting")
+            
+            # Import and initialize policy engine
+            from core.llm_policy_engine import LLMPolicyEngine
+            
+            # Initialize the policy engine
+            self.llm_policy_engine = LLMPolicyEngine()
+            await self.llm_policy_engine.initialize()
+            
+            # Load default policies
+            policies_loaded = await self.llm_policy_engine.load_default_policies()
+            
+            self.print_step(f"Loaded {policies_loaded} default policies", "info")
+            self.print_step("LLM Policy Engine initialized successfully", "success")
+            
+            self.update_component_status(
+                "services",
+                "llm_policy_engine",
+                "running",
+                {
+                    "component": "cost_optimization",
+                    "policies_loaded": policies_loaded,
+                    "model_tiers": ["Premium", "Standard", "Economy", "Local"],
+                    "cache_enabled": True
+                }
+            )
+            return True
+            
+        except Exception as e:
+            self.print_step(f"LLM Policy Engine failed: {str(e)[:50]}", "error")
+            self.update_component_status(
+                "services", "llm_policy_engine", "failed", {"error": str(e)[:100]}
+            )
+            return False
+
+    async def initialize_telemetry(self):
+        """Initialize OpenTelemetry for observability"""
+        self.print_section("OpenTelemetry", "📡")
+        
+        try:
+            self.print_step("Initializing OpenTelemetry for distributed tracing...", "starting")
+            
+            # Import and initialize telemetry
+            from core.telemetry import TelemetryManager
+            
+            # Initialize telemetry
+            self.telemetry = TelemetryManager()
+            self.telemetry.initialize()
+            
+            self.print_step("OpenTelemetry initialized successfully", "success")
+            self.print_step("Tracing and metrics collection active", "info")
+            
+            self.update_component_status(
+                "services",
+                "telemetry",
+                "running",
+                {
+                    "component": "observability",
+                    "tracing": "enabled",
+                    "metrics": "enabled",
+                    "logs": "integrated"
+                }
+            )
+            return True
+            
+        except Exception as e:
+            self.print_step(f"OpenTelemetry failed: {str(e)[:50]}", "error")
+            self.update_component_status(
+                "services", "telemetry", "failed", {"error": str(e)[:100]}
+            )
+            return False
+
+    async def initialize_multi_tenancy(self):
+        """Initialize multi-tenancy system"""
+        self.print_section("Multi-Tenancy", "🏢")
+        
+        try:
+            self.print_step("Initializing multi-tenancy with Row Level Security...", "starting")
+            
+            # Import and initialize multi-tenancy
+            from core.multi_tenancy import MultiTenancyManager
+            
+            # Get database URL
+            db_url = "postgresql://boarderframe:boarderframe_secure_2025@localhost:5434/boarderframeos"
+            
+            # Initialize multi-tenancy manager
+            self.multi_tenancy = MultiTenancyManager(db_url)
+            await self.multi_tenancy.initialize()
+            
+            # Create default tenant if needed
+            default_tenant = await self.multi_tenancy.ensure_default_tenant()
+            if default_tenant:
+                self.print_step(f"Default tenant ready: {default_tenant.name}", "info")
+            
+            self.print_step("Multi-tenancy initialized successfully", "success")
+            
+            self.update_component_status(
+                "services",
+                "multi_tenancy",
+                "running",
+                {
+                    "component": "tenant_isolation",
+                    "rls_enabled": True,
+                    "resource_quotas": True,
+                    "billing_tracking": True
+                }
+            )
+            return True
+            
+        except Exception as e:
+            self.print_step(f"Multi-tenancy failed: {str(e)[:50]}", "error")
+            self.update_component_status(
+                "services", "multi_tenancy", "failed", {"error": str(e)[:100]}
+            )
+            return False
+
+    async def initialize_agent_health_monitoring(self):
+        """Initialize agent health monitoring system"""
+        self.print_section("Agent Health Monitoring", "🏥")
+        
+        try:
+            self.print_step("Initializing agent health monitoring system...", "starting")
+            
+            # Import and initialize health monitor
+            from core.agent_health import AgentHealthMonitor
+            
+            # Initialize health monitor
+            self.health_monitor = AgentHealthMonitor()
+            await self.health_monitor.start_monitoring()
+            
+            self.print_step("Health monitoring started", "success")
+            self.print_step("Real-time agent health tracking active", "info")
+            
+            self.update_component_status(
+                "services",
+                "agent_health_monitor",
+                "running",
+                {
+                    "component": "health_monitoring",
+                    "check_interval": 60,
+                    "alert_thresholds": "configured",
+                    "dashboard_available": True
+                }
+            )
+            return True
+            
+        except Exception as e:
+            self.print_step(f"Agent Health Monitoring failed: {str(e)[:50]}", "error")
+            self.update_component_status(
+                "services", "agent_health_monitor", "failed", {"error": str(e)[:100]}
+            )
+            return False
+
+    async def start_celery_workers(self):
+        """Start Celery task queue workers"""
+        self.print_section("Task Queue Workers", "📋")
+        
+        try:
+            self.print_step("Starting Celery task queue workers...", "starting")
+            
+            # Start Celery workers using manage_workers.py
+            celery_process = subprocess.Popen(
+                [self.venv_python, "manage_workers.py", "start", "--queues", "default", "--queues", "agents", "--concurrency", "2"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                start_new_session=True,
+                env=self._create_enhanced_subprocess_env()
+            )
+            
+            self.processes["celery_workers"] = celery_process
+            
+            # Wait for workers to start
+            await asyncio.sleep(3)
+            
+            if celery_process.poll() is None:
+                self.print_step("Celery workers started successfully", "success")
+                
+                # Also start Flower monitoring if available
+                try:
+                    flower_process = subprocess.Popen(
+                        [self.venv_python, "-m", "celery", "-A", "core.task_queue", "flower", "--port=5555"],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        start_new_session=True,
+                        env=self._create_enhanced_subprocess_env()
+                    )
+                    self.processes["celery_flower"] = flower_process
+                    await asyncio.sleep(2)
+                    
+                    if flower_process.poll() is None:
+                        self.print_step("Celery Flower monitoring started on port 5555", "success")
+                except Exception:
+                    self.print_step("Celery Flower not available (optional)", "info")
+                
+                self.update_component_status(
+                    "services",
+                    "task_queue",
+                    "running",
+                    {
+                        "component": "distributed_tasks",
+                        "workers": 2,
+                        "broker": "Redis",
+                        "flower_monitoring": flower_process.poll() is None if 'flower_process' in locals() else False
+                    }
+                )
+                return True
+            else:
+                raise Exception("Celery workers failed to start")
+                
+        except Exception as e:
+            self.print_step(f"Task queue workers failed: {str(e)[:50]}", "error")
+            self.update_component_status(
+                "services", "task_queue", "failed", {"error": str(e)[:100]}
+            )
+            return False
+
+    async def initialize_governance_controller(self):
+        """Initialize governance controller system"""
+        self.print_section("Governance Controller", "⚖️")
+        
+        try:
+            self.print_step("Initializing governance controller for policy enforcement...", "starting")
+            
+            # Import and initialize governance
+            from core.governance import GovernanceController
+            
+            # Initialize governance controller
+            self.governance = GovernanceController()
+            await self.governance.initialize()
+            
+            # Load default policies
+            policies_loaded = await self.governance.load_default_policies()
+            
+            self.print_step(f"Loaded {policies_loaded} governance policies", "info")
+            self.print_step("Governance controller initialized successfully", "success")
+            
+            self.update_component_status(
+                "services",
+                "governance_controller",
+                "running",
+                {
+                    "component": "policy_enforcement",
+                    "policies_loaded": policies_loaded,
+                    "compliance_tracking": True,
+                    "audit_logging": True
+                }
+            )
+            return True
+            
+        except Exception as e:
+            self.print_step(f"Governance controller failed: {str(e)[:50]}", "error")
+            self.update_component_status(
+                "services", "governance_controller", "failed", {"error": str(e)[:100]}
+            )
+            return False
+
+    async def initialize_hot_reload_system(self):
+        """Initialize blue-green hot reload system"""
+        self.print_section("Hot Reload System", "🔄")
+        
+        try:
+            self.print_step("Initializing blue-green hot reload system...", "starting")
+            
+            # Import and initialize hot reload
+            from core.hot_reload import HotReloadManager
+            
+            # Initialize hot reload manager
+            self.hot_reload = HotReloadManager()
+            await self.hot_reload.initialize()
+            
+            # Start file watchers
+            await self.hot_reload.start()
+            
+            self.print_step("Hot reload system initialized", "success")
+            self.print_step("File watchers active for zero-downtime updates", "info")
+            
+            self.update_component_status(
+                "services",
+                "hot_reload",
+                "running",
+                {
+                    "component": "deployment",
+                    "strategy": "blue-green",
+                    "file_watching": True,
+                    "zero_downtime": True
+                }
+            )
+            return True
+            
+        except Exception as e:
+            self.print_step(f"Hot reload system failed: {str(e)[:50]}", "error")
+            self.update_component_status(
+                "services", "hot_reload", "failed", {"error": str(e)[:100]}
+            )
+            return False
+
     async def run_startup(self):
         """Run the complete enhanced system startup with all components"""
         # Create a more attractive header
@@ -2096,7 +2487,7 @@ class EnhancedSystemStartup:
         self.save_status()
 
         success_count = 0
-        total_steps = 12  # Updated with ACC and all new components
+        total_steps = 20  # Updated with all new enhancement components
 
         # Phase 1: Infrastructure Setup
         print("🔧 Phase 1: Infrastructure Setup")
@@ -2108,7 +2499,7 @@ class EnhancedSystemStartup:
             return False
         success_count += 1
 
-        # Step 2: Database Migrations (NEW)
+        # Step 2: Database Migrations
         if await self.run_database_migrations():
             success_count += 1
 
@@ -2124,18 +2515,26 @@ class EnhancedSystemStartup:
         if await self.start_message_bus():
             success_count += 1
 
-        # Step 5: Cost Management (NEW)
+        # Step 5: Secret Management (NEW)
+        if await self.initialize_secret_management():
+            success_count += 1
+
+        # Step 6: Cost Management
         if await self.initialize_cost_management():
             success_count += 1
 
-        # Step 6: Agent Cortex (intelligent model orchestration)
+        # Step 7: LLM Policy Engine (NEW)
+        if await self.initialize_llm_policy_engine():
+            success_count += 1
+
+        # Step 8: Agent Cortex (intelligent model orchestration)
         # Agent Cortex is now started as an MCP server (agent_cortex_ui)
         # No need for separate startup - commenting out to prevent conflicts
         # if await self.start_agent_cortex_system():
         #     success_count += 1
         success_count += 1  # Count it anyway for compatibility
 
-        # Step 7: Agent Orchestrator (NEW - Critical addition)
+        # Step 9: Agent Orchestrator
         if await self.start_agent_orchestrator():
             success_count += 1
 
@@ -2143,28 +2542,52 @@ class EnhancedSystemStartup:
         print("\n🔌 Phase 3: Advanced Services")
         print("─" * 50)
 
-        # Step 8: MCP Servers (critical infrastructure - start before metrics)
+        # Step 10: MCP Servers (critical infrastructure)
         mcp_count = await self.start_mcp_servers()
         if mcp_count > 0:
             success_count += 1
 
-        # Step 9: HQ Metrics Layer (NEW - after MCP servers)
+        # Step 11: HQ Metrics Layer
         if await self.initialize_hq_metrics_layer():
             success_count += 1
 
-        # Phase 4: Agents & Interface
-        print("\n🤖 Phase 4: Agents & Interface")
+        # Step 12: OpenTelemetry (NEW)
+        if await self.initialize_telemetry():
+            success_count += 1
+
+        # Step 13: Multi-Tenancy (NEW)
+        if await self.initialize_multi_tenancy():
+            success_count += 1
+
+        # Step 14: Hot Reload System (NEW)
+        if await self.initialize_hot_reload_system():
+            success_count += 1
+
+        # Phase 4: Agents & Monitoring
+        print("\n🤖 Phase 4: Agents & Monitoring")
         print("─" * 50)
 
-        # Step 10: Agents (now coordinated through orchestrator)
+        # Step 15: Agents (coordinated through orchestrator)
         if await self.start_agents():
             success_count += 1
 
-        # Step 11: Agent Communication Center (ACC) - Claude-powered communications
+        # Step 16: Agent Health Monitoring (NEW)
+        if await self.initialize_agent_health_monitoring():
+            success_count += 1
+
+        # Step 17: Agent Communication Center (ACC)
         if await self.start_agent_communication_center():
             success_count += 1
 
-        # Step 12: Corporate Headquarters (must be the very last step)
+        # Step 18: Task Queue Workers (NEW - improved)
+        if await self.start_celery_workers():
+            success_count += 1
+
+        # Step 19: Governance Controller (NEW)
+        if await self.initialize_governance_controller():
+            success_count += 1
+
+        # Step 20: Corporate Headquarters (must be the very last step)
         if await self.start_corporate_headquarters():
             success_count += 1
 
@@ -2205,16 +2628,24 @@ class EnhancedSystemStartup:
         self.refresh_server_status()
 
         # Enhanced success criteria
-        if success_count >= 8:  # Most components running
+        if success_count >= 15:  # Most components running
             print("✅ BoarderframeOS Enhanced System is fully operational!")
             print("🏰 Enterprise-grade agent coordination active")
             print("📊 HQ Metrics Layer providing real-time insights")
-            print("💰 Cost management optimization enabled")
+            print("💰 Cost management & LLM policy optimization enabled")
             print("🎭 Agent Orchestrator managing sophisticated lifecycles")
+            print("🔐 Secret management with encryption active")
+            print("📡 OpenTelemetry observability enabled")
+            print("🏢 Multi-tenancy with RLS isolation")
+            print("🔄 Blue-green hot reload system active")
+            print("🏥 Agent health monitoring operational")
+            print("📋 Distributed task queue processing")
+            print("⚖️  Governance policies enforced")
             print()
             print("🎛️  Corporate Headquarters: http://localhost:8888")
             print("🔗 Agent Communication Center: http://localhost:8890")
             print("🧠 Agent Cortex Management: http://localhost:8889")
+            print("🌸 Celery Flower Monitor: http://localhost:5555")
             print("💬 Ready for advanced agent conversations")
             print("📊 All server status updated with real-time health data")
 

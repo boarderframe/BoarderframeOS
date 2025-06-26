@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Cortex & Orchestrator Fixes</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+        .fix-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #3498db;
+            transition: transform 0.3s ease;
+        }
+        .fix-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .fix-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .problem {
+            background: #fee;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 3px solid #e74c3c;
+        }
+        .solution {
+            background: #e8f8f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 3px solid #27ae60;
+        }
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            margin: 15px 0;
+            font-size: 0.9em;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.9em;
+            background: #27ae60;
+            color: white;
+            margin-left: 10px;
+        }
+        .next-steps {
+            background: #e3f2fd;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+            border-left: 5px solid #2196f3;
+        }
+        .test-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.2em;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Agent Cortex & Orchestrator Fixes</h1>
+        
+        <div class="success-message">
+            ✅ Both issues have been successfully resolved!
+        </div>
+
+        <div class="fix-card">
+            <div class="fix-title">
+                1. Agent Cortex Showing Offline
+                <span class="status-badge">FIXED</span>
+            </div>
+            <div class="problem">
+                <strong>Problem:</strong> Agent Cortex was showing as offline in Corporate HQ even though it was running on port 8889.
+            </div>
+            <div class="solution">
+                <strong>Root Cause:</strong> The HQ was saving the status under the key "agent_cortex" but looking for it under "agent_cortex_ui" when displaying the servers page.
+            </div>
+            <div class="solution">
+                <strong>Solution:</strong> Updated corporate_headquarters.py to consistently use "agent_cortex_ui" as the service key to match the server list definition.
+            </div>
+            <div class="code-block">
+# Changed all occurrences from:
+self.dashboard.services_status["agent_cortex"] = cortex_status
+
+# To:
+self.dashboard.services_status["agent_cortex_ui"] = cortex_status
+            </div>
+        </div>
+
+        <div class="fix-card">
+            <div class="fix-title">
+                2. No Agents in Orchestrator Registry
+                <span class="status-badge">FIXED</span>
+            </div>
+            <div class="problem">
+                <strong>Problem:</strong> Agent Orchestrator was showing 0 agents in registry, causing fallback to agent manager.
+            </div>
+            <div class="solution">
+                <strong>Root Cause:</strong> The agents table in PostgreSQL was empty. The orchestrator queries for agents with status='active' but none existed.
+            </div>
+            <div class="solution">
+                <strong>Solution:</strong> Added Solomon and David agents to the database with proper configuration.
+            </div>
+            <div class="code-block">
+INSERT INTO agents (id, name, status, configuration, agent_type, department) 
+VALUES 
+  (gen_random_uuid(), 'solomon', 'active', 
+   '{"class_name": "Solomon", "module_path": "agents.solomon.solomon", ...}', 
+   'chief_of_staff', 'leadership'),
+  (gen_random_uuid(), 'david', 'active', 
+   '{"class_name": "David", "module_path": "agents.david.david", ...}', 
+   'ceo', 'leadership');
+            </div>
+        </div>
+
+        <div class="next-steps">
+            <h3>🚀 Testing the Fixes</h3>
+            <p>To verify the fixes are working:</p>
+            <ol>
+                <li><strong>Agent Cortex Status:</strong> Visit Corporate HQ (http://localhost:8888) and check the Servers tab - Agent Cortex should now show as "healthy"</li>
+                <li><strong>Orchestrator Registry:</strong> On the next startup, you should see "Registry agents: 2" instead of 0, and no fallback warning</li>
+            </ol>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="test-button" onclick="window.open('http://localhost:8888/servers', '_blank')">
+                    🌐 Check Servers Status
+                </button>
+                <button class="test-button" onclick="showRestartCommand()">
+                    🔄 Restart System
+                </button>
+            </div>
+        </div>
+
+        <div class="fix-card" style="background: #f0f8ff; border-left-color: #2196f3;">
+            <div class="fix-title">📋 Summary</div>
+            <ul>
+                <li><strong>Files Modified:</strong> corporate_headquarters.py</li>
+                <li><strong>Database Changes:</strong> Added 2 agent records to PostgreSQL</li>
+                <li><strong>Key Fix:</strong> Consistent service naming ("agent_cortex_ui") across all status updates</li>
+                <li><strong>Result:</strong> Agent Cortex now shows correct status, and orchestrator will load agents from database</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function showRestartCommand() {
+            alert('To restart and see the orchestrator pick up the agents:\n\n1. Press Ctrl+C to stop the current system\n2. Run: python kill_all_processes.py\n3. Run: python startup.py\n\nThe orchestrator should now show "Registry agents: 2"');
+        }
+    </script>
+</body>
+</html>

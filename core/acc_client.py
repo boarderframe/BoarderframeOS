@@ -1,0 +1,176 @@
+"""
+ACC Client - Allows agents to connect to the Agent Communication Center
+"""
+
+import asyncio
+import json
+import httpx
+import websockets
+from typing import Optional, Dict, Any, Callable
+from datetime import datetime
+
+
+class ACCClient:
+    """Client for connecting agents to the Agent Communication Center"""
+    
+    def __init__(self, agent_name: str, acc_url: str = "localhost:8890"):
+        self.agent_name = agent_name
+        self.acc_url = acc_url
+        self.ws_url = f"ws://{acc_url}/ws"
+        self.http_url = f"http://{acc_url}"
+        self.websocket = None
+        self.running = False
+        self.message_handler: Optional[Callable] = None
+        self.http_client = httpx.AsyncClient()
+        
+    async def connect(self):
+        """Connect to ACC via WebSocket"""
+        try:
+            self.websocket = await websockets.connect(self.ws_url)
+            self.running = True
+            
+            # Wait for initial connection message
+            initial = await self.websocket.recv()
+            print(f"📥 {self.agent_name} received connection: {initial}")
+            
+            # Authenticate
+            await self.websocket.send(json.dumps({
+                "type": "auth",
+                "agent_name": self.agent_name
+            }))
+            
+            # Wait for responses (ACC sends multiple messages)
+            auth_success = False
+            for _ in range(3):  # Try to receive up to 3 messages
+                try:
+                    response = await asyncio.wait_for(self.websocket.recv(), timeout=2.0)
+                    data = json.loads(response)
+                    
+                    if data.get("type") == "auth_success":
+                        auth_success = True
+                        print(f"✅ {self.agent_name} authenticated with ACC")
+                    elif data.get("type") == "presence_update":
+                        print(f"📡 {self.agent_name} presence updated: {data.get('status')}")
+                except asyncio.TimeoutError:
+                    break
+            
+            if auth_success:
+                # Start listening for messages
+                asyncio.create_task(self._listen_for_messages())
+                return True
+            else:
+                print(f"❌ {self.agent_name} failed to authenticate with ACC")
+                return False
+                
+        except Exception as e:
+            print(f"❌ {self.agent_name} failed to connect to ACC: {e}")
+            return False
+    
+    async def disconnect(self):
+        """Disconnect from ACC"""
+        self.running = False
+        
+        # Update presence to offline
+        await self.update_presence("offline")
+        
+        if self.websocket:
+            await self.websocket.close()
+            
+        await self.http_client.aclose()
+            
+    async def _listen_for_messages(self):
+        """Listen for incoming messages from ACC"""
+        while self.running and self.websocket:
+            try:
+                message = await self.websocket.recv()
+                data = json.loads(message)
+                
+                # Debug: log all incoming messages
+                msg_type = data.get("type")
+                if msg_type != "ping":  # Don't log pings
+                    print(f"🔍 {self.agent_name} WebSocket received: type={msg_type}")
+                
+                if data.get("type") == "message":
+                    # Extract message data
+                    msg_data = data.get("data", {})
+                    
+                    # Check if this message is for us
+                    if msg_data.get("to_agent") == self.agent_name:
+                        print(f"📨 {self.agent_name} received message from {msg_data.get('from_agent', 'user')}: {msg_data.get('content', {}).get('text', '')[:50]}...")
+                        
+                        # Convert to format expected by agents
+                        if self.message_handler:
+                            try:
+                                await self.message_handler({
+                                    "from_agent": msg_data.get("from_agent", "user"),
+                                    "content": {
+                                        "type": "user_chat",
+                                        "message": msg_data.get("content", {}).get("text", "")
+                                    },
+                                    "correlation_id": msg_data.get("id")
+                                })
+                                print(f"✅ {self.agent_name} handler processed message successfully")
+                            except Exception as e:
+                                print(f"❌ {self.agent_name} handler error: {e}")
+                                import traceback
+                                traceback.print_exc()
+                        else:
+                            print(f"⚠️ {self.agent_name} has no message handler set!")
+                            
+            except websockets.ConnectionClosed:
+                print(f"🔌 {self.agent_name} disconnected from ACC")
+                self.running = False
+                break
+            except Exception as e:
+                print(f"❌ {self.agent_name} error receiving message: {e}")
+                
+    async def send_message(self, to_agent: str, content: str, correlation_id: Optional[str] = None):
+        """Send a message via ACC"""
+        try:
+            # Use REST API to send message
+            message_data = {
+                "from_agent": self.agent_name,  # Include sender
+                "to_agent": to_agent,
+                "content": content,
+                "format": "text",
+                "is_response": True  # Mark as agent response
+            }
+            
+            # Include correlation_id if provided
+            if correlation_id:
+                message_data["correlation_id"] = correlation_id
+            
+            response = await self.http_client.post(
+                f"{self.http_url}/api/messages",
+                json=message_data
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                return result.get("message_id")
+            else:
+                print(f"❌ Failed to send message: {response.status_code}")
+                return None
+                
+        except Exception as e:
+            print(f"❌ Error sending message: {e}")
+            return None
+            
+    async def update_presence(self, status: str):
+        """Update agent presence status"""
+        try:
+            response = await self.http_client.put(
+                f"{self.http_url}/api/agents/{self.agent_name}/presence",
+                json={
+                    "agent_name": self.agent_name,
+                    "status": status
+                }
+            )
+            return response.status_code == 200
+        except Exception as e:
+            print(f"❌ Error updating presence: {e}")
+            return False
+            
+    def set_message_handler(self, handler: Callable):
+        """Set the handler function for incoming messages"""
+        self.message_handler = handler

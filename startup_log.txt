@@ -1,0 +1,122 @@
+
+======================================================================
+               🏰 BOARDERFRAMEOS ENHANCED SYSTEM BOOT 🏰                
+======================================================================
+                        📅 2025-06-24 00:28:50                         
+======================================================================
+
+🔧 Phase 1: Infrastructure Setup
+──────────────────────────────────────────────────
+
+📦 Dependency Check
+──────────────────────────────────────────────────
+  ⏳ Running environment setup...
+🔧 Setting up BoarderframeOS environment...
+✅ .env file already exists
+🐳 Checking Docker availability...
+✅ Docker is available
+✅ Docker Compose is available
+✅ Environment setup complete!
+  ✅ Environment setup completed
+  ⏳ Ensuring database infrastructure is ready...
+🗄️  Setting up database infrastructure...
+🚀 Starting PostgreSQL and Redis containers...
+✅ Database containers started
+⏳ Waiting for PostgreSQL to be ready...
+✅ PostgreSQL is ready
+🧪 Testing database connectivity...
+✅ Database connectivity confirmed
+  ✅ Database infrastructure ready
+  ⏳ Checking Python dependencies...
+  ✅ All dependencies ready
+
+🏗️ Database Migrations
+──────────────────────────────────────────────────
+  ⏳ Checking database schema and running migrations...
+  ℹ️  Found 8 SQL migration files
+  ℹ️  SQL migrations are handled automatically by Docker init scripts
+  ⏳ Verifying database connectivity...
+  ✅ Database connectivity verified
+  ℹ️  Skipping migrate_departments.py (requires manual setup)
+  ℹ️  Skipping migrate_sqlite_to_postgres.py (requires manual setup)
+  ℹ️  Skipping populate_divisions_departments.py (requires manual setup)
+  ℹ️  Skipped 3 migrations requiring manual setup
+  ✅ Database migrations completed
+
+🗂️ Registry System
+──────────────────────────────────────────────────
+  ⏳ Checking PostgreSQL and Redis infrastructure...
+  ✅ ✓ boarderframeos_postgres is running
+  ✅ ✓ boarderframeos_redis is running
+  ⏳ Testing database connectivity...
+  ✅ Database connectivity confirmed
+  ⏳ Initializing registry client...
+  ✅ Registry client initialized
+  ✅ Registry system initialized successfully
+
+🎭 Phase 2: Core Services
+──────────────────────────────────────────────────
+
+📡 Message Bus
+──────────────────────────────────────────────────
+  ⏳ Starting message bus for agent communication...
+  ✅ Message bus started successfully
+
+💰 Cost Management
+──────────────────────────────────────────────────
+  ⏳ Initializing cost management and optimization systems...
+  ⏳ Setting up API cost tracking...
+  ℹ️  Cost features enabled: optimization, rate_limiting, smart_batching
+  ℹ️  Tracking 3 LLM models
+  ✅ Cost Management initialized successfully
+
+🎭 Agent Orchestrator
+──────────────────────────────────────────────────
+  ⏳ Initializing Agent Orchestrator for production agent management...
+  ✅ Agent Orchestrator initialized successfully
+  ℹ️  Mode: development
+  ℹ️  Registry agents: 0
+
+🔌 Phase 3: Advanced Services
+──────────────────────────────────────────────────
+
+🔌 MCP Servers
+──────────────────────────────────────────────────
+
+  Core Servers:
+    ⏳ registry     ✅
+  ✅ Registered registry server in database registry
+    ⏳ filesystem   ✅
+  ✅ Registered filesystem server in database registry
+    ⏳ database_postgres ✅
+  ✅ Registered database_postgres server in database registry
+    ⏳ database_sqlite ✅
+  ✅ Registered database_sqlite server in database registry
+
+  Service Servers:
+    ⏳ agent_cortex_api ✅
+  ✅ Registered agent_cortex_api server in database registry
+    ⏳ payment      ✅
+  ✅ Registered payment server in database registry
+    ⏳ analytics    ✅
+  ✅ Registered analytics server in database registry
+    ⏳ customer     ✅
+  ✅ Registered customer server in database registry
+    ⏳ screenshot   ✅
+  ✅ Registered screenshot server in database registry
+    ⏳ agent_cortex_ui Error calculating agent metrics: column "operational_status" does not exist
+LINE 6:                     COUNT(*) FILTER (WHERE operational_statu...
+                                                   ^
+
+Error calculating department metrics: column "operational_status" does not exist
+LINE 6:                     COUNT(*) FILTER (WHERE operational_statu...
+                                                   ^
+
+Error calculating division metrics: relation "divisions" does not exist
+LINE 6:                 FROM divisions
+                             ^
+
+Error calculating leader metrics: relation "department_leaders" does not exist
+LINE 7:                 FROM department_leaders
+                             ^
+

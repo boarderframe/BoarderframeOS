@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Circle Fix Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0a0a0a;
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .test-container {
+            text-align: center;
+        }
+
+        .circle-original {
+            width: 60px;
+            height: 60px;
+            background: var(--card-bg, #1a1a1a);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            margin: 0 auto 10px;
+            border: 2px solid #3b82f6;
+        }
+
+        .circle-fixed {
+            width: 60px;
+            height: 60px;
+            background: var(--card-bg, #1a1a1a);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            margin: 0 auto 10px;
+            border: 2px solid #10b981;
+        }
+
+        .label {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        .comparison {
+            display: flex;
+            gap: 50px;
+            margin-top: 30px;
+        }
+
+        .status-info {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .online { color: #10b981; }
+        .offline { color: #ef4444; }
+        .warning { color: #f59e0b; }
+    </style>
+</head>
+<body>
+    <h1>Health Circle Fix Verification</h1>
+
+    <div class="comparison">
+        <div class="test-container">
+            <div class="label">BEFORE (Text Overflow)</div>
+            <div class="circle-original">
+                <div style="font-size: 1.5rem; font-weight: 700; color: #ef4444;">
+                    12%
+                </div>
+                <div style="font-size: 0.6rem; color: #888; text-transform: uppercase;">Health</div>
+            </div>
+            <div style="color: #ef4444; font-size: 12px;">Text too large</div>
+        </div>
+
+        <div class="test-container">
+            <div class="label">AFTER (Fixed)</div>
+            <div class="circle-fixed">
+                <div style="font-size: 0.75rem; font-weight: 700; color: #10b981;">
+                    66%
+                </div>
+                <div style="font-size: 0.4rem; color: #888; text-transform: uppercase;">Health</div>
+            </div>
+            <div style="color: #10b981; font-size: 12px;">Text fits properly</div>
+        </div>
+    </div>
+
+    <div class="status-info">
+        <h2>Health Score Analysis</h2>
+        <p>The health score accurately reflects the current system status:</p>
+
+        <div class="status-item">
+            <span>Filesystem Server</span>
+            <span class="online">✅ Online</span>
+        </div>
+        <div class="status-item">
+            <span>Analytics Server</span>
+            <span class="online">✅ Online</span>
+        </div>
+        <div class="status-item">
+            <span>Database (PostgreSQL)</span>
+            <span class="online">✅ Online</span>
+        </div>
+        <div class="status-item">
+            <span>Payment Server</span>
+            <span class="online">✅ Online</span>
+        </div>
+        <div class="status-item">
+            <span>Customer Server</span>
+            <span class="online">✅ Online</span>
+        </div>
+        <div class="status-item">
+            <span>Screenshot Server</span>
+            <span class="online">✅ Online</span>
+        </div>
+        <div class="status-item">
+            <span>Registry Server</span>
+            <span class="offline">❌ Offline</span>
+        </div>
+        <div class="status-item">
+            <span>LLM Server</span>
+            <span class="offline">❌ Offline</span>
+        </div>
+        <div class="status-item">
+            <span>Database (SQLite)</span>
+            <span class="offline">❌ Offline</span>
+        </div>
+
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #333;">
+            <strong>Total:</strong> 6 of 9 servers online = <span class="warning">66% Health</span>
+        </div>
+    </div>
+
+    <div class="status-info">
+        <h2>Changes Made</h2>
+        <ul style="text-align: left;">
+            <li>Reduced health percentage font size from 1.5rem to 0.75rem</li>
+            <li>Reduced "Health" label font size from 0.6rem to 0.4rem</li>
+            <li>Updated health calculation to reflect actual server status</li>
+            <li>Health score now shows 66% (6/9 servers) instead of incorrect 12%</li>
+        </ul>
+
+        <p style="margin-top: 20px; color: #f59e0b;">
+            <strong>Note:</strong> To restore 100% health, the Registry, LLM, and SQLite servers need to be restarted.
+        </p>
+    </div>
+</body>
+</html>

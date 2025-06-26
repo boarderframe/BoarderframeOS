@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Infrastructure Health Fixed Successfully</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #0f4c5c 0%, #17805a 50%, #10b981 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #10b981;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a8b2d1;
+        }
+
+        .success-banner {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+            border: 2px solid #10b981;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .success-banner h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #10b981;
+        }
+
+        .success-banner .big-number {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #10b981;
+            text-shadow: 0 2px 10px rgba(16, 185, 129, 0.5);
+        }
+
+        .before-after {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .comparison-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .comparison-card h3 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .before {
+            border: 2px solid rgba(239, 68, 68, 0.5);
+        }
+
+        .before h3 {
+            color: #ef4444;
+        }
+
+        .after {
+            border: 2px solid rgba(16, 185, 129, 0.5);
+        }
+
+        .after h3 {
+            color: #10b981;
+        }
+
+        .display-mockup {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: monospace;
+            font-size: 1.2rem;
+        }
+
+        .red-text {
+            color: #ef4444;
+        }
+
+        .green-text {
+            color: #10b981;
+        }
+
+        .fix-details {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .fix-steps {
+            list-style: none;
+            padding: 0;
+        }
+
+        .fix-steps li {
+            padding: 1rem 0;
+            display: flex;
+            align-items: start;
+            gap: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .fix-steps li:last-child {
+            border-bottom: none;
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, #10b981, #059669);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-size: 0.9rem;
+        }
+
+        .log-output {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: monospace;
+            font-size: 0.85rem;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✅ Infrastructure Health Display Fixed!</h1>
+            <p class="subtitle">The servers page now shows accurate health metrics</p>
+        </div>
+
+        <div class="success-banner">
+            <h2>🎉 Fix Successfully Applied!</h2>
+            <div class="big-number">9/10</div>
+            <p>Servers Online</p>
+        </div>
+
+        <div class="before-after">
+            <div class="comparison-card before">
+                <h3>❌ Before</h3>
+                <div class="display-mockup">
+                    Infrastructure Health<br>
+                    <span class="red-text">0/10 Online</span>
+                </div>
+                <p style="margin-top: 1rem;">Always showed 0 servers online, even when 9 were healthy</p>
+            </div>
+
+            <div class="comparison-card after">
+                <h3>✅ After</h3>
+                <div class="display-mockup">
+                    Infrastructure Health<br>
+                    <span class="green-text">9/10 Online</span>
+                </div>
+                <p style="margin-top: 1rem;">Now shows actual server health status</p>
+            </div>
+        </div>
+
+        <div class="fix-details">
+            <h2 style="margin-bottom: 1.5rem;">🔧 How the Fix Works</h2>
+
+            <ol class="fix-steps">
+                <li>
+                    <div class="step-number">1</div>
+                    <div>
+                        <strong>Identified the Root Cause</strong><br>
+                        The UnifiedDataLayer had a "servers" structure with all values set to 0. The code was reading from this instead of using the calculated values.
+                    </div>
+                </li>
+                <li>
+                    <div class="step-number">2</div>
+                    <div>
+                        <strong>Updated Server Count Logic</strong><br>
+                        Modified the code to update the existing unified_data["servers"] structure with our calculated healthy server counts.
+                    </div>
+                </li>
+                <li>
+                    <div class="step-number">3</div>
+                    <div>
+                        <strong>Applied the Fix</strong><br>
+                        The code now properly updates: total, healthy, and category breakdowns (Core, MCP, Business) in the unified data structure.
+                    </div>
+                </li>
+                <li>
+                    <div class="step-number">4</div>
+                    <div>
+                        <strong>Verified Success</strong><br>
+                        Logs now show: "📊 Updated servers in unified_data: 9/10" and "🔍 DEBUG: Using unified_data values: 9/10"
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <div class="fix-details">
+            <h2 style="margin-bottom: 1.5rem;">📋 Key Code Changes</h2>
+
+            <div class="code-block">
+# The fix updates the existing unified_data structure:
+if "servers" in unified_data:
+    # Update with our calculated values
+    unified_data["servers"]["total"] = total_servers
+    unified_data["servers"]["healthy"] = total_healthy_servers
+    if "categories" in unified_data["servers"]:
+        unified_data["servers"]["categories"]["core"]["healthy"] = healthy_core
+        unified_data["servers"]["categories"]["mcp"]["healthy"] = healthy_mcp
+        unified_data["servers"]["categories"]["business"]["healthy"] = healthy_business
+</div>
+
+            <h3 style="margin: 1.5rem 0 1rem 0;">Log Output Showing Fix Working:</h3>
+            <div class="log-output">
+🔍 Server counts - Core: 3, MCP: 3, Business: 3, Total: 9
+🔍 DEBUG: 'servers' in unified_data: True
+📊 Updated servers in unified_data: 9/10
+🔍 DEBUG: Using unified_data values: 9/10
+            </div>
+        </div>
+
+        <div class="fix-details">
+            <h2 style="margin-bottom: 1.5rem;">📊 Current Server Status</h2>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <div style="background: rgba(0, 0, 0, 0.3); padding: 1rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem; font-weight: 700; color: #10b981;">3/4</div>
+                    <div style="color: #a8b2d1;">Core Servers</div>
+                    <div style="font-size: 0.85rem; margin-top: 0.5rem;">Agent Cortex offline</div>
+                </div>
+                <div style="background: rgba(0, 0, 0, 0.3); padding: 1rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem; font-weight: 700; color: #10b981;">3/3</div>
+                    <div style="color: #a8b2d1;">MCP Servers</div>
+                    <div style="font-size: 0.85rem; margin-top: 0.5rem;">All healthy</div>
+                </div>
+                <div style="background: rgba(0, 0, 0, 0.3); padding: 1rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem; font-weight: 700; color: #10b981;">3/3</div>
+                    <div style="color: #a8b2d1;">Business Services</div>
+                    <div style="font-size: 0.85rem; margin-top: 0.5rem;">All healthy</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="http://localhost:8888" class="btn btn-primary" target="_blank">
+                <span>🏢</span> Open Corporate HQ
+            </a>
+        </div>
+    </div>
+</body>
+</html>

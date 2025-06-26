@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACC Chat Test</title>
+    <style>
+        body {
+            font-family: -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .chat-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        
+        .agent-button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .agent-button:hover {
+            background: #45a049;
+        }
+        
+        .agent-button.active {
+            background: #2196F3;
+        }
+        
+        #current-agent {
+            font-weight: bold;
+            color: #2196F3;
+            margin: 10px 0;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            resize: vertical;
+        }
+        
+        #send-button {
+            padding: 12px 30px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        
+        #send-button:hover {
+            background: #1976D2;
+        }
+        
+        #response {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            min-height: 50px;
+        }
+        
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 ACC Chat Test Interface</h1>
+        
+        <div class="chat-section">
+            <h2>1. Select an Agent</h2>
+            <button class="agent-button" onclick="selectAgent('solomon')">Solomon</button>
+            <button class="agent-button" onclick="selectAgent('david')">David</button>
+            <div id="current-agent">No agent selected</div>
+        </div>
+        
+        <div class="chat-section">
+            <h2>2. Send a Message</h2>
+            <textarea id="message-input" placeholder="Type your message here..."></textarea>
+            <button id="send-button" onclick="sendMessage()">Send Message</button>
+        </div>
+        
+        <div class="chat-section">
+            <h2>3. Response</h2>
+            <div id="response">Waiting for response...</div>
+        </div>
+        
+        <div class="chat-section">
+            <h2>Debug Info</h2>
+            <pre id="debug"></pre>
+        </div>
+    </div>
+
+    <script>
+        let currentAgent = null;
+        
+        function selectAgent(agentName) {
+            currentAgent = agentName;
+            document.getElementById('current-agent').textContent = `Selected: ${agentName}`;
+            
+            // Update button states
+            document.querySelectorAll('.agent-button').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase() === agentName) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            addStatus(`Selected agent: ${agentName}`, 'info');
+        }
+        
+        async function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value.trim();
+            
+            if (!currentAgent) {
+                addStatus('Please select an agent first!', 'error');
+                return;
+            }
+            
+            if (!message) {
+                addStatus('Please enter a message!', 'error');
+                return;
+            }
+            
+            const payload = {
+                to_agent: currentAgent,
+                content: message,
+                format: 'text'
+            };
+            
+            addStatus(`Sending to ${currentAgent}: "${message}"`, 'info');
+            updateDebug('Request payload:', payload);
+            
+            try {
+                const response = await fetch('http://localhost:8890/api/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addStatus(`✅ Message sent! ID: ${data.message_id}`, 'success');
+                    updateDebug('Response:', data);
+                    
+                    // Clear input
+                    messageInput.value = '';
+                    
+                    // Note about checking logs
+                    document.getElementById('response').innerHTML = `
+                        <div class="status success">Message sent successfully!</div>
+                        <p>To see ${currentAgent}'s response, check:</p>
+                        <ul>
+                            <li>The ACC web interface at <a href="http://localhost:8890" target="_blank">http://localhost:8890</a></li>
+                            <li>Agent logs: <code>tail -f logs/${currentAgent}_acc.log</code></li>
+                        </ul>
+                    `;
+                } else {
+                    addStatus(`❌ Error: ${response.status}`, 'error');
+                    updateDebug('Error response:', data);
+                }
+            } catch (error) {
+                addStatus(`❌ Network error: ${error.message}`, 'error');
+                updateDebug('Error:', error);
+            }
+        }
+        
+        function addStatus(message, type) {
+            const status = document.createElement('div');
+            status.className = `status ${type}`;
+            status.textContent = message;
+            document.getElementById('response').appendChild(status);
+        }
+        
+        function updateDebug(label, data) {
+            const debug = document.getElementById('debug');
+            debug.textContent = `${label}\n${JSON.stringify(data, null, 2)}`;
+        }
+        
+        // Handle Enter key
+        document.getElementById('message-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

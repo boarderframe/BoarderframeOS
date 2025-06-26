@@ -1,0 +1,33 @@
+{
+  "id": "policy-highrisk-001",
+  "name": "High Risk Operations Control",
+  "type": "security",
+  "description": "Controls access to high-risk operations",
+  "enabled": true,
+  "priority": 1,
+  "rules": [
+    {
+      "operation": "database_delete",
+      "requires_approval": true,
+      "allowed_agents": [
+        "david",
+        "solomon"
+      ]
+    },
+    {
+      "operation": "system_config_change",
+      "requires_audit": true,
+      "notification_required": true
+    },
+    {
+      "operation": "external_api_access",
+      "rate_limit": 100,
+      "requires_encryption": true
+    }
+  ],
+  "actions": [
+    "deny",
+    "alert",
+    "log"
+  ]
+}

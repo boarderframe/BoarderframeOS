@@ -1,0 +1,55 @@
+{
+  "checks": {
+    "system": {
+      "cpu_threshold": 80,
+      "memory_threshold": 85,
+      "disk_threshold": 90
+    },
+    "services": [
+      {
+        "name": "PostgreSQL",
+        "type": "tcp",
+        "host": "localhost",
+        "port": 5434,
+        "timeout": 5
+      },
+      {
+        "name": "Redis",
+        "type": "tcp",
+        "host": "localhost",
+        "port": 6379,
+        "timeout": 5
+      },
+      {
+        "name": "Corporate HQ",
+        "type": "http",
+        "url": "http://localhost:8888/health",
+        "timeout": 10
+      },
+      {
+        "name": "Registry Server",
+        "type": "http",
+        "url": "http://localhost:8009/health",
+        "timeout": 5
+      },
+      {
+        "name": "Analytics Server",
+        "type": "http",
+        "url": "http://localhost:8007/health",
+        "timeout": 5
+      }
+    ],
+    "agents": [
+      "solomon",
+      "david",
+      "adam",
+      "eve",
+      "bezalel"
+    ]
+  },
+  "intervals": {
+    "system": 30,
+    "services": 60,
+    "agents": 120
+  }
+}

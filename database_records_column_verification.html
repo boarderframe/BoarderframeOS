@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Records Column - Update Verification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #94a3b8;
+        }
+
+        .update-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .success-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        .changes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .change-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .change-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border-color: #3b82f6;
+        }
+
+        .change-card h3 {
+            color: #60a5fa;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .table-preview {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 2rem 0;
+            border: 1px solid rgba(96, 165, 250, 0.3);
+        }
+
+        .table-preview table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table-preview th {
+            background: rgba(59, 130, 246, 0.2);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(96, 165, 250, 0.3);
+        }
+
+        .table-preview td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .table-preview tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .new-column {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10b981;
+            animation: highlight 1s ease-in-out;
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 1px solid rgba(96, 165, 250, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #60a5fa;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+
+        @keyframes highlight {
+            0%, 100% {
+                background: rgba(16, 185, 129, 0.1);
+            }
+            50% {
+                background: rgba(16, 185, 129, 0.2);
+            }
+        }
+
+        .checkmark {
+            color: #10b981;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Database Records Column Added</h1>
+            <p class="subtitle">Corporate HQ now displays record counts for all database tables</p>
+        </div>
+
+        <div class="update-card">
+            <div class="success-badge">✅ Update Complete</div>
+
+            <h2 style="margin-bottom: 1.5rem;">What's New</h2>
+
+            <div class="changes-grid">
+                <div class="change-card">
+                    <h3>📈 Records Column Added</h3>
+                    <ul class="feature-list">
+                        <li><span class="checkmark">✓</span> New "Records" column between "Columns" and "Category"</li>
+                        <li><span class="checkmark">✓</span> Shows row count for each table</li>
+                        <li><span class="checkmark">✓</span> Formatted with thousands separators</li>
+                        <li><span class="checkmark">✓</span> Sortable by record count</li>
+                    </ul>
+                </div>
+
+                <div class="change-card">
+                    <h3>🔧 Technical Updates</h3>
+                    <ul class="feature-list">
+                        <li><span class="checkmark">✓</span> Modified database query to fetch counts</li>
+                        <li><span class="checkmark">✓</span> Updated table header with 6 columns</li>
+                        <li><span class="checkmark">✓</span> Enhanced sort functionality</li>
+                        <li><span class="checkmark">✓</span> Graceful error handling for permissions</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem 0;">📋 Sample Table View</h3>
+
+            <div class="table-preview">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Table Name</th>
+                            <th>Schema</th>
+                            <th>Size</th>
+                            <th>Columns</th>
+                            <th class="new-column">Records</th>
+                            <th>Category</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>🟢 llm_cost_tracking</td>
+                            <td>public</td>
+                            <td>48 KB</td>
+                            <td>12</td>
+                            <td class="new-column">15</td>
+                            <td><span style="background: #22c55e20; color: #22c55e; padding: 0.2rem 0.5rem; border-radius: 4px;">LLM Cost Tracking</span></td>
+                        </tr>
+                        <tr>
+                            <td>🟢 llm_cost_summary</td>
+                            <td>public</td>
+                            <td>24 KB</td>
+                            <td>9</td>
+                            <td class="new-column">7</td>
+                            <td><span style="background: #22c55e20; color: #22c55e; padding: 0.2rem 0.5rem; border-radius: 4px;">LLM Cost Tracking</span></td>
+                        </tr>
+                        <tr>
+                            <td>🤖 agent_registry</td>
+                            <td>public</td>
+                            <td>128 KB</td>
+                            <td>15</td>
+                            <td class="new-column">191</td>
+                            <td><span style="background: #3b82f620; color: #3b82f6; padding: 0.2rem 0.5rem; border-radius: 4px;">Agents</span></td>
+                        </tr>
+                        <tr>
+                            <td>🏢 departments</td>
+                            <td>public</td>
+                            <td>64 KB</td>
+                            <td>8</td>
+                            <td class="new-column">45</td>
+                            <td><span style="background: #10b98120; color: #10b981; padding: 0.2rem 0.5rem; border-radius: 4px;">Departments</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem 0;">📊 Database Statistics</h3>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">48</div>
+                    <div class="stat-label">Total Tables</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">618</div>
+                    <div class="stat-label">Total Records</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">4</div>
+                    <div class="stat-label">LLM Tables</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">27</div>
+                    <div class="stat-label">LLM Records</div>
+                </div>
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem 0;">💻 Code Changes</h3>
+
+            <div class="code-block">
+                <strong>1. Updated database query to include record counts:</strong><br><br>
+                # Get row count for each table<br>
+                try:<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;count_query = f"SELECT COUNT(*) as count FROM {row['schemaname']}.{row['tablename']}"<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;count_result = await conn.fetchrow(count_query)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;record_count = count_result['count'] if count_result else 0<br>
+                except:<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;record_count = 0
+            </div>
+
+            <div class="code-block">
+                <strong>2. Added records column to table display:</strong><br><br>
+                &lt;th onclick="sortTables('records')"&gt;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;Records &lt;i class="fas fa-sort"&gt;&lt;/i&gt;<br>
+                &lt;/th&gt;
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem 0;">🚀 How to Use</h3>
+
+            <ol style="line-height: 1.8; padding-left: 1.5rem;">
+                <li>Open Corporate HQ at <code>http://localhost:8888</code></li>
+                <li>Navigate to the <strong>Database</strong> tab</li>
+                <li>View the new <strong>Records</strong> column showing row counts</li>
+                <li>Click the column header to sort by record count</li>
+                <li>Use the "Refresh Data" button to update counts</li>
+            </ol>
+        </div>
+
+        <div class="action-buttons">
+            <a href="http://localhost:8888" class="btn btn-primary" target="_blank">
+                <span>🏢</span> Open Corporate HQ
+            </a>
+            <button class="btn btn-secondary" onclick="refreshDatabase()">
+                <span>🔄</span> Refresh Database
+            </button>
+            <button class="btn btn-secondary" onclick="testRecordCounts()">
+                <span>🧪</span> Test Record Counts
+            </button>
+        </div>
+    </div>
+
+    <script>
+        async function refreshDatabase() {
+            try {
+                const response = await fetch('http://localhost:8888/api/database/refresh', {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert('✅ Database refreshed successfully!\n\nThe records column has been updated with the latest counts.');
+                } else {
+                    alert('❌ Failed to refresh database. Is Corporate HQ running?');
+                }
+            } catch (error) {
+                alert('❌ Cannot connect to Corporate HQ. Please ensure it is running.');
+            }
+        }
+
+        async function testRecordCounts() {
+            alert('🧪 Testing Record Counts\n\nRun this command in terminal:\npython test_record_counts.py\n\nThis will show all tables with their record counts.');
+        }
+
+        // Add visual feedback on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.change-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+    </script>
+</body>
+</html>

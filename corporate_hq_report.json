@@ -1,0 +1,109 @@
+{
+  "timestamp": "2025-06-24T17:50:12.199734",
+  "tests": {
+    "basic_connectivity": {
+      "success": true,
+      "details": {
+        "process_running": true,
+        "main_page": "accessible",
+        "static_resources": "0/3"
+      }
+    },
+    "api_endpoints": {
+      "success": false,
+      "details": {
+        "/api/system/status": "failed: 404",
+        "/api/agents": "failed: 404",
+        "/api/metrics": "missing_keys: ['agent_metrics', 'server_metrics', 'database_metrics']",
+        "/api/departments": "failed: 404",
+        "/api/messages/recent": "failed: 404",
+        "/api/global/metrics": "failed: 404"
+      }
+    },
+    "websocket_connection": {
+      "success": false,
+      "details": {
+        "connection": "failed: server rejected WebSocket connection: HTTP 404"
+      }
+    },
+    "data_refresh": {
+      "success": false,
+      "details": {}
+    }
+  },
+  "ui_components": {
+    "Dashboard": {
+      "accessible": false,
+      "elements_found": [],
+      "elements_missing": [],
+      "error": "<!doctype html>\n<html lang=en>\n<title>404 Not Found</title>\n<h1>Not Found</h1>\n<p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>\n"
+    },
+    "Metrics Page": {
+      "accessible": true,
+      "elements_found": [],
+      "elements_missing": []
+    },
+    "Departments Browser": {
+      "accessible": false,
+      "elements_found": [],
+      "elements_missing": [],
+      "error": "<!doctype html>\n<html lang=en>\n<title>404 Not Found</title>\n<h1>Not Found</h1>\n<p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>\n"
+    },
+    "Agent Registry": {
+      "accessible": false,
+      "elements_found": [],
+      "elements_missing": [],
+      "error": "<!doctype html>\n<html lang=en>\n<title>404 Not Found</title>\n<h1>Not Found</h1>\n<p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>\n"
+    },
+    "Settings Page": {
+      "accessible": false,
+      "elements_found": [],
+      "elements_missing": [],
+      "error": "<!doctype html>\n<html lang=en>\n<title>404 Not Found</title>\n<h1>Not Found</h1>\n<p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>\n"
+    }
+  },
+  "performance": {
+    "Main Page": {
+      "average_load_time_ms": 178.93,
+      "samples": 5,
+      "min_ms": 168.38,
+      "max_ms": 198.04
+    },
+    "Dashboard": {
+      "average_load_time_ms": 1.07,
+      "samples": 5,
+      "min_ms": 0.91,
+      "max_ms": 1.32
+    },
+    "Metrics Page": {
+      "average_load_time_ms": 1.15,
+      "samples": 5,
+      "min_ms": 1.07,
+      "max_ms": 1.21
+    },
+    "Metrics API": {
+      "average_load_time_ms": 1.06,
+      "samples": 5,
+      "min_ms": 1.0,
+      "max_ms": 1.16
+    },
+    "concurrent_requests": {
+      "requests_sent": 10,
+      "successful": 10,
+      "average_response_ms": 3.27
+    }
+  },
+  "summary": {
+    "total_tests": 4,
+    "passed": 1,
+    "failed": 3,
+    "success_rate": 25.0,
+    "ui_components_total": 5,
+    "ui_components_accessible": 1,
+    "total_successes": 9,
+    "total_warnings": 2,
+    "total_errors": 11,
+    "base_url": "http://localhost:8888",
+    "average_load_time_ms": 45.55
+  }
+}

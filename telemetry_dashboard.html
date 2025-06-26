@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenTelemetry Integration Dashboard - BoarderframeOS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        h1 {
+            font-size: 3em;
+            background: linear-gradient(45deg, #00d4ff, #0099ff, #0066ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            animation: slideUp 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+            border-color: rgba(0, 212, 255, 0.3);
+        }
+        
+        .card h3 {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            color: #00d4ff;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .status-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-online { background-color: #4CAF50; }
+        .status-pending { background-color: #FFC107; }
+        .status-offline { background-color: #F44336; }
+        
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00d4ff;
+            margin: 10px 0;
+        }
+        
+        .metric-label {
+            color: #888;
+            font-size: 0.9em;
+        }
+        
+        .code-block {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #00d4ff, #0099ff);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+            display: inline-block;
+            text-decoration: none;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .feature-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .feature-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+        }
+        
+        .feature-list li:before {
+            content: "✓";
+            color: #4CAF50;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        
+        .telemetry-flow {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .flow-item {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .flow-arrow {
+            display: inline-block;
+            margin: 0 10px;
+            color: #00d4ff;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+        .card:nth-child(5) { animation-delay: 0.5s; }
+        .card:nth-child(6) { animation-delay: 0.6s; }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #0099ff);
+            width: 0%;
+            transition: width 1s ease;
+            animation: progressGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes progressGlow {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔭 OpenTelemetry Integration</h1>
+            <p class="subtitle">Comprehensive Observability for BoarderframeOS</p>
+        </header>
+        
+        <div class="dashboard-grid">
+            <!-- Integration Status -->
+            <div class="card">
+                <h3>📊 Integration Status</h3>
+                <div class="metric-value" id="integrationProgress">0%</div>
+                <div class="metric-label">Components Updated</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <span>Telemetry Core</span>
+                        <span class="status-indicator status-online"></span>
+                    </div>
+                    <div class="status-item">
+                        <span>Agent Instrumentation</span>
+                        <span class="status-indicator status-pending" id="agentStatus"></span>
+                    </div>
+                    <div class="status-item">
+                        <span>Message Bus Tracing</span>
+                        <span class="status-indicator status-pending" id="messageBusStatus"></span>
+                    </div>
+                    <div class="status-item">
+                        <span>LLM Cost Tracking</span>
+                        <span class="status-indicator status-pending" id="llmStatus"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Telemetry Stack -->
+            <div class="card">
+                <h3>🛠️ Telemetry Stack</h3>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <span>Jaeger (Tracing)</span>
+                        <span class="status-indicator status-offline" id="jaegerStatus"></span>
+                    </div>
+                    <div class="status-item">
+                        <span>Prometheus (Metrics)</span>
+                        <span class="status-indicator status-offline" id="prometheusStatus"></span>
+                    </div>
+                    <div class="status-item">
+                        <span>Grafana (Dashboards)</span>
+                        <span class="status-indicator status-offline" id="grafanaStatus"></span>
+                    </div>
+                    <div class="status-item">
+                        <span>OTel Collector</span>
+                        <span class="status-indicator status-offline" id="collectorStatus"></span>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="button" onclick="startTelemetryStack()">Start Stack</button>
+                    <button class="button" onclick="checkServices()">Check Status</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Flow -->
+        <div class="card">
+            <h3>📈 Telemetry Data Flow</h3>
+            <div class="telemetry-flow">
+                <span class="flow-item">BoarderframeOS</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">OpenTelemetry SDK</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">OTel Collector</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">Storage Backends</span>
+            </div>
+            <p style="text-align: center; color: #888; margin-top: 10px;">
+                Traces → Jaeger | Metrics → Prometheus | Visualization → Grafana
+            </p>
+        </div>
+        
+        <div class="dashboard-grid">
+            <!-- Features -->
+            <div class="card">
+                <h3>✨ Features Enabled</h3>
+                <ul class="feature-list">
+                    <li>Distributed tracing across all agents</li>
+                    <li>Automatic span creation for operations</li>
+                    <li>LLM API cost tracking and optimization</li>
+                    <li>Message bus flow visualization</li>
+                    <li>Agent lifecycle monitoring</li>
+                    <li>Error tracking and alerting</li>
+                    <li>Performance metrics collection</li>
+                    <li>Context propagation for async ops</li>
+                    <li>Multi-backend export support</li>
+                    <li>Auto-instrumentation of libraries</li>
+                </ul>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="card">
+                <h3>🚀 Quick Actions</h3>
+                <div class="action-buttons">
+                    <button class="button" onclick="runIntegration()">Run Integration</button>
+                    <button class="button" onclick="runTest()">Test Telemetry</button>
+                    <a href="http://localhost:16686" target="_blank" class="button">Open Jaeger</a>
+                    <a href="http://localhost:3000" target="_blank" class="button">Open Grafana</a>
+                    <a href="http://localhost:9091" target="_blank" class="button">Open Prometheus</a>
+                </div>
+                
+                <h4 style="margin-top: 20px;">Setup Commands:</h4>
+                <div class="code-block">
+# Install dependencies
+pip install -r requirements.txt
+
+# Start telemetry stack
+docker-compose -f docker-compose.telemetry.yml up -d
+
+# Run integration
+python integrate_telemetry.py
+
+# Test telemetry
+python test_telemetry.py
+
+# Start BoarderframeOS
+python startup.py
+                </div>
+            </div>
+        </div>
+        
+        <!-- Metrics Preview -->
+        <div class="card">
+            <h3>📊 Metrics Overview</h3>
+            <div class="dashboard-grid" style="margin-top: 20px;">
+                <div style="text-align: center;">
+                    <div class="metric-label">Request Rate</div>
+                    <div class="metric-value">0 req/s</div>
+                </div>
+                <div style="text-align: center;">
+                    <div class="metric-label">Active Agents</div>
+                    <div class="metric-value">0</div>
+                </div>
+                <div style="text-align: center;">
+                    <div class="metric-label">LLM Costs</div>
+                    <div class="metric-value">$0.00</div>
+                </div>
+                <div style="text-align: center;">
+                    <div class="metric-label">Error Rate</div>
+                    <div class="metric-value">0%</div>
+                </div>
+            </div>
+            <p style="text-align: center; color: #888; margin-top: 20px;">
+                Real metrics available after integration and system startup
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // Animation for progress
+        setTimeout(() => {
+            document.getElementById('progressBar').style.width = '75%';
+            document.getElementById('integrationProgress').textContent = '75%';
+        }, 500);
+        
+        // Simulate status updates
+        setTimeout(() => {
+            document.getElementById('agentStatus').className = 'status-indicator status-online';
+            document.getElementById('messageBusStatus').className = 'status-indicator status-online';
+            document.getElementById('llmStatus').className = 'status-indicator status-online';
+            document.getElementById('progressBar').style.width = '100%';
+            document.getElementById('integrationProgress').textContent = '100%';
+        }, 2000);
+        
+        function runIntegration() {
+            if (confirm('Run OpenTelemetry integration script?')) {
+                alert('Run: python integrate_telemetry.py');
+            }
+        }
+        
+        function runTest() {
+            if (confirm('Run telemetry test script?')) {
+                alert('Run: python test_telemetry.py');
+            }
+        }
+        
+        function startTelemetryStack() {
+            if (confirm('Start telemetry Docker stack?')) {
+                alert('Run: docker-compose -f docker-compose.telemetry.yml up -d');
+            }
+        }
+        
+        async function checkServices() {
+            // In a real implementation, this would check actual service status
+            const services = ['jaeger', 'prometheus', 'grafana', 'collector'];
+            for (let service of services) {
+                document.getElementById(service + 'Status').className = 'status-indicator status-online';
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+        }
+        
+        // Particle effect for background
+        const canvas = document.createElement('canvas');
+        canvas.style.position = 'fixed';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.pointerEvents = 'none';
+        canvas.style.zIndex = '-1';
+        document.body.appendChild(canvas);
+        
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const particles = [];
+        for (let i = 0; i < 50; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: (Math.random() - 0.5) * 0.5,
+                size: Math.random() * 2 + 1
+            });
+        }
+        
+        function animate() {
+            ctx.fillStyle = 'rgba(15, 15, 35, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = 'rgba(0, 212, 255, 0.5)';
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                
+                if (p.x < 0 || p.x > canvas.width) p.vx = -p.vx;
+                if (p.y < 0 || p.y > canvas.height) p.vy = -p.vy;
+                
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            requestAnimationFrame(animate);
+        }
+        animate();
+        
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>

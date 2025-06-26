@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BoarderframeOS - Unified Agent Architecture Implementation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #9ca3af;
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #a78bfa;
+        }
+        
+        h3 {
+            font-size: 1.3rem;
+            margin: 1.5rem 0 0.5rem 0;
+            color: #c084fc;
+        }
+        
+        .file-list {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .file-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .file-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .code-block {
+            background: #1a1a2e;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            border: 1px solid #333;
+        }
+        
+        .code-block pre {
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #f0f0f0;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .feature-card {
+            background: linear-gradient(135deg, rgba(167, 139, 250, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(167, 139, 250, 0.3);
+        }
+        
+        .feature-card h4 {
+            color: #c084fc;
+            margin-bottom: 0.5rem;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 0.25rem;
+        }
+        
+        .status-complete {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            border: 1px solid #4ade80;
+        }
+        
+        .status-progress {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            border: 1px solid #fbbf24;
+        }
+        
+        .command-box {
+            background: #0f0f23;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Fira Code', monospace;
+            color: #4ade80;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .command-box:hover {
+            background: #1a1a2e;
+            border-color: #4ade80;
+        }
+        
+        .architecture-diagram {
+            text-align: center;
+            margin: 2rem 0;
+        }
+        
+        .benefits-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .benefits-list li {
+            padding: 0.5rem 0;
+            padding-left: 2rem;
+            position: relative;
+        }
+        
+        .benefits-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4ade80;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .next-steps {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        
+        .copy-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #4ade80;
+            color: #000;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        
+        .copy-notification.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Unified Agent Architecture</h1>
+        <p class="subtitle">Database-Driven Agent Implementation for BoarderframeOS</p>
+        
+        <div class="section">
+            <h2>🎯 Implementation Overview</h2>
+            <p>Based on your request for agents to share the same base code with database-driven configurations, I've implemented a complete unified agent architecture. This allows all agents to use a single codebase while maintaining unique personalities, LLM models, and capabilities through PostgreSQL configuration.</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Single Codebase</h4>
+                    <p>All agents now inherit from UniversalAgent, eliminating duplicate code and ensuring consistency.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Database Configuration</h4>
+                    <p>Agent personalities, goals, tools, and LLM models are stored in PostgreSQL and loaded dynamically.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Hot Reload Support</h4>
+                    <p>Change agent configurations in real-time without restarting the system.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Cost Optimization</h4>
+                    <p>Assign different LLM models based on task complexity - Opus for executives, Haiku for simple tasks.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📁 Files Created</h2>
+            
+            <h3>Database Schema</h3>
+            <div class="file-list">
+                <div class="file-item">
+                    <span class="file-icon">📄</span>
+                    <span><strong>migrations/003_agent_configs_schema.sql</strong> - Complete database schema with agent_configs table</span>
+                </div>
+            </div>
+            
+            <h3>Core Implementation</h3>
+            <div class="file-list">
+                <div class="file-item">
+                    <span class="file-icon">🐍</span>
+                    <span><strong>core/universal_agent.py</strong> - UniversalAgent class that loads from database</span>
+                </div>
+                <div class="file-item">
+                    <span class="file-icon">🐍</span>
+                    <span><strong>core/agent_launcher.py</strong> - Dynamic agent launcher and manager</span>
+                </div>
+            </div>
+            
+            <h3>Migration Tools</h3>
+            <div class="file-list">
+                <div class="file-item">
+                    <span class="file-icon">🔧</span>
+                    <span><strong>scripts/database/migrate_agents_to_universal.py</strong> - Migration script for existing agents</span>
+                </div>
+            </div>
+            
+            <h3>Documentation</h3>
+            <div class="file-list">
+                <div class="file-item">
+                    <span class="file-icon">📚</span>
+                    <span><strong>unified_agent_architecture.md</strong> - Complete architecture documentation</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🗄️ Database Schema</h2>
+            <p>The agent_configs table stores all agent configurations:</p>
+            
+            <div class="code-block">
+                <pre>CREATE TABLE agent_configs (
+    agent_id UUID PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    role VARCHAR(200) NOT NULL,
+    department VARCHAR(100) NOT NULL,
+    personality JSONB NOT NULL,          -- Traits, quirks, communication style
+    goals TEXT[] NOT NULL,
+    tools TEXT[] NOT NULL,
+    llm_model VARCHAR(100) DEFAULT 'claude-3-sonnet',
+    temperature FLOAT DEFAULT 0.7,
+    system_prompt TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT true,
+    development_status VARCHAR(50) DEFAULT 'planned'
+);</pre>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🚀 Key Features</h2>
+            
+            <h3>Universal Agent Capabilities</h3>
+            <ul class="benefits-list">
+                <li>Personality-driven thinking and decision making</li>
+                <li>Role-specific perspectives and approaches</li>
+                <li>Dynamic tool execution based on available capabilities</li>
+                <li>Communication style adaptation (formal, friendly, etc.)</li>
+                <li>Real-time configuration updates without restarts</li>
+            </ul>
+            
+            <h3>Agent Launcher Features</h3>
+            <ul class="benefits-list">
+                <li>Launch individual agents or entire departments</li>
+                <li>Create new agents programmatically</li>
+                <li>Update LLM models on the fly</li>
+                <li>Monitor agent status and health</li>
+                <li>Graceful shutdown and cleanup</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>💡 Usage Examples</h2>
+            
+            <h3>Launch an Agent</h3>
+            <div class="command-box" onclick="copyToClipboard(this)">
+python -c "from core.agent_launcher import agent_launcher; import asyncio; asyncio.run(agent_launcher.launch_agent('Solomon'))"
+            </div>
+            
+            <h3>Create a New Agent</h3>
+            <div class="code-block">
+                <pre>from core.agent_launcher import agent_launcher
+
+agent = await agent_launcher.create_new_agent(
+    name="Gabriel",
+    role="Customer Success Manager",
+    department="Sales",
+    personality_traits=["helpful", "patient", "solution-oriented"],
+    goals=["Resolve issues", "Build relationships", "Drive retention"],
+    tools=["customer_lookup", "ticket_management", "knowledge_base"],
+    llm_model="claude-3-haiku"  # Fast model for customer service
+)</pre>
+            </div>
+            
+            <h3>Update Agent Model</h3>
+            <div class="command-box" onclick="copyToClipboard(this)">
+python -c "from core.agent_launcher import agent_launcher; import asyncio; asyncio.run(agent_launcher.update_agent_model('Solomon', 'claude-3-opus'))"
+            </div>
+        </div>
+        
+        <div class="section next-steps">
+            <h2>✅ Next Steps</h2>
+            
+            <h3>1. Run Migration</h3>
+            <div class="command-box" onclick="copyToClipboard(this)">
+python scripts/database/migrate_agents_to_universal.py
+            </div>
+            
+            <h3>2. Test Unified Architecture</h3>
+            <div class="command-box" onclick="copyToClipboard(this)">
+python examples/universal_agent_examples.py
+            </div>
+            
+            <h3>3. Launch All Active Agents</h3>
+            <div class="command-box" onclick="copyToClipboard(this)">
+python -c "from core.agent_launcher import agent_launcher; import asyncio; asyncio.run(agent_launcher.launch_all_active_agents())"
+            </div>
+            
+            <h3>4. Monitor Agent Status</h3>
+            <div class="command-box" onclick="copyToClipboard(this)">
+python -c "from core.agent_launcher import agent_launcher; import asyncio; import json; status = asyncio.run(agent_launcher.get_agent_status()); print(json.dumps(status, indent=2))"
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🎨 Architecture Benefits</h2>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Scalability</h4>
+                    <p>Add thousands of agents by inserting database records. No code changes needed.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Maintainability</h4>
+                    <p>Single codebase means all agents get updates simultaneously.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Flexibility</h4>
+                    <p>Change personalities, models, and tools in real-time through database updates.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Cost Control</h4>
+                    <p>Use expensive models only where needed. Haiku for simple tasks, Opus for complex reasoning.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📊 Implementation Status</h2>
+            <p>
+                <span class="status-badge status-complete">Database Schema Created</span>
+                <span class="status-badge status-complete">UniversalAgent Implemented</span>
+                <span class="status-badge status-complete">AgentLauncher Created</span>
+                <span class="status-badge status-complete">Migration Script Ready</span>
+                <span class="status-badge status-progress">Testing & Validation</span>
+            </p>
+        </div>
+    </div>
+    
+    <div class="copy-notification" id="copyNotification">
+        Command copied to clipboard!
+    </div>
+    
+    <script>
+        function copyToClipboard(element) {
+            const text = element.textContent.trim();
+            navigator.clipboard.writeText(text).then(() => {
+                const notification = document.getElementById('copyNotification');
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 2000);
+            });
+        }
+        
+        // Add click-to-copy hint
+        document.querySelectorAll('.command-box').forEach(box => {
+            box.title = 'Click to copy';
+        });
+    </script>
+</body>
+</html>

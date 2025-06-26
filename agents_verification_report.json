@@ -1,0 +1,55 @@
+{
+  "timestamp": "2025-06-24T18:09:07.829156",
+  "tests": {
+    "Solomon_initialization": {
+      "success": true,
+      "details": {
+        "loading": "success",
+        "instantiation": "success"
+      }
+    },
+    "David_initialization": {
+      "success": true,
+      "details": {
+        "loading": "success",
+        "instantiation": "success"
+      }
+    },
+    "Adam_initialization": {
+      "success": true,
+      "details": {
+        "loading": "success",
+        "instantiation": "failed",
+        "error": "AgentConfig.__init__() missing 4 required positional arguments: 'name', 'role', 'goals', and 'tools'",
+        "note": "Class loaded but instantiation failed"
+      }
+    },
+    "Eve_initialization": {
+      "success": true,
+      "details": {
+        "loading": "success",
+        "instantiation": "failed",
+        "error": "AgentConfig.__init__() missing 4 required positional arguments: 'name', 'role', 'goals', and 'tools'",
+        "note": "Class loaded but instantiation failed"
+      }
+    },
+    "Bezalel_initialization": {
+      "success": true,
+      "details": {
+        "loading": "success",
+        "instantiation": "failed",
+        "error": "AgentConfig.__init__() missing 4 required positional arguments: 'name', 'role', 'goals', and 'tools'",
+        "note": "Class loaded but instantiation failed"
+      }
+    }
+  },
+  "summary": {
+    "total_agents": 5,
+    "successfully_loaded": 5,
+    "failed_to_load": 0,
+    "success_rate": 100.0,
+    "total_successes": 11,
+    "total_warnings": 3,
+    "total_errors": 0
+  }
+}

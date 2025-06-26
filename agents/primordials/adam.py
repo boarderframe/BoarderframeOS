@@ -8,15 +8,16 @@ import hashlib
 import json
 import logging
 import uuid
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import httpx
 
-from ...core.base_agent import AgentConfig, AgentState, BaseAgent
-from ...core.llm_client import CLAUDE_OPUS_CONFIG, LLMClient
-from ...core.message_bus import broadcast_status, send_task_request
+from core.base_agent import AgentConfig, AgentState, BaseAgent
+from core.llm_client import CLAUDE_OPUS_CONFIG, LLMClient
+from core.message_bus import broadcast_status, send_task_request
 
 logger = logging.getLogger("adam")
 
@@ -422,9 +423,9 @@ REQUIREMENTS:
 
 BASE TEMPLATE:
 ```python
-from ...core.base_agent import BaseAgent, AgentConfig, AgentState
-from ...core.llm_client import LLMClient
-from ...core.message_bus import send_task_request, broadcast_status
+from core.base_agent import BaseAgent, AgentConfig, AgentState
+from core.llm_client import LLMClient
+from core.message_bus import send_task_request, broadcast_status
 import asyncio
 import logging
 
@@ -468,7 +469,7 @@ Generate the complete, production-ready code for this agent."""
             logger.error(f"Failed to generate agent code: {e}")
             # Return minimal fallback code
             return f"""
-from ...core.base_agent import BaseAgent, AgentConfig
+from core.base_agent import BaseAgent, AgentConfig
 import asyncio
 
 class {blueprint.name}Config(AgentConfig):

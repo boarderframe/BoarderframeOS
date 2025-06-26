@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BoarderframeOS Verification Report</title>
+    <style>
+        body {
+            font-family: -apple-system, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            background: linear-gradient(45deg, #00ff88, #0088ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            font-size: 3em;
+        }
+        .summary {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .health-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .healthy { background: #00ff88; color: #000; }
+        .warning { background: #ffc107; color: #000; }
+        .critical { background: #ff0088; color: #fff; }
+        .verification-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .success { border-color: #00ff88; }
+        .failed { border-color: #ff0088; }
+        .recommendation {
+            background: rgba(255,193,7,0.1);
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .metric {
+            display: inline-block;
+            margin: 0 20px 10px 0;
+        }
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00ff88;
+        }
+        .metric-label {
+            color: #888;
+            font-size: 0.9em;
+        }
+        pre {
+            background: #000;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BoarderframeOS Verification Report</h1>
+        <p style="text-align: center; color: #888;">Generated: 2025-06-24T17:47:25.324080</p>
+        
+        <div class="summary">
+            <h2>System Health: <span class="health-badge critical">CRITICAL</span></h2>
+            
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-value">33.3%</div>
+                    <div class="metric-label">Success Rate</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">3/9</div>
+                    <div class="metric-label">Tests Passed</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">0/9</div>
+                    <div class="metric-label">MCP Servers</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">healthy</div>
+                    <div class="metric-label">Infrastructure</div>
+                </div>
+            </div>
+        </div>
+        
+        <h2>Verification Results</h2>
+
+        <div class="verification-item success">
+            <h3>Docker Services - ✅ PASSED</h3>
+            <p>PostgreSQL and Redis infrastructure</p>
+<h4>Details:</h4><ul><li><strong>successes:</strong> 23</li><li><strong>warnings:</strong> 1</li><li><strong>errors:</strong> 0</li></ul></div>
+        <div class="verification-item failed">
+            <h3>MCP Servers - ❌ FAILED</h3>
+            <p>All 9 MCP server health checks</p>
+<h4>Details:</h4><ul><li><strong>total_servers:</strong> 9</li><li><strong>healthy:</strong> 0</li><li><strong>unhealthy:</strong> 0</li><li><strong>offline:</strong> 9</li><li><strong>health_percentage:</strong> 0.0</li><li><strong>priority_breakdown:</strong> {'Enterprise': {'healthy': 0, 'unhealthy': 0, 'offline': 3}, 'Standard': {'healthy': 0, 'unhealthy': 0, 'offline': 4}, 'Advanced': {'healthy': 0, 'unhealthy': 0, 'offline': 2}}</li><li><strong>total_successes:</strong> 0</li><li><strong>total_warnings:</strong> 0</li><li><strong>total_errors:</strong> 9</li></ul></div>
+        <div class="verification-item failed">
+            <h3>Message Bus - ❌ FAILED</h3>
+            <p>Inter-agent communication system</p>
+<h4>Details:</h4><ul><li><strong>total_tests:</strong> 7</li><li><strong>passed:</strong> 2</li><li><strong>failed:</strong> 5</li><li><strong>success_rate:</strong> 28.6</li><li><strong>total_successes:</strong> 5</li><li><strong>total_warnings:</strong> 2</li><li><strong>total_errors:</strong> 7</li></ul></div>
+        <div class="verification-item failed">
+            <h3>Corporate HQ - ❌ FAILED</h3>
+            <p>Corporate HQ UI functionality and APIs</p>
+<h4>Details:</h4><ul><li><strong>total_tests:</strong> 1</li><li><strong>passed:</strong> 0</li><li><strong>failed:</strong> 1</li><li><strong>success_rate:</strong> 0.0</li><li><strong>ui_components_total:</strong> 0</li><li><strong>ui_components_accessible:</strong> 0</li><li><strong>total_successes:</strong> 0</li><li><strong>total_warnings:</strong> 1</li><li><strong>total_errors:</strong> 2</li><li><strong>base_url:</strong> http://localhost:8888</li></ul></div>
+        <div class="verification-item failed">
+            <h3>Agents - ❌ FAILED</h3>
+            <p>All 5 implemented agents (Solomon, David, Adam, Eve, Bezalel)</p>
+</div>
+        <div class="verification-item failed">
+            <h3>UI Components - ❌ FAILED</h3>
+            <p>All UI systems (Corporate HQ, Agent Cortex, ACC)</p>
+<h4>Details:</h4><ul><li><strong>total_systems:</strong> 3</li><li><strong>online_systems:</strong> 0</li><li><strong>offline_systems:</strong> 3</li><li><strong>fully_functional:</strong> 0</li><li><strong>critical_systems_online:</strong> 0/2</li><li><strong>total_features_tested:</strong> 0</li><li><strong>total_features_passed:</strong> 0</li><li><strong>feature_success_rate:</strong> 0</li><li><strong>total_successes:</strong> 0</li><li><strong>total_warnings:</strong> 9</li><li><strong>total_errors:</strong> 3</li></ul></div>
+        <div class="verification-item failed">
+            <h3>Integration Tests - ❌ FAILED</h3>
+            <p>End-to-end workflows and system integration</p>
+</div>
+        <div class="verification-item success">
+            <h3>Performance Analysis - ✅ PASSED</h3>
+            <p>System performance analysis and optimization</p>
+</div>
+        <div class="verification-item success">
+            <h3>Monitoring Setup - ✅ PASSED</h3>
+            <p>Configure logging, metrics, health monitoring, and alerts</p>
+</div><h2>Recommendations</h2>
+        <div class="recommendation">
+            <h4>[HIGH] MCP Servers</h4>
+            <p><strong>Issue:</strong> 9 MCP servers are offline</p>
+            <p><strong>Action:</strong> <code>Run './start_offline_mcp_servers.sh' to start them</code></p>
+        </div>
+
+        <div class="recommendation">
+            <h4>[MEDIUM] Message Bus</h4>
+            <p><strong>Issue:</strong> Message bus throughput is below target</p>
+            <p><strong>Action:</strong> <code>Check Redis connection and optimize message serialization</code></p>
+        </div>
+
+        <h2>Next Steps</h2>
+        <ol>
+            <li>Address any HIGH priority recommendations first</li>
+            <li>Start all offline services using the provided commands</li>
+            <li>Re-run failed verifications after fixes</li>
+            <li>Check individual JSON reports for detailed information</li>
+        </ol>
+        
+        <p style="text-align: center; margin-top: 40px; color: #666;">
+            BoarderframeOS - Building a digital civilization with 120+ AI agents
+        </p>
+    </div>
+</body>
+</html>

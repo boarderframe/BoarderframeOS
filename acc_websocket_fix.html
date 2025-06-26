@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACC WebSocket Message Flow Fix</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideDown 0.6s ease-out;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .status-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .fix-box {
+            background: rgba(100, 255, 100, 0.1);
+            border: 2px solid #4ade80;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .issue-box {
+            background: rgba(255, 100, 100, 0.1);
+            border: 2px solid #f87171;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .code-block {
+            background: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .code-label {
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: #667eea;
+            padding: 3px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+        
+        .debug-output {
+            background: #2a2a3e;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin: 10px 10px 10px 0;
+            transition: transform 0.2s;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .flow-diagram {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .flow-step {
+            display: inline-block;
+            background: #2a2a3e;
+            padding: 15px 25px;
+            border-radius: 8px;
+            margin: 5px;
+            position: relative;
+        }
+        
+        .flow-arrow {
+            display: inline-block;
+            margin: 0 10px;
+            color: #667eea;
+            font-size: 1.5em;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .warning { color: #fbbf24; }
+        .info { color: #60a5fa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 ACC WebSocket Message Flow Fix</h1>
+            <p>Enhanced debugging for agent message handling</p>
+        </div>
+        
+        <div class="status-section">
+            <h2>🔍 Problem Identified</h2>
+            <div class="issue-box">
+                <h3>Original Issue</h3>
+                <p>Agents (Solomon, David) are connected to ACC via WebSocket but not receiving or responding to messages.</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>✅ WebSocket connections established</li>
+                    <li>✅ Agents authenticated with ACC</li>
+                    <li>❌ Messages not reaching agent handlers</li>
+                    <li>❌ No responses from agents</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="status-section">
+            <h2>🛠️ Fixes Applied</h2>
+            <div class="fix-box">
+                <h3>1. Enhanced Debug Logging in ACC Client</h3>
+                <p>Added comprehensive logging to trace message flow:</p>
+                <div class="code-block">
+                    <span class="code-label">core/acc_client.py</span>
+                    <pre>// Log ALL incoming WebSocket messages
+🔍 {agent_name} WebSocket received: type={msg_type}
+
+// Log when message is for this agent  
+📨 {agent_name} received message from {from_agent}: {content[:50]}...
+
+// Log handler success/failure
+✅ {agent_name} handler processed message successfully
+❌ {agent_name} handler error: {error}
+⚠️ {agent_name} has no message handler set!</pre>
+                </div>
+            </div>
+            
+            <div class="fix-box">
+                <h3>2. Message Flow Visualization</h3>
+                <div class="flow-diagram">
+                    <div class="flow-step">User sends message</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-step">ACC receives via API</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-step">ACC sends via WebSocket</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-step">Agent receives & logs</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-step">Handler processes</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="status-section">
+            <h2>🧪 Testing Instructions</h2>
+            <ol style="margin-left: 20px;">
+                <li><strong>Restart agents with new debug code:</strong>
+                    <div class="code-block">
+                        <pre># Terminal 1 - Kill existing agents
+ps aux | grep solomon_acc | grep -v grep | awk '{print $2}' | xargs kill -9
+ps aux | grep david_acc | grep -v grep | awk '{print $2}' | xargs kill -9
+
+# Terminal 2 - Start Solomon with debugging
+python agents/solomon/solomon_acc.py
+
+# Terminal 3 - Start David with debugging  
+python agents/david/david_acc.py</pre>
+                    </div>
+                </li>
+                
+                <li><strong>Run the debug test:</strong>
+                    <div class="code-block">
+                        <pre>python test_acc_debug.py</pre>
+                    </div>
+                </li>
+                
+                <li><strong>Monitor agent terminals for output:</strong>
+                    <div class="debug-output">
+                        <p>Expected output in agent terminal:</p>
+                        <pre>🔍 solomon WebSocket received: type=message
+📨 solomon received message from user: Hello Solomon, this is a test message...
+✅ solomon handler processed message successfully
+📤 Sent response via ACC: ...</pre>
+                    </div>
+                </li>
+            </ol>
+        </div>
+        
+        <div class="status-section">
+            <h2>🎯 Quick Actions</h2>
+            <button class="button" onclick="runTest()">Run Debug Test</button>
+            <button class="button" onclick="checkLogs()">Check Logs</button>
+            <button class="button" onclick="restartAgents()">Restart Agents</button>
+            
+            <div id="action-output" style="margin-top: 20px;"></div>
+        </div>
+        
+        <div class="status-section">
+            <h2>📋 What to Look For</h2>
+            <div class="issue-box">
+                <h3>If Messages Still Not Working:</h3>
+                <ol style="margin-left: 20px;">
+                    <li><strong class="error">No "WebSocket received" logs:</strong> WebSocket connection issue</li>
+                    <li><strong class="error">No "received message" logs:</strong> Message routing issue in ACC</li>
+                    <li><strong class="error">"Handler error" logs:</strong> Agent code has exceptions</li>
+                    <li><strong class="error">"No message handler" logs:</strong> Handler not properly set</li>
+                </ol>
+            </div>
+            
+            <div class="fix-box">
+                <h3>Success Indicators:</h3>
+                <ul style="margin-left: 20px;">
+                    <li><span class="success">✅</span> "WebSocket received: type=message" in agent log</li>
+                    <li><span class="success">✅</span> "received message from user" in agent log</li>
+                    <li><span class="success">✅</span> "handler processed message successfully" in agent log</li>
+                    <li><span class="success">✅</span> Response appears in ACC chat window</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        async function runTest() {
+            const output = document.getElementById('action-output');
+            output.innerHTML = '<div class="info">Running debug test...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:8890/api/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        to_agent: 'solomon',
+                        content: 'Debug test message from fix page',
+                        format: 'text'
+                    })
+                });
+                
+                if (response.ok) {
+                    output.innerHTML = '<div class="success">✅ Test message sent! Check agent terminal for debug output.</div>';
+                } else {
+                    output.innerHTML = '<div class="error">❌ Failed to send test message</div>';
+                }
+            } catch (e) {
+                output.innerHTML = '<div class="error">❌ Error: ' + e.message + '</div>';
+            }
+        }
+        
+        function checkLogs() {
+            const output = document.getElementById('action-output');
+            output.innerHTML = `
+                <div class="code-block">
+                    <pre>Check these log files:
+- logs/solomon_acc_live.log
+- logs/david_acc_live.log
+- Terminal output where agents are running</pre>
+                </div>
+            `;
+        }
+        
+        function restartAgents() {
+            const output = document.getElementById('action-output');
+            output.innerHTML = `
+                <div class="code-block">
+                    <pre># Kill existing agents
+ps aux | grep solomon_acc | grep -v grep | awk '{print $2}' | xargs kill -9
+ps aux | grep david_acc | grep -v grep | awk '{print $2}' | xargs kill -9
+
+# Start with debugging
+python agents/solomon/solomon_acc.py
+python agents/david/david_acc.py</pre>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

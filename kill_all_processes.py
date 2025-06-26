@@ -30,6 +30,35 @@ def kill_boarderframe_processes():
         "agent_cortex",
         "message_bus",
         "boarderframeos",
+        "celery",
+        "task_queue",
+        # "worker",  # Removed - too generic, matches VS Code workers
+        "governance",
+        "telemetry",
+        "health_monitor",
+        "hot_reload",
+        "blue_green",
+        "flower",
+        "manage_workers",
+    ]
+    
+    # Process exclusion patterns - don't kill these even if they match keywords
+    exclusions = [
+        "Visual Studio Code",
+        "Code - Insiders",
+        "Code Helper",
+        "/Applications/Visual Studio",
+        # Exclude standalone "claude" (Claude Code CLI) but allow "claude_integration"
+        lambda cmd, name: name == "claude" and "boarderframe" not in cmd.lower(),
+        "Electron",  # VS Code framework
+        "chrome",  # Browser processes
+        "chromium",
+        "firefox",
+        "safari",
+        "com.docker",  # Docker processes
+        "Docker",  # Docker Desktop
+        "docker-proxy",  # Docker proxy
+        "containerd",  # Container runtime
     ]
 
     killed_processes = []
@@ -44,6 +73,23 @@ def kill_boarderframe_processes():
             name = proc.info["name"]
             cmdline = " ".join(proc.info["cmdline"] or [])
 
+            # Check if process should be excluded
+            should_exclude = False
+            for exclusion in exclusions:
+                if callable(exclusion):
+                    # Lambda function exclusion
+                    if exclusion(cmdline, name):
+                        should_exclude = True
+                        break
+                else:
+                    # String exclusion
+                    if exclusion.lower() in name.lower() or exclusion.lower() in cmdline.lower():
+                        should_exclude = True
+                        break
+            
+            if should_exclude:
+                continue  # Skip this process
+            
             # Check if any keyword matches
             for keyword in keywords:
                 if (
@@ -75,14 +121,19 @@ def kill_boarderframe_processes():
     ports_to_check = [
         8888,  # Corporate Headquarters
         8889,  # Agent Cortex
+        8890,  # Agent Communication Center
         8000,  # Registry
         8001,  # Filesystem
-        8010,  # PostgreSQL Database
+        8004,  # SQLite Database
+        8005,  # Agent Cortex API / LLM Server
         8006,  # Payment
         8007,  # Analytics
         8008,  # Customer
-        5434,  # PostgreSQL
-        6379,  # Redis
+        8010,  # PostgreSQL Database
+        8011,  # Screenshot
+        # 5434,  # PostgreSQL - Don't kill Docker's PostgreSQL
+        # 6379,  # Redis - Don't kill Docker's Redis
+        5555,  # Celery Flower
     ]
 
     print(f"\n🔍 Checking processes on BoarderframeOS ports...")

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM & SQLite Server Verification Report</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5em;
+            background: linear-gradient(90deg, #fff, #64b5f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            color: #b3d4fc;
+            margin-top: 10px;
+        }
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #64b5f6;
+            border-bottom: 2px solid #64b5f6;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .finding {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #64b5f6;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .critical {
+            border-left-color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+        }
+        .warning {
+            border-left-color: #ff9800;
+            background: rgba(255, 152, 0, 0.1);
+        }
+        .info {
+            border-left-color: #4caf50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+        .code-block {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .recommendation {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(76, 175, 80, 0.1));
+            border: 2px solid #4caf50;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .server-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .server-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .status-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        .action-buttons {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .button {
+            background: #64b5f6;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+        .button:hover {
+            background: #42a5f5;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(100, 181, 246, 0.3);
+        }
+        .button.danger {
+            background: #f44336;
+        }
+        .button.danger:hover {
+            background: #e53935;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        th {
+            background: rgba(100, 181, 246, 0.2);
+            font-weight: bold;
+        }
+        .timestamp {
+            color: #b3d4fc;
+            font-size: 0.9em;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>LLM & SQLite Server Verification Report</h1>
+            <div class="subtitle">Analysis of Port 8004 (SQLite) and Port 8005 (LLM) Usage in BoarderframeOS</div>
+        </div>
+
+        <div class="section">
+            <h2>🔍 Executive Summary</h2>
+            <div class="finding critical">
+                <h3>Finding: SQLite Server (Port 8004) IS Being Used</h3>
+                <p>The SQLite server on port 8004 is actively referenced by several production agents, particularly the primordial agents (Adam, Eve, Bezalel) for storing agent creation data and evolution logs.</p>
+            </div>
+            <div class="finding info">
+                <h3>Finding: LLM Server (Port 8005) NOT Being Used</h3>
+                <p>The LLM server on port 8005 appears to be planned but not implemented. No llm_server.py file exists, and no agents actively use this port. LLM operations are handled directly through the LLMClient class or Agent Cortex.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 Server Status</h2>
+            <div class="server-status">
+                <div class="server-card">
+                    <div class="status-icon">🗄️</div>
+                    <h3>SQLite Server (Port 8004)</h3>
+                    <p><strong>Status:</strong> Needed but Commented Out</p>
+                    <p><strong>Script:</strong> database_server.py ✅</p>
+                    <p><strong>Used By:</strong> Adam, Eve, Bezalel</p>
+                </div>
+                <div class="server-card">
+                    <div class="status-icon">🤖</div>
+                    <h3>LLM Server (Port 8005)</h3>
+                    <p><strong>Status:</strong> Not Implemented</p>
+                    <p><strong>Script:</strong> llm_server.py ❌</p>
+                    <p><strong>Used By:</strong> None</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📝 Detailed Analysis</h2>
+
+            <h3>SQLite Server (Port 8004)</h3>
+            <div class="finding warning">
+                <h4>Current Status in startup.py:</h4>
+                <div class="code-block">
+# SQLite and LLM servers not implemented yet
+# TODO: Add these when implemented:
+# {
+#     "name": "database_sqlite",
+#     "port": 8004,
+#     "script": "database_server.py",
+#     "category": "Core",
+# },
+                </div>
+                <p>The SQLite server is commented out in startup.py, but the script exists and agents are trying to use it!</p>
+            </div>
+
+            <div class="finding critical">
+                <h4>Active Usage Found:</h4>
+                <table>
+                    <tr>
+                        <th>Agent</th>
+                        <th>Usage</th>
+                        <th>Purpose</th>
+                    </tr>
+                    <tr>
+                        <td>Adam (Agent Creator)</td>
+                        <td>http://localhost:8004/insert</td>
+                        <td>Store created agents and evolution logs</td>
+                    </tr>
+                    <tr>
+                        <td>Eve (Agent Evolver)</td>
+                        <td>http://localhost:8004/insert</td>
+                        <td>Store evolution data and mutations</td>
+                    </tr>
+                    <tr>
+                        <td>Bezalel (Master Programmer)</td>
+                        <td>http://localhost:8004/insert</td>
+                        <td>Store construction and programming data</td>
+                    </tr>
+                </table>
+            </div>
+
+            <h3>LLM Server (Port 8005)</h3>
+            <div class="finding info">
+                <h4>Implementation Status:</h4>
+                <ul>
+                    <li>No llm_server.py file exists in /mcp/ directory</li>
+                    <li>No agents directly connect to port 8005</li>
+                    <li>LLM operations handled through:
+                        <ul>
+                            <li>LLMClient class (core/llm_client.py)</li>
+                            <li>Agent Cortex (core/agent_cortex.py)</li>
+                            <li>Direct provider connections (Ollama, OpenAI, Anthropic)</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 How LLM Operations Currently Work</h2>
+            <div class="finding info">
+                <h4>Current LLM Architecture:</h4>
+                <div class="code-block">
+1. Agents use LLMClient from core/llm_client.py
+2. LLMClient supports multiple providers:
+   - Ollama (local, default)
+   - OpenAI
+   - Anthropic
+   - Local (placeholder)
+3. Agent Cortex provides intelligent model selection
+4. No centralized LLM proxy server needed
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>✅ Recommendations</h2>
+            <div class="recommendation">
+                <h3>1. Enable SQLite Server</h3>
+                <p>The SQLite server is actively needed by primordial agents. Uncomment it in startup.py to fix agent creation failures.</p>
+                <div class="code-block">
+# In startup.py, uncomment:
+{
+    "name": "database_sqlite",
+    "port": 8004,
+    "script": "database_server.py",
+    "category": "Core",
+},
+                </div>
+            </div>
+
+            <div class="recommendation">
+                <h3>2. Remove LLM Server References</h3>
+                <p>Since LLM operations are handled by Agent Cortex and LLMClient, remove the TODO for LLM server to avoid confusion.</p>
+            </div>
+
+            <div class="recommendation">
+                <h3>3. Consider Migration Path</h3>
+                <p>While SQLite server is needed for backward compatibility, consider migrating agent data storage to PostgreSQL (port 8010) for consistency.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔧 Quick Fix Actions</h2>
+            <div class="action-buttons">
+                <button onclick="enableSQLiteServer()">Enable SQLite Server</button>
+                <button onclick="testSQLiteConnection()">Test SQLite Connection</button>
+                <button onclick="viewStartupConfig()">View Startup Config</button>
+            </div>
+        </div>
+
+        <div class="timestamp">
+            Generated on: <span id="timestamp"></span>
+        </div>
+    </div>
+
+    <script>
+        // Set timestamp
+        document.getElementById('timestamp').textContent = new Date().toLocaleString();
+
+        function enableSQLiteServer() {
+            alert('To enable SQLite server:\n\n1. Edit startup.py\n2. Uncomment the SQLite server configuration\n3. Restart the system with: python startup.py');
+        }
+
+        function testSQLiteConnection() {
+            alert('Testing SQLite connection...\n\nRun: curl http://localhost:8004/health\n\nIf it fails, the server is not running.');
+        }
+
+        function viewStartupConfig() {
+            alert('Current server configuration is in:\n\n/Users/cosburn/BoarderframeOS/startup.py\n\nLook for the start_mcp_servers() method around line 1300');
+        }
+    </script>
+</body>
+</html>

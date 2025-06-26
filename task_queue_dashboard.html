@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Queue Dashboard - BoarderframeOS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f23 100%);
+            padding: 20px 40px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.5);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #9C27B0, #2196F3, #00BCD4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .container {
+            padding: 20px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .queue-section {
+            margin-bottom: 40px;
+        }
+        
+        .queue-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .queue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .queue-name {
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        
+        .queue-length {
+            background: #2196F3;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.3s ease;
+        }
+        
+        .task-submit {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #aaa;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+        }
+        
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        button:hover {
+            background: #1976D2;
+        }
+        
+        .task-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .task-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .task-status {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        
+        .status-pending { background: #FF9800; }
+        .status-running { background: #2196F3; }
+        .status-success { background: #4CAF50; }
+        .status-failure { background: #F44336; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📋 Task Queue Dashboard</h1>
+        <p>Real-time monitoring of BoarderframeOS task processing</p>
+    </div>
+    
+    <div class="container">
+        <!-- Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div>Active Workers</div>
+                <div class="stat-value" id="activeWorkers">0</div>
+            </div>
+            <div class="stat-card">
+                <div>Active Tasks</div>
+                <div class="stat-value" id="activeTasks">0</div>
+            </div>
+            <div class="stat-card">
+                <div>Scheduled Tasks</div>
+                <div class="stat-value" id="scheduledTasks">0</div>
+            </div>
+            <div class="stat-card">
+                <div>Total Processed</div>
+                <div class="stat-value" id="totalProcessed">0</div>
+            </div>
+        </div>
+        
+        <!-- Queue Status -->
+        <div class="queue-section">
+            <h2>Queue Status</h2>
+            <div id="queueList">
+                <!-- Queue cards will be inserted here -->
+            </div>
+        </div>
+        
+        <!-- Submit Task -->
+        <div class="task-submit">
+            <h2>Submit Task</h2>
+            <form id="taskForm">
+                <div class="form-group">
+                    <label>Task Name</label>
+                    <select id="taskName">
+                        <option value="core.task_queue.agent_think">Agent Think</option>
+                        <option value="core.task_queue.agent_act">Agent Act</option>
+                        <option value="core.task_queue.llm_process">LLM Process</option>
+                        <option value="core.task_queue.analytics_aggregate">Analytics Aggregate</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select id="priority">
+                        <option value="critical">Critical</option>
+                        <option value="high">High</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="low">Low</option>
+                        <option value="background">Background</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Arguments (JSON)</label>
+                    <textarea id="taskArgs" rows="3">{"agent_id": "test-agent", "context": {}}</textarea>
+                </div>
+                <button type="submit">Submit Task</button>
+            </form>
+        </div>
+        
+        <!-- Recent Tasks -->
+        <div>
+            <h2>Recent Tasks</h2>
+            <div class="task-list" id="taskList">
+                <!-- Task items will be inserted here -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let recentTasks = [];
+        
+        async function fetchQueueStats() {
+            try {
+                const response = await fetch('/api/tasks');
+                const data = await response.json();
+                updateQueueDisplay(data.queue_stats);
+            } catch (error) {
+                console.error('Failed to fetch queue stats:', error);
+            }
+        }
+        
+        function updateQueueDisplay(stats) {
+            // Update summary stats
+            document.getElementById('activeTasks').textContent = stats.active || 0;
+            document.getElementById('scheduledTasks').textContent = stats.scheduled || 0;
+            
+            // Update queue cards
+            const queueList = document.getElementById('queueList');
+            queueList.innerHTML = '';
+            
+            const queues = ['critical', 'high', 'default', 'low', 'agents', 'llm', 'analytics'];
+            
+            queues.forEach(queue => {
+                const length = stats[`queue_${queue}`] || 0;
+                const card = document.createElement('div');
+                card.className = 'queue-card';
+                
+                card.innerHTML = `
+                    <div class="queue-header">
+                        <div class="queue-name">${queue.charAt(0).toUpperCase() + queue.slice(1)} Queue</div>
+                        <div class="queue-length">${length}</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${Math.min(length * 10, 100)}%"></div>
+                    </div>
+                `;
+                
+                queueList.appendChild(card);
+            });
+        }
+        
+        // Submit task form
+        document.getElementById('taskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const taskName = document.getElementById('taskName').value;
+            const priority = document.getElementById('priority').value;
+            const taskArgs = document.getElementById('taskArgs').value;
+            
+            try {
+                const args = JSON.parse(taskArgs);
+                
+                const response = await fetch('/api/tasks', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        task_name: taskName,
+                        args: [args],
+                        priority: priority
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert(`Task submitted: ${result.task_id}`);
+                    recentTasks.unshift({
+                        id: result.task_id,
+                        name: taskName,
+                        status: 'pending',
+                        timestamp: new Date()
+                    });
+                    updateTaskList();
+                } else {
+                    alert(`Error: ${result.error}`);
+                }
+            } catch (error) {
+                alert('Invalid JSON arguments');
+            }
+        });
+        
+        function updateTaskList() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            
+            recentTasks.slice(0, 10).forEach(task => {
+                const item = document.createElement('div');
+                item.className = 'task-item';
+                
+                item.innerHTML = `
+                    <div>
+                        <strong>${task.name}</strong><br>
+                        <small>${task.id}</small>
+                    </div>
+                    <div class="task-status status-${task.status}">${task.status}</div>
+                `;
+                
+                taskList.appendChild(item);
+            });
+        }
+        
+        // Initial load
+        fetchQueueStats();
+        
+        // Auto-refresh
+        setInterval(fetchQueueStats, 5000);
+    </script>
+</body>
+</html>
