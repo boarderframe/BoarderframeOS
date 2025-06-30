@@ -28,7 +28,7 @@ aioredis==2.0.0
 # Agent Framework - Updated for Brain + LangGraph Integration
 langgraph==0.2.40
 langchain==0.3.10
-langchain-openai==0.2.10
+langchain-openai==0.3.27
 langchain-anthropic==0.3.15
 langchain-community==0.3.8
 langchain-core==0.3.25
