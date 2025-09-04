@@ -103,7 +103,7 @@ if [ -d "frontend" ]; then
     
     echo -e "${GREEN}🌐 Starting MCP Client UI on http://localhost:5173...${NC}"
     nohup npm run dev > ../logs/frontend.log 2>&1 &
-    local ui_pid=$!
+    ui_pid=$!
     echo $ui_pid > "../frontend.pid"
     
     cd ..

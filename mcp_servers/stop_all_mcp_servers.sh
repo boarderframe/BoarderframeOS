@@ -79,14 +79,14 @@ if [ -f "frontend.pid" ]; then
     stop_server_by_pid "Frontend UI"
     
     # Also check port 5173 specifically for Vite dev server
-    local vite_pid=$(lsof -ti:5173 2>/dev/null || echo "")
+    vite_pid=$(lsof -ti:5173 2>/dev/null || echo "")
     if [ ! -z "$vite_pid" ]; then
         echo -e "${YELLOW}🔄 Stopping Vite dev server (port 5173)...${NC}"
         kill $vite_pid 2>/dev/null || true
         sleep 1
         
         # Force kill if still running
-        local still_running=$(lsof -ti:5173 2>/dev/null || echo "")
+        still_running=$(lsof -ti:5173 2>/dev/null || echo "")
         if [ ! -z "$still_running" ]; then
             kill -9 $still_running 2>/dev/null || true
         fi
