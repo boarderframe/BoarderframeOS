@@ -61,8 +61,7 @@ Thumbs.db
 .project
 .classpath
 
-# Logs
-logs/
+# Logs (keep log directories but exclude log files)
 *.log
 log.txt
 
@@ -141,14 +140,10 @@ models/
 *.rar
 *.7z
 
-# MCP Server specific
+# MCP Server specific build outputs
 mcp_servers/**/dist/
 mcp_servers/**/build/
 mcp_servers/**/.cache/
-# Embedded git repositories (to be handled separately)
-mcp_servers/enhanced-filesystem/
-mcp_servers/mcp-official-servers/
-mcp_servers/mcp-ui-sdk/
 
 # Open WebUI specific
 open-webui/backend/data/
