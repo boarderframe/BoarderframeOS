@@ -1,6 +1,6 @@
-# Contributing to Open WebUI Complete
+# Contributing to BoarderframeOS
 
-Thank you for your interest in contributing to Open WebUI Complete! This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to BoarderframeOS! This document provides guidelines for contributing to the project.
 
 ## How to Contribute
 
@@ -36,8 +36,8 @@ Thank you for your interest in contributing to Open WebUI Complete! This documen
 
 ```bash
 # Clone your fork
-git clone --recursive https://github.com/YOUR_USERNAME/open-webui-complete.git
-cd open-webui-complete
+git clone https://github.com/YOUR_USERNAME/BoarderframeOS.git
+cd BoarderframeOS
 
 # Set up environment
 cp .env.example .env.litellm
