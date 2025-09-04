@@ -1,6 +1,9 @@
-# Open WebUI Complete Development Environment
+# BoarderframeOS - AI-Powered Agentic Company Platform
 
-A comprehensive AI development environment featuring Open WebUI with memory capabilities, multi-agent systems, and cost-optimized local processing.
+BoarderframeOS is an AI-powered platform for building autonomous AI agents that work together as a virtual company. Built on Open WebUI with enhanced memory capabilities, multi-agent systems, and cost-optimized processing.
+
+**Version:** 0.1.0  
+**Repository:** https://github.com/boarderframe/BoarderframeOS
 
 ## 🚀 Quick Start
 
