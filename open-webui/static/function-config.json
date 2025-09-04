@@ -1,0 +1,184 @@
+{
+  "categories": [
+    {
+      "id": "conversation",
+      "name": "Conversation",
+      "icon": "💬",
+      "functions": [
+        {
+          "id": "summarize_brief",
+          "name": "Quick Summary",
+          "icon": "📝",
+          "description": "Brief summary of conversation",
+          "action": "message",
+          "message": "Please provide a brief summary of our conversation"
+        },
+        {
+          "id": "summarize_detailed",
+          "name": "Detailed Summary",
+          "icon": "📄",
+          "description": "Comprehensive summary with key points",
+          "action": "message",
+          "message": "Please provide a detailed summary of our conversation with bullet points for key topics"
+        },
+        {
+          "id": "export_md",
+          "name": "Export as Markdown",
+          "icon": "📋",
+          "description": "Export conversation to Markdown format",
+          "action": "pipeline:ui_functions:export_conversation",
+          "params": { "format": "markdown", "include_timestamps": false }
+        },
+        {
+          "id": "export_json",
+          "name": "Export as JSON",
+          "icon": "{ }",
+          "description": "Export conversation to JSON format",
+          "action": "pipeline:ui_functions:export_conversation",
+          "params": { "format": "json", "include_metadata": true }
+        }
+      ]
+    },
+    {
+      "id": "analysis",
+      "name": "Analysis",
+      "icon": "🔍",
+      "functions": [
+        {
+          "id": "sentiment",
+          "name": "Sentiment Analysis",
+          "icon": "😊",
+          "description": "Analyze conversation sentiment",
+          "action": "pipeline:ui_functions:analyze_conversation",
+          "params": { "analysis_type": "sentiment" }
+        },
+        {
+          "id": "topics",
+          "name": "Topic Analysis",
+          "icon": "🏷️",
+          "description": "Identify main topics discussed",
+          "action": "pipeline:ui_functions:analyze_conversation",
+          "params": { "analysis_type": "topics" }
+        },
+        {
+          "id": "stats",
+          "name": "Statistics",
+          "icon": "📊",
+          "description": "Conversation statistics and metrics",
+          "action": "pipeline:ui_functions:analyze_conversation",
+          "params": { "analysis_type": "statistics" }
+        }
+      ]
+    },
+    {
+      "id": "productivity",
+      "name": "Productivity",
+      "icon": "⚡",
+      "functions": [
+        {
+          "id": "tasks",
+          "name": "Extract Tasks",
+          "icon": "✅",
+          "description": "Extract action items from conversation",
+          "action": "pipeline:ui_functions:extract_action_items",
+          "params": { "format": "list" }
+        },
+        {
+          "id": "tasks_table",
+          "name": "Tasks Table",
+          "icon": "📋",
+          "description": "Extract tasks in table format",
+          "action": "pipeline:ui_functions:extract_action_items",
+          "params": { "format": "table" }
+        },
+        {
+          "id": "followup_3",
+          "name": "3 Follow-ups",
+          "icon": "❓",
+          "description": "Generate 3 follow-up questions",
+          "action": "pipeline:ui_functions:generate_followup_questions",
+          "params": { "count": 3, "style": "exploratory" }
+        },
+        {
+          "id": "followup_challenging",
+          "name": "Challenging Questions",
+          "icon": "🤔",
+          "description": "Generate challenging follow-up questions",
+          "action": "pipeline:ui_functions:generate_followup_questions",
+          "params": { "count": 5, "style": "challenging" }
+        }
+      ]
+    },
+    {
+      "id": "tools",
+      "name": "Tools",
+      "icon": "🛠️",
+      "functions": [
+        {
+          "id": "search_web",
+          "name": "Web Search",
+          "icon": "🔍",
+          "description": "Search the web for information",
+          "action": "message",
+          "message": "Search the web for the latest information about this topic"
+        },
+        {
+          "id": "generate_code",
+          "name": "Generate Code",
+          "icon": "💻",
+          "description": "Generate code based on discussion",
+          "action": "message",
+          "message": "Generate code implementing what we discussed"
+        },
+        {
+          "id": "create_diagram",
+          "name": "Create Diagram",
+          "icon": "📐",
+          "description": "Create a diagram of the concept",
+          "action": "message",
+          "message": "Create a mermaid diagram visualizing the concepts we discussed"
+        }
+      ]
+    },
+    {
+      "id": "system",
+      "name": "System",
+      "icon": "⚙️",
+      "functions": [
+        {
+          "id": "clear",
+          "name": "Clear Context",
+          "icon": "🔄",
+          "description": "Start fresh conversation",
+          "action": "pipeline:ui_functions:clear_context",
+          "params": { "keep_system_prompt": true },
+          "confirm": true,
+          "confirmMessage": "This will clear the conversation context. Continue?"
+        },
+        {
+          "id": "regenerate",
+          "name": "Regenerate Last",
+          "icon": "🔃",
+          "description": "Regenerate last response",
+          "action": "message",
+          "message": "Please regenerate your last response with a different approach"
+        },
+        {
+          "id": "debug",
+          "name": "Debug Info",
+          "icon": "🐛",
+          "description": "Show debug information",
+          "action": "message",
+          "message": "Show debug information about the current conversation state"
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "position": "top-right",
+    "showLabels": true,
+    "showDescriptions": true,
+    "confirmDangerousActions": true,
+    "defaultCategory": "all"
+  }
+}
