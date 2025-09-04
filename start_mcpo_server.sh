@@ -118,8 +118,8 @@ case "${1:-start}" in
         ;;
     status)
         if [ -f "$PID_DIR/mcpo.pid" ]; then
-            local pid=$(cat "$PID_DIR/mcpo.pid")
-            if kill -0 $pid 2>/dev/null; then
+            pid=$(cat "$PID_DIR/mcpo.pid")
+            if kill -0 "$pid" 2>/dev/null; then
                 print_success "MCPO server is running (PID: $pid)"
                 echo "URL: http://localhost:$MCPO_PORT"
             else

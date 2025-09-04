@@ -131,8 +131,8 @@ case "${1:-start}" in
         ;;
     status)
         if [ -f "$PID_DIR/mcpo-$SERVER_NAME.pid" ]; then
-            local pid=$(cat "$PID_DIR/mcpo-$SERVER_NAME.pid")
-            if kill -0 $pid 2>/dev/null; then
+            pid=$(cat "$PID_DIR/mcpo-$SERVER_NAME.pid")
+            if kill -0 "$pid" 2>/dev/null; then
                 print_success "$SERVER_NAME MCP server is running (PID: $pid)"
                 echo "URL: http://localhost:$PORT"
             else
