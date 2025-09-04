@@ -99,3 +99,4 @@ jobs:
       with:
         scandir: '.'
         ignore_paths: node_modules open-webui pipelines
+        severity: error
