@@ -10,7 +10,7 @@
 		getFunctionValvesSpecById,
 		updateFunctionValvesById
 	} from '$lib/apis/functions';
-	import { getToolValvesById, getToolValvesSpecById, updateToolValvesById } from '$lib/apis/tools/index';
+	import { getToolValvesById, getToolValvesSpecById, updateToolValvesById } from '$lib/apis/tools/index.js';
 	import Spinner from '../../common/Spinner.svelte';
 	import Switch from '$lib/components/common/Switch.svelte';
 	import Valves from '$lib/components/common/Valves.svelte';

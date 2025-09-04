@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getRAGConfig, updateRAGConfig } from '$lib/apis/retrieval/index';
+	import { getRAGConfig, updateRAGConfig } from '$lib/apis/retrieval/index.js';
 	import Switch from '$lib/components/common/Switch.svelte';
 
 	import { models } from '$lib/stores';

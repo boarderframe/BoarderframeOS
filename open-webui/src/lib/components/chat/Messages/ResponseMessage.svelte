@@ -11,13 +11,13 @@
 
 	const dispatch = createEventDispatcher();
 
-	import { createNewFeedback, getFeedbackById, updateFeedbackById } from '$lib/apis/evaluations/index';
+	import { createNewFeedback, getFeedbackById, updateFeedbackById } from '$lib/apis/evaluations/index.js';
 	import { getChatById } from '$lib/apis/chats';
 	import { generateTags } from '$lib/apis';
 
 	import { config, models, settings, temporaryChatEnabled, TTSWorker, user } from '$lib/stores';
-	import { synthesizeOpenAISpeech } from '$lib/apis/audio/index';
-	import { imageGenerations } from '$lib/apis/images/index';
+	import { synthesizeOpenAISpeech } from '$lib/apis/audio/index.js';
+	import { imageGenerations } from '$lib/apis/images/index.js';
 	import {
 		copyToClipboard as _copyToClipboard,
 		approximateToHumanReadable,

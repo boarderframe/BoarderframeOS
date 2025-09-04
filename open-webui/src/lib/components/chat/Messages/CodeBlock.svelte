@@ -14,7 +14,7 @@
 	import CodeEditor from '$lib/components/common/CodeEditor.svelte';
 	import SvgPanZoom from '$lib/components/common/SVGPanZoom.svelte';
 	import { config } from '$lib/stores';
-	import { executeCode } from '$lib/apis/utils/index';
+	import { executeCode } from '$lib/apis/utils/index.js';
 	import { toast } from 'svelte-sonner';
 	import ChevronUp from '$lib/components/icons/ChevronUp.svelte';
 	import ChevronUpDown from '$lib/components/icons/ChevronUpDown.svelte';

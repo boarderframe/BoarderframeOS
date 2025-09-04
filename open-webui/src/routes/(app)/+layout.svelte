@@ -15,7 +15,7 @@
 	import { getModels, getToolServersData, getVersionUpdates } from '$lib/apis';
 	import { getAllTags } from '$lib/apis/chats';
 	import { getPrompts } from '$lib/apis/prompts';
-	import { getTools } from '$lib/apis/tools/index';
+	import { getTools } from '$lib/apis/tools/index.js';
 	import { getBanners } from '$lib/apis/configs';
 	import { getUserSettings } from '$lib/apis/users';
 

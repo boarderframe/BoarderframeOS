@@ -16,7 +16,7 @@
 		getToolById,
 		getToolList,
 		getTools
-	} from '$lib/apis/tools/index';
+	} from '$lib/apis/tools/index.js';
 	import ArrowDownTray from '../icons/ArrowDownTray.svelte';
 	import Tooltip from '../common/Tooltip.svelte';
 	import ConfirmDialog from '../common/ConfirmDialog.svelte';

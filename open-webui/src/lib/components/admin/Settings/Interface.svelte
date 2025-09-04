@@ -13,7 +13,7 @@
 	import { banners as _banners } from '$lib/stores';
 	import type { Banner } from '$lib/types';
 
-	import { getBaseModels } from '$lib/apis/models/index';
+	import { getBaseModels } from '$lib/apis/models/index.js';
 	import { getBanners, setBanners } from '$lib/apis/configs';
 
 	import Tooltip from '$lib/components/common/Tooltip.svelte';

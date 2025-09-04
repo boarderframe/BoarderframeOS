@@ -9,7 +9,7 @@
 		updateAudioConfig,
 		getModels as _getModels,
 		getVoices as _getVoices
-	} from '$lib/apis/audio/index';
+	} from '$lib/apis/audio/index.js';
 	import { config, settings } from '$lib/stores';
 
 	import Spinner from '$lib/components/common/Spinner.svelte';
