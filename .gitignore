@@ -149,7 +149,6 @@ mcp_servers/**/.cache/
 mcp_servers/enhanced-filesystem/
 mcp_servers/mcp-official-servers/
 mcp_servers/mcp-ui-sdk/
-pipelines/
 
 # Open WebUI specific
 open-webui/backend/data/
