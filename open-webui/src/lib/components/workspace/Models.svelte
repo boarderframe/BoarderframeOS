@@ -19,10 +19,10 @@
 		getModels as getWorkspaceModels,
 		toggleModelById,
 		updateModelById
-	} from '$lib/apis/models';
+	} from '$lib/apis/models/index';
 
 	import { getModels } from '$lib/apis';
-	import { getGroups } from '$lib/apis/groups';
+	import { getGroups } from '$lib/apis/groups/index';
 
 	import EllipsisHorizontal from '../icons/EllipsisHorizontal.svelte';
 	import ModelMenu from './Models/ModelMenu.svelte';

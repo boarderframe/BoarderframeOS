@@ -7,7 +7,7 @@
 
 	import { generateMoACompletion } from '$lib/apis';
 	import { updateChatById } from '$lib/apis/chats';
-	import { createOpenAITextStream } from '$lib/apis/streaming';
+	import { createOpenAITextStream } from '$lib/apis/streaming/index';
 
 	import ResponseMessage from './ResponseMessage.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';

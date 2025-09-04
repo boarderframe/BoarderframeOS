@@ -4,7 +4,7 @@
 	import { getContext, onMount, tick } from 'svelte';
 
 	import { config, user, tools as _tools, mobile } from '$lib/stores';
-	import { getTools } from '$lib/apis/tools';
+	import { getTools } from '$lib/apis/tools/index';
 
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';

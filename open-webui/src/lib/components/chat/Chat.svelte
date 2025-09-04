@@ -62,8 +62,8 @@
 		updateChatFolderIdById
 	} from '$lib/apis/chats';
 	import { generateOpenAIChatCompletion } from '$lib/apis/openai';
-	import { processWeb, processWebSearch, processYoutubeVideo } from '$lib/apis/retrieval';
-	import { createOpenAITextStream } from '$lib/apis/streaming';
+	import { processWeb, processWebSearch, processYoutubeVideo } from '$lib/apis/retrieval/index';
+	import { createOpenAITextStream } from '$lib/apis/streaming/index';
 	import { queryMemory } from '$lib/apis/memories';
 	import { getAndUpdateUserLocation, getUserSettings } from '$lib/apis/users';
 	import {
@@ -74,7 +74,7 @@
 		stopTask,
 		getTaskIdsByChatId
 	} from '$lib/apis';
-	import { getTools } from '$lib/apis/tools';
+	import { getTools } from '$lib/apis/tools/index';
 
 	import Banner from '../common/Banner.svelte';
 	import MessageInput from '$lib/components/chat/MessageInput.svelte';

@@ -15,7 +15,7 @@
 		updateRerankingConfig,
 		getRAGConfig,
 		updateRAGConfig
-	} from '$lib/apis/retrieval';
+	} from '$lib/apis/retrieval/index';
 
 	import { reindexKnowledgeFiles } from '$lib/apis/knowledge';
 	import { deleteAllFiles } from '$lib/apis/files';

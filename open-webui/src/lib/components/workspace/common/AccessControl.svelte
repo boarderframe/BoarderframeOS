@@ -3,7 +3,7 @@
 
 	const i18n = getContext('i18n');
 
-	import { getGroups } from '$lib/apis/groups';
+	import { getGroups } from '$lib/apis/groups/index';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import Plus from '$lib/components/icons/Plus.svelte';
 	import UserCircleSolid from '$lib/components/icons/UserCircleSolid.svelte';
