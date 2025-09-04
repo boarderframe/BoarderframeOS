@@ -19,7 +19,7 @@
 		getModels as getWorkspaceModels,
 		toggleModelById,
 		updateModelById
-	} from '$lib/apis/models/index';
+	} from '$lib/apis/models';
 
 	import { getModels } from '$lib/apis';
 	import { getGroups } from '$lib/apis/groups';
