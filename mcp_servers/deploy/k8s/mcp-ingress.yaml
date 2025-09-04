@@ -1,0 +1,373 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mcp-ui-ingress
+  namespace: mcp-ui
+  labels:
+    app: mcp-ui
+    component: ingress
+  annotations:
+    # NGINX Ingress Controller specific annotations
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-next-upstream: "error timeout invalid_header http_500 http_502 http_503 http_504"
+    nginx.ingress.kubernetes.io/proxy-next-upstream-tries: "3"
+    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "60"
+    
+    # Rate limiting
+    nginx.ingress.kubernetes.io/rate-limit-rps: "100"
+    nginx.ingress.kubernetes.io/rate-limit-rpm: "6000"
+    nginx.ingress.kubernetes.io/rate-limit-connections: "50"
+    
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: SAMEORIGIN";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' wss: https:";
+      more_set_headers "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload";
+      more_set_headers "Permissions-Policy: geolocation=(), microphone=(), camera=()";
+    
+    # Load balancing
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$binary_remote_addr"
+    nginx.ingress.kubernetes.io/load-balance: "round_robin"
+    
+    # Monitoring
+    nginx.ingress.kubernetes.io/enable-access-log: "true"
+    nginx.ingress.kubernetes.io/enable-rewrite-log: "true"
+    
+    # Certificate management
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    cert-manager.io/acme-challenge-type: "http01"
+    
+    # External DNS
+    external-dns.alpha.kubernetes.io/hostname: "mcp-ui.example.com"
+    external-dns.alpha.kubernetes.io/ttl: "300"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - mcp-ui.example.com
+    - api.mcp-ui.example.com
+    secretName: mcp-ui-tls-cert
+  rules:
+  - host: mcp-ui.example.com
+    http:
+      paths:
+      - path: /api/v1
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-manager-service
+            port:
+              number: 8000
+      - path: /docs
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-manager-service
+            port:
+              number: 8000
+      - path: /redoc
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-manager-service
+            port:
+              number: 8000
+      - path: /openapi.json
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-manager-service
+            port:
+              number: 8000
+      - path: /metrics
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-manager-service
+            port:
+              number: 8000
+      - path: /health
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-manager-service
+            port:
+              number: 8000
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-frontend-service
+            port:
+              number: 3000
+  - host: api.mcp-ui.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-manager-service
+            port:
+              number: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-frontend
+  namespace: mcp-ui
+  labels:
+    app: mcp-frontend
+    component: frontend
+    version: v1
+    tier: production
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: mcp-frontend
+      component: frontend
+  template:
+    metadata:
+      labels:
+        app: mcp-frontend
+        component: frontend
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: mcp-frontend
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+      - name: mcp-frontend
+        image: mcp-frontend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+          name: http
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: REACT_APP_API_URL
+          value: "https://api.mcp-ui.example.com"
+        - name: REACT_APP_WS_URL
+          value: "wss://api.mcp-ui.example.com/ws"
+        - name: REACT_APP_ENVIRONMENT
+          value: "production"
+        - name: REACT_APP_SENTRY_DSN
+          valueFrom:
+            secretKeyRef:
+              name: mcp-secrets
+              key: sentry-dsn
+              optional: true
+        - name: REACT_APP_VERSION
+          value: "v1.0.0"
+        - name: GENERATE_SOURCEMAP
+          value: "false"
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d
+          readOnly: true
+        - name: tmp-volume
+          mountPath: /tmp
+        - name: var-cache-volume
+          mountPath: /var/cache/nginx
+        - name: var-run-volume
+          mountPath: /var/run
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+          successThreshold: 1
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 3
+          timeoutSeconds: 2
+          failureThreshold: 30
+          successThreshold: 1
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+            ephemeral-storage: "1Gi"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+            ephemeral-storage: "2Gi"
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: mcp-frontend-nginx-config
+      - name: tmp-volume
+        emptyDir: {}
+      - name: var-cache-volume
+        emptyDir: {}
+      - name: var-run-volume
+        emptyDir: {}
+      nodeSelector:
+        kubernetes.io/os: linux
+      tolerations:
+      - key: "app"
+        operator: "Equal"
+        value: "mcp-ui"
+        effect: "NoSchedule"
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - mcp-frontend
+              topologyKey: kubernetes.io/hostname
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-frontend-service
+  namespace: mcp-ui
+  labels:
+    app: mcp-frontend
+    component: frontend
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3000"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3000
+    targetPort: 3000
+    protocol: TCP
+    name: http
+  selector:
+    app: mcp-frontend
+    component: frontend
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mcp-frontend
+  namespace: mcp-ui
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mcp-frontend-nginx-config
+  namespace: mcp-ui
+  labels:
+    app: mcp-frontend
+    component: frontend
+data:
+  default.conf: |
+    server {
+        listen 3000;
+        server_name _;
+        root /usr/share/nginx/html;
+        index index.html;
+        
+        # Security headers
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' wss: https:" always;
+        
+        # Compression
+        gzip on;
+        gzip_vary on;
+        gzip_min_length 1024;
+        gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
+        
+        # Cache static assets
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+            try_files $uri =404;
+        }
+        
+        # Health checks
+        location /health {
+            access_log off;
+            return 200 "healthy\n";
+            add_header Content-Type text/plain;
+        }
+        
+        location /ready {
+            access_log off;
+            return 200 "ready\n";
+            add_header Content-Type text/plain;
+        }
+        
+        # Metrics for Prometheus
+        location /metrics {
+            access_log off;
+            return 200 "# TYPE nginx_up gauge\nnginx_up 1\n";
+            add_header Content-Type text/plain;
+        }
+        
+        # SPA routing
+        location / {
+            try_files $uri $uri/ /index.html;
+            
+            # Cache control for HTML files
+            location ~* \.html$ {
+                expires 0;
+                add_header Cache-Control "no-cache, no-store, must-revalidate";
+            }
+        }
+        
+        # Proxy API requests during development (not used in production)
+        location /api/ {
+            return 404;
+        }
+    }

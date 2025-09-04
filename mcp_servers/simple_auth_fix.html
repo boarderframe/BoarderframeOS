@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head><title>Kroger Auth Fix</title></head>
+<body>
+<h2>🛒 Kroger Authentication Fix</h2>
+<p>Since the redirect URI is having issues, let's use the original method that worked before:</p>
+
+<h3>Step 1: Get Authorization Code</h3>
+<p>1. Open this URL in a new tab:</p>
+<p><strong>https://api.kroger.com/v1/connect/oauth2/authorize?response_type=code&client_id=webuimcp-bbc7cyz1&redirect_uri=https://www.google.com&scope=profile.compact cart.basic:write</strong></p>
+
+<p>2. Complete authorization with your Kroger account</p>
+<p>3. You'll be redirected to Google with a URL like: <code>https://www.google.com/?code=ABC123...</code></p>
+<p>4. Copy the <strong>code</strong> parameter from that URL</p>
+
+<h3>Step 2: Complete Authentication</h3>
+<p>Paste the code here and click Exchange:</p>
+<input type="text" id="authCode" placeholder="Paste the code parameter here..." style="width: 400px; padding: 8px;">
+<button onclick="exchangeCode()" style="padding: 8px 16px; background: #0066cc; color: white; border: none;">Exchange Code</button>
+
+<div id="result" style="margin-top: 20px;"></div>
+
+<script>
+async function exchangeCode() {
+    const code = document.getElementById('authCode').value.trim();
+    if (!code) {
+        document.getElementById('result').innerHTML = '<div style="color: red;">Please paste the authorization code</div>';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`http://localhost:9004/auth/exchange?code=${code}`);
+        const result = await response.text();
+        
+        if (response.ok) {
+            document.getElementById('result').innerHTML = 
+                '<div style="color: green; padding: 10px; background: #e8f5e8;">✅ Success! Your shopping assistant can now add items to cart.</div>';
+        } else {
+            document.getElementById('result').innerHTML = 
+                '<div style="color: red; padding: 10px; background: #ffe8e8;">❌ Failed: ' + result + '</div>';
+        }
+    } catch (error) {
+        document.getElementById('result').innerHTML = 
+            '<div style="color: red; padding: 10px; background: #ffe8e8;">❌ Error: ' + error.message + '</div>';
+    }
+}
+</script>
+</body>
+</html>

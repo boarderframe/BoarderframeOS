@@ -1,0 +1,373 @@
+# MCP Server Manager Alerting Rules
+# These rules define when to trigger alerts for various system conditions
+
+groups:
+  - name: mcp-manager-alerts
+    rules:
+      # Application Health Alerts
+      - alert: MCPManagerDown
+        expr: up{job="mcp-manager"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: mcp-manager
+        annotations:
+          summary: "MCP Manager is down"
+          description: "MCP Manager service has been down for more than 1 minute"
+          runbook_url: "https://docs.example.com/runbooks/mcp-manager-down"
+
+      - alert: MCPManagerHighErrorRate
+        expr: rate(http_requests_total{job="mcp-manager",status=~"5.."}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          service: mcp-manager
+        annotations:
+          summary: "High error rate in MCP Manager"
+          description: "MCP Manager error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+
+      - alert: MCPManagerHighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="mcp-manager"}[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: mcp-manager
+        annotations:
+          summary: "High latency in MCP Manager"
+          description: "95th percentile latency is {{ $value }}s over the last 5 minutes"
+
+      # Memory and CPU Alerts
+      - alert: MCPManagerHighMemoryUsage
+        expr: container_memory_usage_bytes{name="mcp-server-manager"} / container_spec_memory_limit_bytes{name="mcp-server-manager"} > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: mcp-manager
+        annotations:
+          summary: "High memory usage in MCP Manager"
+          description: "Memory usage is {{ $value | humanizePercentage }} of allocated memory"
+
+      - alert: MCPManagerHighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total{name="mcp-server-manager"}[5m]) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+          service: mcp-manager
+        annotations:
+          summary: "High CPU usage in MCP Manager"
+          description: "CPU usage is {{ $value | humanizePercentage }} over the last 5 minutes"
+
+  - name: redis-alerts
+    rules:
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+        annotations:
+          summary: "Redis is down"
+          description: "Redis service has been down for more than 1 minute"
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis high memory usage"
+          description: "Redis memory usage is {{ $value | humanizePercentage }}"
+
+      - alert: RedisConnectionPoolExhausted
+        expr: redis_connected_clients > 100
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis has too many connections"
+          description: "Redis has {{ $value }} connected clients"
+
+  - name: ollama-alerts
+    rules:
+      - alert: OllamaDown
+        expr: up{job="ollama"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          service: ollama
+        annotations:
+          summary: "Ollama service is down"
+          description: "Ollama service has been down for more than 2 minutes"
+
+      - alert: OllamaHighGPUUsage
+        expr: nvidia_gpu_utilization > 95
+        for: 15m
+        labels:
+          severity: warning
+          service: ollama
+        annotations:
+          summary: "High GPU usage in Ollama"
+          description: "GPU utilization is {{ $value }}% for more than 15 minutes"
+
+  - name: nginx-alerts
+    rules:
+      - alert: NginxHighErrorRate
+        expr: rate(nginx_http_requests_total{status=~"5.."}[5m]) > 0.1
+        for: 3m
+        labels:
+          severity: warning
+          service: nginx
+        annotations:
+          summary: "High error rate in Nginx"
+          description: "Nginx 5xx error rate is {{ $value | humanizePercentage }}"
+
+      - alert: NginxHighRequestRate
+        expr: rate(nginx_http_requests_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: info
+          service: nginx
+        annotations:
+          summary: "High request rate in Nginx"
+          description: "Nginx is receiving {{ $value }} requests per second"
+
+  - name: system-alerts
+    rules:
+      - alert: DiskSpaceRunningLow
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.1
+        for: 10m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "Disk space running low"
+          description: "Disk space usage is {{ $value | humanizePercentage }} on {{ $labels.mountpoint }}"
+
+      - alert: DiskSpaceCritical
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.05
+        for: 5m
+        labels:
+          severity: critical
+          service: system
+        annotations:
+          summary: "Disk space critically low"
+          description: "Disk space usage is {{ $value | humanizePercentage }} on {{ $labels.mountpoint }}"
+
+      - alert: SystemLoadHigh
+        expr: node_load1 > 4
+        for: 10m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "System load is high"
+          description: "System load is {{ $value }} for more than 10 minutes"
+
+  - name: docker-alerts
+    rules:
+      - alert: ContainerKilled
+        expr: time() - container_last_seen > 60
+        for: 0m
+        labels:
+          severity: warning
+          service: docker
+        annotations:
+          summary: "Container killed"
+          description: "Container {{ $labels.name }} has disappeared"
+
+      - alert: ContainerCpuUsage
+        expr: (sum(rate(container_cpu_usage_seconds_total[3m])) BY (instance, name) * 100) > 80
+        for: 2m
+        labels:
+          severity: warning
+          service: docker
+        annotations:
+          summary: "Container CPU usage is above 80%"
+          description: "Container {{ $labels.name }} CPU usage is {{ humanize $value }}%"
+
+      - alert: ContainerMemoryUsage
+        expr: (sum(container_memory_working_set_bytes) BY (instance, name) / sum(container_spec_memory_limit_bytes > 0) BY (instance, name) * 100) > 80
+        for: 2m
+        labels:
+          severity: warning
+          service: docker
+        annotations:
+          summary: "Container Memory usage is above 80%"
+          description: "Container {{ $labels.name }} Memory usage is {{ humanize $value }}%"
+
+  - name: security-alerts
+    rules:
+      # SSL Certificate Expiry
+      - alert: SSLCertificateExpiringSoon
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 7
+        for: 1m
+        labels:
+          severity: warning
+          service: ssl
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate for {{ $labels.instance }} will expire in {{ $value | humanizeDuration }}"
+
+      - alert: SSLCertificateExpired
+        expr: probe_ssl_earliest_cert_expiry - time() < 0
+        for: 0m
+        labels:
+          severity: critical
+          service: ssl
+        annotations:
+          summary: "SSL certificate has expired"
+          description: "SSL certificate for {{ $labels.instance }} has expired"
+
+      # Security Events from Falco
+      - alert: FalcoSecurityViolation
+        expr: increase(falco_events_total{priority="Critical"}[5m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          service: security
+        annotations:
+          summary: "Critical security violation detected"
+          description: "Falco detected {{ $value }} critical security violations in the last 5 minutes"
+
+      - alert: FalcoHighSecurityEvents
+        expr: rate(falco_events_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: security
+        annotations:
+          summary: "High rate of security events"
+          description: "Falco is detecting {{ $value }} security events per second"
+
+      # Container Security
+      - alert: ContainerRunningAsRoot
+        expr: container_spec_user{user="0"} == 1
+        for: 1m
+        labels:
+          severity: warning
+          service: security
+        annotations:
+          summary: "Container running as root"
+          description: "Container {{ $labels.name }} is running as root user"
+
+      - alert: ContainerWithPrivilegedAccess
+        expr: container_spec_privileged == 1
+        for: 1m
+        labels:
+          severity: critical
+          service: security
+        annotations:
+          summary: "Privileged container detected"
+          description: "Container {{ $labels.name }} is running with privileged access"
+
+      # Network Security
+      - alert: UnusualNetworkTraffic
+        expr: rate(container_network_receive_bytes_total[5m]) > 100 * 1024 * 1024
+        for: 10m
+        labels:
+          severity: warning
+          service: network
+        annotations:
+          summary: "Unusual network traffic detected"
+          description: "Container {{ $labels.name }} is receiving {{ $value | humanizeBytes }}/s of network traffic"
+
+      - alert: TooManyOpenConnections
+        expr: nginx_connections_active > 1000
+        for: 5m
+        labels:
+          severity: warning
+          service: network
+        annotations:
+          summary: "Too many open connections"
+          description: "Nginx has {{ $value }} active connections"
+
+      # Authentication and Authorization
+      - alert: HighAuthFailureRate
+        expr: rate(nginx_http_requests_total{status="401"}[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+          service: auth
+        annotations:
+          summary: "High authentication failure rate"
+          description: "{{ $value }} authentication failures per second"
+
+      - alert: SuspiciousUserAgent
+        expr: increase(nginx_http_requests_total{user_agent=~".*bot.*|.*crawler.*|.*scanner.*"}[5m]) > 100
+        for: 5m
+        labels:
+          severity: info
+          service: security
+        annotations:
+          summary: "Suspicious user agent detected"
+          description: "{{ $value }} requests from suspicious user agents in the last 5 minutes"
+
+  - name: compliance-alerts
+    rules:
+      # Data Protection
+      - alert: UnencryptedDataTransfer
+        expr: probe_http_ssl == 0
+        for: 1m
+        labels:
+          severity: warning
+          service: compliance
+        annotations:
+          summary: "Unencrypted data transfer detected"
+          description: "HTTP endpoint {{ $labels.instance }} is not using SSL/TLS encryption"
+
+      # Audit Log Monitoring
+      - alert: AuditLogWriteFailure
+        expr: increase(audit_log_write_errors_total[5m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          service: compliance
+        annotations:
+          summary: "Audit log write failure"
+          description: "{{ $value }} audit log write failures in the last 5 minutes"
+
+      # Backup Monitoring
+      - alert: BackupNotCompleted
+        expr: time() - backup_last_success_timestamp > 86400 * 2
+        for: 1m
+        labels:
+          severity: critical
+          service: backup
+        annotations:
+          summary: "Backup not completed for 2 days"
+          description: "Last successful backup was {{ $value | humanizeDuration }} ago"
+
+  - name: performance-security-alerts
+    rules:
+      # Resource Exhaustion (potential DoS)
+      - alert: CPUExhaustionAttack
+        expr: rate(container_cpu_usage_seconds_total[1m]) > 0.95
+        for: 5m
+        labels:
+          severity: critical
+          service: security
+        annotations:
+          summary: "Potential CPU exhaustion attack"
+          description: "Container {{ $labels.name }} CPU usage has been above 95% for 5 minutes"
+
+      - alert: MemoryExhaustionAttack
+        expr: container_memory_usage_bytes / container_spec_memory_limit_bytes > 0.95
+        for: 5m
+        labels:
+          severity: critical
+          service: security
+        annotations:
+          summary: "Potential memory exhaustion attack"
+          description: "Container {{ $labels.name }} memory usage has been above 95% for 5 minutes"
+
+      - alert: DiskSpaceExhaustionAttack
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.02
+        for: 2m
+        labels:
+          severity: critical
+          service: security
+        annotations:
+          summary: "Potential disk space exhaustion attack"
+          description: "Disk space on {{ $labels.device }} is below 2%"

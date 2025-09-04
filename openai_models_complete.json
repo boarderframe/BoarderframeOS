@@ -1,0 +1,132 @@
+{
+  "openai_models_complete": {
+    "research_date": "2025-08-17",
+    "source": "comprehensive_search_specialist_research",
+    "models": {
+      "flagship_models": {
+        "gpt-5": {
+          "api_name": "gpt-5",
+          "context_window": 400000,
+          "input_tokens": 272000,
+          "output_tokens": 128000,
+          "pricing": {
+            "input": "$1.25/million tokens",
+            "output": "$10/million tokens"
+          },
+          "capabilities": ["text", "vision", "audio", "reasoning"],
+          "performance": {
+            "aime_math": "94.6%",
+            "swe_bench_coding": "74.9%"
+          },
+          "best_for": "Complex reasoning, coding, multimodal tasks",
+          "tier": "flagship"
+        },
+        "gpt-5-mini": {
+          "api_name": "gpt-5-mini",
+          "context_window": 400000,
+          "capabilities": ["text", "vision", "audio"],
+          "best_for": "Cost-effective general purpose",
+          "tier": "flagship_mini"
+        },
+        "gpt-5-nano": {
+          "api_name": "gpt-5-nano",
+          "capabilities": ["text"],
+          "best_for": "Ultra low-cost simple tasks",
+          "tier": "flagship_nano"
+        }
+      },
+      "gpt_4_series": {
+        "gpt-4.1": {
+          "api_name": "gpt-4.1",
+          "capabilities": ["text", "vision"],
+          "features": "Improved instruction-following, long-context understanding",
+          "tier": "advanced"
+        },
+        "gpt-4.1-mini": {
+          "api_name": "gpt-4.1-mini",
+          "capabilities": ["text", "vision"],
+          "tier": "advanced_mini"
+        },
+        "gpt-4.1-nano": {
+          "api_name": "gpt-4.1-nano",
+          "capabilities": ["text"],
+          "tier": "advanced_nano"
+        },
+        "gpt-4o": {
+          "api_name": "gpt-4o",
+          "capabilities": ["text", "vision", "audio"],
+          "best_for": "General chat, multimodal tasks",
+          "tier": "current_gen"
+        }
+      },
+      "reasoning_models": {
+        "o3": {
+          "api_name": "o3",
+          "capabilities": ["deep_reasoning", "multi_step_problem_solving"],
+          "best_for": "Math, logic, complex analysis",
+          "tier": "reasoning"
+        },
+        "o4-mini": {
+          "api_name": "o4-mini",
+          "capabilities": ["reasoning"],
+          "tier": "reasoning_mini"
+        },
+        "o1": {
+          "api_name": "o1",
+          "capabilities": ["reasoning"],
+          "tier": "reasoning"
+        },
+        "o3-deep-research": {
+          "api_name": "o3-deep-research",
+          "capabilities": ["research_focused_reasoning"],
+          "tier": "research"
+        }
+      },
+      "specialized_models": {
+        "gpt-image-1": {
+          "api_name": "gpt-image-1",
+          "capabilities": ["image_generation"],
+          "best_for": "Image creation",
+          "tier": "specialized"
+        },
+        "gpt-4o-mini-tts": {
+          "api_name": "gpt-4o-mini-tts",
+          "capabilities": ["text_to_speech"],
+          "best_for": "Voice synthesis",
+          "tier": "specialized"
+        },
+        "gpt-4o-search-preview": {
+          "api_name": "gpt-4o-search-preview",
+          "capabilities": ["web_search", "real_time_info"],
+          "best_for": "Current information retrieval",
+          "tier": "specialized"
+        }
+      },
+      "open_source": {
+        "gpt-oss-120B": {
+          "api_name": "gpt-oss-120B",
+          "license": "Apache 2.0",
+          "capabilities": ["text"],
+          "tier": "open_source"
+        },
+        "gpt-oss-20B": {
+          "api_name": "gpt-oss-20B",
+          "license": "Apache 2.0",
+          "capabilities": ["text"],
+          "tier": "open_source",
+          "note": "Currently using locally via LM Studio"
+        }
+      }
+    },
+    "key_improvements": {
+      "hallucination_rate": "4.8% (vs 20-22% previous)",
+      "features": [
+        "Adjustable reasoning depth",
+        "Multimodal input support",
+        "Enhanced safety and reliability",
+        "Improved language translation",
+        "Native reasoning capabilities"
+      ]
+    }
+  }
+}

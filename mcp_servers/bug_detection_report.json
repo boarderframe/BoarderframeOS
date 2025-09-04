@@ -1,0 +1,140 @@
+{
+  "scan_timestamp": "2025-08-19T22:15:26.501462",
+  "total_issues": 24,
+  "issues_by_severity": {
+    "critical": [
+      {
+        "timestamp": "2025-08-19T22:15:24.572080",
+        "description": "Hardcoded secret/token found in kroger_mcp_server_enhanced.py",
+        "severity": "critical"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:24.709775",
+        "description": "kroger_mcp.log: 1 tracebacks found",
+        "severity": "critical"
+      }
+    ],
+    "high": [
+      {
+        "timestamp": "2025-08-19T22:15:23.018650",
+        "description": "frontend: Health endpoint returns 404",
+        "severity": "high"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:23.040782",
+        "description": "Missing required environment variable: DATABASE_URL",
+        "severity": "high"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:23.040792",
+        "description": "Missing required environment variable: JWT_SECRET_KEY",
+        "severity": "high"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:23.040794",
+        "description": "Missing required environment variable: MCP_CONFIG_PATH",
+        "severity": "high"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:24.709226",
+        "description": "Missing API endpoints: /api/v1/metrics, /api/v1/cache/clear, /api/v1/logs",
+        "severity": "high"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:24.709772",
+        "description": "kroger_mcp.log: 36 errors found",
+        "severity": "high"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:26.501378",
+        "description": "Test collection errors: 71 modules cannot be imported",
+        "severity": "high"
+      }
+    ],
+    "medium": [
+      {
+        "timestamp": "2025-08-19T22:15:24.414906",
+        "description": "Broad exception handling in comprehensive_bug_detection.py",
+        "severity": "medium"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:24.415163",
+        "description": "Missing type hints in async functions in kroger_mcp_enhanced_ui.py",
+        "severity": "medium"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:24.415228",
+        "description": "Missing type hints in async functions in test_playwright_server.py",
+        "severity": "medium"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:24.415389",
+        "description": "Missing type hints in async functions in advanced_filesystem_server.py",
+        "severity": "medium"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:24.415439",
+        "description": "Missing type hints in async functions in test_mcp_api.py",
+        "severity": "medium"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:24.415617",
+        "description": "Missing type hints in async functions in kroger_phase2_fixed.py",
+        "severity": "medium"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:24.415673",
+        "description": "Missing type hints in async functions in kroger_mcp_server_enhanced.py",
+        "severity": "medium"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:24.415793",
+        "description": "Missing type hints in async functions in kroger_mcp_server.py",
+        "severity": "medium"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:24.415849",
+        "description": "Broad exception handling in kroger_mcp_server.py",
+        "severity": "medium"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:24.415897",
+        "description": "Missing type hints in async functions in test_openwebui_compatibility.py",
+        "severity": "medium"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:24.415996",
+        "description": "Missing type hints in async functions in demo_playwright_mcp_client.py",
+        "severity": "medium"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:24.702387",
+        "description": "Potential N+1 query pattern in configuration_service.py",
+        "severity": "medium"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:24.706435",
+        "description": "API endpoints redirecting due to trailing slash inconsistency",
+        "severity": "medium"
+      },
+      {
+        "timestamp": "2025-08-19T22:15:24.759626",
+        "description": "Missing test dependencies: testcontainers, pytest-benchmark",
+        "severity": "medium"
+      }
+    ],
+    "low": [
+      {
+        "timestamp": "2025-08-19T22:15:24.709803",
+        "description": "kroger_mcp.log: Deprecation warnings",
+        "severity": "low"
+      }
+    ]
+  },
+  "recommendations": [
+    "Create proper .env file with all required variables",
+    "Standardize API endpoint definitions to avoid trailing slash issues",
+    "Install missing test dependencies: pip install testcontainers pytest-benchmark",
+    "Move all secrets to environment variables"
+  ]
+}

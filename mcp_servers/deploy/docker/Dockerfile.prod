@@ -1,0 +1,179 @@
+# Multi-stage production Dockerfile for MCP-UI Backend
+# Optimized for security, performance, and minimal attack surface
+
+ARG PYTHON_VERSION=3.11
+ARG BUILD_ENV=production
+
+#================================
+# Build Stage
+#================================
+FROM python:${PYTHON_VERSION}-slim as builder
+
+# Build arguments
+ARG BUILD_ENV
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /build
+
+# Copy requirements first for better caching
+COPY requirements.txt requirements-prod.txt ./
+COPY pyproject.toml ./
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Upgrade pip and install wheel
+RUN pip install --no-cache-dir --upgrade pip wheel setuptools
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements-prod.txt
+
+# Copy source code
+COPY src/ ./src/
+COPY alembic/ ./alembic/
+COPY alembic.ini ./
+
+# Build any necessary assets
+RUN python -m compileall src/
+
+#================================
+# Runtime Stage
+#================================
+FROM python:${PYTHON_VERSION}-slim as runtime
+
+# Build arguments
+ARG BUILD_ENV
+ARG BUILD_DATE
+ARG BUILD_VERSION
+ARG BUILD_COMMIT
+
+# Add metadata labels
+LABEL maintainer="DevOps Team <devops@mcp-manager.com>"
+LABEL version="${BUILD_VERSION}"
+LABEL build-date="${BUILD_DATE}"
+LABEL commit="${BUILD_COMMIT}"
+LABEL environment="${BUILD_ENV}"
+LABEL description="MCP-UI Backend Application - Production Build"
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y \
+    libpq5 \
+    curl \
+    ca-certificates \
+    dumb-init \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create non-root user
+RUN groupadd -r appuser && \
+    useradd -r -g appuser -d /app -s /bin/bash appuser
+
+# Set up directory structure
+RUN mkdir -p /app/src /app/config /app/logs /app/temp && \
+    chown -R appuser:appuser /app
+
+# Copy virtual environment from builder
+COPY --from=builder --chown=appuser:appuser /opt/venv /opt/venv
+
+# Copy application code
+COPY --from=builder --chown=appuser:appuser /build/src /app/src
+COPY --from=builder --chown=appuser:appuser /build/alembic /app/alembic
+COPY --from=builder --chown=appuser:appuser /build/alembic.ini /app/
+
+# Copy startup scripts
+COPY --chown=appuser:appuser deploy/scripts/entrypoint.sh /app/
+COPY --chown=appuser:appuser deploy/scripts/healthcheck.sh /app/
+COPY --chown=appuser:appuser deploy/scripts/prestart.sh /app/
+
+# Make scripts executable
+RUN chmod +x /app/entrypoint.sh /app/healthcheck.sh /app/prestart.sh
+
+# Set environment variables
+ENV PATH="/opt/venv/bin:$PATH" \
+    PYTHONPATH="/app/src" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONHASHSEED=random \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    FASTAPI_ENV=production \
+    LOG_LEVEL=info \
+    HOST=0.0.0.0 \
+    PORT=8000 \
+    WORKERS=4 \
+    WORKER_CLASS=uvicorn.workers.UvicornWorker \
+    WORKER_CONNECTIONS=1000 \
+    MAX_REQUESTS=1000 \
+    MAX_REQUESTS_JITTER=100 \
+    TIMEOUT=30 \
+    KEEPALIVE=5
+
+# Switch to non-root user
+USER appuser
+
+# Set working directory
+WORKDIR /app
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD /app/healthcheck.sh
+
+# Expose port
+EXPOSE 8000
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+
+# Start command
+CMD ["/app/entrypoint.sh"]
+
+#================================
+# Development Stage (optional)
+#================================
+FROM runtime as development
+
+# Switch back to root for development tools
+USER root
+
+# Install development dependencies
+RUN apt-get update && apt-get install -y \
+    vim \
+    less \
+    htop \
+    iputils-ping \
+    netcat-openbsd \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install development Python packages
+RUN pip install --no-cache-dir \
+    pytest \
+    pytest-asyncio \
+    pytest-cov \
+    black \
+    flake8 \
+    mypy \
+    ipython \
+    debugpy
+
+# Override environment for development
+ENV FASTAPI_ENV=development \
+    LOG_LEVEL=debug \
+    WORKERS=1 \
+    RELOAD=true
+
+# Switch back to appuser
+USER appuser
+
+# Development command with auto-reload
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

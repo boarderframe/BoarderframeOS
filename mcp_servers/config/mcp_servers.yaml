@@ -1,0 +1,49 @@
+# MCP Server Configuration
+# This file defines the default MCP servers to be managed
+
+servers:
+  - name: "filesystem-server"
+    description: "MCP server for file system operations"
+    protocol: "stdio"
+    command: "npx"
+    args:
+      - "@modelcontextprotocol/server-filesystem"
+      - "/Users/cosburn/Documents"
+    env:
+      NODE_ENV: "production"
+    config:
+      allowed_paths:
+        - "/Users/cosburn/Documents"
+      readonly: false
+
+  - name: "git-server"
+    description: "MCP server for Git operations"
+    protocol: "stdio"
+    command: "npx"
+    args:
+      - "@modelcontextprotocol/server-git"
+    env:
+      NODE_ENV: "production"
+    config:
+      allowed_repos:
+        - "/Users/cosburn/projects"
+
+  - name: "postgres-server"
+    description: "MCP server for PostgreSQL operations"
+    protocol: "stdio"
+    command: "npx"
+    args:
+      - "@modelcontextprotocol/server-postgres"
+    env:
+      NODE_ENV: "production"
+      POSTGRES_CONNECTION_STRING: "postgresql://localhost:5432/mcp_manager_db"
+    config:
+      readonly: false
+      max_connections: 10
+
+# Global settings
+global:
+  health_check_interval: 30  # seconds
+  restart_on_failure: true
+  max_restart_attempts: 3
+  log_level: "INFO"

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multi-Search Test</title>
+    <style>
+        body { font-family: system-ui; margin: 20px; }
+        .test-box { background: #f0f0f0; padding: 20px; margin: 10px 0; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <h1>Multi-Search Test</h1>
+    <div class="test-box">
+        <h3>Test: bacon, eggs, milk</h3>
+        <button onclick="testMultiple()">Run Test</button>
+        <div id="results"></div>
+    </div>
+    
+    <script>
+        async function testMultiple() {
+            const terms = ['bacon', 'eggs', 'milk'];
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+            
+            for (const term of terms) {
+                const response = await fetch(`http://localhost:9004/products/search/compact?term=${term}&limit=8`);
+                const data = await response.json();
+                
+                const div = document.createElement('div');
+                div.innerHTML = `<strong>${term}:</strong> Found ${data.count} products`;
+                results.appendChild(div);
+            }
+        }
+    </script>
+</body>
+</html>

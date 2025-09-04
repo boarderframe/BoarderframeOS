@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Console Test</title>
+</head>
+<body>
+    <h1>Check Browser Console</h1>
+    <p>Open Developer Tools (F12 or Cmd+Option+I) and check the Console tab</p>
+    <p>Then click the button below to open the app in a new tab:</p>
+    <button onclick="window.open('http://localhost:5173', '_blank')">Open App in New Tab</button>
+    
+    <script>
+        console.log('Test page loaded. Open http://localhost:5173 and check the console for debug messages.');
+        console.log('Expected messages:');
+        console.log('  - "Fetching backend config..."');
+        console.log('  - "Backend config: ..."');
+        console.log('  - "Setting config store..."');
+        console.log('  - "Removing splash screen and setting loaded = true"');
+        console.log('  - "Auth page mounted, user: ..."');
+    </script>
+</body>
+</html>

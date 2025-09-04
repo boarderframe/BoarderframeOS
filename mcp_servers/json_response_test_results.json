@@ -1,0 +1,106 @@
+{
+  "main_server": {
+    "server": "Main Kroger MCP Server",
+    "url": "http://localhost:9004",
+    "timestamp": "2025-08-18T17:45:09.725143",
+    "all_tests_passed": true,
+    "results": [
+      {
+        "test": "Health Check",
+        "endpoint": "/health",
+        "params": null,
+        "passed": true,
+        "message": "Clean JSON response"
+      },
+      {
+        "test": "Test JSON",
+        "endpoint": "/test/json",
+        "params": null,
+        "passed": true,
+        "message": "Clean JSON response"
+      },
+      {
+        "test": "LLM-Ready Search (milk)",
+        "endpoint": "/products/search/llm-ready",
+        "params": {
+          "term": "milk",
+          "limit": 2
+        },
+        "passed": true,
+        "message": "Clean JSON response"
+      },
+      {
+        "test": "LLM-Ready Search (bread)",
+        "endpoint": "/products/search/llm-ready",
+        "params": {
+          "term": "bread",
+          "limit": 1
+        },
+        "passed": true,
+        "message": "Clean JSON response"
+      },
+      {
+        "test": "LLM-Ready Search (empty)",
+        "endpoint": "/products/search/llm-ready",
+        "params": {
+          "term": "xyz123notfound",
+          "limit": 1
+        },
+        "passed": true,
+        "message": "Clean JSON response"
+      }
+    ]
+  },
+  "fixed_server": {
+    "server": "Fixed Test Server",
+    "url": "http://localhost:9005",
+    "timestamp": "2025-08-18T17:45:09.758048",
+    "all_tests_passed": true,
+    "results": [
+      {
+        "test": "Health Check",
+        "endpoint": "/health",
+        "params": null,
+        "passed": true,
+        "message": "Clean JSON response"
+      },
+      {
+        "test": "Test JSON",
+        "endpoint": "/test/json",
+        "params": null,
+        "passed": true,
+        "message": "Clean JSON response"
+      },
+      {
+        "test": "LLM-Ready Search (milk)",
+        "endpoint": "/products/search/llm-ready",
+        "params": {
+          "term": "milk",
+          "limit": 2
+        },
+        "passed": true,
+        "message": "Clean JSON response"
+      },
+      {
+        "test": "LLM-Ready Search (bread)",
+        "endpoint": "/products/search/llm-ready",
+        "params": {
+          "term": "bread",
+          "limit": 1
+        },
+        "passed": true,
+        "message": "Clean JSON response"
+      },
+      {
+        "test": "LLM-Ready Search (empty)",
+        "endpoint": "/products/search/llm-ready",
+        "params": {
+          "term": "xyz123notfound",
+          "limit": 1
+        },
+        "passed": true,
+        "message": "Clean JSON response"
+      }
+    ]
+  }
+}

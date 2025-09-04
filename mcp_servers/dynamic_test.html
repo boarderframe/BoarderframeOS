@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 MCP Product Search - Multi-Item Support</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 20px;
+            background: #f8fafc;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border-radius: 16px;
+        }
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .search-section {
+            text-align: center;
+        }
+        .search-section h3 {
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        button {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #059669;
+        }
+        #searchInput {
+            width: 400px;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        #limitInput {
+            width: 80px;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        #output {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+            min-height: 200px;
+        }
+        .status {
+            padding: 15px;
+            font-weight: bold;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .success { color: #10b981; background: #ecfdf5; }
+        .loading { color: #3b82f6; background: #eff6ff; }
+        .error { color: #ef4444; background: #fef2f2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 MCP Product Search</h1>
+            <p>Search for products with automatic UI adaptation - supports multiple items</p>
+        </div>
+        
+        <div class="controls">
+            <div class="search-section">
+                <h3>🔍 Product Search</h3>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Enter product(s) - separate multiple with commas..." />
+                    <input type="number" id="limitInput" placeholder="Limit" value="8" min="1" max="20" />
+                    <button onclick="performSearch()">Search</button>
+                    <button onclick="clearResults()" style="background: #6b7280;">Clear</button>
+                </div>
+            </div>
+            
+            <div id="status" class="status" style="display: none;"></div>
+        </div>
+
+        <div id="output"></div>
+    </div>
+
+    <script>
+        async function performSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const limitInput = document.getElementById('limitInput');
+            const status = document.getElementById('status');
+            const output = document.getElementById('output');
+            
+            const searchTerms = searchInput.value.trim();
+            const limit = parseInt(limitInput.value) || 8;
+            
+            if (!searchTerms) {
+                status.className = 'status error';
+                status.textContent = '⚠️ Please enter search term(s)';
+                status.style.display = 'block';
+                return;
+            }
+            
+            // Parse multiple terms separated by commas
+            const terms = searchTerms.split(',').map(t => t.trim()).filter(t => t);
+            
+            status.className = 'status loading';
+            status.textContent = `🔍 Searching for ${terms.length} product(s)... (limit: ${limit})`;
+            status.style.display = 'block';
+            
+            // Clear output
+            output.innerHTML = '';
+            
+            try {
+                // Search each term and display results in rows
+                for (let i = 0; i < terms.length; i++) {
+                    const term = terms[i];
+                    const response = await fetch(`http://localhost:9004/products/search/compact?term=${encodeURIComponent(term)}&limit=${limit}`);
+                    const data = await response.json();
+                    
+                    // Create row container
+                    const rowDiv = document.createElement('div');
+                    rowDiv.style.marginBottom = '30px';
+                    
+                    if (data.ui_resources && Object.keys(data.ui_resources).length > 0) {
+                        const resource = Object.values(data.ui_resources)[0];
+                        rowDiv.innerHTML = resource.content;
+                    } else {
+                        rowDiv.innerHTML = `<div style="padding: 20px; text-align: center; color: #6b7280; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">No products found for "${term}"</div>`;
+                    }
+                    
+                    output.appendChild(rowDiv);
+                    
+                    // Small delay between searches for better UX
+                    if (i < terms.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    }
+                }
+                
+                status.className = 'status success';
+                status.textContent = `✅ Search completed! Found results for ${terms.length} search term(s).`;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                status.className = 'status error';
+                status.textContent = `❌ Search error: ${error.message}`;
+                output.innerHTML = `<div style="padding: 40px; text-align: center; color: #ef4444; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Error: ${error.message}<br><br>Make sure the MCP server is running on port 9004.</div>`;
+            }
+        }
+        
+        function clearResults() {
+            const output = document.getElementById('output');
+            const status = document.getElementById('status');
+            const searchInput = document.getElementById('searchInput');
+            
+            output.innerHTML = '';
+            status.style.display = 'none';
+            searchInput.value = '';
+            searchInput.focus();
+        }
+        
+        // Enter key support for search input
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+        
+        // Focus search input on load
+        window.addEventListener('load', () => {
+            document.getElementById('searchInput').focus();
+        });
+    </script>
+</body>
+</html>

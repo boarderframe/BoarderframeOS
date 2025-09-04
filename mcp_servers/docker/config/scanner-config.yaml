@@ -1,0 +1,182 @@
+# Security Scanner Configuration
+# Configuration for automated container vulnerability scanning
+
+scanner:
+  # Scan interval in seconds
+  interval: 3600
+  
+  # Vulnerability thresholds
+  thresholds:
+    critical: 0      # Fail if any critical vulnerabilities found
+    high: 5          # Fail if more than 5 high severity vulnerabilities
+    medium: 20       # Warning if more than 20 medium severity vulnerabilities
+    
+  # Scanning tools configuration
+  tools:
+    trivy:
+      enabled: true
+      timeout: "10m"
+      ignore_unfixed: true
+      severity_levels:
+        - "CRITICAL"
+        - "HIGH"
+        - "MEDIUM"
+      format: "json"
+      
+    grype:
+      enabled: true
+      timeout: "5m"
+      fail_on_severity: "high"
+      
+    syft:
+      enabled: true
+      format: "spdx-json"
+      
+  # Image scanning configuration
+  images:
+    # Scan running containers
+    scan_running: true
+    
+    # Scan recently built images (hours)
+    scan_recent: 24
+    
+    # Image exclusions (patterns)
+    exclude_patterns:
+      - "k8s.gcr.io/*"
+      - "quay.io/prometheus/*"
+      - "*:debug"
+      - "*:dev"
+      
+    # Registries to scan
+    registries:
+      - "docker.io"
+      - "ghcr.io"
+      - "gcr.io"
+
+# Reporting configuration
+reporting:
+  # Output formats
+  formats:
+    - "json"
+    - "html"
+    - "sarif"
+    
+  # Report retention (days)
+  retention_days: 30
+  
+  # Generate SBOM (Software Bill of Materials)
+  generate_sbom: true
+  
+  # Include compliance checks
+  compliance_checks:
+    - "cis-docker"
+    - "nist"
+    - "pci-dss"
+
+# Alerting configuration
+alerting:
+  # Slack integration
+  slack:
+    enabled: false
+    webhook_url: ""
+    channel: "#security-alerts"
+    username: "SecurityScanner"
+    
+  # Email integration
+  email:
+    enabled: false
+    smtp_server: ""
+    smtp_port: 587
+    username: ""
+    password: ""
+    from: "security@company.com"
+    to:
+      - "devops@company.com"
+      - "security@company.com"
+      
+  # PagerDuty integration
+  pagerduty:
+    enabled: false
+    integration_key: ""
+    
+  # Alert conditions
+  conditions:
+    critical_threshold: 1
+    high_threshold: 5
+    continuous_failures: 3
+
+# Database configuration for storing results
+database:
+  type: "file"  # file, postgresql, mysql
+  connection:
+    file_path: "/results/metadata.jsonl"
+    
+# Performance settings
+performance:
+  # Maximum concurrent scans
+  max_concurrent_scans: 3
+  
+  # Memory limit for scanning tools
+  memory_limit: "2G"
+  
+  # Temporary directory for scanning
+  temp_dir: "/tmp/security-scans"
+  
+  # Enable caching
+  enable_cache: true
+  cache_ttl: 86400  # 24 hours
+
+# Security settings
+security:
+  # Verify image signatures
+  verify_signatures: false
+  
+  # Check for malware
+  malware_scanning: false
+  
+  # License scanning
+  license_scanning:
+    enabled: true
+    allowed_licenses:
+      - "MIT"
+      - "Apache-2.0"
+      - "BSD-3-Clause"
+      - "GPL-3.0"
+    denied_licenses:
+      - "AGPL-3.0"
+      - "GPL-2.0"
+
+# Compliance frameworks
+compliance:
+  frameworks:
+    cis:
+      enabled: true
+      version: "1.2.0"
+    nist:
+      enabled: true
+      framework: "cybersecurity"
+    gdpr:
+      enabled: false
+    hipaa:
+      enabled: false
+
+# Integration settings
+integrations:
+  # Kubernetes integration
+  kubernetes:
+    enabled: false
+    namespace: "security"
+    
+  # Docker registry integration
+  registry:
+    enabled: true
+    auth_config: ""
+    
+  # CI/CD integration
+  cicd:
+    jenkins:
+      enabled: false
+    github_actions:
+      enabled: false
+    gitlab_ci:
+      enabled: false

@@ -1,0 +1,461 @@
+name: Production Deployment Pipeline
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+      deployment_strategy:
+        description: 'Deployment strategy'
+        required: true
+        default: 'rolling'
+        type: choice
+        options:
+        - rolling
+        - blue-green
+        - canary
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: mcp-server-manager
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+
+jobs:
+  # Build and Test Stage
+  build-and-test:
+    runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push backend image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./deploy/docker/Dockerfile.prod
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            PYTHON_VERSION=${{ env.PYTHON_VERSION }}
+            BUILD_ENV=production
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile.prod
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/mcp-frontend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            NODE_VERSION=${{ env.NODE_VERSION }}
+            BUILD_TARGET=production
+
+      - name: Run security scan with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ steps.meta.outputs.tags }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # Staging Deployment
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'staging'
+    environment:
+      name: staging
+      url: https://staging.mcp-manager.com
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name mcp-ui-staging
+
+      - name: Deploy to staging
+        run: |
+          # Update image tags in manifests
+          sed -i "s|mcp-server-manager:latest|${{ needs.build-and-test.outputs.image-tag }}|g" deploy/k8s/staging/*.yaml
+          
+          # Apply Kubernetes manifests
+          kubectl apply -f deploy/k8s/namespace.yaml
+          kubectl apply -f deploy/k8s/staging/
+          
+          # Wait for rollout
+          kubectl rollout status deployment/mcp-manager -n mcp-ui-staging --timeout=300s
+
+      - name: Run staging integration tests
+        run: |
+          # Wait for service to be ready
+          kubectl wait --for=condition=ready pod -l app=mcp-manager -n mcp-ui-staging --timeout=300s
+          
+          # Run integration tests against staging
+          STAGING_URL=$(kubectl get service mcp-manager-service -n mcp-ui-staging -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          export API_URL="https://${STAGING_URL}"
+          pytest tests/integration/ --env=staging -v
+
+      - name: Staging deployment notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+
+  # Production Deployment (Blue-Green)
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: [build-and-test, deploy-staging]
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.environment == 'production'
+    environment:
+      name: production
+      url: https://mcp-manager.com
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name mcp-ui-production
+
+      - name: Determine deployment color
+        id: color
+        run: |
+          # Check current active deployment color
+          CURRENT_COLOR=$(kubectl get service mcp-manager-service -n mcp-ui -o jsonpath='{.spec.selector.color}' || echo "blue")
+          if [ "$CURRENT_COLOR" = "blue" ]; then
+            NEW_COLOR="green"
+          else
+            NEW_COLOR="blue"
+          fi
+          echo "current-color=$CURRENT_COLOR" >> $GITHUB_OUTPUT
+          echo "new-color=$NEW_COLOR" >> $GITHUB_OUTPUT
+          echo "Deploying to $NEW_COLOR environment (current: $CURRENT_COLOR)"
+
+      - name: Deploy to new environment
+        run: |
+          NEW_COLOR=${{ steps.color.outputs.new-color }}
+          
+          # Update image tags and color labels
+          sed -i "s|mcp-server-manager:latest|${{ needs.build-and-test.outputs.image-tag }}|g" deploy/k8s/production/*.yaml
+          sed -i "s|color: blue|color: $NEW_COLOR|g" deploy/k8s/production/*.yaml
+          sed -i "s|mcp-manager|mcp-manager-$NEW_COLOR|g" deploy/k8s/production/*.yaml
+          
+          # Apply new deployment
+          kubectl apply -f deploy/k8s/namespace.yaml
+          kubectl apply -f deploy/k8s/production/
+          
+          # Wait for new deployment to be ready
+          kubectl rollout status deployment/mcp-manager-$NEW_COLOR -n mcp-ui --timeout=600s
+          kubectl wait --for=condition=ready pod -l app=mcp-manager,color=$NEW_COLOR -n mcp-ui --timeout=300s
+
+      - name: Run production smoke tests
+        run: |
+          NEW_COLOR=${{ steps.color.outputs.new-color }}
+          
+          # Get new deployment endpoint
+          NEW_ENDPOINT=$(kubectl get service mcp-manager-service-$NEW_COLOR -n mcp-ui -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          
+          # Run smoke tests
+          curl -f "https://$NEW_ENDPOINT/api/v1/health" || exit 1
+          curl -f "https://$NEW_ENDPOINT/api/v1/health/ready" || exit 1
+          
+          # Run critical path tests
+          pytest tests/smoke/ --env=production --endpoint="https://$NEW_ENDPOINT" -v
+
+      - name: Switch traffic to new deployment
+        if: success()
+        run: |
+          NEW_COLOR=${{ steps.color.outputs.new-color }}
+          
+          # Update service selector to point to new deployment
+          kubectl patch service mcp-manager-service -n mcp-ui -p '{"spec":{"selector":{"color":"'$NEW_COLOR'"}}}'
+          
+          # Verify traffic switch
+          sleep 30
+          curl -f "https://mcp-manager.com/api/v1/health" || exit 1
+
+      - name: Run post-deployment tests
+        run: |
+          # Wait for traffic to stabilize
+          sleep 60
+          
+          # Run full integration test suite against production
+          pytest tests/integration/ --env=production -v
+          
+          # Performance regression tests
+          pytest tests/performance/ --env=production --baseline-file=performance-baseline.json
+
+      - name: Clean up old deployment
+        if: success()
+        run: |
+          CURRENT_COLOR=${{ steps.color.outputs.current-color }}
+          
+          # Wait before cleanup to ensure stability
+          sleep 300
+          
+          # Scale down old deployment
+          kubectl scale deployment mcp-manager-$CURRENT_COLOR -n mcp-ui --replicas=0
+          
+          # Remove old deployment after grace period
+          sleep 300
+          kubectl delete deployment mcp-manager-$CURRENT_COLOR -n mcp-ui --ignore-not-found=true
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          NEW_COLOR=${{ steps.color.outputs.new-color }}
+          CURRENT_COLOR=${{ steps.color.outputs.current-color }}
+          
+          echo "Deployment failed, rolling back..."
+          
+          # Switch service back to old deployment
+          kubectl patch service mcp-manager-service -n mcp-ui -p '{"spec":{"selector":{"color":"'$CURRENT_COLOR'"}}}'
+          
+          # Scale down failed deployment
+          kubectl scale deployment mcp-manager-$NEW_COLOR -n mcp-ui --replicas=0
+          
+          # Delete failed deployment
+          kubectl delete deployment mcp-manager-$NEW_COLOR -n mcp-ui --ignore-not-found=true
+
+      - name: Production deployment notification
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          channel: '#production-deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "attachments": [{
+                "color": "${{ job.status == 'success' && 'good' || 'danger' }}",
+                "title": "Production Deployment ${{ job.status == 'success' && 'Successful' || 'Failed' }}",
+                "fields": [
+                  {"title": "Environment", "value": "Production", "short": true},
+                  {"title": "Strategy", "value": "Blue-Green", "short": true},
+                  {"title": "Image", "value": "${{ needs.build-and-test.outputs.image-tag }}", "short": false},
+                  {"title": "Deployed Color", "value": "${{ steps.color.outputs.new-color }}", "short": true}
+                ]
+              }]
+            }
+
+  # Database Migrations
+  migrate-database:
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install alembic
+
+      - name: Run database migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          # Run migrations
+          alembic upgrade head
+          
+          # Verify migration success
+          python -c "
+          import asyncio
+          from src.app.db.database import engine
+          from sqlalchemy import text
+          
+          async def verify_db():
+              async with engine.begin() as conn:
+                  result = await conn.execute(text('SELECT version_num FROM alembic_version'))
+                  version = result.scalar()
+                  print(f'Current database version: {version}')
+          
+          asyncio.run(verify_db())
+          "
+
+  # Security Scanning
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run OWASP ZAP scan
+        uses: zaproxy/action-full-scan@v0.7.0
+        with:
+          target: 'https://staging.mcp-manager.com'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'
+
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+  # Performance Testing
+  performance-tests:
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          pip install locust
+
+      - name: Run load tests
+        run: |
+          cd tests/performance
+          locust -f locustfile.py \
+            --host=https://staging.mcp-manager.com \
+            --users=100 \
+            --spawn-rate=10 \
+            --run-time=5m \
+            --html=load-test-report.html \
+            --csv=load-test-results \
+            --headless
+
+      - name: Upload performance reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-reports
+          path: tests/performance/load-test-*
+
+  # Monitoring Setup
+  setup-monitoring:
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: success()
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure monitoring alerts
+        run: |
+          # Update Prometheus alert rules
+          kubectl apply -f deploy/monitoring/prometheus/alerts/ -n mcp-ui-monitoring
+          
+          # Reload Prometheus configuration
+          kubectl exec -n mcp-ui-monitoring deployment/prometheus -- \
+            curl -X POST http://localhost:9090/-/reload
+
+      - name: Setup Grafana dashboards
+        run: |
+          # Import production dashboards
+          kubectl apply -f deploy/monitoring/grafana/dashboards/ -n mcp-ui-monitoring
+
+  # Cleanup
+  cleanup:
+    runs-on: ubuntu-latest
+    needs: [deploy-production, performance-tests, security-scan]
+    if: always()
+    steps:
+      - name: Cleanup old container images
+        run: |
+          # Delete images older than 30 days
+          docker image prune -a --filter "until=720h"
+
+      - name: Archive deployment artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-artifacts-${{ github.sha }}
+          path: |
+            deploy/
+            tests/results/
+          retention-days: 90

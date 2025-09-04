@@ -1,0 +1,113 @@
+# Falco Configuration for MCP Server Manager Security Monitoring
+# Runtime security monitoring with comprehensive rule coverage
+
+# File(s) or Directories containing Falco rules, loaded at startup.
+rules_file:
+  - /etc/falco/falco_rules.yaml
+  - /etc/falco/falco_rules.local.yaml
+  - /etc/falco/k8s_audit_rules.yaml
+  - /etc/falco/rules.d
+
+# Whether to output events in json or text
+json_output: true
+json_include_output_property: true
+json_include_tags_property: true
+
+# When enabled, the timestamp in the log will be treated as the event's timestamp.
+time_format_iso_8601: true
+
+# The priority level for log events. 
+priority: debug
+
+# Whether to output events to stdout
+stdout_output:
+  enabled: true
+
+# Send events to HTTP endpoint
+http_output:
+  enabled: false
+  url: ""
+
+# Send events to gRPC endpoint
+grpc_output:
+  enabled: true
+
+# gRPC API configuration
+grpc:
+  enabled: true
+  bind_address: "0.0.0.0:5060"
+  threadiness: 8
+
+# Where to store persistent state
+state_dir: "/var/lib/falco"
+
+# Syscall event drop monitoring configuration
+syscall_event_drops:
+  threshold: 0.1
+  actions:
+    - log
+    - alert
+  rate: 0.03333333333
+  max_burst: 1000
+
+# Syscall buffer configuration
+syscall_event_timeout: 30
+syscall_event_drops_buffer_size_mb: 8
+
+# Enable modern eBPF driver
+modern_bpf:
+  enabled: true
+
+# Falco engine configuration
+engine:
+  kind: modern_ebpf
+
+# Rules matching engine
+load_plugins: []
+
+# Watch config file changes
+watch_config_files: true
+
+# Enable prometheus metrics
+metrics:
+  enabled: true
+  interval: 1h
+  output_rule: true
+  rules_counters_enabled: true
+  resource_utilization_enabled: true
+  state_counters_enabled: true
+  kernel_event_counters_enabled: true
+  libbpf_stats_enabled: true
+  plugins_metrics_enabled: true
+
+# Rule name regex patterns to exclude
+log_stderr: false
+log_syslog: false
+log_level: info
+
+# Output channels
+output_channels:
+  - name: "security_events"
+    priority: "warning"
+    enabled: true
+    format: "json"
+    enabled_tags: ["host", "container", "kubernetes"]
+
+  - name: "critical_events"
+    priority: "critical" 
+    enabled: true
+    format: "json"
+    enabled_tags: ["host", "container", "kubernetes"]
+
+# Webserver configuration for healthchecks
+webserver:
+  enabled: true
+  listen_port: 8765
+  k8s_healthz_endpoint: /healthz
+  ssl_enabled: false
+  ssl_certificate: /etc/ssl/falco.pem
+
+# Base syscalls to consider
+base_syscalls:
+  custom_set: []
+  repair: false

@@ -1,0 +1,389 @@
+{
+  "litellm_config": {
+    "server_url": "http://localhost:4001",
+    "config_file": "/Users/cosburn/open_webui/litellm_config.yaml",
+    "last_updated": "2025-08-17",
+    "master_key": "litellm-master-key-2024"
+  },
+  "models": [
+    {
+      "model_name": "gpt-oss-20b",
+      "provider": "local_lm_studio",
+      "litellm_model_id": "openai/gpt-oss-20b",
+      "api_base": "http://127.0.0.1:1234/v1",
+      "api_key": "sk-dummy-key",
+      "status": "active",
+      "description": "GPT-OSS 20B model running locally in LM Studio",
+      "details": {
+        "file": "gpt-oss-20b-MXFP4.gguf",
+        "quantization": "MXFP4",
+        "size_gb": 12.11,
+        "architecture": "gpt-oss",
+        "tool_use_supported": true,
+        "domain": "llm"
+      }
+    },
+    {
+      "model_name": "gpt-5",
+      "provider": "openai",
+      "litellm_model_id": "gpt-5",
+      "api_key": "${OPENAI_API_KEY}",
+      "status": "active",
+      "description": "OpenAI's flagship model with best overall performance",
+      "details": {
+        "context_window": 400000,
+        "input_tokens": 272000,
+        "output_tokens": 128000,
+        "capabilities": ["text", "vision", "audio", "reasoning"],
+        "performance": {
+          "aime_math": "94.6%",
+          "swe_bench_coding": "74.9%"
+        },
+        "best_for": "Complex reasoning, coding, multimodal tasks",
+        "tier": "flagship"
+      }
+    },
+    {
+      "model_name": "gpt-5-mini",
+      "provider": "openai",
+      "litellm_model_id": "gpt-5-mini",
+      "api_key": "${OPENAI_API_KEY}",
+      "status": "active",
+      "description": "Cost-effective flagship variant with excellent capabilities",
+      "details": {
+        "context_window": 400000,
+        "capabilities": ["text", "vision", "audio"],
+        "best_for": "General purpose tasks with cost efficiency",
+        "tier": "flagship_mini"
+      }
+    },
+    {
+      "model_name": "o3",
+      "provider": "openai",
+      "litellm_model_id": "o3",
+      "api_key": "${OPENAI_API_KEY}",
+      "status": "active",
+      "description": "Specialized reasoning model for complex problem solving",
+      "details": {
+        "capabilities": ["deep_reasoning", "multi_step_problem_solving"],
+        "best_for": "Math, logic, complex analysis",
+        "tier": "reasoning"
+      }
+    },
+    {
+      "model_name": "gpt-4o",
+      "provider": "openai",
+      "litellm_model_id": "gpt-4o",
+      "api_key": "${OPENAI_API_KEY}",
+      "status": "active",
+      "description": "Excellent multimodal model for general chat",
+      "details": {
+        "capabilities": ["text", "vision", "audio"],
+        "best_for": "General chat, multimodal tasks",
+        "tier": "current_gen"
+      }
+    },
+    {
+      "model_name": "gpt-4.1",
+      "provider": "openai",
+      "litellm_model_id": "gpt-4.1",
+      "api_key": "${OPENAI_API_KEY}",
+      "status": "active",
+      "description": "Advanced model with improved instruction following",
+      "details": {
+        "capabilities": ["text", "vision"],
+        "features": "Improved instruction-following, long-context understanding",
+        "tier": "advanced"
+      }
+    },
+    {
+      "model_name": "gpt-4o-search-preview",
+      "provider": "openai",
+      "litellm_model_id": "gpt-4o-search-preview",
+      "api_key": "${OPENAI_API_KEY}",
+      "status": "active",
+      "description": "Model with real-time web search capabilities",
+      "details": {
+        "capabilities": ["web_search", "real_time_info"],
+        "best_for": "Current information retrieval",
+        "tier": "specialized"
+      }
+    },
+    {
+      "model_name": "o1",
+      "provider": "openai",
+      "litellm_model_id": "o1",
+      "api_key": "${OPENAI_API_KEY}",
+      "status": "active",
+      "description": "Alternative reasoning model for problem solving",
+      "details": {
+        "capabilities": ["reasoning"],
+        "best_for": "Reasoning tasks, alternative to o3",
+        "tier": "reasoning"
+      }
+    },
+    {
+      "model_name": "claude-opus-4-1-20250805",
+      "provider": "anthropic",
+      "litellm_model_id": "claude-opus-4-1-20250805",
+      "api_key": "os.environ/ANTHROPIC_API_KEY",
+      "status": "active",
+      "description": "Claude 4.1 Opus - Flagship reasoning model with extended thinking",
+      "details": {
+        "context_window": 200000,
+        "capabilities": ["text", "vision", "coding", "advanced_reasoning", "tool_use", "extended_thinking"],
+        "performance": {
+          "swe_bench_verified": "74.5%"
+        },
+        "best_for": "Complex coding, advanced reasoning, multi-step workflows",
+        "thinking_mode": "Extended thinking with tool use",
+        "tier": "flagship",
+        "pricing": {"input": "$15/MTok", "output": "$75/MTok"}
+      }
+    },
+    {
+      "model_name": "claude-opus-4-20250514",
+      "provider": "anthropic",
+      "litellm_model_id": "claude-opus-4-20250514",
+      "api_key": "os.environ/ANTHROPIC_API_KEY",
+      "status": "active",
+      "description": "Claude 4 Opus - Fallback flagship for complex agents",
+      "details": {
+        "context_window": 200000,
+        "capabilities": ["text", "vision", "coding", "advanced_reasoning", "tool_use"],
+        "best_for": "Complex agents, near-Opus 4.1 performance",
+        "tier": "flagship_fallback",
+        "pricing": {"input": "$15/MTok", "output": "$75/MTok"}
+      }
+    },
+    {
+      "model_name": "claude-sonnet-4-20250514",
+      "provider": "anthropic",
+      "litellm_model_id": "claude-sonnet-4-20250514",
+      "api_key": "os.environ/ANTHROPIC_API_KEY",
+      "status": "active",
+      "description": "Claude 4 Sonnet - Balanced default with high performance",
+      "details": {
+        "context_window": 200000,
+        "context_window_beta": "1M (with beta header)",
+        "max_output": "64k tokens",
+        "capabilities": ["text", "vision", "coding", "reasoning", "tool_use"],
+        "performance": {
+          "swe_bench": "72.7%"
+        },
+        "best_for": "Balanced performance, general tasks, cost-effective reasoning",
+        "thinking_mode": "Hybrid near-instant and extended reasoning",
+        "tier": "balanced_default",
+        "pricing": {"input": "$3/MTok", "output": "$15/MTok"}
+      }
+    },
+    {
+      "model_name": "claude-3-7-sonnet-20250219",
+      "provider": "anthropic",
+      "litellm_model_id": "claude-3-7-sonnet-20250219",
+      "api_key": "os.environ/ANTHROPIC_API_KEY",
+      "status": "active",
+      "description": "Claude 3.7 Sonnet - Budget powerhouse with extended thinking",
+      "details": {
+        "context_window": 200000,
+        "max_output": "128k tokens (beta)",
+        "capabilities": ["text", "vision", "coding", "extended_thinking"],
+        "best_for": "Large plans, test generation, bulk code comments",
+        "tier": "budget_powerhouse",
+        "pricing": {"input": "$3/MTok", "output": "$15/MTok"}
+      }
+    },
+    {
+      "model_name": "claude-3-5-haiku-20241022",
+      "provider": "anthropic",
+      "litellm_model_id": "claude-3-5-haiku-20241022",
+      "api_key": "os.environ/ANTHROPIC_API_KEY",
+      "status": "active",
+      "description": "Claude 3.5 Haiku - Fast and cost-effective for high throughput",
+      "details": {
+        "context_window": 200000,
+        "capabilities": ["text", "vision", "fast_reasoning"],
+        "best_for": "Routing, classification, extraction, light transforms, agent tool calls",
+        "features": ["rapid_response", "high_throughput", "low_latency"],
+        "tier": "fast_cost_effective",
+        "pricing": {"input": "$0.8/MTok", "output": "$4/MTok"}
+      }
+    },
+    {
+      "model_name": "claude-3-haiku-20240307",
+      "provider": "anthropic",
+      "litellm_model_id": "claude-3-haiku-20240307",
+      "api_key": "os.environ/ANTHROPIC_API_KEY",
+      "status": "active",
+      "description": "Claude 3 Haiku - Legacy fast model for basic tasks",
+      "details": {
+        "context_window": 200000,
+        "capabilities": ["text"],
+        "best_for": "Legacy fast processing, basic text tasks",
+        "tier": "legacy_fast",
+        "pricing": {"input": "$0.25/MTok", "output": "$1.25/MTok"}
+      }
+    },
+    {
+      "model_name": "gemini-2-5-pro",
+      "provider": "google_gemini",
+      "litellm_model_id": "gemini-2.5-pro",
+      "api_key": "os.environ/GOOGLE_API_KEY",
+      "status": "active",
+      "description": "Gemini 2.5 Pro - Flagship multimodal model with 1M context",
+      "details": {
+        "context_window": 1048576,
+        "output_limit": 65536,
+        "capabilities": ["text", "vision", "audio", "coding", "reasoning"],
+        "best_for": "Complex reasoning, advanced coding, multimodal tasks",
+        "tier": "flagship"
+      }
+    },
+    {
+      "model_name": "gemini-2-5-flash",
+      "provider": "google_gemini",
+      "litellm_model_id": "gemini-2.5-flash",
+      "api_key": "os.environ/GOOGLE_API_KEY",
+      "status": "active",
+      "description": "Gemini 2.5 Flash - Balanced flagship with fast responses",
+      "details": {
+        "context_window": 1048576,
+        "output_limit": 65536,
+        "capabilities": ["text", "vision", "coding", "fast_reasoning"],
+        "best_for": "Balanced performance, general tasks, fast responses",
+        "tier": "balanced_flagship"
+      }
+    },
+    {
+      "model_name": "gemini-2-0-flash-001",
+      "provider": "google_gemini",
+      "litellm_model_id": "gemini-2.0-flash-001",
+      "api_key": "os.environ/GOOGLE_API_KEY",
+      "status": "active",
+      "description": "Gemini 2.0 Flash - Fast and versatile multimodal model",
+      "details": {
+        "context_window": 1048576,
+        "output_limit": 8192,
+        "capabilities": ["text", "vision", "audio", "coding"],
+        "best_for": "Fast and versatile multimodal tasks",
+        "tier": "current_gen"
+      }
+    },
+    {
+      "model_name": "gemini-1-5-pro-002",
+      "provider": "google_gemini",
+      "litellm_model_id": "gemini-1.5-pro-002",
+      "api_key": "os.environ/GOOGLE_API_KEY",
+      "status": "active",
+      "description": "Gemini 1.5 Pro - Ultra-long context model (2M tokens)",
+      "details": {
+        "context_window": 2000000,
+        "output_limit": 8192,
+        "capabilities": ["text", "vision", "coding", "long_context"],
+        "best_for": "Very long context tasks, document analysis",
+        "tier": "long_context"
+      }
+    },
+    {
+      "model_name": "gemini-1-5-flash-002",
+      "provider": "google_gemini",
+      "litellm_model_id": "gemini-1.5-flash-002",
+      "api_key": "os.environ/GOOGLE_API_KEY",
+      "status": "active",
+      "description": "Gemini 1.5 Flash - Fast general purpose model",
+      "details": {
+        "context_window": 1000000,
+        "output_limit": 8192,
+        "capabilities": ["text", "vision", "coding"],
+        "best_for": "Fast general purpose tasks",
+        "tier": "fast_reliable"
+      }
+    },
+    {
+      "model_name": "gemini-1-5-flash-8b",
+      "provider": "google_gemini",
+      "litellm_model_id": "gemini-1.5-flash-8b",
+      "api_key": "os.environ/GOOGLE_API_KEY",
+      "status": "active",
+      "description": "Gemini 1.5 Flash-8B - Most cost-effective model",
+      "details": {
+        "context_window": 1000000,
+        "output_limit": 8192,
+        "capabilities": ["text", "vision", "fast_processing"],
+        "best_for": "High throughput, cost-effective tasks",
+        "tier": "cost_effective"
+      }
+    },
+    {
+      "model_name": "gemini-2-0-flash-thinking-exp",
+      "provider": "google_gemini",
+      "litellm_model_id": "gemini-2.0-flash-thinking-exp",
+      "api_key": "os.environ/GOOGLE_API_KEY",
+      "status": "active",
+      "description": "Gemini 2.0 Flash Thinking - Experimental reasoning model",
+      "details": {
+        "context_window": 1048576,
+        "output_limit": 65536,
+        "capabilities": ["text", "vision", "thinking_mode", "reasoning"],
+        "best_for": "Complex reasoning with visible thought process",
+        "tier": "thinking_experimental"
+      }
+    },
+    {
+      "model_name": "gemini-2-0-flash-exp-image-generation",
+      "provider": "google_gemini",
+      "litellm_model_id": "gemini-2.0-flash-exp-image-generation",
+      "api_key": "os.environ/GOOGLE_API_KEY",
+      "status": "active",
+      "description": "Gemini 2.0 Flash Image Generation - Experimental image creation",
+      "details": {
+        "context_window": 1048576,
+        "output_limit": 8192,
+        "capabilities": ["text", "vision", "image_generation"],
+        "best_for": "Image generation and visual content creation",
+        "tier": "image_generation_experimental"
+      }
+    },
+    {
+      "model_name": "gemini-2-5-flash-lite",
+      "provider": "google_gemini",
+      "litellm_model_id": "gemini-2.5-flash-lite",
+      "api_key": "os.environ/GOOGLE_API_KEY",
+      "status": "active",
+      "description": "Gemini 2.5 Flash-Lite - Ultra-cheap chat completion for high-volume tasks",
+      "details": {
+        "context_window": 1048576,
+        "output_limit": 65536,
+        "capabilities": ["text", "vision", "chat_completion", "high_throughput"],
+        "best_for": "High-volume chat, routing, classification, light tasks",
+        "tier": "ultra_cost_effective",
+        "pricing": {"input": "$0.10/MTok", "output": "$0.40/MTok"}
+      }
+    }
+  ],
+  "router_settings": {
+    "enable_loadbalancing": true,
+    "enable_fallbacks": true
+  },
+  "connection_info": {
+    "open_webui_connection": {
+      "type": "openai_api",
+      "api_base_url": "http://localhost:4001/v1",
+      "api_key": "litellm-master-key-2024",
+      "name": "LiteLLM Direct",
+      "method": "direct_connection"
+    }
+  },
+  "available_providers": {
+    "active": [
+      "local_lm_studio",
+      "openai", 
+      "anthropic",
+      "google_gemini"
+    ],
+    "configured_but_inactive": [
+      "xai_grok"
+    ],
+    "env_file": "/Users/cosburn/open_webui/.env.litellm"
+  }
+}

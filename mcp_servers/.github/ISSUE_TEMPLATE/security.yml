@@ -1,0 +1,85 @@
+name: Security Issue
+description: Report a security vulnerability
+title: "[SECURITY] "
+labels: ["security", "urgent"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ **IMPORTANT**: If you have discovered a serious security vulnerability, please do not report it here. 
+        Instead, please email us directly at security@example.com (replace with actual security contact).
+        
+        For less critical security issues, you can use this template.
+
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: How can we get in touch with you securely?
+      placeholder: ex. email@example.com
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity Level
+      description: How severe is this security issue?
+      options:
+        - Low (information disclosure, minor)
+        - Medium (limited impact)
+        - High (significant impact)
+        - Critical (immediate action required)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Security Issue Description
+      description: Please provide a detailed description of the security issue
+      placeholder: Describe the security issue...
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Potential Impact
+      description: What could an attacker achieve by exploiting this vulnerability?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this security issue?
+      placeholder: |
+        1. Go to...
+        2. Click on...
+        3. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: What environment did you discover this in?
+      placeholder: Browser, OS, version, etc.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Responsible Disclosure
+      description: Security reporting guidelines
+      options:
+        - label: I understand this report will be handled confidentially
+          required: true
+        - label: I agree to responsible disclosure practices
+          required: true

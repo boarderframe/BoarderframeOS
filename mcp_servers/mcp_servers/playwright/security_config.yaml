@@ -1,0 +1,327 @@
+# Playwright MCP Server Security Configuration
+# Production-ready security settings with OWASP compliance
+
+security:
+  # Authentication & Authorization
+  authentication:
+    enabled: true
+    type: "jwt"  # jwt, oauth2, api_key
+    jwt_config:
+      secret_key: "${JWT_SECRET_KEY}"  # From environment
+      algorithm: "HS256"
+      expiration_minutes: 60
+      refresh_token_enabled: true
+      refresh_expiration_days: 7
+    oauth2_config:
+      provider: "auth0"  # auth0, okta, keycloak
+      client_id: "${OAUTH_CLIENT_ID}"
+      client_secret: "${OAUTH_CLIENT_SECRET}"
+      redirect_uri: "https://yourdomain.com/callback"
+      scopes: ["openid", "profile", "email"]
+    api_key_config:
+      header_name: "X-API-Key"
+      key_rotation_days: 90
+      
+  authorization:
+    rbac_enabled: true
+    default_role: "viewer"
+    roles:
+      admin:
+        permissions: ["*"]
+        rate_limit_multiplier: 10
+      user:
+        permissions: ["navigate", "extract", "screenshot"]
+        rate_limit_multiplier: 1
+      viewer:
+        permissions: ["extract"]
+        rate_limit_multiplier: 0.5
+        
+  # Rate Limiting (OWASP API4:2019)
+  rate_limiting:
+    enabled: true
+    backend: "redis"  # memory, redis
+    redis_url: "${REDIS_URL}"
+    global_limits:
+      requests_per_second: 10
+      requests_per_minute: 100
+      requests_per_hour: 1000
+      requests_per_day: 10000
+    endpoint_limits:
+      "/navigate":
+        requests_per_minute: 30
+        burst_size: 5
+      "/screenshot":
+        requests_per_minute: 10
+        burst_size: 2
+      "/extract":
+        requests_per_minute: 60
+        burst_size: 10
+    ip_based_limits:
+      enabled: true
+      whitelist: ["10.0.0.0/8"]
+      blacklist: []
+      
+  # Input Validation (OWASP API8:2019)
+  input_validation:
+    max_url_length: 2048
+    max_selector_length: 500
+    max_text_length: 10000
+    max_request_size_mb: 10
+    allowed_url_schemes: ["http", "https"]
+    blocked_url_patterns:
+      - "^javascript:"
+      - "^data:"
+      - "^vbscript:"
+      - "^file:"
+      - "^about:"
+    blocked_domains:
+      - "localhost"
+      - "127.0.0.1"
+      - "0.0.0.0"
+      - "169.254.169.254"  # AWS metadata
+      - "metadata.google.internal"  # GCP metadata
+      - "*.local"
+      - "*.internal"
+    blocked_ip_ranges:
+      - "10.0.0.0/8"
+      - "172.16.0.0/12"
+      - "192.168.0.0/16"
+      - "169.254.0.0/16"
+      - "127.0.0.0/8"
+    xss_protection:
+      enabled: true
+      strip_scripts: true
+      encode_html: true
+      
+  # SSRF Protection (OWASP A10:2021)
+  ssrf_protection:
+    enabled: true
+    dns_resolution_timeout_ms: 3000
+    follow_redirects: false
+    max_redirects: 0
+    validate_ssl_certificates: true
+    proxy_settings:
+      enabled: false
+      http_proxy: ""
+      https_proxy: ""
+      no_proxy: ["localhost", "127.0.0.1"]
+      
+  # Resource Limits
+  resource_limits:
+    max_concurrent_sessions: 100
+    max_sessions_per_user: 5
+    max_pages_per_session: 10
+    max_execution_time_seconds: 30
+    max_memory_per_session_mb: 512
+    max_cpu_percent: 50
+    page_timeout_ms: 30000
+    screenshot_size_limit_mb: 10
+    page_size_limit_mb: 50
+    
+  # Session Management (OWASP A07:2021)
+  session_management:
+    timeout_minutes: 30
+    idle_timeout_minutes: 15
+    absolute_timeout_hours: 8
+    regenerate_id_on_auth: true
+    secure_cookie: true
+    http_only_cookie: true
+    same_site: "strict"
+    encryption_key: "${SESSION_ENCRYPTION_KEY}"
+    
+  # Browser Security
+  browser_security:
+    headless: true
+    sandbox_mode: true
+    disable_gpu: true
+    disable_dev_shm: true
+    disable_web_security: false
+    ignore_certificate_errors: false
+    block_third_party_cookies: true
+    disable_javascript: false
+    disable_images: false
+    disable_css: false
+    user_agent: "Mozilla/5.0 (compatible; PlaywrightBot/1.0)"
+    viewport:
+      width: 1920
+      height: 1080
+    extra_args:
+      - "--no-sandbox"
+      - "--disable-setuid-sandbox"
+      - "--disable-dev-shm-usage"
+      - "--disable-accelerated-2d-canvas"
+      - "--disable-gpu"
+      - "--single-process"
+      
+  # Network Security
+  network_security:
+    allowed_protocols: ["http", "https"]
+    force_https: true
+    ssl_verification: true
+    certificate_pinning:
+      enabled: false
+      pins: []
+    dns_over_https:
+      enabled: true
+      provider: "cloudflare"  # cloudflare, google, quad9
+    timeout_settings:
+      connect_timeout_ms: 10000
+      read_timeout_ms: 30000
+      write_timeout_ms: 30000
+      
+  # Content Security Policy
+  csp:
+    enabled: true
+    directives:
+      default-src: ["'self'"]
+      script-src: ["'self'", "'unsafe-inline'"]
+      style-src: ["'self'", "'unsafe-inline'"]
+      img-src: ["'self'", "data:", "https:"]
+      font-src: ["'self'"]
+      connect-src: ["'self'"]
+      frame-ancestors: ["'none'"]
+      base-uri: ["'self'"]
+      form-action: ["'self'"]
+      
+  # Security Headers
+  security_headers:
+    X-Frame-Options: "DENY"
+    X-Content-Type-Options: "nosniff"
+    X-XSS-Protection: "1; mode=block"
+    Strict-Transport-Security: "max-age=31536000; includeSubDomains"
+    Referrer-Policy: "strict-origin-when-cross-origin"
+    Permissions-Policy: "geolocation=(), microphone=(), camera=()"
+    
+  # Logging & Monitoring (OWASP A09:2021)
+  logging:
+    level: "INFO"
+    format: "json"
+    destinations:
+      - type: "file"
+        path: "/var/log/playwright/app.log"
+        rotation:
+          max_size_mb: 100
+          max_files: 10
+          compress: true
+      - type: "syslog"
+        host: "syslog.internal"
+        port: 514
+        protocol: "tcp"
+    security_events:
+      log_authentication_attempts: true
+      log_authorization_failures: true
+      log_input_validation_errors: true
+      log_rate_limit_violations: true
+      log_ssrf_attempts: true
+      log_suspicious_activities: true
+    sensitive_data_masking:
+      enabled: true
+      patterns:
+        - "password"
+        - "token"
+        - "api_key"
+        - "secret"
+        - "authorization"
+        
+  # Audit Trail
+  audit:
+    enabled: true
+    storage: "database"  # database, file, elasticsearch
+    retention_days: 90
+    include_request_body: false
+    include_response_body: false
+    events_to_audit:
+      - "session_created"
+      - "session_destroyed"
+      - "navigation"
+      - "screenshot_taken"
+      - "form_filled"
+      - "authentication_success"
+      - "authentication_failure"
+      - "authorization_failure"
+      
+  # Threat Detection
+  threat_detection:
+    enabled: true
+    anomaly_detection:
+      enabled: true
+      baseline_period_days: 7
+      sensitivity: "medium"  # low, medium, high
+    ip_reputation:
+      enabled: true
+      provider: "abuseipdb"  # abuseipdb, ipqualityscore
+      api_key: "${IP_REPUTATION_API_KEY}"
+      block_threshold: 75
+    geo_blocking:
+      enabled: false
+      blocked_countries: []
+      allowed_countries: ["US", "CA", "GB", "EU"]
+      
+  # Data Protection
+  data_protection:
+    encryption_at_rest:
+      enabled: true
+      algorithm: "AES-256-GCM"
+      key_rotation_days: 90
+    encryption_in_transit:
+      enabled: true
+      min_tls_version: "1.2"
+      cipher_suites:
+        - "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+        - "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+    data_retention:
+      screenshots_hours: 24
+      logs_days: 30
+      audit_trails_days: 90
+      
+  # Compliance
+  compliance:
+    frameworks:
+      - "OWASP Top 10 2021"
+      - "CIS Controls v8"
+      - "NIST Cybersecurity Framework"
+    gdpr:
+      enabled: true
+      data_processor_agreement: true
+      right_to_erasure: true
+      data_portability: true
+    pci_dss:
+      enabled: false
+      level: 4
+      
+# Environment-specific overrides
+environments:
+  development:
+    security:
+      authentication:
+        enabled: false
+      rate_limiting:
+        requests_per_minute: 1000
+      browser_security:
+        headless: false
+      logging:
+        level: "DEBUG"
+        
+  staging:
+    security:
+      authentication:
+        enabled: true
+      rate_limiting:
+        requests_per_minute: 500
+      browser_security:
+        headless: true
+        
+  production:
+    security:
+      authentication:
+        enabled: true
+        type: "oauth2"
+      rate_limiting:
+        requests_per_minute: 100
+      browser_security:
+        headless: true
+        sandbox_mode: true
+      threat_detection:
+        enabled: true
+        anomaly_detection:
+          sensitivity: "high"

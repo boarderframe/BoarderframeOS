@@ -1,0 +1,644 @@
+version: '3.8'
+
+# Production MCP-UI Deployment Configuration
+# High availability, security-focused, auto-scaling ready
+
+services:
+  # Load Balancer (Nginx)
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: mcp-nginx-prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - nginx_logs:/var/log/nginx
+    networks:
+      - mcp_frontend
+      - mcp_backend
+    depends_on:
+      - mcp-manager
+      - frontend
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+
+  # Frontend Application (Svelte/React)
+  frontend:
+    build:
+      context: ../../../frontend
+      dockerfile: Dockerfile.prod
+      args:
+        NODE_ENV: production
+        BUILD_TARGET: production
+    container_name: mcp-frontend-prod
+    restart: unless-stopped
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      - API_URL=https://api.mcp-manager.com
+      - VITE_API_URL=https://api.mcp-manager.com/api/v1
+      - VITE_WS_URL=wss://api.mcp-manager.com/ws
+    networks:
+      - mcp_frontend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.5'
+
+  # Backend API (FastAPI)
+  mcp-manager:
+    build:
+      context: ../../..
+      dockerfile: deploy/docker/Dockerfile.prod
+      args:
+        PYTHON_VERSION: 3.11
+        BUILD_ENV: production
+    container_name: mcp-manager-prod
+    restart: unless-stopped
+    expose:
+      - "8000"
+    environment:
+      - FASTAPI_ENV=production
+      - DATABASE_URL=postgresql://mcpuser:${POSTGRES_PASSWORD}@postgres-primary:5432/mcpdb
+      - DATABASE_READ_URL=postgresql://mcpuser:${POSTGRES_PASSWORD}@postgres-replica:5432/mcpdb
+      - REDIS_URL=redis://redis-master:6379/0
+      - REDIS_CACHE_URL=redis://redis-cache:6379/1
+      - LOG_LEVEL=info
+      - RATE_LIMIT_ENABLED=true
+      - SECURITY_AUDIT_ENABLED=true
+      - CORS_ORIGINS=https://mcp-manager.com,https://www.mcp-manager.com
+      - SECRET_KEY=${SECRET_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - MCP_CONFIG_PATH=/app/config/mcp.json
+      - PROMETHEUS_ENABLED=true
+      - JAEGER_ENABLED=true
+      - JAEGER_ENDPOINT=http://jaeger:14268/api/traces
+    volumes:
+      - mcp_config:/app/config:rw
+      - mcp_logs:/app/logs:rw
+    networks:
+      - mcp_backend
+      - mcp_database
+      - mcp_cache
+      - mcp_monitoring
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+      redis-master:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 60s
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=200m
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          memory: 1G
+          cpus: '2.0'
+        reservations:
+          memory: 512M
+          cpus: '1.0'
+
+  # Primary PostgreSQL Database
+  postgres-primary:
+    image: postgres:15-alpine
+    container_name: mcp-postgres-primary
+    restart: unless-stopped
+    expose:
+      - "5432"
+    environment:
+      - POSTGRES_DB=mcpdb
+      - POSTGRES_USER=mcpuser
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_REPLICATION_USER=replicator
+      - POSTGRES_REPLICATION_PASSWORD=${POSTGRES_REPLICATION_PASSWORD}
+      - POSTGRES_INITDB_ARGS="--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+    command: |
+      postgres
+      -c max_connections=200
+      -c shared_buffers=512MB
+      -c effective_cache_size=2GB
+      -c maintenance_work_mem=128MB
+      -c checkpoint_completion_target=0.9
+      -c wal_level=replica
+      -c max_wal_senders=3
+      -c max_replication_slots=3
+      -c hot_standby=on
+      -c log_statement=all
+      -c log_duration=on
+      -c log_line_prefix='%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '
+      -c ssl=on
+      -c ssl_cert_file=/etc/ssl/certs/server.crt
+      -c ssl_key_file=/etc/ssl/private/server.key
+    volumes:
+      - postgres_primary_data:/var/lib/postgresql/data
+      - ./postgres/ssl:/etc/ssl:ro
+      - ./postgres/postgresql-primary.conf:/etc/postgresql/postgresql.conf:ro
+    networks:
+      - mcp_database
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mcpuser -d mcpdb"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2.0'
+        reservations:
+          memory: 1G
+          cpus: '1.0'
+
+  # PostgreSQL Read Replica
+  postgres-replica:
+    image: postgres:15-alpine
+    container_name: mcp-postgres-replica
+    restart: unless-stopped
+    expose:
+      - "5432"
+    environment:
+      - POSTGRES_DB=mcpdb
+      - POSTGRES_USER=mcpuser
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PGUSER=postgres
+      - POSTGRES_MASTER_SERVICE=postgres-primary
+    command: |
+      bash -c '
+      if [ ! -f /var/lib/postgresql/data/recovery.conf ]; then
+        pg_basebackup -h postgres-primary -D /var/lib/postgresql/data -U replicator -v -P -W
+        echo "standby_mode = on" >> /var/lib/postgresql/data/recovery.conf
+        echo "primary_conninfo = \"host=postgres-primary port=5432 user=replicator\"" >> /var/lib/postgresql/data/recovery.conf
+      fi
+      postgres
+      '
+    volumes:
+      - postgres_replica_data:/var/lib/postgresql/data
+    networks:
+      - mcp_database
+    depends_on:
+      - postgres-primary
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mcpuser -d mcpdb"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+  # Redis Master (Session & Cache)
+  redis-master:
+    image: redis:7-alpine
+    container_name: mcp-redis-master
+    restart: unless-stopped
+    expose:
+      - "6379"
+    command: |
+      redis-server 
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --appendonly yes
+      --appendfsync everysec
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+      --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_master_data:/data
+    networks:
+      - mcp_cache
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+  # Redis Cache (Read-only cache)
+  redis-cache:
+    image: redis:7-alpine
+    container_name: mcp-redis-cache
+    restart: unless-stopped
+    expose:
+      - "6379"
+    command: |
+      redis-server 
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save ""
+      --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_cache_data:/data
+    networks:
+      - mcp_cache
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  # Prometheus (Metrics Collection)
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: mcp-prometheus-prod
+    restart: unless-stopped
+    expose:
+      - "9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--storage.tsdb.retention.size=50GB'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    volumes:
+      - prometheus_config:/etc/prometheus:ro
+      - prometheus_data:/prometheus
+    networks:
+      - mcp_monitoring
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+
+  # Grafana (Monitoring Dashboards)
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: mcp-grafana-prod
+    restart: unless-stopped
+    expose:
+      - "3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SECURITY_ALLOW_EMBEDDING=false
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_SERVER_ROOT_URL=https://metrics.mcp-manager.com
+      - GF_DATABASE_TYPE=postgres
+      - GF_DATABASE_HOST=postgres-primary:5432
+      - GF_DATABASE_NAME=mcpdb
+      - GF_DATABASE_USER=mcpuser
+      - GF_DATABASE_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - grafana_config:/etc/grafana:ro
+    networks:
+      - mcp_monitoring
+      - mcp_database
+    depends_on:
+      - prometheus
+      - postgres-primary
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  # Elasticsearch (Centralized Logging)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.0
+    container_name: mcp-elasticsearch-prod
+    restart: unless-stopped
+    expose:
+      - "9200"
+      - "9300"
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - mcp_logging
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+
+  # Logstash (Log Processing)
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.9.0
+    container_name: mcp-logstash-prod
+    restart: unless-stopped
+    expose:
+      - "5044"
+      - "5000"
+    environment:
+      - ES_HOSTS=elasticsearch:9200
+      - ELASTIC_USER=elastic
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    volumes:
+      - logstash_config:/usr/share/logstash/pipeline:ro
+      - mcp_logs:/logs:ro
+    networks:
+      - mcp_logging
+    depends_on:
+      - elasticsearch
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9600 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+  # Kibana (Log Visualization)
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.9.0
+    container_name: mcp-kibana-prod
+    restart: unless-stopped
+    expose:
+      - "5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
+      - SERVER_PUBLICBASEURL=https://logs.mcp-manager.com
+    networks:
+      - mcp_logging
+    depends_on:
+      - elasticsearch
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+
+  # Jaeger (Distributed Tracing)
+  jaeger:
+    image: jaegertracing/all-in-one:1.47
+    container_name: mcp-jaeger-prod
+    restart: unless-stopped
+    expose:
+      - "16686"
+      - "14268"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - SPAN_STORAGE_TYPE=elasticsearch
+      - ES_SERVER_URLS=http://elasticsearch:9200
+      - ES_USERNAME=elastic
+      - ES_PASSWORD=${ELASTIC_PASSWORD}
+    networks:
+      - mcp_monitoring
+      - mcp_logging
+    depends_on:
+      - elasticsearch
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:16686/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  # Backup Service
+  backup-service:
+    build:
+      context: ../../..
+      dockerfile: deploy/docker/Dockerfile.backup
+    container_name: mcp-backup-prod
+    restart: unless-stopped
+    environment:
+      - BACKUP_SCHEDULE=0 2 * * *
+      - BACKUP_RETENTION_DAYS=30
+      - S3_BACKUP_ENABLED=true
+      - S3_BUCKET_NAME=${S3_BACKUP_BUCKET}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - ENCRYPTION_KEY=${BACKUP_ENCRYPTION_KEY}
+      - SLACK_WEBHOOK=${SLACK_WEBHOOK}
+      - POSTGRES_HOST=postgres-primary
+      - POSTGRES_USER=mcpuser
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=mcpdb
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - backup_data:/backups
+    networks:
+      - mcp_database
+    depends_on:
+      - postgres-primary
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+volumes:
+  mcp_config:
+    driver: local
+  mcp_logs:
+    driver: local
+  nginx_logs:
+    driver: local
+  postgres_primary_data:
+    driver: local
+  postgres_replica_data:
+    driver: local
+  redis_master_data:
+    driver: local
+  redis_cache_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  prometheus_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./monitoring/prometheus
+  grafana_data:
+    driver: local
+  grafana_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./monitoring/grafana
+  elasticsearch_data:
+    driver: local
+  logstash_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./logging/logstash
+  backup_data:
+    driver: local
+
+networks:
+  mcp_frontend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.1.0/24
+  mcp_backend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.2.0/24
+  mcp_database:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.3.0/24
+  mcp_cache:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.4.0/24
+  mcp_monitoring:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.5.0/24
+  mcp_logging:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.6.0/24

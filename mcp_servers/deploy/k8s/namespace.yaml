@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mcp-ui
+  labels:
+    name: mcp-ui
+    environment: production
+    app: mcp-server-manager
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mcp-ui-monitoring
+  labels:
+    name: mcp-ui-monitoring
+    environment: production
+    app: mcp-server-manager
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mcp-ui-logging
+  labels:
+    name: mcp-ui-logging
+    environment: production
+    app: mcp-server-manager

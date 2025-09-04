@@ -1,0 +1,11 @@
+{
+  "primary_color": "#007bff",
+  "secondary_color": "#6c757d",
+  "success_color": "#28a745",
+  "danger_color": "#dc3545",
+  "warning_color": "#ffc107",
+  "info_color": "#17a2b8",
+  "font_family": "system-ui, -apple-system, sans-serif",
+  "border_radius": "4px",
+  "spacing_unit": "8px"
+}

@@ -1,0 +1,104 @@
+{
+  "gemini_models_complete": {
+    "research_date": "2025-08-17",
+    "source": "google_generative_ai_api_direct_check",
+    "total_available": 41,
+    "selected_for_litellm": 8,
+    "models": {
+      "flagship_models": {
+        "gemini-2.5-pro": {
+          "api_name": "gemini-2.5-pro",
+          "model_family": "Gemini 2.5 Pro",
+          "input_token_limit": 1048576,
+          "output_token_limit": 65536,
+          "description": "Stable version of Gemini 2.5 Pro, our mid-size multimodal model that supports up to 1 million tokens, released in June of 2025",
+          "capabilities": ["text", "vision", "audio", "coding", "reasoning"],
+          "best_for": "Complex reasoning, advanced coding, multimodal tasks",
+          "tier": "flagship"
+        },
+        "gemini-2.5-flash": {
+          "api_name": "gemini-2.5-flash",
+          "model_family": "Gemini 2.5 Flash", 
+          "input_token_limit": 1048576,
+          "output_token_limit": 65536,
+          "description": "Stable version of Gemini 2.5 Flash, our mid-size multimodal model that supports up to 1 million tokens, released in June of 2025",
+          "capabilities": ["text", "vision", "coding", "fast_reasoning"],
+          "best_for": "Balanced performance, general tasks, fast responses",
+          "tier": "balanced_flagship"
+        }
+      },
+      "current_generation": {
+        "gemini-2.0-flash-001": {
+          "api_name": "gemini-2.0-flash-001",
+          "model_family": "Gemini 2.0 Flash",
+          "input_token_limit": 1048576,
+          "output_token_limit": 8192,
+          "description": "Stable version of Gemini 2.0 Flash, our fast and versatile multimodal model for scaling across diverse tasks, released in January of 2025",
+          "capabilities": ["text", "vision", "audio", "coding"],
+          "best_for": "Fast and versatile multimodal tasks",
+          "tier": "current_gen"
+        },
+        "gemini-1.5-pro-002": {
+          "api_name": "gemini-1.5-pro-002",
+          "model_family": "Gemini 1.5 Pro",
+          "input_token_limit": 2000000,
+          "output_token_limit": 8192,
+          "description": "Stable version of Gemini 1.5 Pro, our mid-size multimodal model that supports up to 2 million tokens, released in September of 2024",
+          "capabilities": ["text", "vision", "coding", "long_context"],
+          "best_for": "Very long context tasks, document analysis",
+          "tier": "long_context"
+        },
+        "gemini-1.5-flash-002": {
+          "api_name": "gemini-1.5-flash-002", 
+          "model_family": "Gemini 1.5 Flash",
+          "input_token_limit": 1000000,
+          "output_token_limit": 8192,
+          "description": "Stable version of Gemini 1.5 Flash, our fast and versatile multimodal model for scaling across diverse tasks, released in September of 2024",
+          "capabilities": ["text", "vision", "coding"],
+          "best_for": "Fast general purpose tasks",
+          "tier": "fast_reliable"
+        },
+        "gemini-1.5-flash-8b": {
+          "api_name": "gemini-1.5-flash-8b",
+          "model_family": "Gemini 1.5 Flash-8B",
+          "input_token_limit": 1000000,
+          "output_token_limit": 8192,
+          "description": "Stable version of Gemini 1.5 Flash-8B, our smallest and most cost effective Flash model, released in October of 2024",
+          "capabilities": ["text", "vision", "fast_processing"],
+          "best_for": "High throughput, cost-effective tasks",
+          "tier": "cost_effective"
+        }
+      },
+      "specialized_models": {
+        "gemini-2.0-flash-thinking-exp": {
+          "api_name": "gemini-2.0-flash-thinking-exp",
+          "model_family": "Gemini 2.5 Flash (Thinking)",
+          "input_token_limit": 1048576,
+          "output_token_limit": 65536,
+          "description": "Preview release (April 17th, 2025) of Gemini 2.5 Flash with thinking capabilities",
+          "capabilities": ["text", "vision", "thinking_mode", "reasoning"],
+          "best_for": "Complex reasoning with visible thought process",
+          "tier": "thinking_experimental"
+        },
+        "gemini-2.0-flash-exp-image-generation": {
+          "api_name": "gemini-2.0-flash-exp-image-generation",
+          "model_family": "Gemini 2.0 Flash (Image Generation)",
+          "input_token_limit": 1048576,
+          "output_token_limit": 8192,
+          "description": "Gemini 2.0 Flash (Image Generation) Experimental",
+          "capabilities": ["text", "vision", "image_generation"],
+          "best_for": "Image generation and visual content creation",
+          "tier": "image_generation_experimental"
+        }
+      }
+    },
+    "key_features_2025": {
+      "context_windows": "Up to 2M tokens (Gemini 1.5 Pro), 1M tokens (Gemini 2.x)",
+      "multimodal": "Text, vision, audio support across models",
+      "thinking_mode": "Available in experimental thinking models",
+      "image_generation": "Available in specialized image generation models",
+      "batch_processing": "Supported in newer models",
+      "cached_content": "Supported for efficiency in Pro models"
+    }
+  }
+}

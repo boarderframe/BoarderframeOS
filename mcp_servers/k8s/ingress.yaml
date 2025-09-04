@@ -1,0 +1,168 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mcp-manager-ingress
+  namespace: mcp-server-manager
+  labels:
+    app: mcp-manager
+  annotations:
+    # Nginx ingress annotations
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header X-XSS-Protection "1; mode=block" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+      add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' ws: wss:; frame-ancestors 'self';" always;
+    
+    # TLS and certificates
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    acme.cert-manager.io/http01-edit-in-place: "true"
+    
+    # Monitoring
+    nginx.ingress.kubernetes.io/enable-opentracing: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - mcp-manager.example.com
+    - api.mcp-manager.example.com
+    secretName: mcp-manager-tls
+  rules:
+  - host: mcp-manager.example.com
+    http:
+      paths:
+      # Main application (Open WebUI)
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: open-webui
+            port:
+              number: 80
+      # API endpoints
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-manager
+            port:
+              number: 80
+      # WebSocket endpoints
+      - path: /ws
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-manager
+            port:
+              number: 80
+      # Health checks
+      - path: /health
+        pathType: Exact
+        backend:
+          service:
+            name: mcp-manager
+            port:
+              number: 80
+  - host: api.mcp-manager.example.com
+    http:
+      paths:
+      # Dedicated API subdomain
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-manager
+            port:
+              number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mcp-monitoring-ingress
+  namespace: mcp-server-manager
+  labels:
+    app: mcp-monitoring
+  annotations:
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: monitoring-auth
+    nginx.ingress.kubernetes.io/auth-realm: "MCP Monitoring - Authentication Required"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - monitoring.mcp-manager.example.com
+    secretName: mcp-monitoring-tls
+  rules:
+  - host: monitoring.mcp-manager.example.com
+    http:
+      paths:
+      # Grafana dashboards
+      - path: /grafana
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana
+            port:
+              number: 80
+      # Prometheus metrics
+      - path: /prometheus
+        pathType: Prefix
+        backend:
+          service:
+            name: prometheus
+            port:
+              number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mcp-network-policy
+  namespace: mcp-server-manager
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow ingress from nginx ingress controller
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+  # Allow inter-pod communication within namespace
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: mcp-server-manager
+  egress:
+  # Allow DNS resolution
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow HTTPS to external services
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+  # Allow HTTP to external services (for webhooks)
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 80
+  # Allow inter-pod communication within namespace
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: mcp-server-manager

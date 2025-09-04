@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test SvelteKit App</title>
+    <script>
+        // Open the app in an iframe and check for console errors
+        window.addEventListener('load', function() {
+            const iframe = document.createElement('iframe');
+            iframe.src = 'http://localhost:5173';
+            iframe.style.width = '100%';
+            iframe.style.height = '600px';
+            iframe.style.border = '1px solid #ccc';
+            document.body.appendChild(iframe);
+            
+            // Log messages from iframe
+            window.addEventListener('message', function(e) {
+                console.log('Message from iframe:', e.data);
+            });
+            
+            setTimeout(() => {
+                try {
+                    // Try to access iframe content (might be blocked by CORS)
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    const content = iframeDoc.body.innerHTML;
+                    document.getElementById('content').textContent = content.substring(0, 500);
+                } catch(e) {
+                    document.getElementById('content').textContent = 'Cannot access iframe content due to CORS';
+                }
+            }, 3000);
+        });
+    </script>
+</head>
+<body>
+    <h1>Testing SvelteKit App at http://localhost:5173</h1>
+    <div id="content" style="margin-top: 20px; padding: 10px; background: #f0f0f0; font-family: monospace; white-space: pre-wrap;"></div>
+</body>
+</html>

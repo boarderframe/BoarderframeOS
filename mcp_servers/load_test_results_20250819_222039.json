@@ -1,0 +1,2516 @@
+{
+  "test_info": {
+    "start_time": 1755656439.055115,
+    "duration": 0.5850739479064941,
+    "base_url": "http://localhost:8000"
+  },
+  "results": {
+    "/health": [
+      {
+        "response_time_ms": 0.8213749970309436,
+        "status": 200,
+        "timestamp": 1755656439.0559812
+      },
+      {
+        "response_time_ms": 1.4506660081679001,
+        "status": 200,
+        "timestamp": 1755656439.0566459
+      },
+      {
+        "response_time_ms": 1.2809170002583414,
+        "status": 200,
+        "timestamp": 1755656439.0568042
+      },
+      {
+        "response_time_ms": 1.1990000057267025,
+        "status": 200,
+        "timestamp": 1755656439.05682
+      },
+      {
+        "response_time_ms": 1.2004580057691783,
+        "status": 200,
+        "timestamp": 1755656439.056864
+      },
+      {
+        "response_time_ms": 1.2926670024171472,
+        "status": 200,
+        "timestamp": 1755656439.056874
+      },
+      {
+        "response_time_ms": 1.570124994032085,
+        "status": 200,
+        "timestamp": 1755656439.057062
+      },
+      {
+        "response_time_ms": 1.478125006542541,
+        "status": 200,
+        "timestamp": 1755656439.05712
+      },
+      {
+        "response_time_ms": 1.5292919997591525,
+        "status": 200,
+        "timestamp": 1755656439.057133
+      },
+      {
+        "response_time_ms": 1.5894999960437417,
+        "status": 200,
+        "timestamp": 1755656439.057142
+      },
+      {
+        "response_time_ms": 0.4571669996948913,
+        "status": 200,
+        "timestamp": 1755656439.090967
+      },
+      {
+        "response_time_ms": 0.9623749938327819,
+        "status": 200,
+        "timestamp": 1755656439.091569
+      },
+      {
+        "response_time_ms": 0.9941250027623028,
+        "status": 200,
+        "timestamp": 1755656439.091628
+      },
+      {
+        "response_time_ms": 0.9835419914452359,
+        "status": 200,
+        "timestamp": 1755656439.0916412
+      },
+      {
+        "response_time_ms": 0.9696659981273115,
+        "status": 200,
+        "timestamp": 1755656439.09165
+      },
+      {
+        "response_time_ms": 0.9566249937051907,
+        "status": 200,
+        "timestamp": 1755656439.0916579
+      },
+      {
+        "response_time_ms": 0.9439580026082695,
+        "status": 200,
+        "timestamp": 1755656439.091666
+      },
+      {
+        "response_time_ms": 0.932791008381173,
+        "status": 200,
+        "timestamp": 1755656439.091674
+      },
+      {
+        "response_time_ms": 0.9500409942120314,
+        "status": 200,
+        "timestamp": 1755656439.0917099
+      },
+      {
+        "response_time_ms": 0.9402080031577498,
+        "status": 200,
+        "timestamp": 1755656439.0917199
+      },
+      {
+        "response_time_ms": 0.43737499800045043,
+        "status": 200,
+        "timestamp": 1755656439.1255949
+      },
+      {
+        "response_time_ms": 0.9967499936465174,
+        "status": 200,
+        "timestamp": 1755656439.1262348
+      },
+      {
+        "response_time_ms": 0.9875840041786432,
+        "status": 200,
+        "timestamp": 1755656439.1262531
+      },
+      {
+        "response_time_ms": 1.0351660021115094,
+        "status": 200,
+        "timestamp": 1755656439.126325
+      },
+      {
+        "response_time_ms": 1.0232080094283447,
+        "status": 200,
+        "timestamp": 1755656439.126337
+      },
+      {
+        "response_time_ms": 1.011083004414104,
+        "status": 200,
+        "timestamp": 1755656439.126347
+      },
+      {
+        "response_time_ms": 0.9969999955501407,
+        "status": 200,
+        "timestamp": 1755656439.126356
+      },
+      {
+        "response_time_ms": 0.9857500117504969,
+        "status": 200,
+        "timestamp": 1755656439.126364
+      },
+      {
+        "response_time_ms": 0.9716249915072694,
+        "status": 200,
+        "timestamp": 1755656439.126372
+      },
+      {
+        "response_time_ms": 0.9617909963708371,
+        "status": 200,
+        "timestamp": 1755656439.1263812
+      },
+      {
+        "response_time_ms": 0.498583001899533,
+        "status": 200,
+        "timestamp": 1755656439.160167
+      },
+      {
+        "response_time_ms": 0.5770419957116246,
+        "status": 200,
+        "timestamp": 1755656439.160403
+      },
+      {
+        "response_time_ms": 0.4789160011569038,
+        "status": 200,
+        "timestamp": 1755656439.160418
+      },
+      {
+        "response_time_ms": 0.4251669888617471,
+        "status": 200,
+        "timestamp": 1755656439.160429
+      },
+      {
+        "response_time_ms": 0.8412910101469606,
+        "status": 200,
+        "timestamp": 1755656439.160872
+      },
+      {
+        "response_time_ms": 0.83591700240504,
+        "status": 200,
+        "timestamp": 1755656439.1608908
+      },
+      {
+        "response_time_ms": 0.8188329957192764,
+        "status": 200,
+        "timestamp": 1755656439.160903
+      },
+      {
+        "response_time_ms": 0.734792003640905,
+        "status": 200,
+        "timestamp": 1755656439.160913
+      },
+      {
+        "response_time_ms": 0.7177499937824905,
+        "status": 200,
+        "timestamp": 1755656439.1609228
+      },
+      {
+        "response_time_ms": 0.7276669930433854,
+        "status": 200,
+        "timestamp": 1755656439.1609569
+      },
+      {
+        "response_time_ms": 0.34374999813735485,
+        "status": 200,
+        "timestamp": 1755656439.195488
+      },
+      {
+        "response_time_ms": 0.8894170023268089,
+        "status": 200,
+        "timestamp": 1755656439.196096
+      },
+      {
+        "response_time_ms": 0.8759580086916685,
+        "status": 200,
+        "timestamp": 1755656439.19611
+      },
+      {
+        "response_time_ms": 0.8374169992748648,
+        "status": 200,
+        "timestamp": 1755656439.196121
+      },
+      {
+        "response_time_ms": 0.825249997433275,
+        "status": 200,
+        "timestamp": 1755656439.196131
+      },
+      {
+        "response_time_ms": 0.8805830002529547,
+        "status": 200,
+        "timestamp": 1755656439.19614
+      },
+      {
+        "response_time_ms": 0.8528329926775768,
+        "status": 200,
+        "timestamp": 1755656439.1961799
+      },
+      {
+        "response_time_ms": 0.8396670018555596,
+        "status": 200,
+        "timestamp": 1755656439.1961899
+      },
+      {
+        "response_time_ms": 0.8272080012829974,
+        "status": 200,
+        "timestamp": 1755656439.196199
+      },
+      {
+        "response_time_ms": 0.8421670063398778,
+        "status": 200,
+        "timestamp": 1755656439.196234
+      },
+      {
+        "response_time_ms": 0.5124589952174574,
+        "status": 200,
+        "timestamp": 1755656439.231296
+      },
+      {
+        "response_time_ms": 1.1571250070119277,
+        "status": 200,
+        "timestamp": 1755656439.232069
+      },
+      {
+        "response_time_ms": 1.138291001552716,
+        "status": 200,
+        "timestamp": 1755656439.2320871
+      },
+      {
+        "response_time_ms": 1.0916669998550788,
+        "status": 200,
+        "timestamp": 1755656439.2321
+      },
+      {
+        "response_time_ms": 1.078208995750174,
+        "status": 200,
+        "timestamp": 1755656439.23211
+      },
+      {
+        "response_time_ms": 1.2087080103810877,
+        "status": 200,
+        "timestamp": 1755656439.2321868
+      },
+      {
+        "response_time_ms": 1.1437499924795702,
+        "status": 200,
+        "timestamp": 1755656439.232198
+      },
+      {
+        "response_time_ms": 1.131500001065433,
+        "status": 200,
+        "timestamp": 1755656439.2322078
+      },
+      {
+        "response_time_ms": 1.1186670017195866,
+        "status": 200,
+        "timestamp": 1755656439.232217
+      },
+      {
+        "response_time_ms": 1.1065839935326949,
+        "status": 200,
+        "timestamp": 1755656439.2322261
+      },
+      {
+        "response_time_ms": 0.3783750144066289,
+        "status": 200,
+        "timestamp": 1755656439.2660842
+      },
+      {
+        "response_time_ms": 0.33312500454485416,
+        "status": 200,
+        "timestamp": 1755656439.266451
+      },
+      {
+        "response_time_ms": 0.4490830033319071,
+        "status": 200,
+        "timestamp": 1755656439.266607
+      },
+      {
+        "response_time_ms": 0.43524999637156725,
+        "status": 200,
+        "timestamp": 1755656439.266623
+      },
+      {
+        "response_time_ms": 0.4161669930908829,
+        "status": 200,
+        "timestamp": 1755656439.266635
+      },
+      {
+        "response_time_ms": 0.7413340063067153,
+        "status": 200,
+        "timestamp": 1755656439.26701
+      },
+      {
+        "response_time_ms": 0.7165409915614873,
+        "status": 200,
+        "timestamp": 1755656439.2670221
+      },
+      {
+        "response_time_ms": 0.6989169924054295,
+        "status": 200,
+        "timestamp": 1755656439.2670321
+      },
+      {
+        "response_time_ms": 0.6839169946033508,
+        "status": 200,
+        "timestamp": 1755656439.2670422
+      },
+      {
+        "response_time_ms": 0.6626249960390851,
+        "status": 200,
+        "timestamp": 1755656439.267051
+      },
+      {
+        "response_time_ms": 0.42137500713579357,
+        "status": 200,
+        "timestamp": 1755656439.301662
+      },
+      {
+        "response_time_ms": 0.388749991543591,
+        "status": 200,
+        "timestamp": 1755656439.3016791
+      },
+      {
+        "response_time_ms": 1.0162090038647875,
+        "status": 200,
+        "timestamp": 1755656439.3023329
+      },
+      {
+        "response_time_ms": 0.9296659991377965,
+        "status": 200,
+        "timestamp": 1755656439.302352
+      },
+      {
+        "response_time_ms": 1.021417003357783,
+        "status": 200,
+        "timestamp": 1755656439.302366
+      },
+      {
+        "response_time_ms": 1.076708998880349,
+        "status": 200,
+        "timestamp": 1755656439.302448
+      },
+      {
+        "response_time_ms": 1.0637499945005402,
+        "status": 200,
+        "timestamp": 1755656439.302461
+      },
+      {
+        "response_time_ms": 1.0245419980492443,
+        "status": 200,
+        "timestamp": 1755656439.3024719
+      },
+      {
+        "response_time_ms": 1.0104160028276965,
+        "status": 200,
+        "timestamp": 1755656439.302482
+      },
+      {
+        "response_time_ms": 0.9953749977285042,
+        "status": 200,
+        "timestamp": 1755656439.3024929
+      },
+      {
+        "response_time_ms": 0.32741700124461204,
+        "status": 200,
+        "timestamp": 1755656439.3366542
+      },
+      {
+        "response_time_ms": 0.8340420026797801,
+        "status": 200,
+        "timestamp": 1755656439.337226
+      },
+      {
+        "response_time_ms": 0.8207499922718853,
+        "status": 200,
+        "timestamp": 1755656439.3372412
+      },
+      {
+        "response_time_ms": 0.7817090081516653,
+        "status": 200,
+        "timestamp": 1755656439.337253
+      },
+      {
+        "response_time_ms": 0.7697499968344346,
+        "status": 200,
+        "timestamp": 1755656439.337267
+      },
+      {
+        "response_time_ms": 0.8315420127473772,
+        "status": 200,
+        "timestamp": 1755656439.337278
+      },
+      {
+        "response_time_ms": 0.7700830028625205,
+        "status": 200,
+        "timestamp": 1755656439.337288
+      },
+      {
+        "response_time_ms": 0.7876659947214648,
+        "status": 200,
+        "timestamp": 1755656439.3373282
+      },
+      {
+        "response_time_ms": 0.8478749950882047,
+        "status": 200,
+        "timestamp": 1755656439.3374112
+      },
+      {
+        "response_time_ms": 0.8435839990852401,
+        "status": 200,
+        "timestamp": 1755656439.337427
+      },
+      {
+        "response_time_ms": 0.5672080005751923,
+        "status": 200,
+        "timestamp": 1755656439.3721092
+      },
+      {
+        "response_time_ms": 0.4951250011799857,
+        "status": 200,
+        "timestamp": 1755656439.372128
+      },
+      {
+        "response_time_ms": 1.0760830045910552,
+        "status": 200,
+        "timestamp": 1755656439.37274
+      },
+      {
+        "response_time_ms": 1.0021250054705888,
+        "status": 200,
+        "timestamp": 1755656439.3727622
+      },
+      {
+        "response_time_ms": 1.0857080051209778,
+        "status": 200,
+        "timestamp": 1755656439.3727748
+      },
+      {
+        "response_time_ms": 1.0732919909060001,
+        "status": 200,
+        "timestamp": 1755656439.3727858
+      },
+      {
+        "response_time_ms": 1.1138330009998754,
+        "status": 200,
+        "timestamp": 1755656439.37285
+      },
+      {
+        "response_time_ms": 1.0771669913083315,
+        "status": 200,
+        "timestamp": 1755656439.37286
+      },
+      {
+        "response_time_ms": 1.0639999964041635,
+        "status": 200,
+        "timestamp": 1755656439.372871
+      },
+      {
+        "response_time_ms": 1.0509580024518073,
+        "status": 200,
+        "timestamp": 1755656439.372881
+      },
+      {
+        "response_time_ms": 0.49708300502970815,
+        "status": 200,
+        "timestamp": 1755656439.40713
+      },
+      {
+        "response_time_ms": 0.36225000803824514,
+        "status": 200,
+        "timestamp": 1755656439.4075048
+      },
+      {
+        "response_time_ms": 0.5143329908605665,
+        "status": 200,
+        "timestamp": 1755656439.407695
+      },
+      {
+        "response_time_ms": 0.4960829974152148,
+        "status": 200,
+        "timestamp": 1755656439.4077098
+      },
+      {
+        "response_time_ms": 0.4556659987429157,
+        "status": 200,
+        "timestamp": 1755656439.407722
+      },
+      {
+        "response_time_ms": 0.8137920085573569,
+        "status": 200,
+        "timestamp": 1755656439.4081368
+      },
+      {
+        "response_time_ms": 0.7990419981069863,
+        "status": 200,
+        "timestamp": 1755656439.408154
+      },
+      {
+        "response_time_ms": 0.7844580104574561,
+        "status": 200,
+        "timestamp": 1755656439.408167
+      },
+      {
+        "response_time_ms": 0.7702500006416813,
+        "status": 200,
+        "timestamp": 1755656439.4081779
+      },
+      {
+        "response_time_ms": 0.7885420054662973,
+        "status": 200,
+        "timestamp": 1755656439.408222
+      },
+      {
+        "response_time_ms": 0.348915986251086,
+        "status": 200,
+        "timestamp": 1755656439.441993
+      },
+      {
+        "response_time_ms": 1.026209007250145,
+        "status": 200,
+        "timestamp": 1755656439.4427211
+      },
+      {
+        "response_time_ms": 0.9828339971136302,
+        "status": 200,
+        "timestamp": 1755656439.442739
+      },
+      {
+        "response_time_ms": 1.0235829977318645,
+        "status": 200,
+        "timestamp": 1755656439.442752
+      },
+      {
+        "response_time_ms": 0.9820410050451756,
+        "status": 200,
+        "timestamp": 1755656439.442765
+      },
+      {
+        "response_time_ms": 0.968625012319535,
+        "status": 200,
+        "timestamp": 1755656439.442778
+      },
+      {
+        "response_time_ms": 0.9545409993734211,
+        "status": 200,
+        "timestamp": 1755656439.442789
+      },
+      {
+        "response_time_ms": 0.9734159975778311,
+        "status": 200,
+        "timestamp": 1755656439.442834
+      },
+      {
+        "response_time_ms": 1.003332989057526,
+        "status": 200,
+        "timestamp": 1755656439.4428911
+      },
+      {
+        "response_time_ms": 0.9897080017253757,
+        "status": 200,
+        "timestamp": 1755656439.442904
+      },
+      {
+        "response_time_ms": 0.38050000148359686,
+        "status": 200,
+        "timestamp": 1755656439.476518
+      },
+      {
+        "response_time_ms": 0.32658400596119463,
+        "status": 200,
+        "timestamp": 1755656439.476855
+      },
+      {
+        "response_time_ms": 0.480125003377907,
+        "status": 200,
+        "timestamp": 1755656439.477045
+      },
+      {
+        "response_time_ms": 0.413874993682839,
+        "status": 200,
+        "timestamp": 1755656439.47706
+      },
+      {
+        "response_time_ms": 0.47449998965021223,
+        "status": 200,
+        "timestamp": 1755656439.477071
+      },
+      {
+        "response_time_ms": 0.6962909974390641,
+        "status": 200,
+        "timestamp": 1755656439.477484
+      },
+      {
+        "response_time_ms": 0.7357499998761341,
+        "status": 200,
+        "timestamp": 1755656439.477501
+      },
+      {
+        "response_time_ms": 0.8207909995689988,
+        "status": 200,
+        "timestamp": 1755656439.477514
+      },
+      {
+        "response_time_ms": 0.8054999925661832,
+        "status": 200,
+        "timestamp": 1755656439.477525
+      },
+      {
+        "response_time_ms": 0.7963750103954226,
+        "status": 200,
+        "timestamp": 1755656439.477538
+      },
+      {
+        "response_time_ms": 0.4379169986350462,
+        "status": 200,
+        "timestamp": 1755656439.511341
+      },
+      {
+        "response_time_ms": 1.1788749980041757,
+        "status": 200,
+        "timestamp": 1755656439.5121658
+      },
+      {
+        "response_time_ms": 1.1640419979812577,
+        "status": 200,
+        "timestamp": 1755656439.512181
+      },
+      {
+        "response_time_ms": 1.0602080001262948,
+        "status": 200,
+        "timestamp": 1755656439.512195
+      },
+      {
+        "response_time_ms": 1.052040999638848,
+        "status": 200,
+        "timestamp": 1755656439.512208
+      },
+      {
+        "response_time_ms": 1.041999988956377,
+        "status": 200,
+        "timestamp": 1755656439.512219
+      },
+      {
+        "response_time_ms": 1.186167006380856,
+        "status": 200,
+        "timestamp": 1755656439.51223
+      },
+      {
+        "response_time_ms": 1.2236670008860528,
+        "status": 200,
+        "timestamp": 1755656439.5122921
+      },
+      {
+        "response_time_ms": 1.2117919977754354,
+        "status": 200,
+        "timestamp": 1755656439.512303
+      },
+      {
+        "response_time_ms": 1.2011249928036705,
+        "status": 200,
+        "timestamp": 1755656439.512314
+      },
+      {
+        "response_time_ms": 0.5702079943148419,
+        "status": 200,
+        "timestamp": 1755656439.546589
+      },
+      {
+        "response_time_ms": 0.4939580103382468,
+        "status": 200,
+        "timestamp": 1755656439.5466712
+      },
+      {
+        "response_time_ms": 0.45695799053646624,
+        "status": 200,
+        "timestamp": 1755656439.546687
+      },
+      {
+        "response_time_ms": 0.44158300443086773,
+        "status": 200,
+        "timestamp": 1755656439.5467
+      },
+      {
+        "response_time_ms": 0.928416004171595,
+        "status": 200,
+        "timestamp": 1755656439.5472472
+      },
+      {
+        "response_time_ms": 0.8816250046947971,
+        "status": 200,
+        "timestamp": 1755656439.547262
+      },
+      {
+        "response_time_ms": 0.8614170073997229,
+        "status": 200,
+        "timestamp": 1755656439.547276
+      },
+      {
+        "response_time_ms": 0.8167080086423084,
+        "status": 200,
+        "timestamp": 1755656439.5472891
+      },
+      {
+        "response_time_ms": 0.8549160120310262,
+        "status": 200,
+        "timestamp": 1755656439.5473
+      },
+      {
+        "response_time_ms": 0.814792001619935,
+        "status": 200,
+        "timestamp": 1755656439.547312
+      },
+      {
+        "response_time_ms": 0.2909159957198426,
+        "status": 200,
+        "timestamp": 1755656439.5811431
+      },
+      {
+        "response_time_ms": 0.7482499931938946,
+        "status": 200,
+        "timestamp": 1755656439.5816488
+      },
+      {
+        "response_time_ms": 0.7370829989667982,
+        "status": 200,
+        "timestamp": 1755656439.581666
+      },
+      {
+        "response_time_ms": 0.727374994312413,
+        "status": 200,
+        "timestamp": 1755656439.581681
+      },
+      {
+        "response_time_ms": 0.715374990249984,
+        "status": 200,
+        "timestamp": 1755656439.581692
+      },
+      {
+        "response_time_ms": 0.7033750007394701,
+        "status": 200,
+        "timestamp": 1755656439.581702
+      },
+      {
+        "response_time_ms": 0.6930840027052909,
+        "status": 200,
+        "timestamp": 1755656439.581713
+      },
+      {
+        "response_time_ms": 0.8645829948363826,
+        "status": 200,
+        "timestamp": 1755656439.5819058
+      },
+      {
+        "response_time_ms": 0.8443340047961101,
+        "status": 200,
+        "timestamp": 1755656439.581928
+      },
+      {
+        "response_time_ms": 0.792124992585741,
+        "status": 200,
+        "timestamp": 1755656439.581943
+      },
+      {
+        "response_time_ms": 0.43162499787285924,
+        "status": 200,
+        "timestamp": 1755656439.616357
+      },
+      {
+        "response_time_ms": 1.1141660070279613,
+        "status": 200,
+        "timestamp": 1755656439.617124
+      },
+      {
+        "response_time_ms": 1.1012920003850013,
+        "status": 200,
+        "timestamp": 1755656439.617144
+      },
+      {
+        "response_time_ms": 1.0872090060729533,
+        "status": 200,
+        "timestamp": 1755656439.6171572
+      },
+      {
+        "response_time_ms": 1.073999999789521,
+        "status": 200,
+        "timestamp": 1755656439.617168
+      },
+      {
+        "response_time_ms": 1.0610829922370613,
+        "status": 200,
+        "timestamp": 1755656439.6171799
+      },
+      {
+        "response_time_ms": 1.0466249950695783,
+        "status": 200,
+        "timestamp": 1755656439.61719
+      },
+      {
+        "response_time_ms": 1.032708998536691,
+        "status": 200,
+        "timestamp": 1755656439.6172001
+      },
+      {
+        "response_time_ms": 1.0689580085454509,
+        "status": 200,
+        "timestamp": 1755656439.617258
+      },
+      {
+        "response_time_ms": 1.0647919989423826,
+        "status": 200,
+        "timestamp": 1755656439.6172748
+      }
+    ],
+    "/api/v1/servers": [
+      {
+        "response_time_ms": 1.1117910034954548,
+        "status": 200,
+        "timestamp": 1755656439.06821
+      },
+      {
+        "response_time_ms": 1.5197500033536926,
+        "status": 200,
+        "timestamp": 1755656439.06877
+      },
+      {
+        "response_time_ms": 1.5775000065332279,
+        "status": 200,
+        "timestamp": 1755656439.068798
+      },
+      {
+        "response_time_ms": 1.5855829988140613,
+        "status": 200,
+        "timestamp": 1755656439.0688589
+      },
+      {
+        "response_time_ms": 1.5342919941758737,
+        "status": 200,
+        "timestamp": 1755656439.068871
+      },
+      {
+        "response_time_ms": 1.693749989499338,
+        "status": 200,
+        "timestamp": 1755656439.0688791
+      },
+      {
+        "response_time_ms": 1.5916670090518892,
+        "status": 200,
+        "timestamp": 1755656439.068887
+      },
+      {
+        "response_time_ms": 1.603249998879619,
+        "status": 200,
+        "timestamp": 1755656439.0689962
+      },
+      {
+        "response_time_ms": 1.561125012813136,
+        "status": 200,
+        "timestamp": 1755656439.069012
+      },
+      {
+        "response_time_ms": 1.5598339959979057,
+        "status": 200,
+        "timestamp": 1755656439.069046
+      },
+      {
+        "response_time_ms": 1.0198749951086938,
+        "status": 200,
+        "timestamp": 1755656439.1030269
+      },
+      {
+        "response_time_ms": 1.4399170031538233,
+        "status": 200,
+        "timestamp": 1755656439.103497
+      },
+      {
+        "response_time_ms": 1.4272910048021004,
+        "status": 200,
+        "timestamp": 1755656439.103511
+      },
+      {
+        "response_time_ms": 1.4130409981589764,
+        "status": 200,
+        "timestamp": 1755656439.103521
+      },
+      {
+        "response_time_ms": 1.426917006028816,
+        "status": 200,
+        "timestamp": 1755656439.103561
+      },
+      {
+        "response_time_ms": 1.4146670000627637,
+        "status": 200,
+        "timestamp": 1755656439.103571
+      },
+      {
+        "response_time_ms": 1.403832997311838,
+        "status": 200,
+        "timestamp": 1755656439.10358
+      },
+      {
+        "response_time_ms": 1.6043329960666597,
+        "status": 200,
+        "timestamp": 1755656439.103801
+      },
+      {
+        "response_time_ms": 1.6012499982025474,
+        "status": 200,
+        "timestamp": 1755656439.103816
+      },
+      {
+        "response_time_ms": 1.593749999301508,
+        "status": 200,
+        "timestamp": 1755656439.103828
+      },
+      {
+        "response_time_ms": 1.291499997023493,
+        "status": 200,
+        "timestamp": 1755656439.137841
+      },
+      {
+        "response_time_ms": 1.2475840048864484,
+        "status": 200,
+        "timestamp": 1755656439.1378582
+      },
+      {
+        "response_time_ms": 2.0103749993722886,
+        "status": 200,
+        "timestamp": 1755656439.138656
+      },
+      {
+        "response_time_ms": 1.9541249930625781,
+        "status": 200,
+        "timestamp": 1755656439.138674
+      },
+      {
+        "response_time_ms": 2.0686250063590705,
+        "status": 200,
+        "timestamp": 1755656439.138743
+      },
+      {
+        "response_time_ms": 2.058250000118278,
+        "status": 200,
+        "timestamp": 1755656439.1387572
+      },
+      {
+        "response_time_ms": 2.0262089965399355,
+        "status": 200,
+        "timestamp": 1755656439.138767
+      },
+      {
+        "response_time_ms": 1.9902909989468753,
+        "status": 200,
+        "timestamp": 1755656439.138777
+      },
+      {
+        "response_time_ms": 1.9552500016288832,
+        "status": 200,
+        "timestamp": 1755656439.138786
+      },
+      {
+        "response_time_ms": 1.934667001478374,
+        "status": 200,
+        "timestamp": 1755656439.138796
+      },
+      {
+        "response_time_ms": 1.404042006470263,
+        "status": 200,
+        "timestamp": 1755656439.172648
+      },
+      {
+        "response_time_ms": 1.6406670038122684,
+        "status": 200,
+        "timestamp": 1755656439.173001
+      },
+      {
+        "response_time_ms": 1.5850409981794655,
+        "status": 200,
+        "timestamp": 1755656439.173015
+      },
+      {
+        "response_time_ms": 1.5382910059997812,
+        "status": 200,
+        "timestamp": 1755656439.173054
+      },
+      {
+        "response_time_ms": 1.5253329911502078,
+        "status": 200,
+        "timestamp": 1755656439.173068
+      },
+      {
+        "response_time_ms": 2.055042001302354,
+        "status": 200,
+        "timestamp": 1755656439.1735418
+      },
+      {
+        "response_time_ms": 1.9913750002160668,
+        "status": 200,
+        "timestamp": 1755656439.173558
+      },
+      {
+        "response_time_ms": 1.978832995519042,
+        "status": 200,
+        "timestamp": 1755656439.173571
+      },
+      {
+        "response_time_ms": 1.9999590003862977,
+        "status": 200,
+        "timestamp": 1755656439.173613
+      },
+      {
+        "response_time_ms": 1.9882920023519546,
+        "status": 200,
+        "timestamp": 1755656439.173624
+      },
+      {
+        "response_time_ms": 1.396417006617412,
+        "status": 200,
+        "timestamp": 1755656439.207968
+      },
+      {
+        "response_time_ms": 1.3127499987604097,
+        "status": 200,
+        "timestamp": 1755656439.2079859
+      },
+      {
+        "response_time_ms": 2.0333330030553043,
+        "status": 200,
+        "timestamp": 1755656439.2087371
+      },
+      {
+        "response_time_ms": 1.9724579906323925,
+        "status": 200,
+        "timestamp": 1755656439.2087522
+      },
+      {
+        "response_time_ms": 2.0337080059107393,
+        "status": 200,
+        "timestamp": 1755656439.2087638
+      },
+      {
+        "response_time_ms": 2.02116699074395,
+        "status": 200,
+        "timestamp": 1755656439.2087748
+      },
+      {
+        "response_time_ms": 1.977583990083076,
+        "status": 200,
+        "timestamp": 1755656439.2087848
+      },
+      {
+        "response_time_ms": 1.9860839965986088,
+        "status": 200,
+        "timestamp": 1755656439.208816
+      },
+      {
+        "response_time_ms": 1.9729579944396392,
+        "status": 200,
+        "timestamp": 1755656439.2088268
+      },
+      {
+        "response_time_ms": 1.9865420035785064,
+        "status": 200,
+        "timestamp": 1755656439.208863
+      },
+      {
+        "response_time_ms": 1.4065830036997795,
+        "status": 200,
+        "timestamp": 1755656439.243841
+      },
+      {
+        "response_time_ms": 1.6825409984448925,
+        "status": 200,
+        "timestamp": 1755656439.244224
+      },
+      {
+        "response_time_ms": 1.6646250005578622,
+        "status": 200,
+        "timestamp": 1755656439.244241
+      },
+      {
+        "response_time_ms": 1.6513339942321181,
+        "status": 200,
+        "timestamp": 1755656439.2442539
+      },
+      {
+        "response_time_ms": 1.6386250063078478,
+        "status": 200,
+        "timestamp": 1755656439.244266
+      },
+      {
+        "response_time_ms": 2.13274999987334,
+        "status": 200,
+        "timestamp": 1755656439.244784
+      },
+      {
+        "response_time_ms": 2.1221669885562733,
+        "status": 200,
+        "timestamp": 1755656439.244798
+      },
+      {
+        "response_time_ms": 2.1091660019010305,
+        "status": 200,
+        "timestamp": 1755656439.2448099
+      },
+      {
+        "response_time_ms": 2.098833996569738,
+        "status": 200,
+        "timestamp": 1755656439.244821
+      },
+      {
+        "response_time_ms": 2.0872919994872063,
+        "status": 200,
+        "timestamp": 1755656439.244832
+      },
+      {
+        "response_time_ms": 1.293791996431537,
+        "status": 200,
+        "timestamp": 1755656439.2785091
+      },
+      {
+        "response_time_ms": 1.5229999989969656,
+        "status": 200,
+        "timestamp": 1755656439.278836
+      },
+      {
+        "response_time_ms": 1.5087909996509552,
+        "status": 200,
+        "timestamp": 1755656439.2788532
+      },
+      {
+        "response_time_ms": 1.4934159989934415,
+        "status": 200,
+        "timestamp": 1755656439.2788658
+      },
+      {
+        "response_time_ms": 1.477375000831671,
+        "status": 200,
+        "timestamp": 1755656439.278878
+      },
+      {
+        "response_time_ms": 1.9709579937625676,
+        "status": 200,
+        "timestamp": 1755656439.279397
+      },
+      {
+        "response_time_ms": 1.9709999905899167,
+        "status": 200,
+        "timestamp": 1755656439.2794209
+      },
+      {
+        "response_time_ms": 1.9608330039773136,
+        "status": 200,
+        "timestamp": 1755656439.279435
+      },
+      {
+        "response_time_ms": 1.947458993527107,
+        "status": 200,
+        "timestamp": 1755656439.279447
+      },
+      {
+        "response_time_ms": 1.9655420037452132,
+        "status": 200,
+        "timestamp": 1755656439.2794912
+      },
+      {
+        "response_time_ms": 1.2993749987799674,
+        "status": 200,
+        "timestamp": 1755656439.3136241
+      },
+      {
+        "response_time_ms": 1.8335409986320883,
+        "status": 200,
+        "timestamp": 1755656439.314234
+      },
+      {
+        "response_time_ms": 1.778292004019022,
+        "status": 200,
+        "timestamp": 1755656439.314249
+      },
+      {
+        "response_time_ms": 1.7350410053040832,
+        "status": 200,
+        "timestamp": 1755656439.314261
+      },
+      {
+        "response_time_ms": 1.7032920004567131,
+        "status": 200,
+        "timestamp": 1755656439.314272
+      },
+      {
+        "response_time_ms": 1.7834579921327531,
+        "status": 200,
+        "timestamp": 1755656439.314283
+      },
+      {
+        "response_time_ms": 1.6990419971989468,
+        "status": 200,
+        "timestamp": 1755656439.314293
+      },
+      {
+        "response_time_ms": 1.8951249949168414,
+        "status": 200,
+        "timestamp": 1755656439.314532
+      },
+      {
+        "response_time_ms": 1.866292004706338,
+        "status": 200,
+        "timestamp": 1755656439.3145459
+      },
+      {
+        "response_time_ms": 1.899417009553872,
+        "status": 200,
+        "timestamp": 1755656439.314558
+      },
+      {
+        "response_time_ms": 1.2629169941646978,
+        "status": 200,
+        "timestamp": 1755656439.34899
+      },
+      {
+        "response_time_ms": 1.9400830060476437,
+        "status": 200,
+        "timestamp": 1755656439.3497422
+      },
+      {
+        "response_time_ms": 1.9237079977756366,
+        "status": 200,
+        "timestamp": 1755656439.349758
+      },
+      {
+        "response_time_ms": 1.910082995891571,
+        "status": 200,
+        "timestamp": 1755656439.349771
+      },
+      {
+        "response_time_ms": 1.894291999633424,
+        "status": 200,
+        "timestamp": 1755656439.349782
+      },
+      {
+        "response_time_ms": 1.9270829943707213,
+        "status": 200,
+        "timestamp": 1755656439.3498409
+      },
+      {
+        "response_time_ms": 1.911208004457876,
+        "status": 200,
+        "timestamp": 1755656439.3498518
+      },
+      {
+        "response_time_ms": 1.8981670000357553,
+        "status": 200,
+        "timestamp": 1755656439.3498619
+      },
+      {
+        "response_time_ms": 1.9973330054199323,
+        "status": 200,
+        "timestamp": 1755656439.349986
+      },
+      {
+        "response_time_ms": 1.9892910058842972,
+        "status": 200,
+        "timestamp": 1755656439.3500001
+      },
+      {
+        "response_time_ms": 1.4724579959874973,
+        "status": 200,
+        "timestamp": 1755656439.38466
+      },
+      {
+        "response_time_ms": 2.23087499034591,
+        "status": 200,
+        "timestamp": 1755656439.38551
+      },
+      {
+        "response_time_ms": 2.2219999955268577,
+        "status": 200,
+        "timestamp": 1755656439.385534
+      },
+      {
+        "response_time_ms": 2.178415990783833,
+        "status": 200,
+        "timestamp": 1755656439.38555
+      },
+      {
+        "response_time_ms": 2.165875004720874,
+        "status": 200,
+        "timestamp": 1755656439.3855622
+      },
+      {
+        "response_time_ms": 2.2301659919321537,
+        "status": 200,
+        "timestamp": 1755656439.3855748
+      },
+      {
+        "response_time_ms": 2.168541992432438,
+        "status": 200,
+        "timestamp": 1755656439.385589
+      },
+      {
+        "response_time_ms": 2.1559169981628656,
+        "status": 200,
+        "timestamp": 1755656439.3856
+      },
+      {
+        "response_time_ms": 2.1887089969823137,
+        "status": 200,
+        "timestamp": 1755656439.385657
+      },
+      {
+        "response_time_ms": 2.1804580028401688,
+        "status": 200,
+        "timestamp": 1755656439.3856719
+      },
+      {
+        "response_time_ms": 1.1316669988445938,
+        "status": 200,
+        "timestamp": 1755656439.419016
+      },
+      {
+        "response_time_ms": 1.5520830056630075,
+        "status": 200,
+        "timestamp": 1755656439.4195142
+      },
+      {
+        "response_time_ms": 1.5451249928446487,
+        "status": 200,
+        "timestamp": 1755656439.419534
+      },
+      {
+        "response_time_ms": 1.5362500125775114,
+        "status": 200,
+        "timestamp": 1755656439.41955
+      },
+      {
+        "response_time_ms": 1.629291000426747,
+        "status": 200,
+        "timestamp": 1755656439.419563
+      },
+      {
+        "response_time_ms": 1.6596670029684901,
+        "status": 200,
+        "timestamp": 1755656439.419843
+      },
+      {
+        "response_time_ms": 1.6143329994520172,
+        "status": 200,
+        "timestamp": 1755656439.419863
+      },
+      {
+        "response_time_ms": 1.6635000065434724,
+        "status": 200,
+        "timestamp": 1755656439.419877
+      },
+      {
+        "response_time_ms": 1.6630000027362257,
+        "status": 200,
+        "timestamp": 1755656439.4200718
+      },
+      {
+        "response_time_ms": 1.7069159948732704,
+        "status": 200,
+        "timestamp": 1755656439.420089
+      },
+      {
+        "response_time_ms": 1.3319580029929057,
+        "status": 200,
+        "timestamp": 1755656439.4544241
+      },
+      {
+        "response_time_ms": 2.077666998957284,
+        "status": 200,
+        "timestamp": 1755656439.4552362
+      },
+      {
+        "response_time_ms": 2.0625839970307425,
+        "status": 200,
+        "timestamp": 1755656439.455254
+      },
+      {
+        "response_time_ms": 2.047041998594068,
+        "status": 200,
+        "timestamp": 1755656439.4552681
+      },
+      {
+        "response_time_ms": 2.032375006820075,
+        "status": 200,
+        "timestamp": 1755656439.45528
+      },
+      {
+        "response_time_ms": 2.066790999379009,
+        "status": 200,
+        "timestamp": 1755656439.455341
+      },
+      {
+        "response_time_ms": 2.054166005109437,
+        "status": 200,
+        "timestamp": 1755656439.4553542
+      },
+      {
+        "response_time_ms": 2.040749997831881,
+        "status": 200,
+        "timestamp": 1755656439.455366
+      },
+      {
+        "response_time_ms": 2.1734589972766116,
+        "status": 200,
+        "timestamp": 1755656439.4555268
+      },
+      {
+        "response_time_ms": 2.1754580084234476,
+        "status": 200,
+        "timestamp": 1755656439.455552
+      },
+      {
+        "response_time_ms": 1.0517499904381111,
+        "status": 200,
+        "timestamp": 1755656439.488213
+      },
+      {
+        "response_time_ms": 1.8197080062236637,
+        "status": 200,
+        "timestamp": 1755656439.489045
+      },
+      {
+        "response_time_ms": 1.7473750049248338,
+        "status": 200,
+        "timestamp": 1755656439.4890618
+      },
+      {
+        "response_time_ms": 1.8197500030510128,
+        "status": 200,
+        "timestamp": 1755656439.489079
+      },
+      {
+        "response_time_ms": 1.9181669922545552,
+        "status": 200,
+        "timestamp": 1755656439.489206
+      },
+      {
+        "response_time_ms": 1.6522090008947998,
+        "status": 200,
+        "timestamp": 1755656439.489265
+      },
+      {
+        "response_time_ms": 1.715624995995313,
+        "status": 200,
+        "timestamp": 1755656439.489279
+      },
+      {
+        "response_time_ms": 1.801083009922877,
+        "status": 200,
+        "timestamp": 1755656439.489516
+      },
+      {
+        "response_time_ms": 1.8847089959308505,
+        "status": 200,
+        "timestamp": 1755656439.4895308
+      },
+      {
+        "response_time_ms": 1.9708750041900203,
+        "status": 200,
+        "timestamp": 1755656439.489652
+      },
+      {
+        "response_time_ms": 1.343665993772447,
+        "status": 200,
+        "timestamp": 1755656439.523767
+      },
+      {
+        "response_time_ms": 1.2797500094166026,
+        "status": 200,
+        "timestamp": 1755656439.523788
+      },
+      {
+        "response_time_ms": 1.8871659995056689,
+        "status": 200,
+        "timestamp": 1755656439.524426
+      },
+      {
+        "response_time_ms": 1.8454590026522055,
+        "status": 200,
+        "timestamp": 1755656439.5244422
+      },
+      {
+        "response_time_ms": 1.8360829999437556,
+        "status": 200,
+        "timestamp": 1755656439.524458
+      },
+      {
+        "response_time_ms": 1.9037080055568367,
+        "status": 200,
+        "timestamp": 1755656439.52447
+      },
+      {
+        "response_time_ms": 1.8352500046603382,
+        "status": 200,
+        "timestamp": 1755656439.524481
+      },
+      {
+        "response_time_ms": 1.8509170040488243,
+        "status": 200,
+        "timestamp": 1755656439.5245209
+      },
+      {
+        "response_time_ms": 1.9549169956007972,
+        "status": 200,
+        "timestamp": 1755656439.524649
+      },
+      {
+        "response_time_ms": 1.9506669923430309,
+        "status": 200,
+        "timestamp": 1755656439.524668
+      },
+      {
+        "response_time_ms": 1.2587500095833093,
+        "status": 200,
+        "timestamp": 1755656439.558918
+      },
+      {
+        "response_time_ms": 2.004374997341074,
+        "status": 200,
+        "timestamp": 1755656439.559745
+      },
+      {
+        "response_time_ms": 1.9949159905081615,
+        "status": 200,
+        "timestamp": 1755656439.559768
+      },
+      {
+        "response_time_ms": 1.9819590088445693,
+        "status": 200,
+        "timestamp": 1755656439.559783
+      },
+      {
+        "response_time_ms": 2.0281249890103936,
+        "status": 200,
+        "timestamp": 1755656439.559857
+      },
+      {
+        "response_time_ms": 2.0161249994998798,
+        "status": 200,
+        "timestamp": 1755656439.559872
+      },
+      {
+        "response_time_ms": 2.0027919963467866,
+        "status": 200,
+        "timestamp": 1755656439.559884
+      },
+      {
+        "response_time_ms": 1.989458003663458,
+        "status": 200,
+        "timestamp": 1755656439.5598972
+      },
+      {
+        "response_time_ms": 2.0766249945154414,
+        "status": 200,
+        "timestamp": 1755656439.560009
+      },
+      {
+        "response_time_ms": 2.0813750015804544,
+        "status": 200,
+        "timestamp": 1755656439.5600379
+      },
+      {
+        "response_time_ms": 1.2752500042552128,
+        "status": 200,
+        "timestamp": 1755656439.593476
+      },
+      {
+        "response_time_ms": 1.2155840086052194,
+        "status": 200,
+        "timestamp": 1755656439.5934951
+      },
+      {
+        "response_time_ms": 1.9484170043142512,
+        "status": 200,
+        "timestamp": 1755656439.594267
+      },
+      {
+        "response_time_ms": 1.8860830023186281,
+        "status": 200,
+        "timestamp": 1755656439.594282
+      },
+      {
+        "response_time_ms": 1.9497909961501136,
+        "status": 200,
+        "timestamp": 1755656439.594295
+      },
+      {
+        "response_time_ms": 1.9377920107217506,
+        "status": 200,
+        "timestamp": 1755656439.594309
+      },
+      {
+        "response_time_ms": 1.8986659997608513,
+        "status": 200,
+        "timestamp": 1755656439.594319
+      },
+      {
+        "response_time_ms": 1.909500002511777,
+        "status": 200,
+        "timestamp": 1755656439.5943549
+      },
+      {
+        "response_time_ms": 1.8949160003103316,
+        "status": 200,
+        "timestamp": 1755656439.594367
+      },
+      {
+        "response_time_ms": 1.911416999064386,
+        "status": 200,
+        "timestamp": 1755656439.594408
+      },
+      {
+        "response_time_ms": 0.766083991038613,
+        "status": 200,
+        "timestamp": 1755656439.627558
+      },
+      {
+        "response_time_ms": 1.593165987287648,
+        "status": 200,
+        "timestamp": 1755656439.628782
+      },
+      {
+        "response_time_ms": 1.445540998247452,
+        "status": 200,
+        "timestamp": 1755656439.628799
+      },
+      {
+        "response_time_ms": 1.555084003484808,
+        "status": 200,
+        "timestamp": 1755656439.628813
+      },
+      {
+        "response_time_ms": 1.5138749877223745,
+        "status": 200,
+        "timestamp": 1755656439.6288252
+      },
+      {
+        "response_time_ms": 1.6394169942941517,
+        "status": 200,
+        "timestamp": 1755656439.628865
+      },
+      {
+        "response_time_ms": 1.8427080067340285,
+        "status": 200,
+        "timestamp": 1755656439.629246
+      },
+      {
+        "response_time_ms": 1.8330419989069924,
+        "status": 200,
+        "timestamp": 1755656439.6292632
+      },
+      {
+        "response_time_ms": 1.799666992155835,
+        "status": 200,
+        "timestamp": 1755656439.6292758
+      },
+      {
+        "response_time_ms": 1.8344170093769208,
+        "status": 200,
+        "timestamp": 1755656439.6292899
+      }
+    ],
+    "/api/v1/health/status": [
+      {
+        "response_time_ms": 0.43437498970888555,
+        "status": 404,
+        "timestamp": 1755656439.079432
+      },
+      {
+        "response_time_ms": 0.9132919949479401,
+        "status": 404,
+        "timestamp": 1755656439.080006
+      },
+      {
+        "response_time_ms": 0.9299579978687689,
+        "status": 404,
+        "timestamp": 1755656439.080052
+      },
+      {
+        "response_time_ms": 0.9138330060523003,
+        "status": 404,
+        "timestamp": 1755656439.0800629
+      },
+      {
+        "response_time_ms": 0.8977920078905299,
+        "status": 404,
+        "timestamp": 1755656439.080072
+      },
+      {
+        "response_time_ms": 0.7701249996898696,
+        "status": 404,
+        "timestamp": 1755656439.080081
+      },
+      {
+        "response_time_ms": 0.8910000033210963,
+        "status": 404,
+        "timestamp": 1755656439.0800881
+      },
+      {
+        "response_time_ms": 0.9109169914154336,
+        "status": 404,
+        "timestamp": 1755656439.080128
+      },
+      {
+        "response_time_ms": 0.8652079995954409,
+        "status": 404,
+        "timestamp": 1755656439.0801358
+      },
+      {
+        "response_time_ms": 0.8522919961251318,
+        "status": 404,
+        "timestamp": 1755656439.080144
+      },
+      {
+        "response_time_ms": 0.5309170082909986,
+        "status": 404,
+        "timestamp": 1755656439.114044
+      },
+      {
+        "response_time_ms": 1.0241249983664602,
+        "status": 404,
+        "timestamp": 1755656439.1146932
+      },
+      {
+        "response_time_ms": 0.9950829989975318,
+        "status": 404,
+        "timestamp": 1755656439.114708
+      },
+      {
+        "response_time_ms": 1.0152500035474077,
+        "status": 404,
+        "timestamp": 1755656439.1147578
+      },
+      {
+        "response_time_ms": 1.0058749903691933,
+        "status": 404,
+        "timestamp": 1755656439.114771
+      },
+      {
+        "response_time_ms": 0.9918750001816079,
+        "status": 404,
+        "timestamp": 1755656439.114781
+      },
+      {
+        "response_time_ms": 0.8814580069156364,
+        "status": 404,
+        "timestamp": 1755656439.11479
+      },
+      {
+        "response_time_ms": 0.9893329988699406,
+        "status": 404,
+        "timestamp": 1755656439.114798
+      },
+      {
+        "response_time_ms": 0.9419580019311979,
+        "status": 404,
+        "timestamp": 1755656439.114806
+      },
+      {
+        "response_time_ms": 0.9595000010449439,
+        "status": 404,
+        "timestamp": 1755656439.114847
+      },
+      {
+        "response_time_ms": 0.429833002272062,
+        "status": 404,
+        "timestamp": 1755656439.149365
+      },
+      {
+        "response_time_ms": 0.36670800182037055,
+        "status": 404,
+        "timestamp": 1755656439.1493802
+      },
+      {
+        "response_time_ms": 0.8604589966125786,
+        "status": 404,
+        "timestamp": 1755656439.1499012
+      },
+      {
+        "response_time_ms": 0.8232079999288544,
+        "status": 404,
+        "timestamp": 1755656439.149956
+      },
+      {
+        "response_time_ms": 0.8783749944996089,
+        "status": 404,
+        "timestamp": 1755656439.149968
+      },
+      {
+        "response_time_ms": 0.8664170018164441,
+        "status": 404,
+        "timestamp": 1755656439.1499789
+      },
+      {
+        "response_time_ms": 0.9265409898944199,
+        "status": 404,
+        "timestamp": 1755656439.149992
+      },
+      {
+        "response_time_ms": 0.8428330038441345,
+        "status": 404,
+        "timestamp": 1755656439.150002
+      },
+      {
+        "response_time_ms": 0.8605829934822395,
+        "status": 404,
+        "timestamp": 1755656439.150041
+      },
+      {
+        "response_time_ms": 0.850750002427958,
+        "status": 404,
+        "timestamp": 1755656439.150051
+      },
+      {
+        "response_time_ms": 0.4327500064391643,
+        "status": 404,
+        "timestamp": 1755656439.18413
+      },
+      {
+        "response_time_ms": 0.39966699841897935,
+        "status": 404,
+        "timestamp": 1755656439.1841438
+      },
+      {
+        "response_time_ms": 0.9758329979376867,
+        "status": 404,
+        "timestamp": 1755656439.1847491
+      },
+      {
+        "response_time_ms": 0.8964169974206015,
+        "status": 404,
+        "timestamp": 1755656439.1847649
+      },
+      {
+        "response_time_ms": 0.9773750061867759,
+        "status": 404,
+        "timestamp": 1755656439.184777
+      },
+      {
+        "response_time_ms": 1.0258749971399084,
+        "status": 404,
+        "timestamp": 1755656439.1848488
+      },
+      {
+        "response_time_ms": 1.0135000047739595,
+        "status": 404,
+        "timestamp": 1755656439.18486
+      },
+      {
+        "response_time_ms": 0.9789580071810633,
+        "status": 404,
+        "timestamp": 1755656439.184871
+      },
+      {
+        "response_time_ms": 0.9667080012150109,
+        "status": 404,
+        "timestamp": 1755656439.184881
+      },
+      {
+        "response_time_ms": 0.9552080009598285,
+        "status": 404,
+        "timestamp": 1755656439.184891
+      },
+      {
+        "response_time_ms": 0.5592909874394536,
+        "status": 404,
+        "timestamp": 1755656439.21964
+      },
+      {
+        "response_time_ms": 0.5171250086277723,
+        "status": 404,
+        "timestamp": 1755656439.2196732
+      },
+      {
+        "response_time_ms": 0.9612920111976564,
+        "status": 404,
+        "timestamp": 1755656439.220146
+      },
+      {
+        "response_time_ms": 0.8937920065363869,
+        "status": 404,
+        "timestamp": 1755656439.2201679
+      },
+      {
+        "response_time_ms": 0.9508750081295148,
+        "status": 404,
+        "timestamp": 1755656439.2201831
+      },
+      {
+        "response_time_ms": 0.9407909965375438,
+        "status": 404,
+        "timestamp": 1755656439.220194
+      },
+      {
+        "response_time_ms": 1.080667003407143,
+        "status": 404,
+        "timestamp": 1755656439.2202911
+      },
+      {
+        "response_time_ms": 1.0242080024909228,
+        "status": 404,
+        "timestamp": 1755656439.2203178
+      },
+      {
+        "response_time_ms": 1.0172500042244792,
+        "status": 404,
+        "timestamp": 1755656439.2203321
+      },
+      {
+        "response_time_ms": 1.0082079970743507,
+        "status": 404,
+        "timestamp": 1755656439.220343
+      },
+      {
+        "response_time_ms": 0.4292090015951544,
+        "status": 404,
+        "timestamp": 1755656439.2553449
+      },
+      {
+        "response_time_ms": 0.9985830110963434,
+        "status": 404,
+        "timestamp": 1755656439.25601
+      },
+      {
+        "response_time_ms": 0.9765420109033585,
+        "status": 404,
+        "timestamp": 1755656439.2560241
+      },
+      {
+        "response_time_ms": 0.9579579927958548,
+        "status": 404,
+        "timestamp": 1755656439.256036
+      },
+      {
+        "response_time_ms": 0.9402080031577498,
+        "status": 404,
+        "timestamp": 1755656439.256046
+      },
+      {
+        "response_time_ms": 0.9244999964721501,
+        "status": 404,
+        "timestamp": 1755656439.256056
+      },
+      {
+        "response_time_ms": 0.9095420100493357,
+        "status": 404,
+        "timestamp": 1755656439.2560651
+      },
+      {
+        "response_time_ms": 0.8936670055845752,
+        "status": 404,
+        "timestamp": 1755656439.256075
+      },
+      {
+        "response_time_ms": 0.8943330030888319,
+        "status": 404,
+        "timestamp": 1755656439.256099
+      },
+      {
+        "response_time_ms": 0.9085830097319558,
+        "status": 404,
+        "timestamp": 1755656439.256136
+      },
+      {
+        "response_time_ms": 0.5366669938666746,
+        "status": 404,
+        "timestamp": 1755656439.2901912
+      },
+      {
+        "response_time_ms": 1.201166000100784,
+        "status": 404,
+        "timestamp": 1755656439.291003
+      },
+      {
+        "response_time_ms": 1.1841250088764355,
+        "status": 404,
+        "timestamp": 1755656439.291019
+      },
+      {
+        "response_time_ms": 1.1696669971570373,
+        "status": 404,
+        "timestamp": 1755656439.2910311
+      },
+      {
+        "response_time_ms": 1.1494579957798123,
+        "status": 404,
+        "timestamp": 1755656439.291042
+      },
+      {
+        "response_time_ms": 1.1359580093994737,
+        "status": 404,
+        "timestamp": 1755656439.291053
+      },
+      {
+        "response_time_ms": 1.120667002396658,
+        "status": 404,
+        "timestamp": 1755656439.291063
+      },
+      {
+        "response_time_ms": 1.1542920110514387,
+        "status": 404,
+        "timestamp": 1755656439.291121
+      },
+      {
+        "response_time_ms": 1.1422500101616606,
+        "status": 404,
+        "timestamp": 1755656439.2911339
+      },
+      {
+        "response_time_ms": 1.1323340004310012,
+        "status": 404,
+        "timestamp": 1755656439.291146
+      },
+      {
+        "response_time_ms": 0.5471250042319298,
+        "status": 404,
+        "timestamp": 1755656439.325268
+      },
+      {
+        "response_time_ms": 0.46195799950510263,
+        "status": 404,
+        "timestamp": 1755656439.32529
+      },
+      {
+        "response_time_ms": 0.9209999989252537,
+        "status": 404,
+        "timestamp": 1755656439.325783
+      },
+      {
+        "response_time_ms": 0.9256249904865399,
+        "status": 404,
+        "timestamp": 1755656439.325881
+      },
+      {
+        "response_time_ms": 1.0093750024680048,
+        "status": 404,
+        "timestamp": 1755656439.325897
+      },
+      {
+        "response_time_ms": 0.997042006929405,
+        "status": 404,
+        "timestamp": 1755656439.325907
+      },
+      {
+        "response_time_ms": 0.9832089999690652,
+        "status": 404,
+        "timestamp": 1755656439.325917
+      },
+      {
+        "response_time_ms": 0.9462089947191998,
+        "status": 404,
+        "timestamp": 1755656439.325927
+      },
+      {
+        "response_time_ms": 0.9351669868919998,
+        "status": 404,
+        "timestamp": 1755656439.3259368
+      },
+      {
+        "response_time_ms": 0.9239159990102053,
+        "status": 404,
+        "timestamp": 1755656439.3259468
+      },
+      {
+        "response_time_ms": 0.37091600825078785,
+        "status": 404,
+        "timestamp": 1755656439.360459
+      },
+      {
+        "response_time_ms": 0.967542000580579,
+        "status": 404,
+        "timestamp": 1755656439.361127
+      },
+      {
+        "response_time_ms": 0.9589580004103482,
+        "status": 404,
+        "timestamp": 1755656439.3611488
+      },
+      {
+        "response_time_ms": 0.9464589966228232,
+        "status": 404,
+        "timestamp": 1755656439.361164
+      },
+      {
+        "response_time_ms": 0.930750000406988,
+        "status": 404,
+        "timestamp": 1755656439.361176
+      },
+      {
+        "response_time_ms": 0.9166249947156757,
+        "status": 404,
+        "timestamp": 1755656439.361186
+      },
+      {
+        "response_time_ms": 0.9018330019898713,
+        "status": 404,
+        "timestamp": 1755656439.361197
+      },
+      {
+        "response_time_ms": 0.8874170016497374,
+        "status": 404,
+        "timestamp": 1755656439.361207
+      },
+      {
+        "response_time_ms": 0.9185419912682846,
+        "status": 404,
+        "timestamp": 1755656439.361263
+      },
+      {
+        "response_time_ms": 0.9060829906957224,
+        "status": 404,
+        "timestamp": 1755656439.361276
+      },
+      {
+        "response_time_ms": 0.44754099508281797,
+        "status": 404,
+        "timestamp": 1755656439.396181
+      },
+      {
+        "response_time_ms": 1.1832500022137538,
+        "status": 404,
+        "timestamp": 1755656439.397007
+      },
+      {
+        "response_time_ms": 1.1712499981513247,
+        "status": 404,
+        "timestamp": 1755656439.397025
+      },
+      {
+        "response_time_ms": 1.1653330002445728,
+        "status": 404,
+        "timestamp": 1755656439.397047
+      },
+      {
+        "response_time_ms": 1.1516249942360446,
+        "status": 404,
+        "timestamp": 1755656439.397059
+      },
+      {
+        "response_time_ms": 1.2197920004837215,
+        "status": 404,
+        "timestamp": 1755656439.397152
+      },
+      {
+        "response_time_ms": 1.2137079902458936,
+        "status": 404,
+        "timestamp": 1755656439.3971698
+      },
+      {
+        "response_time_ms": 1.203874999191612,
+        "status": 404,
+        "timestamp": 1755656439.397183
+      },
+      {
+        "response_time_ms": 1.1920419929083437,
+        "status": 404,
+        "timestamp": 1755656439.397193
+      },
+      {
+        "response_time_ms": 1.1804579989984632,
+        "status": 404,
+        "timestamp": 1755656439.397204
+      },
+      {
+        "response_time_ms": 0.4688339977292344,
+        "status": 404,
+        "timestamp": 1755656439.43058
+      },
+      {
+        "response_time_ms": 1.0140829981537536,
+        "status": 404,
+        "timestamp": 1755656439.431235
+      },
+      {
+        "response_time_ms": 0.8901660039555281,
+        "status": 404,
+        "timestamp": 1755656439.4312499
+      },
+      {
+        "response_time_ms": 0.9965419885702431,
+        "status": 404,
+        "timestamp": 1755656439.4312608
+      },
+      {
+        "response_time_ms": 0.9405830060131848,
+        "status": 404,
+        "timestamp": 1755656439.4312708
+      },
+      {
+        "response_time_ms": 0.9817499958444387,
+        "status": 404,
+        "timestamp": 1755656439.4312818
+      },
+      {
+        "response_time_ms": 0.9037919953698292,
+        "status": 404,
+        "timestamp": 1755656439.431293
+      },
+      {
+        "response_time_ms": 0.8853750041453168,
+        "status": 404,
+        "timestamp": 1755656439.4313018
+      },
+      {
+        "response_time_ms": 0.8929169998737052,
+        "status": 404,
+        "timestamp": 1755656439.431357
+      },
+      {
+        "response_time_ms": 0.8767090039327741,
+        "status": 404,
+        "timestamp": 1755656439.431371
+      },
+      {
+        "response_time_ms": 0.41708399658091366,
+        "status": 404,
+        "timestamp": 1755656439.465898
+      },
+      {
+        "response_time_ms": 0.8519999973941594,
+        "status": 404,
+        "timestamp": 1755656439.466413
+      },
+      {
+        "response_time_ms": 0.8293329883599654,
+        "status": 404,
+        "timestamp": 1755656439.466429
+      },
+      {
+        "response_time_ms": 0.8092079951893538,
+        "status": 404,
+        "timestamp": 1755656439.4664419
+      },
+      {
+        "response_time_ms": 0.7927499973447993,
+        "status": 404,
+        "timestamp": 1755656439.466454
+      },
+      {
+        "response_time_ms": 0.82654099969659,
+        "status": 404,
+        "timestamp": 1755656439.4665139
+      },
+      {
+        "response_time_ms": 0.8135410025715828,
+        "status": 404,
+        "timestamp": 1755656439.466526
+      },
+      {
+        "response_time_ms": 0.799959001597017,
+        "status": 404,
+        "timestamp": 1755656439.466537
+      },
+      {
+        "response_time_ms": 0.7914589950814843,
+        "status": 404,
+        "timestamp": 1755656439.466588
+      },
+      {
+        "response_time_ms": 0.7794170087436214,
+        "status": 404,
+        "timestamp": 1755656439.466599
+      },
+      {
+        "response_time_ms": 0.4672499926527962,
+        "status": 404,
+        "timestamp": 1755656439.499826
+      },
+      {
+        "response_time_ms": 0.8952079951995984,
+        "status": 404,
+        "timestamp": 1755656439.500364
+      },
+      {
+        "response_time_ms": 0.7766250055283308,
+        "status": 404,
+        "timestamp": 1755656439.500385
+      },
+      {
+        "response_time_ms": 0.8921670087147504,
+        "status": 404,
+        "timestamp": 1755656439.500399
+      },
+      {
+        "response_time_ms": 0.8749999979045242,
+        "status": 404,
+        "timestamp": 1755656439.500412
+      },
+      {
+        "response_time_ms": 0.9027079941006377,
+        "status": 404,
+        "timestamp": 1755656439.5004659
+      },
+      {
+        "response_time_ms": 0.8432920003542677,
+        "status": 404,
+        "timestamp": 1755656439.500479
+      },
+      {
+        "response_time_ms": 1.020791009068489,
+        "status": 404,
+        "timestamp": 1755656439.5007
+      },
+      {
+        "response_time_ms": 1.0176250070799142,
+        "status": 404,
+        "timestamp": 1755656439.500726
+      },
+      {
+        "response_time_ms": 1.0042079957202077,
+        "status": 404,
+        "timestamp": 1755656439.5007439
+      },
+      {
+        "response_time_ms": 0.4745839978568256,
+        "status": 404,
+        "timestamp": 1755656439.53539
+      },
+      {
+        "response_time_ms": 1.082291011698544,
+        "status": 404,
+        "timestamp": 1755656439.536139
+      },
+      {
+        "response_time_ms": 1.0644169960869476,
+        "status": 404,
+        "timestamp": 1755656439.536155
+      },
+      {
+        "response_time_ms": 1.0501659999135882,
+        "status": 404,
+        "timestamp": 1755656439.5361679
+      },
+      {
+        "response_time_ms": 1.032790998579003,
+        "status": 404,
+        "timestamp": 1755656439.5361779
+      },
+      {
+        "response_time_ms": 1.0835420107468963,
+        "status": 404,
+        "timestamp": 1755656439.536254
+      },
+      {
+        "response_time_ms": 1.0724169987952337,
+        "status": 404,
+        "timestamp": 1755656439.536266
+      },
+      {
+        "response_time_ms": 1.0597499931463972,
+        "status": 404,
+        "timestamp": 1755656439.536277
+      },
+      {
+        "response_time_ms": 1.0466669918969274,
+        "status": 404,
+        "timestamp": 1755656439.536288
+      },
+      {
+        "response_time_ms": 1.033750013448298,
+        "status": 404,
+        "timestamp": 1755656439.536299
+      },
+      {
+        "response_time_ms": 0.45533300726674497,
+        "status": 404,
+        "timestamp": 1755656439.569796
+      },
+      {
+        "response_time_ms": 0.2936249948106706,
+        "status": 404,
+        "timestamp": 1755656439.5701199
+      },
+      {
+        "response_time_ms": 0.4892089928034693,
+        "status": 404,
+        "timestamp": 1755656439.5703769
+      },
+      {
+        "response_time_ms": 0.4699580022133887,
+        "status": 404,
+        "timestamp": 1755656439.570393
+      },
+      {
+        "response_time_ms": 0.4327500064391643,
+        "status": 404,
+        "timestamp": 1755656439.570404
+      },
+      {
+        "response_time_ms": 0.7818330050213262,
+        "status": 404,
+        "timestamp": 1755656439.570784
+      },
+      {
+        "response_time_ms": 0.6222090014489368,
+        "status": 404,
+        "timestamp": 1755656439.5707982
+      },
+      {
+        "response_time_ms": 0.7750410004518926,
+        "status": 404,
+        "timestamp": 1755656439.5708082
+      },
+      {
+        "response_time_ms": 0.7028330001048744,
+        "status": 404,
+        "timestamp": 1755656439.570831
+      },
+      {
+        "response_time_ms": 0.829625001642853,
+        "status": 404,
+        "timestamp": 1755656439.570886
+      },
+      {
+        "response_time_ms": 0.3279170050518587,
+        "status": 404,
+        "timestamp": 1755656439.604853
+      },
+      {
+        "response_time_ms": 0.8860000089043751,
+        "status": 404,
+        "timestamp": 1755656439.605464
+      },
+      {
+        "response_time_ms": 0.8835839980747551,
+        "status": 404,
+        "timestamp": 1755656439.605493
+      },
+      {
+        "response_time_ms": 0.8439169905614108,
+        "status": 404,
+        "timestamp": 1755656439.605508
+      },
+      {
+        "response_time_ms": 0.830000004498288,
+        "status": 404,
+        "timestamp": 1755656439.605519
+      },
+      {
+        "response_time_ms": 0.8929169998737052,
+        "status": 404,
+        "timestamp": 1755656439.605531
+      },
+      {
+        "response_time_ms": 0.8276250009657815,
+        "status": 404,
+        "timestamp": 1755656439.6055412
+      },
+      {
+        "response_time_ms": 0.9211249998770654,
+        "status": 404,
+        "timestamp": 1755656439.6056588
+      },
+      {
+        "response_time_ms": 0.9177500032819808,
+        "status": 404,
+        "timestamp": 1755656439.6056771
+      },
+      {
+        "response_time_ms": 0.9085000056074932,
+        "status": 404,
+        "timestamp": 1755656439.60569
+      }
+    ]
+  },
+  "errors": {}
+}

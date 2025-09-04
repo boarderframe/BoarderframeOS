@@ -1,0 +1,336 @@
+groups:
+  # Application Health Alerts
+  - name: mcp-ui-health
+    rules:
+      - alert: MCPUIApplicationDown
+        expr: up{job="mcp-manager"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: mcp-manager
+          team: platform
+        annotations:
+          summary: "MCP-UI application is down"
+          description: "MCP-UI application {{ $labels.instance }} has been down for more than 1 minute."
+          runbook_url: "https://docs.mcp-manager.com/runbooks/application-down"
+
+      - alert: MCPUIFrontendDown
+        expr: up{job="mcp-frontend"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: mcp-frontend
+          team: platform
+        annotations:
+          summary: "MCP-UI frontend is down"
+          description: "MCP-UI frontend {{ $labels.instance }} has been down for more than 2 minutes."
+
+      - alert: MCPUIHealthCheckFailing
+        expr: probe_success{job="blackbox"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: external-probe
+          team: platform
+        annotations:
+          summary: "MCP-UI health check failing"
+          description: "External health check for {{ $labels.instance }} has been failing for more than 2 minutes."
+
+  # Performance Alerts
+  - name: mcp-ui-performance
+    rules:
+      - alert: MCPUIHighResponseTime
+        expr: mcp:http_request_duration:p95{job="mcp-manager"} > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: mcp-manager
+          team: platform
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }}s for {{ $labels.instance }}."
+
+      - alert: MCPUIHighErrorRate
+        expr: mcp:http_requests:error_rate5m{job="mcp-manager"} > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          service: mcp-manager
+          team: platform
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.instance }}."
+
+      - alert: MCPUILowThroughput
+        expr: mcp:http_requests:rate5m{job="mcp-manager"} < 10
+        for: 10m
+        labels:
+          severity: warning
+          service: mcp-manager
+          team: platform
+        annotations:
+          summary: "Low request throughput"
+          description: "Request rate is {{ $value }} req/s for {{ $labels.instance }}, which is unusually low."
+
+  # Resource Usage Alerts
+  - name: mcp-ui-resources
+    rules:
+      - alert: MCPUIHighCPUUsage
+        expr: mcp:cpu:usage_ratio{job="mcp-manager"} > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: mcp-manager
+          team: platform
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value | humanizePercentage }} for {{ $labels.instance }}."
+
+      - alert: MCPUIHighMemoryUsage
+        expr: mcp:memory:usage_ratio{job="mcp-manager"} > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          service: mcp-manager
+          team: platform
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value | humanizePercentage }} for {{ $labels.instance }}."
+
+      - alert: MCPUIMemoryLeak
+        expr: increase(process_resident_memory_bytes{job="mcp-manager"}[1h]) > 100000000
+        for: 0m
+        labels:
+          severity: warning
+          service: mcp-manager
+          team: platform
+        annotations:
+          summary: "Potential memory leak detected"
+          description: "Memory usage increased by {{ $value | humanizeBytes }} in the last hour for {{ $labels.instance }}."
+
+  # Database Alerts
+  - name: mcp-ui-database
+    rules:
+      - alert: PostgreSQLDown
+        expr: up{job="postgres-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: postgresql
+          team: platform
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL instance {{ $labels.instance }} has been down for more than 1 minute."
+
+      - alert: PostgreSQLTooManyConnections
+        expr: mcp:db_connections:usage_ratio > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: postgresql
+          team: platform
+        annotations:
+          summary: "PostgreSQL connection pool nearly exhausted"
+          description: "Database connection usage is {{ $value | humanizePercentage }} for {{ $labels.instance }}."
+
+      - alert: PostgreSQLHighReplicationLag
+        expr: pg_stat_replication_lag_seconds > 60
+        for: 5m
+        labels:
+          severity: warning
+          service: postgresql
+          team: platform
+        annotations:
+          summary: "PostgreSQL replication lag is high"
+          description: "Replication lag is {{ $value }}s for replica {{ $labels.instance }}."
+
+      - alert: PostgreSQLSlowQueries
+        expr: rate(pg_stat_activity_max_tx_duration[5m]) > 300
+        for: 5m
+        labels:
+          severity: warning
+          service: postgresql
+          team: platform
+        annotations:
+          summary: "PostgreSQL has slow running queries"
+          description: "Maximum transaction duration is {{ $value }}s for {{ $labels.instance }}."
+
+  # Redis Alerts
+  - name: mcp-ui-redis
+    rules:
+      - alert: RedisDown
+        expr: up{job="redis-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+          team: platform
+        annotations:
+          summary: "Redis is down"
+          description: "Redis instance {{ $labels.instance }} has been down for more than 1 minute."
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+          team: platform
+        annotations:
+          summary: "Redis memory usage is high"
+          description: "Redis memory usage is {{ $value | humanizePercentage }} for {{ $labels.instance }}."
+
+      - alert: RedisConnectionsSpike
+        expr: increase(redis_connected_clients[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+          team: platform
+        annotations:
+          summary: "Redis connections spiking"
+          description: "Redis connections increased by {{ $value }} in 5 minutes for {{ $labels.instance }}."
+
+  # Infrastructure Alerts
+  - name: mcp-ui-infrastructure
+    rules:
+      - alert: KubernetesNodeNotReady
+        expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          service: kubernetes
+          team: platform
+        annotations:
+          summary: "Kubernetes node not ready"
+          description: "Node {{ $labels.node }} has been not ready for more than 5 minutes."
+
+      - alert: KubernetesPodCrashLooping
+        expr: rate(kube_pod_container_status_restarts_total[15m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          service: kubernetes
+          team: platform
+        annotations:
+          summary: "Pod is crash looping"
+          description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is restarting frequently."
+
+      - alert: KubernetesPodNotReady
+        expr: kube_pod_status_ready{condition="true"} == 0
+        for: 10m
+        labels:
+          severity: warning
+          service: kubernetes
+          team: platform
+        annotations:
+          summary: "Pod not ready"
+          description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has been not ready for more than 10 minutes."
+
+      - alert: KubernetesDeploymentReplicasUnavailable
+        expr: kube_deployment_status_replicas_unavailable > 0
+        for: 5m
+        labels:
+          severity: warning
+          service: kubernetes
+          team: platform
+        annotations:
+          summary: "Deployment has unavailable replicas"
+          description: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has {{ $value }} unavailable replicas."
+
+  # Security Alerts
+  - name: mcp-ui-security
+    rules:
+      - alert: UnauthorizedAPIAccess
+        expr: increase(http_requests_total{status="401",job="mcp-manager"}[5m]) > 10
+        for: 0m
+        labels:
+          severity: warning
+          service: mcp-manager
+          team: security
+        annotations:
+          summary: "High number of unauthorized API access attempts"
+          description: "{{ $value }} unauthorized access attempts in the last 5 minutes for {{ $labels.instance }}."
+
+      - alert: SuspiciousActivityDetected
+        expr: increase(http_requests_total{status="403",job="mcp-manager"}[5m]) > 20
+        for: 0m
+        labels:
+          severity: critical
+          service: mcp-manager
+          team: security
+        annotations:
+          summary: "Suspicious activity detected"
+          description: "{{ $value }} forbidden requests in the last 5 minutes for {{ $labels.instance }}."
+
+      - alert: TLSCertificateExpiringSoon
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 7
+        for: 1h
+        labels:
+          severity: warning
+          service: ssl-certificate
+          team: platform
+        annotations:
+          summary: "TLS certificate expiring soon"
+          description: "TLS certificate for {{ $labels.instance }} expires in {{ $value | humanizeDuration }}."
+
+  # Business Logic Alerts
+  - name: mcp-ui-business
+    rules:
+      - alert: MCPServerConnectionFailures
+        expr: increase(mcp_server_connection_failures_total[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: mcp-manager
+          team: platform
+        annotations:
+          summary: "MCP server connection failures"
+          description: "{{ $value }} MCP server connection failures in the last 5 minutes."
+
+      - alert: MCPServerResponseTimeHigh
+        expr: histogram_quantile(0.95, rate(mcp_server_request_duration_seconds_bucket[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: mcp-manager
+          team: platform
+        annotations:
+          summary: "MCP server response time is high"
+          description: "95th percentile MCP server response time is {{ $value }}s."
+
+      - alert: LowActiveUsers
+        expr: mcp_active_users_total < 5
+        for: 30m
+        labels:
+          severity: info
+          service: mcp-manager
+          team: product
+        annotations:
+          summary: "Low number of active users"
+          description: "Only {{ $value }} active users in the last 30 minutes."
+
+  # Backup and Data Integrity Alerts
+  - name: mcp-ui-data
+    rules:
+      - alert: BackupJobFailed
+        expr: up{job="backup-service"} == 0
+        for: 1h
+        labels:
+          severity: critical
+          service: backup
+          team: platform
+        annotations:
+          summary: "Backup job failed"
+          description: "Backup service has been down for more than 1 hour."
+
+      - alert: DatabaseBackupOld
+        expr: time() - database_backup_last_success_timestamp > 86400
+        for: 1h
+        labels:
+          severity: critical
+          service: backup
+          team: platform
+        annotations:
+          summary: "Database backup is outdated"
+          description: "Last successful database backup was {{ $value | humanizeDuration }} ago."

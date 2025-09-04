@@ -1,0 +1,149 @@
+# Blackbox Exporter Configuration for MCP Services
+# External service monitoring and health checks
+
+modules:
+  # HTTP GET probe for web services
+  http_2xx:
+    prober: http
+    timeout: 10s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200, 201, 202, 204]
+      method: GET
+      headers:
+        User-Agent: "MCP-Blackbox-Exporter/1.0"
+      no_follow_redirects: false
+      fail_if_ssl: false
+      fail_if_not_ssl: false
+      tls_config:
+        insecure_skip_verify: false
+      preferred_ip_protocol: "ip4"
+
+  # HTTP POST probe for API endpoints
+  http_post_2xx:
+    prober: http
+    timeout: 10s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200, 201, 202]
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        User-Agent: "MCP-Blackbox-Exporter/1.0"
+      body: '{"health": "check"}'
+
+  # HTTPS probe with SSL verification
+  https_2xx:
+    prober: http
+    timeout: 10s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200, 201, 202, 204]
+      method: GET
+      headers:
+        User-Agent: "MCP-Blackbox-Exporter/1.0"
+      no_follow_redirects: false
+      fail_if_ssl: false
+      fail_if_not_ssl: true
+      tls_config:
+        insecure_skip_verify: false
+        ca_file: "/etc/ssl/certs/ca-certificates.crt"
+      preferred_ip_protocol: "ip4"
+
+  # TCP probe for database connections
+  tcp_connect:
+    prober: tcp
+    timeout: 10s
+    tcp:
+      preferred_ip_protocol: "ip4"
+
+  # Redis probe
+  redis_tcp:
+    prober: tcp
+    timeout: 5s
+    tcp:
+      preferred_ip_protocol: "ip4"
+      query_response:
+        - expect: "\\+PONG"
+          send: "PING\\r\\n"
+
+  # ICMP probe for network connectivity
+  icmp:
+    prober: icmp
+    timeout: 5s
+    icmp:
+      preferred_ip_protocol: "ip4"
+      source_ip_address: ""
+      payload_size: 64
+      dont_fragment: false
+
+  # DNS probe for domain resolution
+  dns_soa:
+    prober: dns
+    timeout: 5s
+    dns:
+      preferred_ip_protocol: "ip4"
+      source_ip_address: ""
+      transport_protocol: "udp"
+      query_name: "example.com"
+      query_type: "SOA"
+
+  # gRPC health check
+  grpc:
+    prober: grpc
+    timeout: 10s
+    grpc:
+      service: ""
+      tls: false
+      tls_config:
+        insecure_skip_verify: false
+
+  # Custom MCP Manager health check
+  mcp_health:
+    prober: http
+    timeout: 5s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200]
+      method: GET
+      headers:
+        User-Agent: "MCP-Health-Monitor/1.0"
+        Accept: "application/json"
+      no_follow_redirects: true
+      fail_if_ssl: false
+      fail_if_not_ssl: false
+      fail_if_body_not_matches_regexp:
+        - '"status":\s*"healthy"'
+      preferred_ip_protocol: "ip4"
+
+  # Prometheus metrics endpoint check
+  prometheus_metrics:
+    prober: http
+    timeout: 5s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200]
+      method: GET
+      headers:
+        User-Agent: "MCP-Metrics-Monitor/1.0"
+        Accept: "text/plain"
+      no_follow_redirects: true
+      fail_if_body_not_matches_regexp:
+        - "# HELP"
+        - "# TYPE"
+      preferred_ip_protocol: "ip4"
+
+  # WebSocket connection test
+  websocket:
+    prober: http
+    timeout: 10s
+    http:
+      valid_http_versions: ["HTTP/1.1"]
+      valid_status_codes: [101]
+      method: GET
+      headers:
+        Connection: "Upgrade"
+        Upgrade: "websocket"
+        Sec-WebSocket-Key: "dGhlIHNhbXBsZSBub25jZQ=="
+        Sec-WebSocket-Version: "13"
+      no_follow_redirects: true

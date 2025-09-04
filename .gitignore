@@ -1,0 +1,216 @@
+# Environment Variables
+.env
+.env.*
+!.env.example
+!.env.template
+
+# API Keys and Secrets
+*.key
+*.pem
+*.cert
+secret*
+credentials*
+!credentials.template
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*_venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+*.cover
+.hypothesis/
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+.npm
+.yarn-integrity
+
+# IDE and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+
+# Logs
+logs/
+*.log
+log.txt
+
+# Process IDs
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+data/
+qdrant_storage/
+
+# Build outputs
+dist/
+build/
+out/
+.svelte-kit/
+.vercel/
+.next/
+.nuxt/
+.cache/
+
+# Testing
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Backup files
+*.backup
+*.bak
+*.old
+*.orig
+*~
+
+# Model files (large)
+*.bin
+*.gguf
+*.safetensors
+*.pt
+*.pth
+*.onnx
+*.pb
+models/
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# MCP Server specific
+mcp_servers/**/dist/
+mcp_servers/**/build/
+mcp_servers/**/.cache/
+# Embedded git repositories (to be handled separately)
+mcp_servers/enhanced-filesystem/
+mcp_servers/mcp-official-servers/
+mcp_servers/mcp-ui-sdk/
+pipelines/
+
+# Open WebUI specific
+open-webui/backend/data/
+open-webui/backend/static/
+open-webui/.svelte-kit/
+open-webui/build/
+
+# LangGraph specific
+langgraph_backend/__pycache__/
+langgraph_backend/*.pyc
+
+# Pipelines specific
+pipelines/__pycache__/
+pipelines/*.pyc
+pipelines/data/
+
+# Performance tests
+performance_tests/
+
+# Keep important config templates
+!*.example
+!*.template
+!*.sample
+
+# Allow certain directories that might be named 'data'
+!/docs/data/
+
+# Artifacts
+artifacts/
+
+# Local development
+.local/
+local/
+
+# Session files
+sessions/
+*.session
+
+# Cache
+.cache/
+cache/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+!examples/*.ipynb
+
+# VS Code specific
+.vscode/*
+!.vscode/settings.json.template
+!.vscode/launch.json.template
+!.vscode/extensions.json
+
+# Memory dumps and profiles
+*.heap
+*.prof
+*.mem
+
+# Lock files (keep these for reproducibility)
+!package-lock.json
+!yarn.lock
+!pnpm-lock.yaml
+!Pipfile.lock
+!poetry.lock

@@ -1,0 +1,108 @@
+# Simplified Docker Compose for MCP Server Manager Testing
+# Includes: FastAPI MCP Manager, PostgreSQL, and Open WebUI integration
+
+services:
+  # Main FastAPI MCP Server Manager Application
+  mcp-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile-simple
+    container_name: fastapi-mcp-manager
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - PYTHONUNBUFFERED=1
+    networks:
+      - mcp_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 30s
+
+  # PostgreSQL for primary database storage
+  postgres:
+    image: postgres:15-alpine
+    container_name: mcp-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=mcpdb
+      - POSTGRES_USER=mcpuser
+      - POSTGRES_PASSWORD=mcppassword
+    volumes:
+      - postgres_data:/var/lib/postgresql/data:rw
+    networks:
+      - mcp_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mcpuser -d mcpdb"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Open WebUI for chat interface integration
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: mcp-open-webui
+    restart: unless-stopped
+    ports:
+      - "3000:8080"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY:-your-secret-key-change-this}
+      - MCP_CONNECTOR_URL=http://mcp-manager:8000
+      - ENABLE_MCP_CONNECTOR=true
+    volumes:
+      - open_webui_data:/app/backend/data:rw
+    networks:
+      - mcp_network
+    depends_on:
+      - mcp-manager
+      - ollama
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Ollama for local LLM inference
+  ollama:
+    image: ollama/ollama:latest
+    container_name: mcp-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_ORIGINS=http://localhost:3000,http://open-webui:8080
+    volumes:
+      - ollama_data:/root/.ollama:rw
+    networks:
+      - mcp_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# Named volumes for data persistence
+volumes:
+  postgres_data:
+    driver: local
+  open_webui_data:
+    driver: local
+  ollama_data:
+    driver: local
+
+# Isolated network for all services
+networks:
+  mcp_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16

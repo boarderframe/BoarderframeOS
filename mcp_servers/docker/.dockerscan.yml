@@ -1,0 +1,294 @@
+# Docker Security Scanner Configuration
+# Comprehensive security scanning for container images and runtime
+
+# ==========================================
+# TRIVY CONFIGURATION
+# ==========================================
+trivy:
+  # Scan configuration
+  severity: "HIGH,CRITICAL"
+  vuln-type: "os,library"
+  ignore-unfixed: false
+  exit-code: 1
+  
+  # Cache settings
+  cache-dir: "/tmp/.trivy"
+  
+  # Report format
+  format: "json"
+  output: "/tmp/trivy-report.json"
+  
+  # Timeout settings
+  timeout: "10m"
+  
+  # Database settings
+  skip-db-update: false
+  
+  # Ignored vulnerabilities (add CVE IDs that are acceptable)
+  trivyignore:
+    # - CVE-2023-12345  # Example: False positive or accepted risk
+    
+# ==========================================
+# DOCKERFILE BEST PRACTICES
+# ==========================================
+hadolint:
+  # Rules to ignore (use sparingly)
+  ignore:
+    # - DL3008  # Pin versions in apt get install
+    # - DL3009  # Delete the apt-get lists after installing something
+  
+  # Trusted registries
+  trusted-registries:
+    - "docker.io"
+    - "ghcr.io"
+    - "gcr.io"
+    - "quay.io"
+  
+  # Strict mode
+  strict-labels: true
+  
+# ==========================================
+# CONTAINER RUNTIME SECURITY
+# ==========================================
+falco:
+  # Rules to monitor
+  rules:
+    - rule: "Unexpected Network Traffic"
+      desc: "Detect unexpected network connections"
+      condition: >
+        spawned_process and container and
+        ((proc.name in (netcat, nc, ncat, nmap, dig, nslookup, host)) or
+        (proc.name contains "wget") or
+        (proc.name contains "curl"))
+      output: >
+        Unexpected network tool launched (user=%user.name command=%proc.cmdline
+        container=%container.name image=%container.image.repository)
+      priority: WARNING
+    
+    - rule: "Suspicious File Access"
+      desc: "Detect access to sensitive files"
+      condition: >
+        open_read and container and
+        (fd.name startswith "/etc/passwd" or
+        fd.name startswith "/etc/shadow" or
+        fd.name startswith "/etc/sudoers" or
+        fd.name startswith "/root/.ssh")
+      output: >
+        Sensitive file opened for reading (user=%user.name command=%proc.cmdline
+        file=%fd.name container=%container.name image=%container.image.repository)
+      priority: WARNING
+    
+    - rule: "Container Privilege Escalation"
+      desc: "Detect privilege escalation attempts"
+      condition: >
+        spawned_process and container and
+        (proc.name in (su, sudo, doas) or
+        proc.args contains "setuid" or
+        proc.args contains "setgid")
+      output: >
+        Privilege escalation detected (user=%user.name command=%proc.cmdline
+        container=%container.name image=%container.image.repository)
+      priority: HIGH
+
+# ==========================================
+# GRYPE CONFIGURATION
+# ==========================================
+grype:
+  # Scan configuration
+  scope: "all-layers"
+  output: "json"
+  
+  # Fail criteria
+  fail-on: "high"
+  
+  # Database settings
+  db:
+    cache-dir: "/tmp/.grype"
+    update-url: "https://toolbox-data.anchore.io/grype/databases/listing.json"
+  
+  # Ignored vulnerabilities
+  ignore:
+    # - vulnerability: "CVE-2023-12345"
+    #   reason: "acceptable risk"
+    #   expiry: "2024-12-31"
+
+# ==========================================
+# SYFT CONFIGURATION (SBOM Generation)
+# ==========================================
+syft:
+  # Output format for Software Bill of Materials
+  output: "spdx-json"
+  
+  # Scope of analysis
+  scope: "all-layers"
+  
+  # Package cataloger settings
+  catalogers:
+    enabled:
+      - "apk-db-cataloger"
+      - "npm-package-cataloger"
+      - "node-binary-cataloger"
+      - "javascript-lock-cataloger"
+  
+  # File classification
+  file-metadata:
+    digests: ["sha256"]
+    selection: "all"
+
+# ==========================================
+# DOCKER BENCH SECURITY
+# ==========================================
+docker-bench:
+  # Tests to run
+  checks:
+    - "1"   # Host configuration
+    - "2"   # Docker daemon configuration
+    - "3"   # Docker daemon configuration files
+    - "4"   # Container images and build files
+    - "5"   # Container runtime
+    - "6"   # Docker security operations
+    - "7"   # Docker Swarm configuration (if applicable)
+  
+  # Severity levels to report
+  severity: ["WARN", "INFO", "PASS", "NOTE"]
+  
+  # Output format
+  log-level: "INFO"
+
+# ==========================================
+# CLAIR CONFIGURATION
+# ==========================================
+clair:
+  # API endpoint
+  addr: "http://localhost:6060"
+  
+  # Scan configuration
+  timeout: "10m"
+  
+  # Vulnerability threshold
+  threshold: "High"
+  
+  # Report format
+  format: "json"
+
+# ==========================================
+# CUSTOM SECURITY CHECKS
+# ==========================================
+custom-checks:
+  # Check for secrets in environment variables
+  secrets:
+    patterns:
+      - "password"
+      - "secret"
+      - "key"
+      - "token"
+      - "credential"
+    exclude:
+      - "*_ENABLED"
+      - "*_PATH"
+      - "*_URL"
+  
+  # Check for exposed ports
+  ports:
+    dangerous:
+      - 22    # SSH
+      - 23    # Telnet
+      - 135   # RPC
+      - 139   # NetBIOS
+      - 445   # SMB
+      - 1433  # SQL Server
+      - 3306  # MySQL
+      - 5432  # PostgreSQL
+  
+  # Check for running processes
+  processes:
+    forbidden:
+      - "sshd"
+      - "telnetd"
+      - "ftpd"
+      - "rlogin"
+      - "rsh"
+  
+  # Check file permissions
+  permissions:
+    sensitive-files:
+      - path: "/etc/passwd"
+        max-permissions: "644"
+      - path: "/etc/shadow"
+        max-permissions: "000"
+      - path: "/root"
+        max-permissions: "700"
+      - path: "/tmp"
+        required-sticky: true
+
+# ==========================================
+# SCANNING SCHEDULE
+# ==========================================
+schedule:
+  # Daily vulnerability scan
+  vulnerability-scan: "0 2 * * *"
+  
+  # Weekly comprehensive scan
+  comprehensive-scan: "0 2 * * 0"
+  
+  # Monthly SBOM generation
+  sbom-generation: "0 2 1 * *"
+  
+  # Runtime monitoring (continuous)
+  runtime-monitoring: "enabled"
+
+# ==========================================
+# REPORTING CONFIGURATION
+# ==========================================
+reporting:
+  # Report formats
+  formats:
+    - "json"
+    - "sarif"
+    - "html"
+  
+  # Report destinations
+  destinations:
+    - type: "file"
+      path: "/tmp/security-reports/"
+    - type: "webhook"
+      url: "${SECURITY_WEBHOOK_URL}"
+      headers:
+        Authorization: "Bearer ${SECURITY_API_TOKEN}"
+  
+  # Severity filtering
+  min-severity: "MEDIUM"
+  
+  # Include remediation advice
+  include-remediation: true
+  
+  # Compliance frameworks
+  compliance:
+    - "CIS"
+    - "NIST"
+    - "OWASP"
+
+# ==========================================
+# INTEGRATION SETTINGS
+# ==========================================
+integrations:
+  # CI/CD integration
+  cicd:
+    fail-build-on: "HIGH"
+    generate-sarif: true
+    
+  # Container registry integration
+  registry:
+    scan-on-push: true
+    quarantine-vulnerable: true
+    
+  # Monitoring integration
+  monitoring:
+    prometheus-metrics: true
+    grafana-dashboard: true
+    
+  # Alerting integration
+  alerting:
+    slack-webhook: "${SLACK_SECURITY_WEBHOOK}"
+    email-alerts: "${SECURITY_EMAIL}"
+    pagerduty-key: "${PAGERDUTY_SECURITY_KEY}"

@@ -1,0 +1,666 @@
+{
+  "$schema": "./mcp-config-schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "created_at": "2025-08-16T00:00:00Z",
+    "created_by": "mcp-manager",
+    "description": "Secure MCP Server Configuration with Security Restrictions",
+    "environment": "production",
+    "config_version": "1.0.0"
+  },
+  "security": {
+    "global_policy": {
+      "require_authentication": true,
+      "require_tls": true,
+      "min_tls_version": "1.2",
+      "require_mfa": false,
+      "session_timeout_minutes": 480,
+      "max_concurrent_sessions": 5,
+      "require_explicit_permissions": true,
+      "enable_audit_logging": true,
+      "enable_intrusion_detection": true,
+      "threat_score_threshold": 0.7
+    },
+    "access_control": {
+      "default_access_level": "NONE",
+      "allow_public_servers": false,
+      "require_owner_approval": true,
+      "inherit_user_permissions": true
+    },
+    "network_security": {
+      "allowed_ip_ranges": [
+        "10.0.0.0/8",
+        "172.16.0.0/12",
+        "192.168.0.0/16"
+      ],
+      "blocked_ip_ranges": [],
+      "rate_limiting": {
+        "enabled": true,
+        "requests_per_minute": 100,
+        "requests_per_hour": 1000,
+        "concurrent_connections": 10,
+        "block_on_exceed": true
+      }
+    },
+    "data_protection": {
+      "encrypt_sensitive_config": true,
+      "mask_secrets_in_logs": true,
+      "require_config_approval": true,
+      "enable_config_versioning": true,
+      "retain_config_history_days": 365
+    }
+  },
+  "servers": [
+    {
+      "id": "filesystem-server-001",
+      "name": "filesystem-server",
+      "description": "Secure file system operations server",
+      "enabled": true,
+      "protocol": "stdio",
+      "command": "npx",
+      "args": [
+        "@modelcontextprotocol/server-filesystem"
+      ],
+      "working_directory": "/app/servers/filesystem",
+      "environment": {
+        "NODE_ENV": "production",
+        "LOG_LEVEL": "info",
+        "FILESYSTEM_ROOT": "/data/allowed"
+      },
+      "security": {
+        "policy_id": "filesystem-policy",
+        "owner_id": "system",
+        "access_restrictions": {
+          "allowed_paths": [
+            "/data/allowed",
+            "/data/shared"
+          ],
+          "denied_paths": [
+            "/etc",
+            "/proc",
+            "/sys",
+            "/dev",
+            "/root",
+            "/home"
+          ],
+          "readonly": false,
+          "max_file_size_mb": 100,
+          "allowed_extensions": [
+            ".txt",
+            ".json",
+            ".csv",
+            ".md",
+            ".log"
+          ],
+          "denied_extensions": [
+            ".exe",
+            ".bat",
+            ".sh",
+            ".ps1",
+            ".dll"
+          ]
+        },
+        "resource_limits": {
+          "max_cpu_percent": 50,
+          "max_memory_mb": 512,
+          "max_disk_operations_per_minute": 1000,
+          "timeout_seconds": 30
+        },
+        "audit_config": {
+          "log_file_access": true,
+          "log_file_modifications": true,
+          "log_permission_denials": true,
+          "sensitive_paths": [
+            "/data/sensitive"
+          ]
+        }
+      },
+      "health_check": {
+        "enabled": true,
+        "interval_seconds": 30,
+        "timeout_seconds": 10,
+        "max_failures": 3,
+        "endpoint": "/health"
+      },
+      "restart_policy": {
+        "enabled": true,
+        "max_attempts": 3,
+        "backoff_seconds": 5,
+        "on_failure_only": true
+      }
+    },
+    {
+      "id": "git-server-001", 
+      "name": "git-server",
+      "description": "Secure Git operations server",
+      "enabled": true,
+      "protocol": "stdio",
+      "command": "npx",
+      "args": [
+        "@modelcontextprotocol/server-git"
+      ],
+      "working_directory": "/app/servers/git",
+      "environment": {
+        "NODE_ENV": "production",
+        "LOG_LEVEL": "info",
+        "GIT_CONFIG_GLOBAL": "/app/config/gitconfig"
+      },
+      "security": {
+        "policy_id": "git-policy",
+        "owner_id": "system",
+        "access_restrictions": {
+          "allowed_repositories": [
+            "/data/repositories/allowed/*"
+          ],
+          "denied_repositories": [
+            "/data/repositories/private/*",
+            "/.git",
+            "/etc/*"
+          ],
+          "allowed_operations": [
+            "clone",
+            "pull",
+            "fetch",
+            "log",
+            "show",
+            "diff",
+            "status"
+          ],
+          "denied_operations": [
+            "push",
+            "commit",
+            "reset",
+            "rebase",
+            "merge"
+          ],
+          "max_repo_size_mb": 1000,
+          "require_signed_commits": false
+        },
+        "resource_limits": {
+          "max_cpu_percent": 70,
+          "max_memory_mb": 1024,
+          "max_network_bandwidth_mbps": 10,
+          "timeout_seconds": 120
+        },
+        "audit_config": {
+          "log_git_operations": true,
+          "log_repository_access": true,
+          "log_authentication_attempts": true
+        }
+      },
+      "health_check": {
+        "enabled": true,
+        "interval_seconds": 60,
+        "timeout_seconds": 15,
+        "max_failures": 2,
+        "endpoint": "/health"
+      },
+      "restart_policy": {
+        "enabled": true,
+        "max_attempts": 2,
+        "backoff_seconds": 10,
+        "on_failure_only": true
+      }
+    },
+    {
+      "id": "postgres-server-001",
+      "name": "postgres-server", 
+      "description": "Secure PostgreSQL operations server",
+      "enabled": true,
+      "protocol": "stdio",
+      "command": "npx",
+      "args": [
+        "@modelcontextprotocol/server-postgres"
+      ],
+      "working_directory": "/app/servers/postgres",
+      "environment": {
+        "NODE_ENV": "production",
+        "LOG_LEVEL": "info",
+        "POSTGRES_CONNECTION_STRING": "${ENCRYPTED:postgres_connection}",
+        "POSTGRES_SSL_MODE": "require"
+      },
+      "security": {
+        "policy_id": "database-policy",
+        "owner_id": "system",
+        "access_restrictions": {
+          "allowed_databases": [
+            "mcp_manager_db",
+            "application_db"
+          ],
+          "denied_databases": [
+            "postgres",
+            "template0",
+            "template1"
+          ],
+          "allowed_schemas": [
+            "public",
+            "app_data"
+          ],
+          "denied_schemas": [
+            "information_schema",
+            "pg_catalog"
+          ],
+          "allowed_operations": [
+            "SELECT",
+            "INSERT",
+            "UPDATE"
+          ],
+          "denied_operations": [
+            "DELETE",
+            "DROP",
+            "CREATE",
+            "ALTER",
+            "TRUNCATE"
+          ],
+          "max_connections": 5,
+          "max_query_duration_seconds": 30,
+          "max_result_rows": 10000,
+          "require_where_clause": true
+        },
+        "resource_limits": {
+          "max_cpu_percent": 60,
+          "max_memory_mb": 2048,
+          "max_concurrent_queries": 3,
+          "timeout_seconds": 60
+        },
+        "audit_config": {
+          "log_all_queries": true,
+          "log_data_access": true,
+          "log_connection_attempts": true,
+          "mask_sensitive_data": true,
+          "sensitive_tables": [
+            "users",
+            "user_sessions",
+            "security_events"
+          ]
+        }
+      },
+      "health_check": {
+        "enabled": true,
+        "interval_seconds": 45,
+        "timeout_seconds": 10,
+        "max_failures": 3,
+        "query": "SELECT 1",
+        "expected_result": "1"
+      },
+      "restart_policy": {
+        "enabled": true,
+        "max_attempts": 3,
+        "backoff_seconds": 15,
+        "on_failure_only": true
+      }
+    },
+    {
+      "id": "filesystem-python-001",
+      "name": "filesystem-python-server",
+      "description": "Python-based file system operations server",
+      "enabled": true,
+      "protocol": "stdio",
+      "command": "python",
+      "args": [
+        "/Users/cosburn/MCP Servers/mcp_servers/filesystem/main.py"
+      ],
+      "working_directory": "/Users/cosburn/MCP Servers/mcp_servers/filesystem",
+      "environment": {
+        "PYTHONPATH": "/Users/cosburn/MCP Servers/.venv/lib/python3.13/site-packages",
+        "LOG_LEVEL": "info"
+      },
+      "security": {
+        "policy_id": "filesystem-python-policy",
+        "owner_id": "user",
+        "access_restrictions": {
+          "allowed_paths": [
+            "/Users/cosburn/MCP Servers",
+            "/tmp/mcp_workspace"
+          ],
+          "denied_paths": [
+            "/etc",
+            "/proc",
+            "/sys",
+            "/dev",
+            "/root",
+            "/private"
+          ],
+          "readonly": false,
+          "max_file_size_mb": 50,
+          "allowed_extensions": [
+            ".txt",
+            ".json",
+            ".py",
+            ".js",
+            ".ts",
+            ".md",
+            ".csv",
+            ".log",
+            ".yaml",
+            ".yml",
+            ".xml",
+            ".html",
+            ".css"
+          ],
+          "denied_extensions": [
+            ".exe",
+            ".bat",
+            ".ps1",
+            ".dll",
+            ".so"
+          ]
+        },
+        "resource_limits": {
+          "max_cpu_percent": 40,
+          "max_memory_mb": 256,
+          "max_disk_operations_per_minute": 500,
+          "timeout_seconds": 15
+        },
+        "audit_config": {
+          "log_file_access": true,
+          "log_file_modifications": true,
+          "log_permission_denials": true,
+          "sensitive_paths": [
+            "/Users/cosburn/MCP Servers/config",
+            "/Users/cosburn/MCP Servers/.env"
+          ]
+        }
+      },
+      "health_check": {
+        "enabled": true,
+        "interval_seconds": 30,
+        "timeout_seconds": 5,
+        "max_failures": 3
+      },
+      "restart_policy": {
+        "enabled": true,
+        "max_attempts": 3,
+        "backoff_seconds": 5,
+        "on_failure_only": true
+      }
+    },
+    {
+      "id": "playwright-server-001",
+      "name": "playwright-automation-server",
+      "description": "Real Playwright browser automation server for web scraping and testing",
+      "enabled": true,
+      "protocol": "stdio",
+      "command": "python",
+      "args": [
+        "/Users/cosburn/MCP Servers/real_playwright_server.py"
+      ],
+      "working_directory": "/Users/cosburn/MCP Servers",
+      "environment": {
+        "PYTHONPATH": "/Users/cosburn/MCP Servers/.venv/lib/python3.13/site-packages",
+        "PLAYWRIGHT_HEADLESS": "true",
+        "PLAYWRIGHT_BROWSER": "chromium",
+        "LOG_LEVEL": "info"
+      },
+      "security": {
+        "policy_id": "playwright-policy",
+        "owner_id": "user",
+        "access_restrictions": {
+          "allowed_domains": [
+            "*.example.com",
+            "*.httpbin.org",
+            "*.github.com",
+            "*.stackoverflow.com",
+            "*.wikipedia.org"
+          ],
+          "denied_domains": [
+            "*.banking.com",
+            "*.paypal.com",
+            "*.amazon.com",
+            "localhost",
+            "127.0.0.1",
+            "internal.*"
+          ],
+          "max_page_load_time_seconds": 30,
+          "max_screenshot_size_mb": 10,
+          "max_concurrent_pages": 3,
+          "allowed_file_downloads": false,
+          "block_popups": true,
+          "disable_javascript": false
+        },
+        "resource_limits": {
+          "max_cpu_percent": 80,
+          "max_memory_mb": 2048,
+          "max_browser_instances": 2,
+          "timeout_seconds": 60,
+          "max_automation_duration_minutes": 10
+        },
+        "audit_config": {
+          "log_page_visits": true,
+          "log_form_submissions": true,
+          "log_screenshot_captures": true,
+          "log_failed_automations": true,
+          "mask_sensitive_form_data": true,
+          "sensitive_selectors": [
+            "input[type='password']",
+            "input[name*='password']",
+            "input[name*='ssn']",
+            "input[name*='credit']"
+          ]
+        }
+      },
+      "health_check": {
+        "enabled": true,
+        "interval_seconds": 60,
+        "timeout_seconds": 30,
+        "max_failures": 2,
+        "test_url": "https://httpbin.org/html"
+      },
+      "restart_policy": {
+        "enabled": true,
+        "max_attempts": 3,
+        "backoff_seconds": 10,
+        "on_failure_only": true
+      }
+    },
+    {
+      "id": "kroger-api-server-001",
+      "name": "kroger-mcp-server",
+      "description": "Comprehensive Kroger Developer API integration for products, locations, cart management, and user profiles",
+      "enabled": true,
+      "protocol": "http",
+      "url": "http://localhost:9004",
+      "command": "python",
+      "args": [
+        "-m",
+        "uvicorn",
+        "kroger_mcp_server:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "9004",
+        "--reload"
+      ],
+      "working_directory": "/Users/cosburn/MCP Servers",
+      "environment": {
+        "PYTHONPATH": "/Users/cosburn/MCP Servers/.venv/lib/python3.13/site-packages",
+        "KROGER_DEV_MODE": "true",
+        "KROGER_CLIENT_ID": "${ENCRYPTED:kroger_client_id}",
+        "KROGER_CLIENT_SECRET": "${ENCRYPTED:kroger_client_secret}",
+        "KROGER_REDIRECT_URI": "http://localhost:9004/auth/callback",
+        "LOG_LEVEL": "info"
+      },
+      "security": {
+        "policy_id": "kroger-api-policy",
+        "owner_id": "user",
+        "access_restrictions": {
+          "allowed_apis": [
+            "products",
+            "locations",
+            "cart",
+            "identity",
+            "auth"
+          ],
+          "denied_apis": [
+            "admin"
+          ],
+          "max_requests_per_day": 10000,
+          "max_cart_operations_per_day": 5000,
+          "require_authentication_for": [
+            "cart",
+            "identity"
+          ],
+          "allowed_scopes": [
+            "product.compact",
+            "profile.compact",
+            "cart.basic:write"
+          ],
+          "rate_limits": {
+            "products_search": "100/minute",
+            "locations_search": "100/minute",
+            "cart_operations": "50/minute",
+            "auth_operations": "10/minute"
+          }
+        },
+        "resource_limits": {
+          "max_cpu_percent": 50,
+          "max_memory_mb": 512,
+          "max_concurrent_requests": 20,
+          "timeout_seconds": 30
+        },
+        "audit_config": {
+          "log_api_calls": true,
+          "log_authentication_attempts": true,
+          "log_cart_operations": true,
+          "log_failed_requests": true,
+          "mask_sensitive_data": true,
+          "sensitive_fields": [
+            "access_token",
+            "refresh_token",
+            "authorization",
+            "client_secret"
+          ]
+        }
+      },
+      "health_check": {
+        "enabled": true,
+        "interval_seconds": 30,
+        "timeout_seconds": 10,
+        "max_failures": 3,
+        "endpoint": "/health",
+        "expected_status": 200
+      },
+      "restart_policy": {
+        "enabled": true,
+        "max_attempts": 3,
+        "backoff_seconds": 10,
+        "on_failure_only": true
+      },
+      "api_documentation": {
+        "openapi_url": "/openapi.json",
+        "docs_url": "/docs",
+        "redoc_url": "/redoc",
+        "description": "FastAPI server providing comprehensive Kroger Developer API functionality including OAuth2 authentication, product search, store locations, shopping cart management, and user profile/loyalty services.",
+        "version": "1.0.0",
+        "contact": {
+          "name": "MCP Server Manager",
+          "url": "http://localhost:8000"
+        }
+      }
+    }
+  ],
+  "global_settings": {
+    "logging": {
+      "level": "info",
+      "format": "json",
+      "output": "file",
+      "file_path": "/var/log/mcp-manager/servers.log",
+      "max_file_size_mb": 100,
+      "max_files": 10,
+      "audit_log_path": "/var/log/mcp-manager/audit.log",
+      "security_log_path": "/var/log/mcp-manager/security.log"
+    },
+    "monitoring": {
+      "enabled": true,
+      "metrics_endpoint": "/metrics",
+      "health_check_endpoint": "/health",
+      "prometheus_enabled": true,
+      "jaeger_enabled": false,
+      "alert_webhook": "${ENCRYPTED:alert_webhook_url}",
+      "notification_channels": [
+        "email",
+        "slack"
+      ]
+    },
+    "performance": {
+      "max_servers": 50,
+      "max_concurrent_operations": 100,
+      "resource_check_interval_seconds": 30,
+      "cleanup_interval_hours": 24,
+      "archive_logs_after_days": 90
+    },
+    "backup": {
+      "enabled": true,
+      "interval_hours": 6,
+      "retention_days": 30,
+      "backup_path": "/backups/mcp-config",
+      "encrypt_backups": true,
+      "compression": "gzip"
+    }
+  },
+  "environments": {
+    "development": {
+      "security_policy_overrides": {
+        "require_mfa": false,
+        "session_timeout_minutes": 1440,
+        "enable_debug_logging": true
+      },
+      "resource_limits": {
+        "max_servers": 10,
+        "max_cpu_percent": 80,
+        "max_memory_mb": 4096
+      }
+    },
+    "staging": {
+      "security_policy_overrides": {
+        "require_mfa": true,
+        "session_timeout_minutes": 720,
+        "enable_debug_logging": false
+      },
+      "resource_limits": {
+        "max_servers": 25,
+        "max_cpu_percent": 70,
+        "max_memory_mb": 8192
+      }
+    },
+    "production": {
+      "security_policy_overrides": {
+        "require_mfa": true,
+        "session_timeout_minutes": 480,
+        "enable_debug_logging": false,
+        "threat_score_threshold": 0.5
+      },
+      "resource_limits": {
+        "max_servers": 50,
+        "max_cpu_percent": 60,
+        "max_memory_mb": 16384
+      }
+    }
+  },
+  "compliance": {
+    "standards": [
+      "SOC2",
+      "ISO27001",
+      "GDPR"
+    ],
+    "audit_requirements": {
+      "retain_logs_days": 2555,
+      "encrypt_audit_logs": true,
+      "require_log_integrity": true,
+      "log_access_controls": true
+    },
+    "data_classification": {
+      "sensitive_data_encryption": "AES-256-GCM",
+      "key_rotation_days": 90,
+      "secure_deletion": true
+    }
+  },
+  "secrets_management": {
+    "provider": "hashicorp_vault",
+    "vault_address": "${VAULT_ADDR}",
+    "vault_token_path": "/etc/vault/token",
+    "encryption_key_path": "secret/mcp-manager/encryption-key",
+    "auto_rotation": true,
+    "rotation_interval_days": 90
+  }
+}

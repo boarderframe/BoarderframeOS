@@ -1,0 +1,297 @@
+---
+# Certificate Manager Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-manager
+  labels:
+    name: cert-manager
+    tier: infrastructure
+---
+# ClusterIssuer for Let's Encrypt Production
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  namespace: cert-manager
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: ops-team@example.com
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+          podTemplate:
+            spec:
+              nodeSelector:
+                kubernetes.io/os: linux
+    - dns01:
+        route53:
+          region: us-west-2
+          hostedZoneID: Z1234567890ABC
+          accessKeyID: AKIAIOSFODNN7EXAMPLE
+          secretAccessKeySecretRef:
+            name: route53-credentials
+            key: secret-access-key
+      selector:
+        dnsZones:
+        - "example.com"
+        - "*.example.com"
+---
+# ClusterIssuer for Let's Encrypt Staging (for testing)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+  namespace: cert-manager
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: ops-team@example.com
+    privateKeySecretRef:
+      name: letsencrypt-staging
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+          podTemplate:
+            spec:
+              nodeSelector:
+                kubernetes.io/os: linux
+    - dns01:
+        route53:
+          region: us-west-2
+          hostedZoneID: Z1234567890ABC
+          accessKeyID: AKIAIOSFODNN7EXAMPLE
+          secretAccessKeySecretRef:
+            name: route53-credentials
+            key: secret-access-key
+      selector:
+        dnsZones:
+        - "example.com"
+        - "*.example.com"
+---
+# Certificate for main domain
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mcp-ui-tls-cert
+  namespace: mcp-ui
+spec:
+  secretName: mcp-ui-tls-cert
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - mcp-ui.example.com
+  - api.mcp-ui.example.com
+  - grafana.mcp-ui.example.com
+  - jaeger.mcp-ui.example.com
+  - '*.mcp-ui.example.com'
+  usages:
+  - digital signature
+  - key encipherment
+  - server auth
+  duration: 2160h # 90 days
+  renewBefore: 360h # 15 days
+---
+# Certificate for monitoring domain
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: monitoring-tls-cert
+  namespace: mcp-ui-monitoring
+spec:
+  secretName: monitoring-tls-cert
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - grafana.mcp-ui.example.com
+  - jaeger.mcp-ui.example.com
+  - prometheus.mcp-ui.example.com
+  - alertmanager.mcp-ui.example.com
+  usages:
+  - digital signature
+  - key encipherment
+  - server auth
+  duration: 2160h # 90 days
+  renewBefore: 360h # 15 days
+---
+# External Secrets for Route53 credentials
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: route53-credentials
+  namespace: cert-manager
+spec:
+  refreshInterval: 24h
+  secretStoreRef:
+    name: aws-secrets-global
+    kind: ClusterSecretStore
+  target:
+    name: route53-credentials
+    creationPolicy: Owner
+  data:
+  - secretKey: secret-access-key
+    remoteRef:
+      key: mcp-ui/production/route53
+      property: secret_access_key
+---
+# Certificate monitoring alerts
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: certificate-expiry-alerts
+  namespace: cert-manager
+  labels:
+    app: cert-manager
+    component: monitoring
+spec:
+  groups:
+  - name: certificate-expiry
+    interval: 1h
+    rules:
+    - alert: CertificateExpiryWarning
+      expr: cert_manager_certificate_expiration_timestamp_seconds - time() < 7 * 24 * 60 * 60
+      for: 1h
+      labels:
+        severity: warning
+        service: cert-manager
+      annotations:
+        summary: "Certificate expiring soon"
+        description: "Certificate {{ $labels.name }} in namespace {{ $labels.namespace }} expires in less than 7 days"
+
+    - alert: CertificateExpiryCritical
+      expr: cert_manager_certificate_expiration_timestamp_seconds - time() < 24 * 60 * 60
+      for: 15m
+      labels:
+        severity: critical
+        service: cert-manager
+      annotations:
+        summary: "Certificate expiring very soon"
+        description: "Certificate {{ $labels.name }} in namespace {{ $labels.namespace }} expires in less than 24 hours"
+
+    - alert: CertificateRenewalFailed
+      expr: increase(cert_manager_certificate_renewal_failures_total[1h]) > 0
+      for: 15m
+      labels:
+        severity: critical
+        service: cert-manager
+      annotations:
+        summary: "Certificate renewal failed"
+        description: "Certificate {{ $labels.name }} in namespace {{ $labels.namespace }} failed to renew"
+
+    - alert: CertificateNotReady
+      expr: cert_manager_certificate_ready_status == 0
+      for: 30m
+      labels:
+        severity: warning
+        service: cert-manager
+      annotations:
+        summary: "Certificate not ready"
+        description: "Certificate {{ $labels.name }} in namespace {{ $labels.namespace }} is not ready"
+---
+# ServiceMonitor for cert-manager metrics
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cert-manager-metrics
+  namespace: cert-manager
+  labels:
+    app: cert-manager
+    component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cert-manager
+      app.kubernetes.io/component: controller
+  endpoints:
+  - port: tcp-prometheus-servicemonitor
+    interval: 60s
+    path: /metrics
+---
+# Certificate renewal job (backup mechanism)
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: certificate-renewal-check
+  namespace: cert-manager
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: cert-manager-renewal
+          containers:
+          - name: certificate-checker
+            image: bitnami/kubectl:latest
+            command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              echo "Checking certificate renewal status..."
+              
+              # Check all certificates across namespaces
+              kubectl get certificates --all-namespaces -o json | jq -r '
+                .items[] | 
+                select(.status.renewalTime != null) |
+                select((.status.renewalTime | strptime("%Y-%m-%dT%H:%M:%SZ") | mktime) < (now + 86400)) |
+                "\(.metadata.namespace)/\(.metadata.name) expires soon"
+              '
+              
+              # Check for failed renewals
+              kubectl get certificaterequests --all-namespaces -o json | jq -r '
+                .items[] |
+                select(.status.conditions[]? | select(.type == "Ready" and .status == "False")) |
+                "\(.metadata.namespace)/\(.metadata.name) renewal failed: \(.status.conditions[] | select(.type == "Ready").message)"
+              '
+              
+              echo "Certificate check completed"
+            resources:
+              requests:
+                cpu: 10m
+                memory: 32Mi
+              limits:
+                cpu: 100m
+                memory: 128Mi
+          restartPolicy: OnFailure
+          nodeSelector:
+            kubernetes.io/os: linux
+---
+# ServiceAccount for certificate renewal job
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cert-manager-renewal
+  namespace: cert-manager
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cert-manager-renewal
+rules:
+- apiGroups: ["cert-manager.io"]
+  resources: ["certificates", "certificaterequests"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cert-manager-renewal
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cert-manager-renewal
+subjects:
+- kind: ServiceAccount
+  name: cert-manager-renewal
+  namespace: cert-manager

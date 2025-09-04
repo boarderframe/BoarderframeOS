@@ -1,0 +1,602 @@
+name: Production Deployment Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.gitignore'
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      skip_tests:
+        description: 'Skip test execution'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  DOCKER_REGISTRY: ghcr.io
+  DOCKER_IMAGE_PREFIX: ${{ github.repository }}
+  AWS_REGION: us-west-2
+  TERRAFORM_VERSION: 1.6.0
+  KUBECTL_VERSION: 1.28.0
+  HELM_VERSION: 3.13.0
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+  id-token: write
+
+jobs:
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      critical-vulnerabilities: ${{ steps.trivy-scan.outputs.critical }}
+      high-vulnerabilities: ${{ steps.trivy-scan.outputs.high }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Trivy vulnerability scanner
+        id: trivy-scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          exit-code: '0'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python, javascript
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+      - name: OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'mcp-ui'
+          path: '.'
+          format: 'ALL'
+          args: >
+            --enableRetired
+            --enableExperimental
+            --failOnCVSS 7
+
+      - name: Upload dependency check results
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: reports/
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: ${{ !inputs.skip_tests }}
+    strategy:
+      matrix:
+        python-version: [3.11, 3.12]
+        node-version: [18, 20]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Install Node.js dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run Python unit tests
+        run: |
+          python -m pytest tests/unit/ \
+            --cov=src \
+            --cov-report=xml \
+            --cov-report=html \
+            --junitxml=test-results/python-unit.xml \
+            --verbose
+
+      - name: Run frontend unit tests
+        working-directory: frontend
+        run: |
+          npm run test:unit -- --coverage --reporter=junit --outputFile=../test-results/frontend-unit.xml
+
+      - name: Run linting
+        run: |
+          python -m flake8 src/ tests/
+          python -m black --check src/ tests/
+          python -m isort --check-only src/ tests/
+          python -m mypy src/
+
+      - name: Run frontend linting
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run type-check
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.python-version }}-${{ matrix.node-version }}
+          path: test-results/
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: ${{ !inputs.skip_tests }}
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run database migrations
+        env:
+          DATABASE_URL: postgresql://postgres:testpass@localhost:5432/testdb
+        run: |
+          python -m alembic upgrade head
+
+      - name: Run integration tests
+        env:
+          DATABASE_URL: postgresql://postgres:testpass@localhost:5432/testdb
+          REDIS_URL: redis://localhost:6379/0
+          FASTAPI_ENV: testing
+        run: |
+          python -m pytest tests/integration/ \
+            --junitxml=test-results/integration.xml \
+            --verbose
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results
+          path: test-results/
+
+  build-images:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [security-scan, unit-tests]
+    if: ${{ needs.security-scan.outputs.critical-vulnerabilities == '0' }}
+    outputs:
+      backend-image: ${{ steps.build-backend.outputs.image }}
+      frontend-image: ${{ steps.build-frontend.outputs.image }}
+      image-digest: ${{ steps.build-backend.outputs.digest }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for backend
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}/backend
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push backend image
+        id: build-backend
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+
+      - name: Extract metadata for frontend
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}/frontend
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push frontend image
+        id: build-frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Trivy vulnerability scanner on images
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ steps.build-backend.outputs.tags }}
+          format: 'sarif'
+          output: 'image-trivy-results.sarif'
+
+      - name: Upload image scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'image-trivy-results.sarif'
+
+  e2e-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: [build-images]
+    if: ${{ !inputs.skip_tests }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Playwright
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps
+
+      - name: Start test environment
+        env:
+          BACKEND_IMAGE: ${{ needs.build-images.outputs.backend-image }}
+          FRONTEND_IMAGE: ${{ needs.build-images.outputs.frontend-image }}
+        run: |
+          docker-compose -f docker/docker-compose.test.yml up -d
+          sleep 30
+
+      - name: Run E2E tests
+        working-directory: frontend
+        run: |
+          npm run test:e2e
+
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-test-results
+          path: frontend/test-results/
+
+      - name: Upload Playwright traces
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-traces
+          path: frontend/test-results/
+
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [build-images]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install performance testing tools
+        run: |
+          pip install locust
+          pip install artillery
+
+      - name: Start test environment
+        env:
+          BACKEND_IMAGE: ${{ needs.build-images.outputs.backend-image }}
+          FRONTEND_IMAGE: ${{ needs.build-images.outputs.frontend-image }}
+        run: |
+          docker-compose -f docker/docker-compose.test.yml up -d
+          sleep 30
+
+      - name: Run load tests
+        run: |
+          locust -f tests/performance/locustfile.py \
+            --host http://localhost:8000 \
+            --users 100 \
+            --spawn-rate 10 \
+            --run-time 5m \
+            --html performance-report.html \
+            --headless
+
+      - name: Upload performance test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-test-results
+          path: performance-report.html
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [integration-tests, build-images, e2e-tests]
+    if: |
+      github.event_name == 'push' && 
+      github.ref == 'refs/heads/main' ||
+      (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging')
+    environment:
+      name: staging
+      url: https://staging.mcp-ui.example.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_STAGING }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: ${{ env.KUBECTL_VERSION }}
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name mcp-ui-staging
+
+      - name: Deploy to staging
+        env:
+          BACKEND_IMAGE: ${{ needs.build-images.outputs.backend-image }}
+          FRONTEND_IMAGE: ${{ needs.build-images.outputs.frontend-image }}
+        run: |
+          helm upgrade --install mcp-ui-staging ./helm/mcp-ui \
+            --namespace mcp-ui-staging \
+            --create-namespace \
+            --set backend.image=$BACKEND_IMAGE \
+            --set frontend.image=$FRONTEND_IMAGE \
+            --set environment=staging \
+            --values helm/mcp-ui/values-staging.yaml \
+            --wait \
+            --timeout=10m
+
+      - name: Run smoke tests
+        run: |
+          kubectl wait --for=condition=ready pod -l app=mcp-manager --namespace=mcp-ui-staging --timeout=300s
+          kubectl wait --for=condition=ready pod -l app=mcp-frontend --namespace=mcp-ui-staging --timeout=300s
+          
+          # Run basic health checks
+          kubectl exec -n mcp-ui-staging deployment/mcp-manager -- curl -f http://localhost:8000/api/v1/health
+          kubectl exec -n mcp-ui-staging deployment/mcp-frontend -- curl -f http://localhost:3000/health
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [deploy-staging, performance-tests]
+    if: |
+      github.event_name == 'release' ||
+      (github.event_name == 'workflow_dispatch' && inputs.environment == 'production')
+    environment:
+      name: production
+      url: https://mcp-ui.example.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_PRODUCTION }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: ${{ env.KUBECTL_VERSION }}
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name mcp-ui-production
+
+      - name: Pre-deployment backup
+        run: |
+          # Create database backup
+          kubectl create job --from=cronjob/backup-database backup-pre-deploy-$(date +%Y%m%d%H%M%S) -n mcp-ui-production
+          
+          # Wait for backup to complete
+          kubectl wait --for=condition=complete job backup-pre-deploy-$(date +%Y%m%d%H%M%S) -n mcp-ui-production --timeout=600s
+
+      - name: Deploy to production with blue-green strategy
+        env:
+          BACKEND_IMAGE: ${{ needs.build-images.outputs.backend-image }}
+          FRONTEND_IMAGE: ${{ needs.build-images.outputs.frontend-image }}
+        run: |
+          # Deploy to green environment
+          helm upgrade --install mcp-ui-green ./helm/mcp-ui \
+            --namespace mcp-ui-production \
+            --set backend.image=$BACKEND_IMAGE \
+            --set frontend.image=$FRONTEND_IMAGE \
+            --set environment=production \
+            --set deployment.strategy=green \
+            --values helm/mcp-ui/values-production.yaml \
+            --wait \
+            --timeout=15m
+
+      - name: Run production smoke tests
+        run: |
+          # Wait for pods to be ready
+          kubectl wait --for=condition=ready pod -l app=mcp-manager,version=green --namespace=mcp-ui-production --timeout=600s
+          kubectl wait --for=condition=ready pod -l app=mcp-frontend,version=green --namespace=mcp-ui-production --timeout=600s
+          
+          # Run comprehensive health checks
+          kubectl exec -n mcp-ui-production deployment/mcp-manager-green -- curl -f http://localhost:8000/api/v1/health/deep
+          kubectl exec -n mcp-ui-production deployment/mcp-frontend-green -- curl -f http://localhost:3000/health
+
+      - name: Switch traffic to green deployment
+        run: |
+          # Update service selectors to point to green deployment
+          kubectl patch service mcp-manager-service -n mcp-ui-production -p '{"spec":{"selector":{"version":"green"}}}'
+          kubectl patch service mcp-frontend-service -n mcp-ui-production -p '{"spec":{"selector":{"version":"green"}}}'
+          
+          # Wait for traffic switch
+          sleep 30
+
+      - name: Validate production deployment
+        run: |
+          # Test external endpoints
+          curl -f https://mcp-ui.example.com/health
+          curl -f https://api.mcp-ui.example.com/api/v1/health
+
+      - name: Clean up blue deployment
+        run: |
+          # Remove blue deployment after successful green deployment
+          helm uninstall mcp-ui-blue --namespace mcp-ui-production || true
+
+  notify:
+    name: Notification
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [security-scan, unit-tests, integration-tests, build-images, e2e-tests, deploy-staging, deploy-production]
+    steps:
+      - name: Notify Slack on success
+        if: ${{ needs.deploy-production.result == 'success' || needs.deploy-staging.result == 'success' }}
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#deployments'
+          text: 'Deployment completed successfully! 🚀'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify Slack on failure
+        if: ${{ contains(needs.*.result, 'failure') }}
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#deployments'
+          text: 'Deployment failed! ❌ Please check the logs.'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SvelteKit Debug Test</title>
+</head>
+<body>
+    <div id="app">Loading...</div>
+    <div id="debug-log" style="background: #f0f0f0; padding: 20px; margin: 20px; font-family: monospace;"></div>
+    
+    <script>
+        const log = (msg, error = false) => {
+            const debugLog = document.getElementById('debug-log');
+            const entry = document.createElement('div');
+            entry.style.color = error ? 'red' : 'green';
+            entry.textContent = `[${new Date().toISOString()}] ${msg}`;
+            debugLog.appendChild(entry);
+            console.log(msg);
+        };
+        
+        window.addEventListener('error', (e) => {
+            log(`ERROR: ${e.message} at ${e.filename}:${e.lineno}:${e.colno}`, true);
+        });
+        
+        window.addEventListener('unhandledrejection', (e) => {
+            log(`UNHANDLED REJECTION: ${e.reason}`, true);
+        });
+        
+        (async () => {
+            try {
+                log('Starting SvelteKit initialization test...');
+                
+                // Test 1: Check if we can fetch the modules
+                log('Fetching entry.js...');
+                const entryResp = await fetch('http://localhost:5173/node_modules/@sveltejs/kit/src/runtime/client/entry.js');
+                if (!entryResp.ok) throw new Error(`Failed to fetch entry.js: ${entryResp.status}`);
+                log(`entry.js fetched successfully (${entryResp.status})`);
+                
+                log('Fetching app.js...');
+                const appResp = await fetch('http://localhost:5173/@fs/Users/cosburn/open_webui/open-webui/.svelte-kit/generated/client/app.js');
+                if (!appResp.ok) throw new Error(`Failed to fetch app.js: ${appResp.status}`);
+                log(`app.js fetched successfully (${appResp.status})`);
+                
+                // Test 2: Try to import the modules
+                log('Importing entry module...');
+                const kit = await import('http://localhost:5173/node_modules/@sveltejs/kit/src/runtime/client/entry.js');
+                log(`Entry module imported. Methods available: ${Object.keys(kit).join(', ')}`);
+                
+                log('Importing app module...');
+                const app = await import('http://localhost:5173/@fs/Users/cosburn/open_webui/open-webui/.svelte-kit/generated/client/app.js');
+                log(`App module imported. Properties: ${Object.keys(app).join(', ')}`);
+                
+                // Test 3: Try to start SvelteKit
+                log('Attempting to start SvelteKit...');
+                const element = document.getElementById('app');
+                
+                if (kit.start && app) {
+                    await kit.start(app, element);
+                    log('SvelteKit started successfully!');
+                } else {
+                    log('kit.start or app not available', true);
+                }
+                
+            } catch (error) {
+                log(`Fatal error: ${error.message}\n${error.stack}`, true);
+            }
+        })();
+    </script>
+</body>
+</html>

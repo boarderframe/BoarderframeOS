@@ -1,0 +1,697 @@
+/* MCP-UI Protocol Responsive Layout System */
+
+/* ================================================
+   Base Reset and Variables
+   ================================================ */
+:root {
+  /* Breakpoints */
+  --breakpoint-xs: 320px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+  
+  /* Container Widths */
+  --container-xs: 100%;
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+  
+  /* Grid System */
+  --grid-columns: 12;
+  --grid-gap-xs: 12px;
+  --grid-gap-sm: 16px;
+  --grid-gap-md: 20px;
+  --grid-gap-lg: 24px;
+  --grid-gap-xl: 32px;
+  
+  /* Spacing Scale */
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  
+  /* Typography Scale */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  
+  /* Animation */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ================================================
+   Base Container
+   ================================================ */
+.mcp-container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .mcp-container {
+    max-width: var(--container-sm);
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+}
+
+@media (min-width: 768px) {
+  .mcp-container {
+    max-width: var(--container-md);
+  }
+}
+
+@media (min-width: 1024px) {
+  .mcp-container {
+    max-width: var(--container-lg);
+    padding-left: var(--space-8);
+    padding-right: var(--space-8);
+  }
+}
+
+@media (min-width: 1280px) {
+  .mcp-container {
+    max-width: var(--container-xl);
+  }
+}
+
+@media (min-width: 1536px) {
+  .mcp-container {
+    max-width: var(--container-2xl);
+  }
+}
+
+/* Fluid Container */
+.mcp-container-fluid {
+  width: 100%;
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+}
+
+/* ================================================
+   Grid System
+   ================================================ */
+.mcp-grid {
+  display: grid;
+  gap: var(--grid-gap-md);
+}
+
+/* Auto-fit Grid */
+.mcp-grid-auto {
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+/* Column Spans */
+.mcp-col-1 { grid-column: span 1; }
+.mcp-col-2 { grid-column: span 2; }
+.mcp-col-3 { grid-column: span 3; }
+.mcp-col-4 { grid-column: span 4; }
+.mcp-col-5 { grid-column: span 5; }
+.mcp-col-6 { grid-column: span 6; }
+.mcp-col-7 { grid-column: span 7; }
+.mcp-col-8 { grid-column: span 8; }
+.mcp-col-9 { grid-column: span 9; }
+.mcp-col-10 { grid-column: span 10; }
+.mcp-col-11 { grid-column: span 11; }
+.mcp-col-12 { grid-column: span 12; }
+
+/* Responsive Grid Columns */
+@media (min-width: 640px) {
+  .mcp-sm-col-1 { grid-column: span 1; }
+  .mcp-sm-col-2 { grid-column: span 2; }
+  .mcp-sm-col-3 { grid-column: span 3; }
+  .mcp-sm-col-4 { grid-column: span 4; }
+  .mcp-sm-col-5 { grid-column: span 5; }
+  .mcp-sm-col-6 { grid-column: span 6; }
+  .mcp-sm-col-7 { grid-column: span 7; }
+  .mcp-sm-col-8 { grid-column: span 8; }
+  .mcp-sm-col-9 { grid-column: span 9; }
+  .mcp-sm-col-10 { grid-column: span 10; }
+  .mcp-sm-col-11 { grid-column: span 11; }
+  .mcp-sm-col-12 { grid-column: span 12; }
+}
+
+@media (min-width: 768px) {
+  .mcp-md-col-1 { grid-column: span 1; }
+  .mcp-md-col-2 { grid-column: span 2; }
+  .mcp-md-col-3 { grid-column: span 3; }
+  .mcp-md-col-4 { grid-column: span 4; }
+  .mcp-md-col-5 { grid-column: span 5; }
+  .mcp-md-col-6 { grid-column: span 6; }
+  .mcp-md-col-7 { grid-column: span 7; }
+  .mcp-md-col-8 { grid-column: span 8; }
+  .mcp-md-col-9 { grid-column: span 9; }
+  .mcp-md-col-10 { grid-column: span 10; }
+  .mcp-md-col-11 { grid-column: span 11; }
+  .mcp-md-col-12 { grid-column: span 12; }
+}
+
+@media (min-width: 1024px) {
+  .mcp-lg-col-1 { grid-column: span 1; }
+  .mcp-lg-col-2 { grid-column: span 2; }
+  .mcp-lg-col-3 { grid-column: span 3; }
+  .mcp-lg-col-4 { grid-column: span 4; }
+  .mcp-lg-col-5 { grid-column: span 5; }
+  .mcp-lg-col-6 { grid-column: span 6; }
+  .mcp-lg-col-7 { grid-column: span 7; }
+  .mcp-lg-col-8 { grid-column: span 8; }
+  .mcp-lg-col-9 { grid-column: span 9; }
+  .mcp-lg-col-10 { grid-column: span 10; }
+  .mcp-lg-col-11 { grid-column: span 11; }
+  .mcp-lg-col-12 { grid-column: span 12; }
+}
+
+/* ================================================
+   Flexbox Utilities
+   ================================================ */
+.mcp-flex {
+  display: flex;
+}
+
+.mcp-flex-wrap {
+  flex-wrap: wrap;
+}
+
+.mcp-flex-col {
+  flex-direction: column;
+}
+
+.mcp-flex-row {
+  flex-direction: row;
+}
+
+.mcp-items-start {
+  align-items: flex-start;
+}
+
+.mcp-items-center {
+  align-items: center;
+}
+
+.mcp-items-end {
+  align-items: flex-end;
+}
+
+.mcp-justify-start {
+  justify-content: flex-start;
+}
+
+.mcp-justify-center {
+  justify-content: center;
+}
+
+.mcp-justify-end {
+  justify-content: flex-end;
+}
+
+.mcp-justify-between {
+  justify-content: space-between;
+}
+
+.mcp-justify-around {
+  justify-content: space-around;
+}
+
+.mcp-flex-1 {
+  flex: 1 1 0%;
+}
+
+.mcp-flex-auto {
+  flex: 1 1 auto;
+}
+
+.mcp-flex-none {
+  flex: none;
+}
+
+/* ================================================
+   Spacing Utilities
+   ================================================ */
+/* Padding */
+.mcp-p-0 { padding: var(--space-0); }
+.mcp-p-1 { padding: var(--space-1); }
+.mcp-p-2 { padding: var(--space-2); }
+.mcp-p-3 { padding: var(--space-3); }
+.mcp-p-4 { padding: var(--space-4); }
+.mcp-p-5 { padding: var(--space-5); }
+.mcp-p-6 { padding: var(--space-6); }
+.mcp-p-8 { padding: var(--space-8); }
+
+/* Margin */
+.mcp-m-0 { margin: var(--space-0); }
+.mcp-m-1 { margin: var(--space-1); }
+.mcp-m-2 { margin: var(--space-2); }
+.mcp-m-3 { margin: var(--space-3); }
+.mcp-m-4 { margin: var(--space-4); }
+.mcp-m-5 { margin: var(--space-5); }
+.mcp-m-6 { margin: var(--space-6); }
+.mcp-m-8 { margin: var(--space-8); }
+
+/* Gap */
+.mcp-gap-1 { gap: var(--space-1); }
+.mcp-gap-2 { gap: var(--space-2); }
+.mcp-gap-3 { gap: var(--space-3); }
+.mcp-gap-4 { gap: var(--space-4); }
+.mcp-gap-5 { gap: var(--space-5); }
+.mcp-gap-6 { gap: var(--space-6); }
+.mcp-gap-8 { gap: var(--space-8); }
+
+/* ================================================
+   Display Utilities
+   ================================================ */
+.mcp-hidden {
+  display: none;
+}
+
+.mcp-block {
+  display: block;
+}
+
+.mcp-inline-block {
+  display: inline-block;
+}
+
+.mcp-inline {
+  display: inline;
+}
+
+/* Responsive Display */
+@media (min-width: 640px) {
+  .mcp-sm-hidden { display: none; }
+  .mcp-sm-block { display: block; }
+  .mcp-sm-inline-block { display: inline-block; }
+  .mcp-sm-flex { display: flex; }
+  .mcp-sm-grid { display: grid; }
+}
+
+@media (min-width: 768px) {
+  .mcp-md-hidden { display: none; }
+  .mcp-md-block { display: block; }
+  .mcp-md-inline-block { display: inline-block; }
+  .mcp-md-flex { display: flex; }
+  .mcp-md-grid { display: grid; }
+}
+
+@media (min-width: 1024px) {
+  .mcp-lg-hidden { display: none; }
+  .mcp-lg-block { display: block; }
+  .mcp-lg-inline-block { display: inline-block; }
+  .mcp-lg-flex { display: flex; }
+  .mcp-lg-grid { display: grid; }
+}
+
+/* ================================================
+   Typography Responsive
+   ================================================ */
+.mcp-text-xs { font-size: var(--text-xs); }
+.mcp-text-sm { font-size: var(--text-sm); }
+.mcp-text-base { font-size: var(--text-base); }
+.mcp-text-lg { font-size: var(--text-lg); }
+.mcp-text-xl { font-size: var(--text-xl); }
+.mcp-text-2xl { font-size: var(--text-2xl); }
+.mcp-text-3xl { font-size: var(--text-3xl); }
+.mcp-text-4xl { font-size: var(--text-4xl); }
+.mcp-text-5xl { font-size: var(--text-5xl); }
+
+/* Responsive Text */
+@media (min-width: 640px) {
+  .mcp-sm-text-xs { font-size: var(--text-xs); }
+  .mcp-sm-text-sm { font-size: var(--text-sm); }
+  .mcp-sm-text-base { font-size: var(--text-base); }
+  .mcp-sm-text-lg { font-size: var(--text-lg); }
+  .mcp-sm-text-xl { font-size: var(--text-xl); }
+  .mcp-sm-text-2xl { font-size: var(--text-2xl); }
+  .mcp-sm-text-3xl { font-size: var(--text-3xl); }
+  .mcp-sm-text-4xl { font-size: var(--text-4xl); }
+  .mcp-sm-text-5xl { font-size: var(--text-5xl); }
+}
+
+@media (min-width: 768px) {
+  .mcp-md-text-xs { font-size: var(--text-xs); }
+  .mcp-md-text-sm { font-size: var(--text-sm); }
+  .mcp-md-text-base { font-size: var(--text-base); }
+  .mcp-md-text-lg { font-size: var(--text-lg); }
+  .mcp-md-text-xl { font-size: var(--text-xl); }
+  .mcp-md-text-2xl { font-size: var(--text-2xl); }
+  .mcp-md-text-3xl { font-size: var(--text-3xl); }
+  .mcp-md-text-4xl { font-size: var(--text-4xl); }
+  .mcp-md-text-5xl { font-size: var(--text-5xl); }
+}
+
+/* ================================================
+   Position Utilities
+   ================================================ */
+.mcp-relative {
+  position: relative;
+}
+
+.mcp-absolute {
+  position: absolute;
+}
+
+.mcp-fixed {
+  position: fixed;
+}
+
+.mcp-sticky {
+  position: sticky;
+}
+
+.mcp-top-0 { top: 0; }
+.mcp-right-0 { right: 0; }
+.mcp-bottom-0 { bottom: 0; }
+.mcp-left-0 { left: 0; }
+
+/* ================================================
+   Overflow Utilities
+   ================================================ */
+.mcp-overflow-auto {
+  overflow: auto;
+}
+
+.mcp-overflow-hidden {
+  overflow: hidden;
+}
+
+.mcp-overflow-visible {
+  overflow: visible;
+}
+
+.mcp-overflow-scroll {
+  overflow: scroll;
+}
+
+.mcp-overflow-x-auto {
+  overflow-x: auto;
+}
+
+.mcp-overflow-y-auto {
+  overflow-y: auto;
+}
+
+/* ================================================
+   Border Radius
+   ================================================ */
+.mcp-rounded-none { border-radius: 0; }
+.mcp-rounded-sm { border-radius: 0.125rem; }
+.mcp-rounded { border-radius: 0.25rem; }
+.mcp-rounded-md { border-radius: 0.375rem; }
+.mcp-rounded-lg { border-radius: 0.5rem; }
+.mcp-rounded-xl { border-radius: 0.75rem; }
+.mcp-rounded-2xl { border-radius: 1rem; }
+.mcp-rounded-3xl { border-radius: 1.5rem; }
+.mcp-rounded-full { border-radius: 9999px; }
+
+/* ================================================
+   Shadow Utilities
+   ================================================ */
+.mcp-shadow-none {
+  box-shadow: none;
+}
+
+.mcp-shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.mcp-shadow {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.mcp-shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.mcp-shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.mcp-shadow-xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.mcp-shadow-2xl {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* ================================================
+   Transition Utilities
+   ================================================ */
+.mcp-transition-none {
+  transition: none;
+}
+
+.mcp-transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: var(--transition-base);
+}
+
+.mcp-transition-colors {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: var(--transition-base);
+}
+
+.mcp-transition-opacity {
+  transition-property: opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: var(--transition-base);
+}
+
+.mcp-transition-transform {
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: var(--transition-base);
+}
+
+/* ================================================
+   Accessibility Utilities
+   ================================================ */
+.mcp-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.mcp-not-sr-only {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Focus Visible */
+.mcp-focus-visible:focus-visible {
+  outline: 2px solid var(--primary-color, #4f46e5);
+  outline-offset: 2px;
+}
+
+/* ================================================
+   Mobile-First Responsive Helpers
+   ================================================ */
+/* Hide on mobile, show on desktop */
+.mcp-mobile-hidden {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .mcp-mobile-hidden {
+    display: initial;
+  }
+}
+
+/* Show on mobile, hide on desktop */
+.mcp-desktop-hidden {
+  display: initial;
+}
+
+@media (min-width: 768px) {
+  .mcp-desktop-hidden {
+    display: none;
+  }
+}
+
+/* ================================================
+   Print Utilities
+   ================================================ */
+@media print {
+  .mcp-print-hidden {
+    display: none;
+  }
+  
+  .mcp-print-block {
+    display: block;
+  }
+  
+  .mcp-print-break-before {
+    page-break-before: always;
+  }
+  
+  .mcp-print-break-after {
+    page-break-after: always;
+  }
+  
+  .mcp-print-break-avoid {
+    page-break-inside: avoid;
+  }
+}
+
+/* ================================================
+   Animation Classes
+   ================================================ */
+@keyframes mcp-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes mcp-slide-in-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes mcp-slide-in-down {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes mcp-scale-in {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.mcp-animate-fade-in {
+  animation: mcp-fade-in var(--transition-base) ease-out;
+}
+
+.mcp-animate-slide-up {
+  animation: mcp-slide-in-up var(--transition-base) ease-out;
+}
+
+.mcp-animate-slide-down {
+  animation: mcp-slide-in-down var(--transition-base) ease-out;
+}
+
+.mcp-animate-scale {
+  animation: mcp-scale-in var(--transition-base) ease-out;
+}
+
+/* ================================================
+   Component-Specific Responsive Patterns
+   ================================================ */
+/* Card Stack on Mobile, Grid on Desktop */
+.mcp-card-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .mcp-card-stack {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-6);
+  }
+}
+
+/* Sidebar Layout */
+.mcp-sidebar-layout {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 1024px) {
+  .mcp-sidebar-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: var(--space-6);
+  }
+}
+
+/* Modal Responsive Sizing */
+.mcp-modal {
+  width: 90%;
+  max-width: 500px;
+  margin: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .mcp-modal {
+    width: auto;
+    margin: var(--space-8);
+  }
+}
+
+.mcp-modal-lg {
+  max-width: 800px;
+}
+
+.mcp-modal-xl {
+  max-width: 1200px;
+}
+
+/* ================================================
+   Z-Index Scale
+   ================================================ */
+.mcp-z-0 { z-index: 0; }
+.mcp-z-10 { z-index: 10; }
+.mcp-z-20 { z-index: 20; }
+.mcp-z-30 { z-index: 30; }
+.mcp-z-40 { z-index: 40; }
+.mcp-z-50 { z-index: 50; }
+.mcp-z-auto { z-index: auto; }

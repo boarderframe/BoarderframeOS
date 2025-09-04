@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Coupons - Browse & Clip</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #ec4899;
+            --primary-dark: #db2777;
+            --secondary: #f97316;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .coupons-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            margin-bottom: 32px;
+        }
+        
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--gray-900);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .stats-bar {
+            display: flex;
+            gap: 32px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+        
+        /* Search and Filter Bar */
+        .filter-bar {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .search-group {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 48px;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+            font-size: 1.2rem;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .filter-select {
+            padding: 12px 36px 12px 16px;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            background: white;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        /* Category Pills */
+        .category-pills {
+            display: flex;
+            gap: 12px;
+            margin: 24px 0;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+        
+        .category-pill {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid var(--gray-200);
+            border-radius: 24px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .category-pill:hover {
+            background: var(--gray-50);
+            border-color: var(--primary);
+        }
+        
+        .category-pill.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .pill-count {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+        
+        .category-pill.active .pill-count {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Coupons Grid */
+        .coupons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .coupon-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            border: 3px solid transparent;
+        }
+        
+        .coupon-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(236, 72, 153, 0.2);
+            border-color: var(--primary);
+        }
+        
+        .coupon-card.clipped {
+            border-color: var(--success);
+        }
+        
+        .coupon-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .coupon-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 255, 255, 0.1) 10px,
+                rgba(255, 255, 255, 0.1) 20px
+            );
+            animation: shimmer 3s linear infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        .coupon-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .coupon-type {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            margin-top: 4px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .coupon-body {
+            padding: 20px;
+        }
+        
+        .coupon-brand {
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .coupon-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+        
+        .coupon-description {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+        
+        .coupon-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 16px;
+            border-top: 1px solid var(--gray-100);
+        }
+        
+        .expiry-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--gray-600);
+            font-size: 0.85rem;
+        }
+        
+        .expiry-urgent {
+            color: var(--danger);
+            font-weight: 600;
+        }
+        
+        .clip-btn {
+            padding: 10px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .clip-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+        
+        .clip-btn.clipped {
+            background: var(--success);
+        }
+        
+        .clip-btn.clipped::after {
+            content: '✓';
+            margin-left: 6px;
+        }
+        
+        /* Clipped Badge */
+        .clipped-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--success);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: none;
+            align-items: center;
+            gap: 4px;
+            z-index: 10;
+        }
+        
+        .coupon-card.clipped .clipped-badge {
+            display: flex;
+        }
+        
+        /* Categories Icon Map */
+        .category-icon {
+            font-size: 1.2rem;
+        }
+        
+        /* Load More Button */
+        .load-more {
+            text-align: center;
+            margin: 32px 0;
+        }
+        
+        .load-more-btn {
+            padding: 14px 48px;
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .load-more-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(236, 72, 153, 0.3);
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+        }
+        
+        .empty-title {
+            font-size: 1.5rem;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+        }
+        
+        .empty-message {
+            color: var(--gray-600);
+        }
+        
+        /* Notification Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--gray-900);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.success {
+            background: var(--success);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .stats-bar {
+                gap: 16px;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .filter-bar {
+                flex-direction: column;
+            }
+            
+            .search-group {
+                min-width: 100%;
+            }
+            
+            .coupons-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Loading State */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+        }
+        
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="coupons-container">
+        <div class="header">
+            <div class="header-top">
+                <h1>🎫 Digital Coupons</h1>
+                <div class="stats-bar">
+                    <div class="stat">
+                        <div class="stat-value" id="availableCount">45</div>
+                        <div class="stat-label">Available</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="clippedCount">12</div>
+                        <div class="stat-label">Clipped</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="savingsAmount">$89</div>
+                        <div class="stat-label">Potential Savings</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="filter-bar">
+                <div class="search-group">
+                    <span class="search-icon">🔍</span>
+                    <input 
+                        type="text" 
+                        class="search-input" 
+                        id="searchInput" 
+                        placeholder="Search coupons by product or brand..."
+                        aria-label="Search coupons"
+                    />
+                </div>
+                
+                <div class="filter-group">
+                    <select class="filter-select" id="sortSelect" onchange="sortCoupons()">
+                        <option value="newest">Newest First</option>
+                        <option value="expiring">Expiring Soon</option>
+                        <option value="value-high">Highest Value</option>
+                        <option value="value-low">Lowest Value</option>
+                        <option value="popular">Most Popular</option>
+                    </select>
+                    
+                    <select class="filter-select" id="statusSelect" onchange="filterByStatus()">
+                        <option value="all">All Coupons</option>
+                        <option value="available">Available</option>
+                        <option value="clipped">Clipped</option>
+                        <option value="expiring">Expiring Soon</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="category-pills">
+            <button class="category-pill active" onclick="filterByCategory('all')">
+                <span>🛍️</span>
+                <span>All Categories</span>
+                <span class="pill-count">45</span>
+            </button>
+            <button class="category-pill" onclick="filterByCategory('grocery')">
+                <span>🛒</span>
+                <span>Grocery</span>
+                <span class="pill-count">18</span>
+            </button>
+            <button class="category-pill" onclick="filterByCategory('dairy')">
+                <span>🥛</span>
+                <span>Dairy</span>
+                <span class="pill-count">8</span>
+            </button>
+            <button class="category-pill" onclick="filterByCategory('produce')">
+                <span>🥬</span>
+                <span>Produce</span>
+                <span class="pill-count">6</span>
+            </button>
+            <button class="category-pill" onclick="filterByCategory('meat')">
+                <span>🥩</span>
+                <span>Meat & Seafood</span>
+                <span class="pill-count">5</span>
+            </button>
+            <button class="category-pill" onclick="filterByCategory('bakery')">
+                <span>🍞</span>
+                <span>Bakery</span>
+                <span class="pill-count">4</span>
+            </button>
+            <button class="category-pill" onclick="filterByCategory('frozen')">
+                <span>🧊</span>
+                <span>Frozen</span>
+                <span class="pill-count">3</span>
+            </button>
+            <button class="category-pill" onclick="filterByCategory('beverages')">
+                <span>🥤</span>
+                <span>Beverages</span>
+                <span class="pill-count">1</span>
+            </button>
+        </div>
+        
+        <div class="coupons-grid" id="couponsGrid">
+            <!-- Coupons will be rendered here -->
+        </div>
+        
+        <div class="load-more">
+            <button class="load-more-btn" onclick="loadMoreCoupons()">
+                Load More Coupons
+            </button>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+    
+    <script>
+        // MCP-UI Protocol Bridge
+        class MCPUIBridge {
+            constructor() {
+                this.setupMessageHandling();
+                this.coupons = [];
+                this.clippedCoupons = new Set();
+                this.currentCategory = 'all';
+                this.currentSort = 'newest';
+            }
+            
+            setupMessageHandling() {
+                window.addEventListener('message', (event) => {
+                    this.handleHostMessage(event.data);
+                });
+                
+                // Send ready signal
+                this.sendToHost({
+                    type: 'mcp-ui:ready',
+                    component: 'digital-coupons',
+                    timestamp: new Date().toISOString()
+                });
+            }
+            
+            sendToHost(message) {
+                if (window.parent !== window) {
+                    window.parent.postMessage(message, '*');
+                }
+            }
+            
+            handleHostMessage(message) {
+                switch(message.type) {
+                    case 'mcp-ui:coupons-update':
+                        this.updateCoupons(message.data.coupons);
+                        break;
+                    case 'mcp-ui:clip-response':
+                        this.handleClipResponse(message.data);
+                        break;
+                }
+            }
+            
+            sendAction(actionName, payload) {
+                this.sendToHost({
+                    type: 'mcp-ui:action',
+                    action: actionName,
+                    payload: payload,
+                    timestamp: new Date().toISOString()
+                });
+            }
+            
+            updateCoupons(coupons) {
+                this.coupons = coupons || mockCoupons;
+                renderCoupons();
+                updateStats();
+            }
+            
+            handleClipResponse(data) {
+                if (data.success) {
+                    this.clippedCoupons.add(data.couponId);
+                    updateCouponCard(data.couponId, true);
+                    showToast(`Coupon clipped! Saved ${data.value}`, 'success');
+                    updateStats();
+                }
+            }
+        }
+        
+        // Initialize MCP bridge
+        const mcpBridge = new MCPUIBridge();
+        
+        // Mock coupon data
+        const mockCoupons = [
+            {
+                id: 'CPN001',
+                brand: 'Organic Valley',
+                title: 'Save on Organic Milk',
+                description: 'Valid on any Organic Valley milk product',
+                value: '$2.00',
+                type: 'OFF',
+                category: 'dairy',
+                expiryDate: '2024-02-15',
+                daysLeft: 5,
+                isClipped: false,
+                popularity: 95
+            },
+            {
+                id: 'CPN002',
+                brand: 'Nature\'s Own',
+                title: '20% Off Whole Wheat Bread',
+                description: 'Applies to all Nature\'s Own whole wheat varieties',
+                value: '20%',
+                type: 'OFF',
+                category: 'bakery',
+                expiryDate: '2024-02-28',
+                daysLeft: 18,
+                isClipped: true,
+                popularity: 88
+            },
+            {
+                id: 'CPN003',
+                brand: 'Fresh Farms',
+                title: 'Buy 2 Get 1 Free',
+                description: 'On all Fresh Farms salad mixes',
+                value: 'B2G1',
+                type: 'FREE',
+                category: 'produce',
+                expiryDate: '2024-02-20',
+                daysLeft: 10,
+                isClipped: false,
+                popularity: 92
+            },
+            {
+                id: 'CPN004',
+                brand: 'Premium Meats',
+                title: '$5 Off Premium Steaks',
+                description: 'When you spend $20 or more on Premium Meats',
+                value: '$5.00',
+                type: 'OFF',
+                category: 'meat',
+                expiryDate: '2024-02-12',
+                daysLeft: 2,
+                isClipped: false,
+                popularity: 78
+            },
+            {
+                id: 'CPN005',
+                brand: 'Frozen Delights',
+                title: '30% Off Ice Cream',
+                description: 'All Frozen Delights ice cream pints',
+                value: '30%',
+                type: 'OFF',
+                category: 'frozen',
+                expiryDate: '2024-03-01',
+                daysLeft: 20,
+                isClipped: true,
+                popularity: 96
+            },
+            {
+                id: 'CPN006',
+                brand: 'Fresh Juice Co',
+                title: 'Buy One Get One 50% Off',
+                description: 'On all Fresh Juice Co products',
+                value: 'BOGO 50%',
+                type: 'OFF',
+                category: 'beverages',
+                expiryDate: '2024-02-25',
+                daysLeft: 15,
+                isClipped: false,
+                popularity: 85
+            }
+        ];
+        
+        // Initialize with mock data
+        mcpBridge.updateCoupons(mockCoupons);
+        
+        function renderCoupons() {
+            const grid = document.getElementById('couponsGrid');
+            const filteredCoupons = filterCoupons();
+            
+            if (filteredCoupons.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-icon">🎫</div>
+                        <h2 class="empty-title">No coupons found</h2>
+                        <p class="empty-message">Try adjusting your filters or check back later for new offers!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = filteredCoupons.map(coupon => {
+                const isClipped = mcpBridge.clippedCoupons.has(coupon.id) || coupon.isClipped;
+                const isExpiringSoon = coupon.daysLeft <= 3;
+                
+                return `
+                    <div class="coupon-card ${isClipped ? 'clipped' : ''}" data-id="${coupon.id}">
+                        <div class="clipped-badge">
+                            ✓ Clipped
+                        </div>
+                        <div class="coupon-header">
+                            <div class="coupon-value">${coupon.value}</div>
+                            <div class="coupon-type">${coupon.type}</div>
+                        </div>
+                        <div class="coupon-body">
+                            <div class="coupon-brand">${coupon.brand}</div>
+                            <div class="coupon-title">${coupon.title}</div>
+                            <div class="coupon-description">${coupon.description}</div>
+                            <div class="coupon-meta">
+                                <div class="expiry-info ${isExpiringSoon ? 'expiry-urgent' : ''}">
+                                    ⏰ ${coupon.daysLeft} days left
+                                </div>
+                                <button 
+                                    class="clip-btn ${isClipped ? 'clipped' : ''}" 
+                                    onclick="clipCoupon('${coupon.id}', '${coupon.value}')"
+                                    ${isClipped ? 'disabled' : ''}
+                                >
+                                    ${isClipped ? 'Clipped' : 'Clip Coupon'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function filterCoupons() {
+            let filtered = [...mcpBridge.coupons];
+            
+            // Filter by category
+            if (mcpBridge.currentCategory !== 'all') {
+                filtered = filtered.filter(c => c.category === mcpBridge.currentCategory);
+            }
+            
+            // Filter by search
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm) {
+                filtered = filtered.filter(c => 
+                    c.title.toLowerCase().includes(searchTerm) ||
+                    c.brand.toLowerCase().includes(searchTerm) ||
+                    c.description.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // Filter by status
+            const status = document.getElementById('statusSelect').value;
+            if (status === 'clipped') {
+                filtered = filtered.filter(c => mcpBridge.clippedCoupons.has(c.id) || c.isClipped);
+            } else if (status === 'available') {
+                filtered = filtered.filter(c => !mcpBridge.clippedCoupons.has(c.id) && !c.isClipped);
+            } else if (status === 'expiring') {
+                filtered = filtered.filter(c => c.daysLeft <= 7);
+            }
+            
+            // Sort
+            filtered.sort((a, b) => {
+                switch(mcpBridge.currentSort) {
+                    case 'expiring':
+                        return a.daysLeft - b.daysLeft;
+                    case 'value-high':
+                        return parseFloat(b.value.replace(/[^0-9.-]+/g, '')) - parseFloat(a.value.replace(/[^0-9.-]+/g, ''));
+                    case 'value-low':
+                        return parseFloat(a.value.replace(/[^0-9.-]+/g, '')) - parseFloat(b.value.replace(/[^0-9.-]+/g, ''));
+                    case 'popular':
+                        return b.popularity - a.popularity;
+                    default: // newest
+                        return b.daysLeft - a.daysLeft;
+                }
+            });
+            
+            return filtered;
+        }
+        
+        function clipCoupon(couponId, value) {
+            const coupon = mcpBridge.coupons.find(c => c.id === couponId);
+            if (!coupon) return;
+            
+            // Optimistic UI update
+            mcpBridge.clippedCoupons.add(couponId);
+            updateCouponCard(couponId, true);
+            
+            // Send to host
+            mcpBridge.sendAction('clip_coupon', {
+                coupon_id: couponId,
+                value: value,
+                brand: coupon.brand,
+                title: coupon.title
+            });
+            
+            // Simulate response
+            setTimeout(() => {
+                mcpBridge.handleClipResponse({
+                    success: true,
+                    couponId: couponId,
+                    value: value
+                });
+            }, 300);
+        }
+        
+        function updateCouponCard(couponId, isClipped) {
+            const card = document.querySelector(`[data-id="${couponId}"]`);
+            if (!card) return;
+            
+            if (isClipped) {
+                card.classList.add('clipped');
+                const btn = card.querySelector('.clip-btn');
+                btn.classList.add('clipped');
+                btn.textContent = 'Clipped';
+                btn.disabled = true;
+            }
+        }
+        
+        function filterByCategory(category) {
+            mcpBridge.currentCategory = category;
+            
+            // Update UI
+            document.querySelectorAll('.category-pill').forEach(pill => {
+                pill.classList.remove('active');
+            });
+            event.target.closest('.category-pill').classList.add('active');
+            
+            renderCoupons();
+            
+            mcpBridge.sendAction('filter_category', { category });
+        }
+        
+        function sortCoupons() {
+            mcpBridge.currentSort = document.getElementById('sortSelect').value;
+            renderCoupons();
+            
+            mcpBridge.sendAction('sort_coupons', { sort: mcpBridge.currentSort });
+        }
+        
+        function filterByStatus() {
+            renderCoupons();
+        }
+        
+        function updateStats() {
+            const available = mcpBridge.coupons.filter(c => 
+                !mcpBridge.clippedCoupons.has(c.id) && !c.isClipped
+            ).length;
+            const clipped = mcpBridge.clippedCoupons.size;
+            
+            let totalSavings = 0;
+            mcpBridge.coupons.forEach(coupon => {
+                if (mcpBridge.clippedCoupons.has(coupon.id) || coupon.isClipped) {
+                    const value = parseFloat(coupon.value.replace(/[^0-9.-]+/g, '')) || 0;
+                    totalSavings += value;
+                }
+            });
+            
+            document.getElementById('availableCount').textContent = available;
+            document.getElementById('clippedCount').textContent = clipped;
+            document.getElementById('savingsAmount').textContent = `$${totalSavings.toFixed(0)}`;
+        }
+        
+        function loadMoreCoupons() {
+            mcpBridge.sendAction('load_more', {});
+            showToast('Loading more coupons...');
+        }
+        
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            if (e.target.value.length > 0 || e.target.value === '') {
+                renderCoupons();
+                mcpBridge.sendAction('search_coupons', { query: e.target.value });
+            }
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '/' && !e.target.matches('input')) {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+            }
+        });
+        
+        console.log('🎫 Digital Coupons component initialized with MCP-UI Protocol');
+    </script>
+</body>
+</html>

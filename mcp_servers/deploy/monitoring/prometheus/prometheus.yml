@@ -1,0 +1,307 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'mcp-ui-production'
+    environment: 'production'
+
+rule_files:
+  - "alerts/*.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Node Exporter for system metrics
+  - job_name: 'node-exporter'
+    kubernetes_sd_configs:
+      - role: node
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '(.*):10250'
+        target_label: __address__
+        replacement: '${1}:9100'
+      - source_labels: [__meta_kubernetes_node_label_kubernetes_io_hostname]
+        target_label: instance
+    scrape_interval: 30s
+
+  # Kubernetes API Server
+  - job_name: 'kubernetes-apiserver'
+    kubernetes_sd_configs:
+      - role: endpoints
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: default;kubernetes;https
+
+  # Kubernetes Nodes
+  - job_name: 'kubernetes-nodes'
+    kubernetes_sd_configs:
+      - role: node
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+
+  # Kubernetes Pods
+  - job_name: 'kubernetes-pods'
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+
+  # MCP Manager Application
+  - job_name: 'mcp-manager'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - mcp-ui
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: mcp-manager
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+    scrape_interval: 15s
+    metrics_path: /metrics
+
+  # Frontend Application
+  - job_name: 'mcp-frontend'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - mcp-ui
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: mcp-frontend
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+    scrape_interval: 30s
+
+  # PostgreSQL Exporter
+  - job_name: 'postgres-exporter'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - mcp-ui
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: postgres-exporter
+    scrape_interval: 30s
+
+  # Redis Exporter
+  - job_name: 'redis-exporter'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - mcp-ui
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: redis-exporter
+    scrape_interval: 30s
+
+  # Nginx Ingress Controller
+  - job_name: 'nginx-ingress'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - ingress-nginx
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+        action: keep
+        regex: ingress-nginx
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        target_label: __address__
+        regex: (.+)
+        replacement: $1:10254
+
+  # Cert Manager
+  - job_name: 'cert-manager'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - cert-manager
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: cert-manager
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+
+  # Blackbox Exporter for external probes
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - https://mcp-manager.com/health
+        - https://api.mcp-manager.com/api/v1/health
+        - https://monitoring.mcp-manager.com
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # Custom application metrics
+  - job_name: 'mcp-custom-metrics'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - mcp-ui
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
+        action: replace
+        target_label: __scheme__
+        regex: (https?)
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+        action: replace
+        target_label: __address__
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+
+# Recording rules for commonly used queries
+recording_rules:
+  - name: mcp_ui_aggregation_rules
+    interval: 30s
+    rules:
+      # Request rate
+      - record: mcp:http_requests:rate5m
+        expr: sum(rate(http_requests_total[5m])) by (instance, job, method, status)
+      
+      # Error rate
+      - record: mcp:http_requests:error_rate5m
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) by (instance, job) / sum(rate(http_requests_total[5m])) by (instance, job)
+      
+      # Response time percentiles
+      - record: mcp:http_request_duration:p99
+        expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, instance, job))
+      
+      - record: mcp:http_request_duration:p95
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, instance, job))
+      
+      - record: mcp:http_request_duration:p50
+        expr: histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, instance, job))
+      
+      # Database connection pool
+      - record: mcp:db_connections:usage_ratio
+        expr: db_connections_active / db_connections_max
+      
+      # Memory usage
+      - record: mcp:memory:usage_ratio
+        expr: (process_resident_memory_bytes / process_virtual_memory_max_bytes)
+      
+      # CPU usage
+      - record: mcp:cpu:usage_ratio
+        expr: rate(process_cpu_seconds_total[5m])
+
+# Remote write configuration for long-term storage
+remote_write:
+  - url: "https://prometheus-remote-write.monitoring.internal/api/v1/write"
+    basic_auth:
+      username: "prometheus"
+      password_file: "/etc/prometheus/remote-write-password"
+    queue_config:
+      max_samples_per_send: 10000
+      max_shards: 200
+      capacity: 2500
+    write_relabel_configs:
+      - source_labels: [__name__]
+        regex: "go_.*|process_.*|prometheus_.*"
+        action: drop
+
+# Storage configuration
+storage:
+  tsdb:
+    retention.time: 15d
+    retention.size: 50GB
+    wal-compression: true

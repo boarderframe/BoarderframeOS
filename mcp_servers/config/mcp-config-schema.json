@@ -1,0 +1,1017 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mcp-manager.example.com/config-schema.json",
+  "title": "MCP Server Configuration Schema",
+  "description": "JSON Schema for MCP Server Management Configuration with Security Restrictions",
+  "type": "object",
+  "required": ["version", "metadata", "security", "servers", "global_settings"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the configuration format"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["created_at", "created_by", "description", "environment"],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when config was created"
+        },
+        "created_by": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "description": "Username or system that created this config"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "description": "Human-readable description of this configuration"
+        },
+        "environment": {
+          "type": "string",
+          "enum": ["development", "testing", "staging", "production", "disaster_recovery"],
+          "description": "Target environment for this configuration"
+        },
+        "config_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Version of this specific configuration"
+        }
+      },
+      "additionalProperties": false
+    },
+    "security": {
+      "type": "object",
+      "required": ["global_policy", "access_control", "network_security", "data_protection"],
+      "properties": {
+        "global_policy": {
+          "$ref": "#/definitions/SecurityPolicy"
+        },
+        "access_control": {
+          "type": "object",
+          "required": ["default_access_level"],
+          "properties": {
+            "default_access_level": {
+              "$ref": "#/definitions/AccessLevel"
+            },
+            "allow_public_servers": {
+              "type": "boolean",
+              "default": false
+            },
+            "require_owner_approval": {
+              "type": "boolean", 
+              "default": true
+            },
+            "inherit_user_permissions": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "network_security": {
+          "type": "object",
+          "required": ["rate_limiting"],
+          "properties": {
+            "allowed_ip_ranges": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/(?:[0-9]|[1-2][0-9]|3[0-2])$"
+              },
+              "description": "CIDR blocks for allowed IP ranges"
+            },
+            "blocked_ip_ranges": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/(?:[0-9]|[1-2][0-9]|3[0-2])$"
+              },
+              "description": "CIDR blocks for blocked IP ranges"
+            },
+            "rate_limiting": {
+              "$ref": "#/definitions/RateLimiting"
+            }
+          },
+          "additionalProperties": false
+        },
+        "data_protection": {
+          "type": "object",
+          "required": ["encrypt_sensitive_config", "mask_secrets_in_logs"],
+          "properties": {
+            "encrypt_sensitive_config": {
+              "type": "boolean",
+              "default": true
+            },
+            "mask_secrets_in_logs": {
+              "type": "boolean", 
+              "default": true
+            },
+            "require_config_approval": {
+              "type": "boolean",
+              "default": true
+            },
+            "enable_config_versioning": {
+              "type": "boolean",
+              "default": true
+            },
+            "retain_config_history_days": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3650,
+              "default": 365
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "servers": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 100,
+      "items": {
+        "$ref": "#/definitions/ServerConfig"
+      },
+      "description": "Array of MCP server configurations"
+    },
+    "global_settings": {
+      "type": "object",
+      "required": ["logging", "monitoring", "performance"],
+      "properties": {
+        "logging": {
+          "$ref": "#/definitions/LoggingConfig"
+        },
+        "monitoring": {
+          "$ref": "#/definitions/MonitoringConfig"
+        },
+        "performance": {
+          "$ref": "#/definitions/PerformanceConfig"
+        },
+        "backup": {
+          "$ref": "#/definitions/BackupConfig"
+        }
+      },
+      "additionalProperties": false
+    },
+    "environments": {
+      "type": "object",
+      "patternProperties": {
+        "^(development|testing|staging|production|disaster_recovery)$": {
+          "$ref": "#/definitions/EnvironmentConfig"
+        }
+      },
+      "additionalProperties": false
+    },
+    "compliance": {
+      "$ref": "#/definitions/ComplianceConfig"
+    },
+    "secrets_management": {
+      "$ref": "#/definitions/SecretsManagementConfig"
+    }
+  },
+  "definitions": {
+    "AccessLevel": {
+      "type": "string",
+      "enum": ["NONE", "READ", "WRITE", "EXECUTE", "ADMIN"],
+      "description": "Access level enumeration"
+    },
+    "SecurityPolicy": {
+      "type": "object",
+      "required": ["require_authentication", "require_tls"],
+      "properties": {
+        "require_authentication": {
+          "type": "boolean",
+          "default": true
+        },
+        "require_tls": {
+          "type": "boolean",
+          "default": true
+        },
+        "min_tls_version": {
+          "type": "string",
+          "enum": ["1.0", "1.1", "1.2", "1.3"],
+          "default": "1.2"
+        },
+        "require_mfa": {
+          "type": "boolean",
+          "default": false
+        },
+        "session_timeout_minutes": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 1440,
+          "default": 480
+        },
+        "max_concurrent_sessions": {
+          "type": "integer", 
+          "minimum": 1,
+          "maximum": 50,
+          "default": 5
+        },
+        "require_explicit_permissions": {
+          "type": "boolean",
+          "default": true
+        },
+        "enable_audit_logging": {
+          "type": "boolean",
+          "default": true
+        },
+        "enable_intrusion_detection": {
+          "type": "boolean",
+          "default": true
+        },
+        "threat_score_threshold": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "default": 0.7
+        }
+      },
+      "additionalProperties": false
+    },
+    "RateLimiting": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "requests_per_minute": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "default": 100
+        },
+        "requests_per_hour": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000,
+          "default": 1000
+        },
+        "concurrent_connections": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 10
+        },
+        "block_on_exceed": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "ServerConfig": {
+      "type": "object",
+      "required": ["id", "name", "description", "enabled", "protocol", "command", "security"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$",
+          "minLength": 3,
+          "maxLength": 64,
+          "description": "Unique identifier for the server"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "description": "Human-readable server name"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "description": "Server description"
+        },
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "protocol": {
+          "type": "string",
+          "enum": ["stdio", "http", "https", "websocket"],
+          "default": "stdio"
+        },
+        "command": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "description": "Command to execute the server"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "maxItems": 50,
+          "description": "Command line arguments"
+        },
+        "working_directory": {
+          "type": "string",
+          "pattern": "^/[^\\x00]*$",
+          "maxLength": 500,
+          "description": "Working directory for the server process"
+        },
+        "environment": {
+          "type": "object",
+          "patternProperties": {
+            "^[A-Z][A-Z0-9_]*$": {
+              "type": "string",
+              "maxLength": 1000
+            }
+          },
+          "additionalProperties": false,
+          "description": "Environment variables"
+        },
+        "security": {
+          "$ref": "#/definitions/ServerSecurity"
+        },
+        "health_check": {
+          "$ref": "#/definitions/HealthCheck"
+        },
+        "restart_policy": {
+          "$ref": "#/definitions/RestartPolicy"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ServerSecurity": {
+      "type": "object",
+      "required": ["policy_id", "owner_id", "access_restrictions", "resource_limits", "audit_config"],
+      "properties": {
+        "policy_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "description": "Reference to security policy"
+        },
+        "owner_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "description": "Server owner identifier"
+        },
+        "access_restrictions": {
+          "type": "object",
+          "properties": {
+            "allowed_paths": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^/[^\\x00]*$",
+                "maxLength": 500
+              },
+              "maxItems": 100
+            },
+            "denied_paths": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^/[^\\x00]*$",
+                "maxLength": 500
+              },
+              "maxItems": 100
+            },
+            "readonly": {
+              "type": "boolean",
+              "default": false
+            },
+            "max_file_size_mb": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10240,
+              "default": 100
+            },
+            "allowed_extensions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^\\.[a-zA-Z0-9]+$",
+                "maxLength": 10
+              },
+              "maxItems": 50
+            },
+            "denied_extensions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^\\.[a-zA-Z0-9]+$",
+                "maxLength": 10
+              },
+              "maxItems": 50
+            },
+            "allowed_repositories": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "maxItems": 100
+            },
+            "denied_repositories": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "maxItems": 100
+            },
+            "allowed_operations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["clone", "pull", "fetch", "log", "show", "diff", "status", "push", "commit", "reset", "rebase", "merge", "SELECT", "INSERT", "UPDATE", "DELETE", "CREATE", "DROP", "ALTER", "TRUNCATE"]
+              },
+              "maxItems": 20
+            },
+            "denied_operations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["clone", "pull", "fetch", "log", "show", "diff", "status", "push", "commit", "reset", "rebase", "merge", "SELECT", "INSERT", "UPDATE", "DELETE", "CREATE", "DROP", "ALTER", "TRUNCATE"]
+              },
+              "maxItems": 20
+            },
+            "allowed_databases": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+                "maxLength": 63
+              },
+              "maxItems": 50
+            },
+            "denied_databases": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+                "maxLength": 63
+              },
+              "maxItems": 50
+            },
+            "allowed_schemas": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+                "maxLength": 63
+              },
+              "maxItems": 50
+            },
+            "denied_schemas": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+                "maxLength": 63
+              },
+              "maxItems": 50
+            },
+            "max_connections": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 5
+            },
+            "max_query_duration_seconds": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 300,
+              "default": 30
+            },
+            "max_result_rows": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000,
+              "default": 10000
+            },
+            "require_where_clause": {
+              "type": "boolean",
+              "default": true
+            },
+            "max_repo_size_mb": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10240,
+              "default": 1000
+            },
+            "require_signed_commits": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "resource_limits": {
+          "type": "object",
+          "required": ["timeout_seconds"],
+          "properties": {
+            "max_cpu_percent": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "max_memory_mb": {
+              "type": "integer",
+              "minimum": 64,
+              "maximum": 32768,
+              "default": 512
+            },
+            "max_disk_operations_per_minute": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1000
+            },
+            "max_network_bandwidth_mbps": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 10
+            },
+            "max_concurrent_queries": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 3
+            },
+            "timeout_seconds": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 300,
+              "default": 30
+            }
+          },
+          "additionalProperties": false
+        },
+        "audit_config": {
+          "type": "object",
+          "properties": {
+            "log_file_access": {
+              "type": "boolean",
+              "default": true
+            },
+            "log_file_modifications": {
+              "type": "boolean",
+              "default": true
+            },
+            "log_permission_denials": {
+              "type": "boolean",
+              "default": true
+            },
+            "log_git_operations": {
+              "type": "boolean",
+              "default": true
+            },
+            "log_repository_access": {
+              "type": "boolean",
+              "default": true
+            },
+            "log_authentication_attempts": {
+              "type": "boolean",
+              "default": true
+            },
+            "log_all_queries": {
+              "type": "boolean",
+              "default": true
+            },
+            "log_data_access": {
+              "type": "boolean",
+              "default": true
+            },
+            "log_connection_attempts": {
+              "type": "boolean",
+              "default": true
+            },
+            "mask_sensitive_data": {
+              "type": "boolean",
+              "default": true
+            },
+            "sensitive_paths": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^/[^\\x00]*$",
+                "maxLength": 500
+              },
+              "maxItems": 50
+            },
+            "sensitive_tables": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+                "maxLength": 63
+              },
+              "maxItems": 50
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "HealthCheck": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "interval_seconds": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 3600,
+          "default": 30
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60,
+          "default": 10
+        },
+        "max_failures": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "default": 3
+        },
+        "endpoint": {
+          "type": "string",
+          "pattern": "^/[^\\x00]*$",
+          "maxLength": 200,
+          "default": "/health"
+        },
+        "query": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Health check query for database servers"
+        },
+        "expected_result": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Expected result for health check query"
+        }
+      },
+      "additionalProperties": false
+    },
+    "RestartPolicy": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "max_attempts": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 3
+        },
+        "backoff_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300,
+          "default": 5
+        },
+        "on_failure_only": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "LoggingConfig": {
+      "type": "object",
+      "required": ["level", "format", "output"],
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": ["debug", "info", "warn", "error"],
+          "default": "info"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["json", "text"],
+          "default": "json"
+        },
+        "output": {
+          "type": "string",
+          "enum": ["file", "stdout", "syslog"],
+          "default": "file"
+        },
+        "file_path": {
+          "type": "string",
+          "pattern": "^/[^\\x00]*$",
+          "maxLength": 500
+        },
+        "max_file_size_mb": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 100
+        },
+        "max_files": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 10
+        },
+        "audit_log_path": {
+          "type": "string",
+          "pattern": "^/[^\\x00]*$",
+          "maxLength": 500
+        },
+        "security_log_path": {
+          "type": "string",
+          "pattern": "^/[^\\x00]*$",
+          "maxLength": 500
+        }
+      },
+      "additionalProperties": false
+    },
+    "MonitoringConfig": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "metrics_endpoint": {
+          "type": "string",
+          "pattern": "^/[^\\x00]*$",
+          "maxLength": 200,
+          "default": "/metrics"
+        },
+        "health_check_endpoint": {
+          "type": "string",
+          "pattern": "^/[^\\x00]*$",
+          "maxLength": 200,
+          "default": "/health"
+        },
+        "prometheus_enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "jaeger_enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "alert_webhook": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 500
+        },
+        "notification_channels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["email", "slack", "webhook", "sms"]
+          },
+          "maxItems": 10
+        }
+      },
+      "additionalProperties": false
+    },
+    "PerformanceConfig": {
+      "type": "object",
+      "required": ["max_servers", "max_concurrent_operations"],
+      "properties": {
+        "max_servers": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 50
+        },
+        "max_concurrent_operations": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "default": 100
+        },
+        "resource_check_interval_seconds": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 3600,
+          "default": 30
+        },
+        "cleanup_interval_hours": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 168,
+          "default": 24
+        },
+        "archive_logs_after_days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 365,
+          "default": 90
+        }
+      },
+      "additionalProperties": false
+    },
+    "BackupConfig": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "interval_hours": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 168,
+          "default": 6
+        },
+        "retention_days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 365,
+          "default": 30
+        },
+        "backup_path": {
+          "type": "string",
+          "pattern": "^/[^\\x00]*$",
+          "maxLength": 500
+        },
+        "encrypt_backups": {
+          "type": "boolean",
+          "default": true
+        },
+        "compression": {
+          "type": "string",
+          "enum": ["none", "gzip", "bzip2", "xz"],
+          "default": "gzip"
+        }
+      },
+      "additionalProperties": false
+    },
+    "EnvironmentConfig": {
+      "type": "object",
+      "properties": {
+        "security_policy_overrides": {
+          "type": "object",
+          "properties": {
+            "require_mfa": {
+              "type": "boolean"
+            },
+            "session_timeout_minutes": {
+              "type": "integer",
+              "minimum": 5,
+              "maximum": 1440
+            },
+            "enable_debug_logging": {
+              "type": "boolean"
+            },
+            "threat_score_threshold": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0
+            }
+          },
+          "additionalProperties": false
+        },
+        "resource_limits": {
+          "type": "object",
+          "properties": {
+            "max_servers": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "max_cpu_percent": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "max_memory_mb": {
+              "type": "integer",
+              "minimum": 64,
+              "maximum": 65536
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "ComplianceConfig": {
+      "type": "object",
+      "properties": {
+        "standards": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["SOC2", "ISO27001", "GDPR", "HIPAA", "PCI-DSS", "FedRAMP"]
+          },
+          "maxItems": 10
+        },
+        "audit_requirements": {
+          "type": "object",
+          "properties": {
+            "retain_logs_days": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3650,
+              "default": 2555
+            },
+            "encrypt_audit_logs": {
+              "type": "boolean",
+              "default": true
+            },
+            "require_log_integrity": {
+              "type": "boolean",
+              "default": true
+            },
+            "log_access_controls": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "data_classification": {
+          "type": "object",
+          "properties": {
+            "sensitive_data_encryption": {
+              "type": "string",
+              "enum": ["AES-128-GCM", "AES-256-GCM", "ChaCha20-Poly1305"],
+              "default": "AES-256-GCM"
+            },
+            "key_rotation_days": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 365,
+              "default": 90
+            },
+            "secure_deletion": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "SecretsManagementConfig": {
+      "type": "object",
+      "required": ["provider"],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": ["hashicorp_vault", "aws_secrets_manager", "azure_key_vault", "gcp_secret_manager", "kubernetes_secrets"],
+          "description": "Secrets management provider"
+        },
+        "vault_address": {
+          "type": "string",
+          "format": "uri",
+          "description": "Vault server address"
+        },
+        "vault_token_path": {
+          "type": "string",
+          "pattern": "^/[^\\x00]*$",
+          "maxLength": 500,
+          "description": "Path to vault authentication token"
+        },
+        "encryption_key_path": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Path to encryption key in secrets store"
+        },
+        "auto_rotation": {
+          "type": "boolean",
+          "default": true
+        },
+        "rotation_interval_days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 365,
+          "default": 90
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

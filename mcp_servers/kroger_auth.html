@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kroger Account Authentication</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .kroger-logo {
+            color: #0066cc;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid #0066cc;
+            border-radius: 5px;
+        }
+        .auth-button {
+            display: inline-block;
+            background: #0066cc;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .auth-button:hover {
+            background: #0052a3;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #b6d4dc; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .code { 
+            background: #f8f9fa; 
+            padding: 10px; 
+            border-radius: 5px; 
+            font-family: monospace; 
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="kroger-logo">🛒 Kroger MCP Authentication</div>
+        
+        <div class="step">
+            <h3>Step 1: Understand What This Does</h3>
+            <p>This will connect your personal Kroger.com account to the MCP server so you can:</p>
+            <ul>
+                <li>Add items to your actual Kroger cart</li>
+                <li>Access your loyalty card information</li>
+                <li>Use delivery services with your account</li>
+            </ul>
+            <div class="info">
+                <strong>Security:</strong> This uses Kroger's official OAuth2 system. Your password stays with Kroger - we only get permission to access your cart and profile.
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Start Authentication</h3>
+            <p>Click this button to authorize the MCP server with your Kroger account:</p>
+            <div id="auth-section">
+                <button onclick="startAuth()" class="auth-button">🔐 Connect to Kroger Account</button>
+                <div id="auth-status"></div>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: What Happens Next</h3>
+            <ol>
+                <li>You'll be redirected to Kroger.com to log in</li>
+                <li>Kroger will ask you to authorize the MCP server</li>
+                <li>You'll be redirected back here with a success message</li>
+                <li>Your authentication will be saved for cart operations</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>Step 4: Test Your Connection</h3>
+            <div id="test-section" style="display: none;">
+                <p>Once authenticated, you can test these endpoints:</p>
+                <div class="code">
+                    POST http://localhost:9004/cart<br>
+                    GET http://localhost:9004/identity/loyalty<br>
+                    PUT http://localhost:9004/cart/items
+                </div>
+                <button onclick="testConnection()" class="auth-button">🧪 Test Cart Access</button>
+                <div id="test-results"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check URL for callback code
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const error = urlParams.get('error');
+
+        if (code) {
+            // Handle successful callback
+            document.getElementById('auth-status').innerHTML = `
+                <div class="success">
+                    ✅ <strong>Authentication Successful!</strong><br>
+                    Authorization code received: ${code.substring(0, 10)}...<br>
+                    Your Kroger account is now connected to the MCP server.
+                </div>
+            `;
+            document.getElementById('test-section').style.display = 'block';
+            
+            // Clean up URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } else if (error) {
+            document.getElementById('auth-status').innerHTML = `
+                <div class="warning">
+                    ❌ <strong>Authentication Failed:</strong> ${error}<br>
+                    Please try again or check your Kroger account status.
+                </div>
+            `;
+        }
+
+        async function startAuth() {
+            try {
+                const response = await fetch('/auth/authorize?scope=profile.compact cart.basic:write');
+                const data = await response.json();
+                
+                document.getElementById('auth-status').innerHTML = `
+                    <div class="info">
+                        🔄 <strong>Redirecting to Kroger...</strong><br>
+                        You'll be taken to Kroger.com to sign in and authorize access.
+                    </div>
+                `;
+                
+                // Redirect to Kroger authorization page
+                setTimeout(() => {
+                    window.location.href = data.authorization_url;
+                }, 2000);
+                
+            } catch (error) {
+                document.getElementById('auth-status').innerHTML = `
+                    <div class="warning">
+                        ❌ <strong>Error:</strong> Could not start authentication process.<br>
+                        Make sure the MCP server is running on port 9004.
+                    </div>
+                `;
+            }
+        }
+
+        async function testConnection() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<div class="info">🧪 Testing connection...</div>';
+            
+            try {
+                // Test cart creation
+                const cartResponse = await fetch('/cart', { 
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer test-token' }
+                });
+                
+                if (cartResponse.ok) {
+                    results.innerHTML = `
+                        <div class="success">
+                            ✅ <strong>Cart Access Works!</strong><br>
+                            You can now use cart operations with your Kroger account.
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <div class="warning">
+                            ⚠️ <strong>Cart Test Inconclusive:</strong><br>
+                            Status: ${cartResponse.status}<br>
+                            This might be normal - check the MCP server logs.
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                results.innerHTML = `
+                    <div class="warning">
+                        ❌ <strong>Test Failed:</strong> ${error.message}<br>
+                        Check that the MCP server is running.
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-start if this is a fresh page load
+        if (!code && !error) {
+            document.getElementById('auth-status').innerHTML = `
+                <div class="info">
+                    <strong>Ready to authenticate!</strong><br>
+                    Click the button above to connect your Kroger account.
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Detail - Interactive View</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary: #7c3aed;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .product-detail-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Product Gallery */
+        .product-layout {
+            display: grid;
+            grid-template-columns: 500px 1fr;
+            min-height: 600px;
+        }
+        
+        .product-gallery {
+            background: var(--gray-50);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .main-image {
+            flex: 1;
+            background: white;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 400px;
+        }
+        
+        .main-image-content {
+            font-size: 8rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .main-image:hover .main-image-content {
+            transform: scale(1.1);
+        }
+        
+        .zoom-indicator {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .image-thumbnails {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+        
+        .thumbnail {
+            min-width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+            font-size: 2rem;
+        }
+        
+        .thumbnail:hover {
+            border-color: var(--gray-300);
+        }
+        
+        .thumbnail.active {
+            border-color: var(--primary);
+        }
+        
+        /* Product Info */
+        .product-info {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .product-badges {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .badge-new {
+            background: var(--info);
+            color: white;
+        }
+        
+        .badge-sale {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .badge-organic {
+            background: var(--success);
+            color: white;
+        }
+        
+        .product-brand {
+            color: var(--primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        
+        .product-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+        
+        .product-rating {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .stars {
+            display: flex;
+            gap: 2px;
+        }
+        
+        .star {
+            color: #fbbf24;
+            font-size: 1.2rem;
+        }
+        
+        .rating-text {
+            color: var(--gray-600);
+            font-size: 0.95rem;
+        }
+        
+        .product-price-section {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid var(--gray-100);
+        }
+        
+        .current-price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--success);
+        }
+        
+        .original-price {
+            font-size: 1.5rem;
+            color: var(--gray-400);
+            text-decoration: line-through;
+        }
+        
+        .discount-percent {
+            background: var(--danger);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .product-description {
+            color: var(--gray-700);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        
+        /* Product Options */
+        .product-options {
+            margin-bottom: 32px;
+        }
+        
+        .option-group {
+            margin-bottom: 20px;
+        }
+        
+        .option-label {
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 12px;
+            display: block;
+        }
+        
+        .size-options {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .size-option {
+            padding: 12px 20px;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        
+        .size-option:hover {
+            border-color: var(--primary);
+        }
+        
+        .size-option.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            background: var(--gray-100);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .qty-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+        }
+        
+        .qty-btn:hover {
+            background: var(--gray-200);
+        }
+        
+        .qty-value {
+            min-width: 60px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        /* Action Buttons */
+        .product-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+        
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            border: 2px solid var(--gray-300);
+            color: var(--gray-700);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--gray-50);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-wishlist {
+            width: 50px;
+            padding: 14px;
+        }
+        
+        /* Product Tabs */
+        .product-tabs {
+            border-top: 2px solid var(--gray-100);
+            padding-top: 32px;
+        }
+        
+        .tab-nav {
+            display: flex;
+            gap: 32px;
+            border-bottom: 2px solid var(--gray-100);
+            margin-bottom: 24px;
+        }
+        
+        .tab-button {
+            padding: 12px 0;
+            background: none;
+            border: none;
+            color: var(--gray-600);
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+        }
+        
+        .tab-button:hover {
+            color: var(--gray-900);
+        }
+        
+        .tab-button.active {
+            color: var(--primary);
+        }
+        
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Specifications Table */
+        .specs-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .specs-table tr {
+            border-bottom: 1px solid var(--gray-100);
+        }
+        
+        .specs-table td {
+            padding: 12px 0;
+        }
+        
+        .specs-table td:first-child {
+            font-weight: 600;
+            color: var(--gray-600);
+            width: 40%;
+        }
+        
+        /* Nutrition Facts */
+        .nutrition-facts {
+            background: var(--gray-50);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 400px;
+        }
+        
+        .nutrition-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 3px solid var(--gray-900);
+        }
+        
+        .nutrition-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--gray-300);
+        }
+        
+        .nutrition-row.highlight {
+            font-weight: 700;
+        }
+        
+        /* Reviews Section */
+        .reviews-summary {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+        
+        .rating-breakdown {
+            text-align: center;
+        }
+        
+        .avg-rating {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        
+        .rating-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .rating-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .rating-bar-label {
+            width: 30px;
+            font-size: 0.9rem;
+            color: var(--gray-600);
+        }
+        
+        .rating-bar-track {
+            flex: 1;
+            height: 8px;
+            background: var(--gray-200);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .rating-bar-fill {
+            height: 100%;
+            background: var(--warning);
+            border-radius: 4px;
+        }
+        
+        .rating-bar-count {
+            width: 30px;
+            text-align: right;
+            font-size: 0.9rem;
+            color: var(--gray-600);
+        }
+        
+        /* Related Products */
+        .related-products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .related-card {
+            background: var(--gray-50);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .related-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .related-image {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+        
+        .related-name {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+        
+        .related-price {
+            color: var(--success);
+            font-weight: 600;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 968px) {
+            .product-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .product-gallery {
+                padding: 24px;
+            }
+            
+            .main-image {
+                min-height: 300px;
+            }
+        }
+        
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--gray-900);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.success {
+            background: var(--success);
+        }
+    </style>
+</head>
+<body>
+    <div class="product-detail-container">
+        <div class="product-layout">
+            <!-- Product Gallery -->
+            <div class="product-gallery">
+                <div class="main-image">
+                    <div class="zoom-indicator">🔍 Hover to zoom</div>
+                    <div class="main-image-content" id="mainImage">🥛</div>
+                </div>
+                <div class="image-thumbnails">
+                    <div class="thumbnail active" onclick="changeImage('🥛')">🥛</div>
+                    <div class="thumbnail" onclick="changeImage('📦')">📦</div>
+                    <div class="thumbnail" onclick="changeImage('🏷️')">🏷️</div>
+                    <div class="thumbnail" onclick="changeImage('✅')">✅</div>
+                </div>
+            </div>
+            
+            <!-- Product Information -->
+            <div class="product-info">
+                <div class="product-badges">
+                    <span class="badge badge-new">New</span>
+                    <span class="badge badge-sale">Sale</span>
+                    <span class="badge badge-organic">Organic</span>
+                </div>
+                
+                <div class="product-brand">Organic Valley</div>
+                <h1 class="product-title">Organic Whole Milk - 1 Gallon</h1>
+                
+                <div class="product-rating">
+                    <div class="stars">
+                        <span class="star">⭐</span>
+                        <span class="star">⭐</span>
+                        <span class="star">⭐</span>
+                        <span class="star">⭐</span>
+                        <span class="star">⭐</span>
+                    </div>
+                    <span class="rating-text">4.8 out of 5 (245 reviews)</span>
+                </div>
+                
+                <div class="product-price-section">
+                    <span class="current-price">$5.99</span>
+                    <span class="original-price">$7.49</span>
+                    <span class="discount-percent">20% OFF</span>
+                </div>
+                
+                <div class="product-description">
+                    Premium organic whole milk from grass-fed cows. Our milk comes from small family farms where cows graze freely on organic pastures. Rich, creamy taste with all the nutritional benefits of organic dairy.
+                </div>
+                
+                <div class="product-options">
+                    <div class="option-group">
+                        <label class="option-label">Size:</label>
+                        <div class="size-options">
+                            <button class="size-option" onclick="selectSize('half')">Half Gallon</button>
+                            <button class="size-option selected" onclick="selectSize('gallon')">1 Gallon</button>
+                            <button class="size-option" onclick="selectSize('quart')">1 Quart</button>
+                        </div>
+                    </div>
+                    
+                    <div class="option-group">
+                        <label class="option-label">Quantity:</label>
+                        <div class="quantity-selector">
+                            <div class="quantity-controls">
+                                <button class="qty-btn" onclick="updateQuantity(-1)">−</button>
+                                <span class="qty-value" id="quantity">1</span>
+                                <button class="qty-btn" onclick="updateQuantity(1)">+</button>
+                            </div>
+                            <span style="color: var(--gray-600);">In stock (24 available)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="product-actions">
+                    <button class="btn btn-primary" onclick="addToCart()">
+                        🛒 Add to Cart
+                    </button>
+                    <button class="btn btn-secondary" onclick="buyNow()">
+                        ⚡ Buy Now
+                    </button>
+                    <button class="btn btn-secondary btn-wishlist" onclick="toggleWishlist()">
+                        ❤️
+                    </button>
+                </div>
+                
+                <!-- Product Tabs -->
+                <div class="product-tabs">
+                    <div class="tab-nav">
+                        <button class="tab-button active" onclick="showTab('details')">Details</button>
+                        <button class="tab-button" onclick="showTab('nutrition')">Nutrition</button>
+                        <button class="tab-button" onclick="showTab('reviews')">Reviews</button>
+                        <button class="tab-button" onclick="showTab('related')">Related</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="details-tab">
+                        <h3 style="margin-bottom: 16px;">Product Specifications</h3>
+                        <table class="specs-table">
+                            <tr>
+                                <td>Brand</td>
+                                <td>Organic Valley</td>
+                            </tr>
+                            <tr>
+                                <td>Volume</td>
+                                <td>1 Gallon (128 fl oz)</td>
+                            </tr>
+                            <tr>
+                                <td>Fat Content</td>
+                                <td>3.25% (Whole Milk)</td>
+                            </tr>
+                            <tr>
+                                <td>Organic</td>
+                                <td>USDA Certified Organic</td>
+                            </tr>
+                            <tr>
+                                <td>Pasteurized</td>
+                                <td>Yes</td>
+                            </tr>
+                            <tr>
+                                <td>Storage</td>
+                                <td>Keep refrigerated</td>
+                            </tr>
+                            <tr>
+                                <td>Shelf Life</td>
+                                <td>7-10 days after opening</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="tab-content" id="nutrition-tab">
+                        <div class="nutrition-facts">
+                            <div class="nutrition-header">Nutrition Facts</div>
+                            <div class="nutrition-row">
+                                <span>Serving Size</span>
+                                <span>1 cup (240ml)</span>
+                            </div>
+                            <div class="nutrition-row">
+                                <span>Servings Per Container</span>
+                                <span>About 16</span>
+                            </div>
+                            <div class="nutrition-row highlight">
+                                <span>Calories</span>
+                                <span>150</span>
+                            </div>
+                            <div class="nutrition-row">
+                                <span>Total Fat</span>
+                                <span>8g</span>
+                            </div>
+                            <div class="nutrition-row">
+                                <span>Saturated Fat</span>
+                                <span>5g</span>
+                            </div>
+                            <div class="nutrition-row">
+                                <span>Cholesterol</span>
+                                <span>35mg</span>
+                            </div>
+                            <div class="nutrition-row">
+                                <span>Sodium</span>
+                                <span>125mg</span>
+                            </div>
+                            <div class="nutrition-row">
+                                <span>Total Carbohydrates</span>
+                                <span>12g</span>
+                            </div>
+                            <div class="nutrition-row">
+                                <span>Protein</span>
+                                <span>8g</span>
+                            </div>
+                            <div class="nutrition-row">
+                                <span>Calcium</span>
+                                <span>30% DV</span>
+                            </div>
+                            <div class="nutrition-row">
+                                <span>Vitamin D</span>
+                                <span>25% DV</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="reviews-tab">
+                        <div class="reviews-summary">
+                            <div class="rating-breakdown">
+                                <div class="avg-rating">4.8</div>
+                                <div class="stars" style="justify-content: center; margin: 8px 0;">
+                                    <span class="star">⭐</span>
+                                    <span class="star">⭐</span>
+                                    <span class="star">⭐</span>
+                                    <span class="star">⭐</span>
+                                    <span class="star">⭐</span>
+                                </div>
+                                <div style="color: var(--gray-600);">245 reviews</div>
+                            </div>
+                            <div class="rating-bars">
+                                <div class="rating-bar-row">
+                                    <span class="rating-bar-label">5★</span>
+                                    <div class="rating-bar-track">
+                                        <div class="rating-bar-fill" style="width: 75%;"></div>
+                                    </div>
+                                    <span class="rating-bar-count">184</span>
+                                </div>
+                                <div class="rating-bar-row">
+                                    <span class="rating-bar-label">4★</span>
+                                    <div class="rating-bar-track">
+                                        <div class="rating-bar-fill" style="width: 15%;"></div>
+                                    </div>
+                                    <span class="rating-bar-count">37</span>
+                                </div>
+                                <div class="rating-bar-row">
+                                    <span class="rating-bar-label">3★</span>
+                                    <div class="rating-bar-track">
+                                        <div class="rating-bar-fill" style="width: 7%;"></div>
+                                    </div>
+                                    <span class="rating-bar-count">17</span>
+                                </div>
+                                <div class="rating-bar-row">
+                                    <span class="rating-bar-label">2★</span>
+                                    <div class="rating-bar-track">
+                                        <div class="rating-bar-fill" style="width: 2%;"></div>
+                                    </div>
+                                    <span class="rating-bar-count">5</span>
+                                </div>
+                                <div class="rating-bar-row">
+                                    <span class="rating-bar-label">1★</span>
+                                    <div class="rating-bar-track">
+                                        <div class="rating-bar-fill" style="width: 1%;"></div>
+                                    </div>
+                                    <span class="rating-bar-count">2</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="related-tab">
+                        <h3 style="margin-bottom: 20px;">Customers Also Bought</h3>
+                        <div class="related-products">
+                            <div class="related-card" onclick="viewProduct('PRD002')">
+                                <div class="related-image">🥚</div>
+                                <div class="related-name">Organic Eggs</div>
+                                <div class="related-price">$4.99</div>
+                            </div>
+                            <div class="related-card" onclick="viewProduct('PRD003')">
+                                <div class="related-image">🧈</div>
+                                <div class="related-name">Organic Butter</div>
+                                <div class="related-price">$5.49</div>
+                            </div>
+                            <div class="related-card" onclick="viewProduct('PRD004')">
+                                <div class="related-image">🧀</div>
+                                <div class="related-name">Cheddar Cheese</div>
+                                <div class="related-price">$6.99</div>
+                            </div>
+                            <div class="related-card" onclick="viewProduct('PRD005')">
+                                <div class="related-image">🍞</div>
+                                <div class="related-name">Whole Wheat Bread</div>
+                                <div class="related-price">$3.49</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+    
+    <script>
+        // MCP-UI Protocol Bridge
+        class MCPUIBridge {
+            constructor() {
+                this.setupMessageHandling();
+                this.productData = {};
+                this.quantity = 1;
+                this.selectedSize = 'gallon';
+                this.inWishlist = false;
+            }
+            
+            setupMessageHandling() {
+                window.addEventListener('message', (event) => {
+                    this.handleHostMessage(event.data);
+                });
+                
+                // Send ready signal
+                this.sendToHost({
+                    type: 'mcp-ui:ready',
+                    component: 'product-detail',
+                    timestamp: new Date().toISOString()
+                });
+            }
+            
+            sendToHost(message) {
+                if (window.parent !== window) {
+                    window.parent.postMessage(message, '*');
+                }
+            }
+            
+            handleHostMessage(message) {
+                switch(message.type) {
+                    case 'mcp-ui:product-data':
+                        this.updateProductData(message.data);
+                        break;
+                    case 'mcp-ui:cart-response':
+                        this.handleCartResponse(message.data);
+                        break;
+                }
+            }
+            
+            sendAction(actionName, payload) {
+                this.sendToHost({
+                    type: 'mcp-ui:action',
+                    action: actionName,
+                    payload: payload,
+                    timestamp: new Date().toISOString()
+                });
+            }
+            
+            updateProductData(data) {
+                this.productData = data;
+                // Update UI with product data
+                if (data.title) document.querySelector('.product-title').textContent = data.title;
+                if (data.price) document.querySelector('.current-price').textContent = data.price;
+            }
+            
+            handleCartResponse(data) {
+                if (data.success) {
+                    showToast('Product added to cart!', 'success');
+                }
+            }
+        }
+        
+        // Initialize MCP bridge
+        const mcpBridge = new MCPUIBridge();
+        
+        // Image Gallery
+        function changeImage(emoji) {
+            document.getElementById('mainImage').textContent = emoji;
+            
+            // Update thumbnail selection
+            document.querySelectorAll('.thumbnail').forEach(thumb => {
+                thumb.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            mcpBridge.sendAction('change_image', { image: emoji });
+        }
+        
+        // Size Selection
+        function selectSize(size) {
+            mcpBridge.selectedSize = size;
+            
+            // Update UI
+            document.querySelectorAll('.size-option').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+            
+            mcpBridge.sendAction('select_size', { size });
+        }
+        
+        // Quantity Control
+        function updateQuantity(change) {
+            const newQuantity = Math.max(1, mcpBridge.quantity + change);
+            mcpBridge.quantity = newQuantity;
+            document.getElementById('quantity').textContent = newQuantity;
+            
+            mcpBridge.sendAction('update_quantity', { quantity: newQuantity });
+        }
+        
+        // Product Actions
+        function addToCart() {
+            const productInfo = {
+                id: 'PRD001',
+                name: 'Organic Whole Milk - 1 Gallon',
+                price: 5.99,
+                quantity: mcpBridge.quantity,
+                size: mcpBridge.selectedSize
+            };
+            
+            mcpBridge.sendAction('add_to_cart', productInfo);
+            
+            // Animate button
+            const btn = event.target;
+            btn.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                btn.style.transform = 'scale(1)';
+                showToast('Added to cart!', 'success');
+            }, 200);
+        }
+        
+        function buyNow() {
+            const productInfo = {
+                id: 'PRD001',
+                name: 'Organic Whole Milk - 1 Gallon',
+                price: 5.99,
+                quantity: mcpBridge.quantity,
+                size: mcpBridge.selectedSize
+            };
+            
+            mcpBridge.sendAction('buy_now', productInfo);
+            showToast('Redirecting to checkout...', 'success');
+        }
+        
+        function toggleWishlist() {
+            mcpBridge.inWishlist = !mcpBridge.inWishlist;
+            
+            const btn = event.target;
+            if (mcpBridge.inWishlist) {
+                btn.style.background = 'var(--danger)';
+                btn.style.color = 'white';
+                showToast('Added to wishlist!');
+            } else {
+                btn.style.background = '';
+                btn.style.color = '';
+                showToast('Removed from wishlist');
+            }
+            
+            mcpBridge.sendAction('toggle_wishlist', {
+                product_id: 'PRD001',
+                in_wishlist: mcpBridge.inWishlist
+            });
+        }
+        
+        // Tab Navigation
+        function showTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show selected tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            mcpBridge.sendAction('view_tab', { tab: tabName });
+        }
+        
+        // Related Products
+        function viewProduct(productId) {
+            mcpBridge.sendAction('view_related_product', { product_id: productId });
+        }
+        
+        // Toast Notification
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'a' && e.ctrlKey) {
+                e.preventDefault();
+                addToCart();
+            }
+            if (e.key === 'w' && e.ctrlKey) {
+                e.preventDefault();
+                toggleWishlist();
+            }
+        });
+        
+        console.log('📦 Product Detail component initialized with MCP-UI Protocol');
+    </script>
+</body>
+</html>

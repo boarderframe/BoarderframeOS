@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Card Template</title>
+</head>
+<body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #f5f5f5;">
+    
+    <!-- Product Card Container -->
+    <div class="product-card" 
+         data-upc="{{UPC}}"
+         data-product-id="{{PRODUCT_ID}}"
+         style="
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+            max-width: 320px;
+            margin: 0 auto 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+         "
+         onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)'"
+         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)'">
+        
+        <!-- Product Image Area (optional placeholder) -->
+        <div style="
+            height: 180px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        ">
+            <!-- Availability Badge -->
+            <div style="
+                position: absolute;
+                top: 12px;
+                right: 12px;
+                background: {{AVAILABILITY_COLOR}};
+                color: white;
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            ">
+                {{AVAILABILITY_TEXT}}
+            </div>
+            
+            <!-- Product Icon Placeholder -->
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <path d="M9 2L3 7v13a2 2 0 002 2h14a2 2 0 002-2V7l-6-5z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+        </div>
+        
+        <!-- Product Details -->
+        <div style="padding: 16px;">
+            
+            <!-- Brand -->
+            <div style="
+                color: #666;
+                font-size: 12px;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 4px;
+            ">
+                {{BRAND}}
+            </div>
+            
+            <!-- Product Name -->
+            <h3 style="
+                margin: 0 0 8px 0;
+                font-size: 16px;
+                font-weight: 600;
+                color: #222;
+                line-height: 1.3;
+                min-height: 42px;
+            ">
+                {{PRODUCT_NAME}}
+            </h3>
+            
+            <!-- Size -->
+            <div style="
+                color: #666;
+                font-size: 14px;
+                margin-bottom: 12px;
+            ">
+                {{SIZE}}
+            </div>
+            
+            <!-- Price and Action Row -->
+            <div style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+            ">
+                
+                <!-- Price -->
+                <div style="
+                    display: flex;
+                    align-items: baseline;
+                    gap: 2px;
+                ">
+                    <span style="
+                        font-size: 14px;
+                        color: #666;
+                        font-weight: 500;
+                    ">$</span>
+                    <span style="
+                        font-size: 24px;
+                        font-weight: 700;
+                        color: #222;
+                    ">{{PRICE_DOLLARS}}</span>
+                    <span style="
+                        font-size: 16px;
+                        color: #666;
+                        font-weight: 500;
+                    ">.{{PRICE_CENTS}}</span>
+                </div>
+                
+                <!-- Add to Cart Button -->
+                <button 
+                    class="add-to-cart-btn"
+                    data-upc="{{UPC}}"
+                    onclick="handleAddToCart(this)"
+                    style="
+                        background: #10b981;
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        font-size: 14px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: background 0.2s;
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                    "
+                    onmouseover="this.style.background='#059669'"
+                    onmouseout="this.style.background='#10b981'">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"/>
+                        <circle cx="20" cy="21" r="1"/>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>
+                    </svg>
+                    Add
+                </button>
+            </div>
+            
+            <!-- Delivery Badge (if available) -->
+            <div style="
+                margin-top: 12px;
+                padding-top: 12px;
+                border-top: 1px solid #e5e5e5;
+                display: {{DELIVERY_DISPLAY}};
+                align-items: center;
+                gap: 6px;
+                color: #059669;
+                font-size: 13px;
+                font-weight: 500;
+            ">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="3" width="15" height="13"/>
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                    <circle cx="5.5" cy="18.5" r="2.5"/>
+                    <circle cx="18.5" cy="18.5" r="2.5"/>
+                </svg>
+                Delivery Available
+            </div>
+        </div>
+    </div>
+    
+    <!-- Script for handling Add to Cart -->
+    <script>
+        function handleAddToCart(button) {
+            const upc = button.getAttribute('data-upc');
+            const card = button.closest('.product-card');
+            
+            // Visual feedback
+            button.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Added
+            `;
+            button.style.background = '#059669';
+            
+            // Call MCP endpoint (placeholder)
+            if (window.mcpClient) {
+                window.mcpClient.addToCart({
+                    upc: upc,
+                    quantity: 1
+                });
+            }
+            
+            // Reset button after delay
+            setTimeout(() => {
+                button.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"/>
+                        <circle cx="20" cy="21" r="1"/>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>
+                    </svg>
+                    Add
+                `;
+                button.style.background = '#10b981';
+            }, 2000);
+        }
+    </script>
+    
+    <!-- Example Usage with Multiple Cards -->
+    <div style="
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    ">
+        <!-- Example Card 1 -->
+        <div class="product-card" 
+             data-upc="0001111097920"
+             style="
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                overflow: hidden;
+                transition: transform 0.2s, box-shadow 0.2s;
+                cursor: pointer;
+             "
+             onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)'"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)'">
+            
+            <div style="
+                height: 180px;
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            ">
+                <div style="
+                    position: absolute;
+                    top: 12px;
+                    right: 12px;
+                    background: #10b981;
+                    color: white;
+                    padding: 4px 10px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                ">
+                    In Stock
+                </div>
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <path d="M9 2L3 7v13a2 2 0 002 2h14a2 2 0 002-2V7l-6-5z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+            </div>
+            
+            <div style="padding: 16px;">
+                <div style="
+                    color: #666;
+                    font-size: 12px;
+                    font-weight: 500;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin-bottom: 4px;
+                ">
+                    Kroger
+                </div>
+                
+                <h3 style="
+                    margin: 0 0 8px 0;
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #222;
+                    line-height: 1.3;
+                    min-height: 42px;
+                ">
+                    73/27 Ground Beef Roll
+                </h3>
+                
+                <div style="
+                    color: #666;
+                    font-size: 14px;
+                    margin-bottom: 12px;
+                ">
+                    1 lb
+                </div>
+                
+                <div style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 12px;
+                ">
+                    <div style="
+                        display: flex;
+                        align-items: baseline;
+                        gap: 2px;
+                    ">
+                        <span style="
+                            font-size: 14px;
+                            color: #666;
+                            font-weight: 500;
+                        ">$</span>
+                        <span style="
+                            font-size: 24px;
+                            font-weight: 700;
+                            color: #222;
+                        ">6</span>
+                        <span style="
+                            font-size: 16px;
+                            color: #666;
+                            font-weight: 500;
+                        ">.29</span>
+                    </div>
+                    
+                    <button 
+                        data-upc="0001111097920"
+                        onclick="handleAddToCart(this)"
+                        style="
+                            background: #10b981;
+                            color: white;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 8px;
+                            font-size: 14px;
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: background 0.2s;
+                            display: flex;
+                            align-items: center;
+                            gap: 6px;
+                        "
+                        onmouseover="this.style.background='#059669'"
+                        onmouseout="this.style.background='#10b981'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="9" cy="21" r="1"/>
+                            <circle cx="20" cy="21" r="1"/>
+                            <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>
+                        </svg>
+                        Add
+                    </button>
+                </div>
+                
+                <div style="
+                    margin-top: 12px;
+                    padding-top: 12px;
+                    border-top: 1px solid #e5e5e5;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    color: #059669;
+                    font-size: 13px;
+                    font-weight: 500;
+                ">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="1" y="3" width="15" height="13"/>
+                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                        <circle cx="5.5" cy="18.5" r="2.5"/>
+                        <circle cx="18.5" cy="18.5" r="2.5"/>
+                    </svg>
+                    Delivery Available
+                </div>
+            </div>
+        </div>
+        
+        <!-- Example Card 2 (Out of Stock) -->
+        <div class="product-card" 
+             data-upc="0001111097921"
+             style="
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                overflow: hidden;
+                transition: transform 0.2s, box-shadow 0.2s;
+                cursor: pointer;
+                opacity: 0.8;
+             "
+             onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)'"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)'">
+            
+            <div style="
+                height: 180px;
+                background: linear-gradient(135deg, #a8a8a8 0%, #6b6b6b 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            ">
+                <div style="
+                    position: absolute;
+                    top: 12px;
+                    right: 12px;
+                    background: #ef4444;
+                    color: white;
+                    padding: 4px 10px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                ">
+                    Out of Stock
+                </div>
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <path d="M9 2L3 7v13a2 2 0 002 2h14a2 2 0 002-2V7l-6-5z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+            </div>
+            
+            <div style="padding: 16px;">
+                <div style="
+                    color: #666;
+                    font-size: 12px;
+                    font-weight: 500;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin-bottom: 4px;
+                ">
+                    Simple Truth
+                </div>
+                
+                <h3 style="
+                    margin: 0 0 8px 0;
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #222;
+                    line-height: 1.3;
+                    min-height: 42px;
+                ">
+                    Organic Free Range Eggs
+                </h3>
+                
+                <div style="
+                    color: #666;
+                    font-size: 14px;
+                    margin-bottom: 12px;
+                ">
+                    12 ct
+                </div>
+                
+                <div style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 12px;
+                ">
+                    <div style="
+                        display: flex;
+                        align-items: baseline;
+                        gap: 2px;
+                    ">
+                        <span style="
+                            font-size: 14px;
+                            color: #666;
+                            font-weight: 500;
+                        ">$</span>
+                        <span style="
+                            font-size: 24px;
+                            font-weight: 700;
+                            color: #222;
+                        ">4</span>
+                        <span style="
+                            font-size: 16px;
+                            color: #666;
+                            font-weight: 500;
+                        ">.99</span>
+                    </div>
+                    
+                    <button 
+                        disabled
+                        style="
+                            background: #d1d5db;
+                            color: #6b7280;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 8px;
+                            font-size: 14px;
+                            font-weight: 600;
+                            cursor: not-allowed;
+                            display: flex;
+                            align-items: center;
+                            gap: 6px;
+                        ">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                        Unavailable
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</body>
+</html>

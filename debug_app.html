@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Open WebUI</title>
+    <script>
+        // Inject debug script into the page
+        window.addEventListener('load', function() {
+            // Create an iframe to load the app
+            const iframe = document.createElement('iframe');
+            iframe.src = 'http://localhost:5173';
+            iframe.style.width = '100%';
+            iframe.style.height = '800px';
+            iframe.style.border = '1px solid #ccc';
+            document.getElementById('app-container').appendChild(iframe);
+            
+            // Try to inject debugging after load
+            iframe.onload = function() {
+                console.log('Iframe loaded');
+                
+                // Try to execute code in iframe context (may be blocked by CORS)
+                try {
+                    const iframeWindow = iframe.contentWindow;
+                    if (iframeWindow) {
+                        // Check if splash is still visible
+                        const splash = iframeWindow.document.getElementById('splash-screen');
+                        if (splash) {
+                            console.log('Splash screen found, forcing removal...');
+                            splash.style.display = 'none';
+                        }
+                        
+                        // Check for any errors
+                        console.log('Checking iframe console...');
+                    }
+                } catch(e) {
+                    console.log('Cannot access iframe due to CORS:', e.message);
+                }
+            };
+            
+            // Force remove splash after 3 seconds
+            setTimeout(() => {
+                console.log('Attempting to force app load...');
+                try {
+                    const iframeWindow = iframe.contentWindow;
+                    if (iframeWindow && iframeWindow.document) {
+                        const splash = iframeWindow.document.getElementById('splash-screen');
+                        if (splash) {
+                            splash.remove();
+                            console.log('Force removed splash screen');
+                        }
+                    }
+                } catch(e) {
+                    console.log('Still cannot access iframe:', e.message);
+                }
+            }, 3000);
+        });
+    </script>
+</head>
+<body>
+    <h1>Debug Open WebUI - Check Console (F12)</h1>
+    <p>The app should load below. Check the browser console for debug messages.</p>
+    <p>Open Developer Tools: <kbd>Cmd+Option+I</kbd> (Mac) or <kbd>F12</kbd> (Windows/Linux)</p>
+    <div id="app-container"></div>
+    
+    <hr>
+    <h2>Manual Actions:</h2>
+    <ol>
+        <li>Open browser console (F12)</li>
+        <li>Navigate directly to <a href="http://localhost:5173" target="_blank">http://localhost:5173</a></li>
+        <li>Look for console messages starting with "Fetching backend config..."</li>
+        <li>Check for any red error messages</li>
+    </ol>
+</body>
+</html>

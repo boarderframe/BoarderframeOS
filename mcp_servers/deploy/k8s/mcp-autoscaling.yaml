@@ -1,0 +1,269 @@
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: mcp-manager-hpa
+  namespace: mcp-ui
+  labels:
+    app: mcp-manager
+    component: backend
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: mcp-manager
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Pods
+    pods:
+      metric:
+        name: http_requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "100"
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+      - type: Pods
+        value: 4
+        periodSeconds: 15
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 600
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      selectPolicy: Min
+---
+apiVersion: autoscaling/v2
+kind: VerticalPodAutoscaler
+metadata:
+  name: mcp-manager-vpa
+  namespace: mcp-ui
+  labels:
+    app: mcp-manager
+    component: backend
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: mcp-manager
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: mcp-manager
+      minAllowed:
+        cpu: 250m
+        memory: 512Mi
+      maxAllowed:
+        cpu: 4000m
+        memory: 8Gi
+      controlledResources: ["cpu", "memory"]
+      controlledValues: RequestsAndLimits
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: mcp-manager-pdb
+  namespace: mcp-ui
+  labels:
+    app: mcp-manager
+    component: backend
+spec:
+  selector:
+    matchLabels:
+      app: mcp-manager
+      component: backend
+  maxUnavailable: 1
+  unhealthyPodEvictionPolicy: AlwaysAllow
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mcp-manager-network-policy
+  namespace: mcp-ui
+  labels:
+    app: mcp-manager
+    component: backend
+spec:
+  podSelector:
+    matchLabels:
+      app: mcp-manager
+      component: backend
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: mcp-ui
+    - namespaceSelector:
+        matchLabels:
+          name: mcp-ui-monitoring
+    - podSelector:
+        matchLabels:
+          app: nginx-ingress
+    ports:
+    - protocol: TCP
+      port: 8000
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: TCP
+      port: 8000
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: mcp-ui-data
+    ports:
+    - protocol: TCP
+      port: 5432
+    - protocol: TCP
+      port: 6379
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: mcp-ui-monitoring
+    ports:
+    - protocol: TCP
+      port: 14268
+    - protocol: TCP
+      port: 9090
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 443
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mcp-secrets
+  namespace: mcp-ui
+  labels:
+    app: mcp-manager
+type: Opaque
+data:
+  # These will be populated by external-secrets operator from AWS Secrets Manager
+  database-url: ""
+  database-read-url: ""
+  redis-url: ""
+  secret-key: ""
+  jwt-secret: ""
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mcp-config
+  namespace: mcp-ui
+  labels:
+    app: mcp-manager
+data:
+  mcp.json: |
+    {
+      "servers": {},
+      "security": {
+        "blocked_paths": ["/etc", "/var", "/.env", "/proc", "/sys"],
+        "blocked_commands": ["rm", "sudo", "chmod", "chown", "mount", "umount"],
+        "max_token_budget": 50000,
+        "rate_limits": {
+          "requests_per_minute": 120,
+          "max_concurrent": 10,
+          "burst_size": 20
+        },
+        "allowed_origins": ["https://mcp-ui.example.com"],
+        "cors_max_age": 3600,
+        "content_security_policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+      },
+      "logging": {
+        "level": "info",
+        "audit_trail": true,
+        "structured_logging": true,
+        "log_retention_days": 30
+      },
+      "monitoring": {
+        "metrics_enabled": true,
+        "tracing_enabled": true,
+        "health_checks_enabled": true,
+        "performance_monitoring": true
+      },
+      "features": {
+        "rate_limiting": true,
+        "circuit_breaker": true,
+        "retry_logic": true,
+        "caching": true,
+        "compression": true
+      }
+    }
+  logging.conf: |
+    [loggers]
+    keys=root,mcp
+
+    [handlers]
+    keys=console,file,syslog
+
+    [formatters]
+    keys=standard,json
+
+    [logger_root]
+    level=INFO
+    handlers=console,file
+
+    [logger_mcp]
+    level=INFO
+    handlers=console,file,syslog
+    qualname=mcp
+    propagate=0
+
+    [handler_console]
+    class=StreamHandler
+    level=INFO
+    formatter=json
+    args=(sys.stdout,)
+
+    [handler_file]
+    class=logging.handlers.RotatingFileHandler
+    level=INFO
+    formatter=json
+    args=('/app/logs/mcp-manager.log', 'a', 100*1024*1024, 5)
+
+    [handler_syslog]
+    class=logging.handlers.SysLogHandler
+    level=WARNING
+    formatter=standard
+    args=('localhost', 514)
+
+    [formatter_standard]
+    format=%(asctime)s [%(levelname)s] %(name)s: %(message)s
+
+    [formatter_json]
+    format={"timestamp": "%(asctime)s", "level": "%(levelname)s", "logger": "%(name)s", "message": "%(message)s", "module": "%(module)s", "function": "%(funcName)s", "line": %(lineno)d}

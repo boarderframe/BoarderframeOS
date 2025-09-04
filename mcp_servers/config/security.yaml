@@ -1,0 +1,370 @@
+# MCP-UI Security Configuration
+# Enterprise-grade security settings with OWASP compliance
+
+# ============================================================================
+# AUTHENTICATION & AUTHORIZATION
+# ============================================================================
+
+authentication:
+  # JWT Configuration
+  jwt:
+    algorithm: RS256
+    access_token_expire_minutes: 15
+    refresh_token_expire_days: 7
+    key_rotation_interval_days: 30
+    
+  # Session Management
+  session:
+    timeout_minutes: 30
+    absolute_timeout_hours: 8
+    idle_timeout_minutes: 15
+    secure_cookie: true
+    http_only: true
+    same_site: strict
+    
+  # Multi-Factor Authentication
+  mfa:
+    enabled: true
+    issuer: "MCP-UI System"
+    backup_codes_count: 10
+    totp_window: 1
+    require_for_roles:
+      - admin
+      - security_admin
+      - super_admin
+
+# ============================================================================
+# AUTHORIZATION & RBAC
+# ============================================================================
+
+authorization:
+  # Role-Based Access Control
+  rbac:
+    enabled: true
+    default_role: viewer
+    role_hierarchy:
+      super_admin:
+        - security_admin
+        - admin
+      security_admin:
+        - admin
+      admin:
+        - developer
+      developer:
+        - operator
+      operator:
+        - viewer
+    
+  # Permission Model
+  permissions:
+    enforce_strict: true
+    audit_denials: true
+    cache_ttl_seconds: 300
+
+# ============================================================================
+# SECURITY POLICIES
+# ============================================================================
+
+security_policies:
+  # Password Policy
+  password:
+    min_length: 12
+    require_uppercase: true
+    require_lowercase: true
+    require_numbers: true
+    require_special_chars: true
+    history_count: 5
+    expiry_days: 90
+    max_age_days: 180
+    
+  # Account Security
+  account:
+    max_failed_login_attempts: 5
+    lockout_duration_minutes: 30
+    require_email_verification: true
+    inactive_account_days: 90
+    
+  # API Security
+  api:
+    require_api_key: true
+    api_key_rotation_days: 90
+    rate_limiting:
+      enabled: true
+      requests_per_minute: 60
+      requests_per_hour: 1000
+      burst_size: 10
+
+# ============================================================================
+# NETWORK SECURITY
+# ============================================================================
+
+network:
+  # TLS/SSL Configuration
+  tls:
+    enabled: true
+    min_version: "TLSv1.2"
+    cipher_suites:
+      - TLS_AES_256_GCM_SHA384
+      - TLS_AES_128_GCM_SHA256
+      - TLS_CHACHA20_POLY1305_SHA256
+    certificate_path: "/etc/ssl/certs/mcp-ui.crt"
+    key_path: "/etc/ssl/private/mcp-ui.key"
+    
+  # CORS Configuration
+  cors:
+    enabled: true
+    allowed_origins:
+      - "https://app.mcp-ui.com"
+      - "https://admin.mcp-ui.com"
+    allowed_methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+    allowed_headers:
+      - Authorization
+      - Content-Type
+      - X-CSRF-Token
+      - X-Correlation-ID
+    expose_headers:
+      - X-RateLimit-Limit
+      - X-RateLimit-Remaining
+      - X-RateLimit-Reset
+    max_age_seconds: 3600
+    
+  # Security Headers
+  security_headers:
+    hsts:
+      enabled: true
+      max_age: 31536000
+      include_subdomains: true
+      preload: true
+    csp:
+      enabled: true
+      directives:
+        default-src: "'self'"
+        script-src: "'self' 'nonce-{nonce}'"
+        style-src: "'self' 'unsafe-inline'"
+        img-src: "'self' data: https:"
+        connect-src: "'self' wss://ws.mcp-ui.com"
+        frame-ancestors: "'none'"
+        report-uri: "https://csp-reporter.mcp-ui.com/report"
+    x_frame_options: DENY
+    x_content_type_options: nosniff
+    x_xss_protection: "1; mode=block"
+    referrer_policy: strict-origin-when-cross-origin
+
+# ============================================================================
+# DATA PROTECTION
+# ============================================================================
+
+data_protection:
+  # Encryption
+  encryption:
+    algorithm: AES-256-GCM
+    key_derivation: PBKDF2
+    iterations: 100000
+    salt_length: 16
+    
+  # PII Handling
+  pii:
+    encrypt_at_rest: true
+    anonymize_logs: true
+    retention_days: 90
+    deletion_grace_period_days: 30
+    
+  # Data Classification
+  classification:
+    levels:
+      - public
+      - internal
+      - confidential
+      - restricted
+    default_level: internal
+    require_labeling: true
+
+# ============================================================================
+# AUDIT & COMPLIANCE
+# ============================================================================
+
+audit:
+  # Audit Logging
+  logging:
+    enabled: true
+    level: INFO
+    retention_days: 2555  # 7 years
+    compress_logs: true
+    
+  # Event Types to Audit
+  events:
+    authentication: true
+    authorization: true
+    data_access: true
+    configuration_changes: true
+    security_events: true
+    api_calls: true
+    
+  # Compliance
+  compliance:
+    gdpr:
+      enabled: true
+      data_portability: true
+      right_to_erasure: true
+      consent_management: true
+    ccpa:
+      enabled: true
+      opt_out_sales: true
+      deletion_requests: true
+    hipaa:
+      enabled: false
+      encryption_required: true
+
+# ============================================================================
+# THREAT DETECTION
+# ============================================================================
+
+threat_detection:
+  # Intrusion Detection
+  ids:
+    enabled: true
+    rules:
+      - name: sql_injection
+        pattern: "(?i)(union|select|insert|update|delete|drop).*(?i)(from|where)"
+        action: block
+      - name: xss_attempt
+        pattern: "<script.*?>.*?</script>"
+        action: block
+      - name: path_traversal
+        pattern: "\\.\\./|\\.\\.\\\\|%2e%2e"
+        action: block
+    
+  # Anomaly Detection
+  anomaly:
+    enabled: true
+    baseline_period_days: 30
+    sensitivity: medium
+    alert_threshold: 0.8
+    
+  # Rate Limiting & DDoS Protection
+  ddos:
+    enabled: true
+    max_connections_per_ip: 100
+    connection_rate_limit: 10
+    blacklist_duration_minutes: 60
+
+# ============================================================================
+# INCIDENT RESPONSE
+# ============================================================================
+
+incident_response:
+  # Alert Configuration
+  alerts:
+    enabled: true
+    channels:
+      - email
+      - slack
+      - pagerduty
+    severity_levels:
+      critical:
+        - security_breach
+        - data_leak
+        - system_compromise
+      high:
+        - authentication_failure_spike
+        - unusual_data_access
+        - configuration_tampering
+      medium:
+        - rate_limit_exceeded
+        - invalid_api_usage
+        - failed_mfa_attempts
+        
+  # Response Actions
+  actions:
+    auto_block_suspicious_ips: true
+    auto_revoke_compromised_tokens: true
+    auto_lock_suspicious_accounts: true
+    notify_security_team: true
+
+# ============================================================================
+# SECRETS MANAGEMENT
+# ============================================================================
+
+secrets:
+  # Secret Storage
+  storage:
+    provider: vault  # vault, aws_secrets_manager, azure_keyvault
+    vault_address: "https://vault.mcp-ui.com"
+    vault_namespace: "mcp-ui"
+    
+  # Key Management
+  keys:
+    rotation_interval_days: 90
+    algorithm: RSA-4096
+    backup_enabled: true
+    
+  # Environment Variables
+  environment:
+    encrypt_in_transit: true
+    mask_in_logs: true
+    required:
+      - DATABASE_URL
+      - REDIS_URL
+      - SECRET_KEY
+      - ENCRYPTION_KEY
+      - OAUTH_CLIENT_ID
+      - OAUTH_CLIENT_SECRET
+
+# ============================================================================
+# MONITORING & METRICS
+# ============================================================================
+
+monitoring:
+  # Security Metrics
+  metrics:
+    enabled: true
+    collection_interval_seconds: 60
+    retention_days: 90
+    export_format: prometheus
+    
+  # Security Events to Monitor
+  events:
+    - failed_login_attempts
+    - successful_logins
+    - token_refreshes
+    - permission_denials
+    - api_rate_limits
+    - security_header_violations
+    - encryption_operations
+    - audit_log_writes
+    
+  # Alerting Thresholds
+  thresholds:
+    failed_login_spike: 10
+    permission_denial_rate: 0.1
+    api_error_rate: 0.05
+    response_time_ms: 1000
+
+# ============================================================================
+# BACKUP & RECOVERY
+# ============================================================================
+
+backup:
+  # Backup Configuration
+  enabled: true
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  retention_days: 30
+  encryption: true
+  
+  # Backup Targets
+  targets:
+    - audit_logs
+    - configuration
+    - user_sessions
+    - api_keys
+    
+  # Recovery
+  recovery:
+    test_restore_interval_days: 30
+    rto_minutes: 60  # Recovery Time Objective
+    rpo_minutes: 15  # Recovery Point Objective

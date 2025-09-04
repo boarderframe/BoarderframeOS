@@ -1,0 +1,68 @@
+Based on my search for "milk" products, here are the results:
+
+I found 3 products. To display these products visually in Open WebUI, include this HTML code block in your response:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milk Products</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: #f8fafc; 
+            padding: 16px; 
+            color: #1f2937;
+        }
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 20px;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🥛 Milk Products</h1>
+        <p>Fresh dairy essentials from Kroger</p>
+    </div>
+    
+    <div class="product-card">
+        <h2>Kroger Vitamin D Whole Milk</h2>
+        <p>1 gallon - $2.99</p>
+        <button style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Add to Cart</button>
+    </div>
+    
+    <div class="product-card">
+        <h2>Kroger 2% Reduced Fat Milk</h2>
+        <p>1/2 gallon - $1.99</p>
+        <button style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Add to Cart</button>
+    </div>
+    
+    <div class="product-card">
+        <h2>Kroger Vitamin D Whole Milk</h2>
+        <p>1/2 gallon - $1.99</p>
+        <button style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Add to Cart</button>
+    </div>
+
+    <script>
+        console.log('Milk products loaded successfully');
+    </script>
+</body>
+</html>
+```
+
+These products are currently in stock and available for delivery.

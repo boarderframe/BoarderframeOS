@@ -1,0 +1,407 @@
+{
+  "test_execution_summary": {
+    "timestamp": "2025-08-19 22:16:29",
+    "health_score": 83.33333333333334,
+    "total_services": 6,
+    "healthy_services": 5,
+    "production_readiness": "NEEDS_MINOR_FIXES"
+  },
+  "service_health_summary": {
+    "total_services": 6,
+    "healthy_services": 5,
+    "unhealthy_services": 1,
+    "health_percentage": 83.33333333333334
+  },
+  "security_summary": {
+    "total_findings": 5,
+    "by_severity": {
+      "HIGH": 0,
+      "MEDIUM": 1,
+      "LOW": 4
+    }
+  },
+  "performance_summary": {
+    "avg_response_time_ms": 18.819745381673176,
+    "slowest_service_ms": 109.94296073913574,
+    "fastest_service_ms": 0
+  },
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "category": "Service Health",
+      "title": "Fix Unhealthy Services",
+      "description": "1 services are unhealthy"
+    }
+  ],
+  "detailed_results": {
+    "service_health": {
+      "main_api": {
+        "status": "healthy",
+        "response_time_ms": 4.397153854370117,
+        "health_data": {
+          "status": "healthy",
+          "service": "mcp-server-manager"
+        }
+      },
+      "filesystem_server": {
+        "status": "healthy",
+        "response_time_ms": 1.4259815216064453,
+        "health_data": {
+          "status": "healthy",
+          "tools": [
+            "list_directory",
+            "read_file",
+            "write_file",
+            "search_files"
+          ],
+          "allowed_directories": 1
+        }
+      },
+      "kroger_server": {
+        "status": "error",
+        "error": "All connection attempts failed"
+      },
+      "playwright_server": {
+        "status": "healthy",
+        "response_time_ms": 1.275777816772461,
+        "health_data": {
+          "status": "healthy",
+          "service": "kroger-mcp-server",
+          "version": "1.0.1",
+          "timestamp": "2025-08-19T22:16:27.927452",
+          "features": {
+            "token_efficient_artifacts": true,
+            "html_artifacts": true,
+            "minimal_responses": true,
+            "schema_version": "1.0.1"
+          }
+        }
+      },
+      "kroger_enhanced": {
+        "status": "healthy",
+        "response_time_ms": 2.0699501037597656,
+        "health_data": {
+          "status": "healthy",
+          "service": "kroger-mcp-enhanced",
+          "version": "2.0.0",
+          "timestamp": "2025-08-19T22:16:27.929399",
+          "features": {
+            "mcp_ui_sdk": true,
+            "interactive_components": true,
+            "theme_support": true,
+            "artifact_generation": true,
+            "protocol_version": "1.0.0"
+          }
+        }
+      },
+      "kroger_v2": {
+        "status": "healthy",
+        "response_time_ms": 414.5998954772949,
+        "health_data": {
+          "status": "healthy",
+          "service": "Kroger Shopping Assistant",
+          "version": "2.0.0",
+          "timestamp": "2025-08-19T22:16:28.343341",
+          "ui_enabled": true,
+          "kroger_api": "error",
+          "authentication": "configured",
+          "features": [
+            "product_search",
+            "store_locator",
+            "availability_check"
+          ]
+        }
+      }
+    },
+    "mcp_ui_protocol": {
+      "kroger_enhanced": {
+        "ui_registry": {
+          "available": true,
+          "components_count": 0,
+          "data": {
+            "ui_components": [
+              {
+                "ui_name": "Kroger Product Search",
+                "ui_url_template": "http://localhost:9005/ui/product-search?query={query}&theme={theme}",
+                "description": "Interactive product search with visual cards and filtering",
+                "capabilities": [
+                  "search",
+                  "filter",
+                  "add_to_cart",
+                  "product_details"
+                ],
+                "tool_association": "product_search",
+                "data_type_handled": "grocery_products",
+                "permissions": {
+                  "required_scopes": [
+                    "read:products"
+                  ],
+                  "optional_scopes": [
+                    "write:cart",
+                    "read:user_preferences"
+                  ]
+                },
+                "protocol_support": {
+                  "min_version": "1.0.0",
+                  "target_version": "1.0.0"
+                }
+              },
+              {
+                "ui_name": "Smart Shopping List",
+                "ui_url_template": "http://localhost:9005/ui/shopping-list?theme={theme}",
+                "description": "Interactive shopping list with item management",
+                "capabilities": [
+                  "add_item",
+                  "toggle_completion",
+                  "remove_item",
+                  "bulk_actions"
+                ],
+                "tool_association": "shopping_list",
+                "data_type_handled": "shopping_list",
+                "permissions": {
+                  "required_scopes": [
+                    "read:shopping_list"
+                  ],
+                  "optional_scopes": [
+                    "write:shopping_list",
+                    "manage:list_items"
+                  ]
+                },
+                "protocol_support": {
+                  "min_version": "1.0.0",
+                  "target_version": "1.0.0"
+                }
+              },
+              {
+                "ui_name": "Product Comparison",
+                "ui_url_template": "http://localhost:9005/ui/product-compare?ids={product_ids}&theme={theme}",
+                "description": "Side-by-side product comparison with detailed specs",
+                "capabilities": [
+                  "compare_products",
+                  "highlight_differences",
+                  "price_analysis"
+                ],
+                "tool_association": "product_compare",
+                "data_type_handled": "product_comparison",
+                "permissions": {
+                  "required_scopes": [
+                    "read:products"
+                  ],
+                  "optional_scopes": [
+                    "read:price_history"
+                  ]
+                },
+                "protocol_support": {
+                  "min_version": "1.0.0",
+                  "target_version": "1.0.0"
+                }
+              }
+            ],
+            "protocol_version": "1.0.0",
+            "server_capabilities": [
+              "interactive_ui",
+              "theme_support",
+              "real_time_updates"
+            ]
+          }
+        },
+        "endpoint_ui_product_search": {
+          "status_code": 200,
+          "content_type": "text/html; charset=utf-8",
+          "response_size": 59864,
+          "available": true
+        },
+        "endpoint_ui_shopping_list": {
+          "status_code": 200,
+          "content_type": "text/html; charset=utf-8",
+          "response_size": 4746,
+          "available": true
+        },
+        "endpoint_ui_product_comparison": {
+          "status_code": 404,
+          "content_type": "application/json",
+          "response_size": 22,
+          "available": false
+        }
+      },
+      "kroger_v2": {
+        "ui_registry": {
+          "available": false,
+          "status_code": 404
+        },
+        "endpoint_ui_product_search": {
+          "status_code": 404,
+          "content_type": "application/json",
+          "response_size": 34,
+          "available": false
+        },
+        "endpoint_ui_shopping_list": {
+          "status_code": 404,
+          "content_type": "application/json",
+          "response_size": 34,
+          "available": false
+        },
+        "endpoint_ui_product_comparison": {
+          "status_code": 404,
+          "content_type": "application/json",
+          "response_size": 34,
+          "available": false
+        }
+      }
+    },
+    "kroger_integration": {
+      "kroger_server": {
+        "product_search": {
+          "milk": {
+            "status": "error",
+            "error": "All connection attempts failed"
+          },
+          "bread": {
+            "status": "error",
+            "error": "All connection attempts failed"
+          },
+          "eggs": {
+            "status": "error",
+            "error": "All connection attempts failed"
+          }
+        },
+        "authentication": {
+          "status": "not_implemented"
+        },
+        "api_documentation": {
+          "available": false
+        }
+      },
+      "kroger_enhanced": {
+        "product_search": {
+          "milk": {
+            "status": "error",
+            "status_code": 404
+          },
+          "bread": {
+            "status": "error",
+            "status_code": 404
+          },
+          "eggs": {
+            "status": "error",
+            "status_code": 404
+          }
+        },
+        "authentication": {
+          "status": "unavailable",
+          "status_code": 404
+        },
+        "api_documentation": {
+          "available": true,
+          "endpoints_count": 9
+        }
+      },
+      "kroger_v2": {
+        "product_search": {
+          "milk": {
+            "status": "error",
+            "status_code": 404
+          },
+          "bread": {
+            "status": "error",
+            "status_code": 404
+          },
+          "eggs": {
+            "status": "error",
+            "status_code": 404
+          }
+        },
+        "authentication": {
+          "status": "unavailable",
+          "status_code": 404
+        },
+        "api_documentation": {
+          "available": true,
+          "endpoints_count": 5
+        }
+      }
+    },
+    "performance": {
+      "main_api": {
+        "avg_response_time_ms": 0.6984233856201172,
+        "min_response_time_ms": 0.5137920379638672,
+        "max_response_time_ms": 1.3370513916015625,
+        "samples": 5
+      },
+      "filesystem_server": {
+        "avg_response_time_ms": 0.7438182830810547,
+        "min_response_time_ms": 0.576019287109375,
+        "max_response_time_ms": 1.3191699981689453,
+        "samples": 5
+      },
+      "kroger_server": {
+        "error": "All connection attempts failed"
+      },
+      "playwright_server": {
+        "avg_response_time_ms": 0.7297992706298828,
+        "min_response_time_ms": 0.5478858947753906,
+        "max_response_time_ms": 1.3070106506347656,
+        "samples": 5
+      },
+      "kroger_enhanced": {
+        "avg_response_time_ms": 0.8034706115722656,
+        "min_response_time_ms": 0.5872249603271484,
+        "max_response_time_ms": 1.4891624450683594,
+        "samples": 5
+      },
+      "kroger_v2": {
+        "avg_response_time_ms": 109.94296073913574,
+        "min_response_time_ms": 93.03498268127441,
+        "max_response_time_ms": 137.93706893920898,
+        "samples": 5
+      },
+      "load_testing": {
+        "total_requests": 10,
+        "successful_requests": 0,
+        "failed_requests": 10,
+        "success_rate_percent": 0.0,
+        "total_time_seconds": 0.0500180721282959,
+        "requests_per_second": 199.92773760552168,
+        "avg_response_time_ms": 0
+      }
+    },
+    "security": [
+      {
+        "service": "filesystem_server",
+        "severity": "LOW",
+        "issue": "Permissive CORS policy",
+        "description": "CORS allows requests from any origin"
+      },
+      {
+        "service": "playwright_server",
+        "severity": "MEDIUM",
+        "issue": "Config endpoint exposed",
+        "description": "Config endpoint accessible at http://localhost:9004/config"
+      },
+      {
+        "service": "playwright_server",
+        "severity": "LOW",
+        "issue": "Permissive CORS policy",
+        "description": "CORS allows requests from any origin"
+      },
+      {
+        "service": "kroger_enhanced",
+        "severity": "LOW",
+        "issue": "Permissive CORS policy",
+        "description": "CORS allows requests from any origin"
+      },
+      {
+        "service": "kroger_v2",
+        "severity": "LOW",
+        "issue": "Permissive CORS policy",
+        "description": "CORS allows requests from any origin"
+      }
+    ]
+  },
+  "production_readiness_assessment": {
+    "status": "NEEDS_MINOR_FIXES",
+    "health_score": 83.33333333333334,
+    "critical_blockers": 0,
+    "estimated_fix_time": "1-2 weeks"
+  }
+}

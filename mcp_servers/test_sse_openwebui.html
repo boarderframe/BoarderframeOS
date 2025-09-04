@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSE Endpoint Test for Open WebUI</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #streamingOutput {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            min-height: 100px;
+            white-space: pre-wrap;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+        #renderedContent {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-height: 100px;
+        }
+        .event {
+            margin: 5px 0;
+            padding: 5px;
+            background: #2d2d2d;
+            border-left: 3px solid #007bff;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status.connecting { background: #ffc107; color: #333; }
+        .status.connected { background: #28a745; color: white; }
+        .status.error { background: #dc3545; color: white; }
+        .status.done { background: #17a2b8; color: white; }
+    </style>
+</head>
+<body>
+    <h1>🔬 SSE Endpoint Test for Open WebUI Integration</h1>
+    
+    <div class="controls">
+        <h2>Test SSE Streaming Response</h2>
+        <input type="text" id="searchTerm" placeholder="Enter search term (e.g., milk)" value="milk">
+        <input type="number" id="limit" placeholder="Limit" value="3" min="1" max="12">
+        <button onclick="testSSE()">Test SSE Endpoint</button>
+        <button onclick="clearOutput()">Clear</button>
+    </div>
+
+    <h3>Streaming Output (SSE Events)</h3>
+    <div id="streamingOutput"></div>
+
+    <h3>Rendered Content</h3>
+    <div id="renderedContent"></div>
+
+    <script>
+        let eventSource;
+        let fullContent = '';
+
+        function testSSE() {
+            const term = document.getElementById('searchTerm').value;
+            const limit = document.getElementById('limit').value;
+            const output = document.getElementById('streamingOutput');
+            const rendered = document.getElementById('renderedContent');
+            
+            // Clear previous content
+            output.innerHTML = '<div class="status connecting">Connecting to SSE endpoint...</div>';
+            rendered.innerHTML = '';
+            fullContent = '';
+            
+            // Close existing connection if any
+            if (eventSource) {
+                eventSource.close();
+            }
+            
+            // Create new EventSource connection
+            const url = `http://localhost:9004/products/search/sse?term=${encodeURIComponent(term)}&limit=${limit}`;
+            eventSource = new EventSource(url);
+            
+            eventSource.onopen = function(event) {
+                output.innerHTML += '<div class="status connected">Connected! Streaming data...</div>\n';
+            };
+            
+            eventSource.onmessage = function(event) {
+                try {
+                    // Parse the SSE data
+                    const data = JSON.parse(event.data);
+                    
+                    // Display the raw event
+                    output.innerHTML += `<div class="event">Event: ${JSON.stringify(data, null, 2)}</div>`;
+                    
+                    // Handle different event types
+                    if (data.type === 'start') {
+                        output.innerHTML += `<div class="status">Model: ${data.model}</div>`;
+                    } else if (data.type === 'content') {
+                        fullContent += data.content;
+                        updateRenderedContent();
+                    } else if (data.type === 'done') {
+                        output.innerHTML += '<div class="status done">Stream completed!</div>';
+                        eventSource.close();
+                    } else if (data.type === 'error') {
+                        output.innerHTML += `<div class="status error">Error: ${data.message}</div>`;
+                        eventSource.close();
+                    }
+                    
+                    // Auto-scroll to bottom
+                    output.scrollTop = output.scrollHeight;
+                } catch (e) {
+                    output.innerHTML += `<div class="status error">Parse error: ${e.message}</div>`;
+                }
+            };
+            
+            eventSource.onerror = function(event) {
+                output.innerHTML += '<div class="status error">Connection error or stream ended</div>';
+                eventSource.close();
+            };
+        }
+        
+        function updateRenderedContent() {
+            const rendered = document.getElementById('renderedContent');
+            
+            // Check if we have an HTML code block
+            const htmlMatch = fullContent.match(/```html\n([\s\S]*?)```/);
+            if (htmlMatch) {
+                // Create an iframe to safely render the HTML
+                const iframe = document.createElement('iframe');
+                iframe.style.width = '100%';
+                iframe.style.height = '600px';
+                iframe.style.border = 'none';
+                iframe.style.borderRadius = '8px';
+                
+                rendered.innerHTML = '<h4>Rendered HTML Artifact:</h4>';
+                rendered.appendChild(iframe);
+                
+                // Write the HTML to the iframe
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                iframeDoc.open();
+                iframeDoc.write(htmlMatch[1]);
+                iframeDoc.close();
+            } else {
+                // Show the raw content
+                rendered.innerHTML = `<h4>Response Content:</h4><pre>${fullContent}</pre>`;
+            }
+        }
+        
+        function clearOutput() {
+            if (eventSource) {
+                eventSource.close();
+            }
+            document.getElementById('streamingOutput').innerHTML = '';
+            document.getElementById('renderedContent').innerHTML = '';
+            fullContent = '';
+        }
+    </script>
+</body>
+</html>

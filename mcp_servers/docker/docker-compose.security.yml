@@ -1,0 +1,372 @@
+# Security Monitoring and Intrusion Detection Stack
+# Use with: docker-compose -f docker-compose.yml -f docker-compose.security.yml up
+
+version: '3.8'
+
+services:
+  # Falco - Runtime Security Monitoring
+  falco:
+    image: falcosecurity/falco:latest
+    container_name: mcp-falco
+    restart: unless-stopped
+    privileged: true
+    environment:
+      - FALCO_GRPC_ENABLED=true
+      - FALCO_GRPC_BIND_ADDRESS=0.0.0.0:5060
+      - FALCO_METRICS_ENABLED=true
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock:ro
+      - /dev:/host/dev:ro
+      - /proc:/host/proc:ro
+      - /boot:/host/boot:ro
+      - /lib/modules:/host/lib/modules:ro
+      - /usr:/host/usr:ro
+      - /etc:/host/etc:ro
+      - ./monitoring/falco:/etc/falco:ro
+    ports:
+      - "5060:5060"  # gRPC API
+    networks:
+      - mcp_network
+    cap_add:
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - SYS_PTRACE
+    security_opt:
+      - apparmor:unconfined
+    labels:
+      - "security.role=runtime-monitor"
+    profiles:
+      - security
+
+  # Falco Sidekick - Alert Routing
+  falco-sidekick:
+    image: falcosecurity/falco-sidekick:latest
+    container_name: mcp-falco-sidekick
+    restart: unless-stopped
+    environment:
+      - WEBUI_URL=http://falco-sidekick-ui:2802
+      - SLACK_WEBHOOKURL=${SLACK_SECURITY_WEBHOOK:-}
+      - SLACK_CHANNEL=${SLACK_SECURITY_CHANNEL:-#security-alerts}
+      - SLACK_USERNAME=Falco
+      - PROMETHEUS_ADDRESS=prometheus:9090
+      - ELASTICSEARCH_HOSTPORT=${ELASTIC_HOST:-elasticsearch:9200}
+      - DEBUG=false
+    ports:
+      - "2801:2801"
+    networks:
+      - mcp_network
+    depends_on:
+      - falco
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - security
+
+  # Falco UI for Security Dashboard
+  falco-sidekick-ui:
+    image: falcosecurity/falco-sidekick-ui:latest
+    container_name: mcp-falco-ui
+    restart: unless-stopped
+    environment:
+      - SIDEKICK_URL=http://falco-sidekick:2801
+    ports:
+      - "2802:2802"
+    networks:
+      - mcp_network
+    depends_on:
+      - falco-sidekick
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - security
+
+  # CAdvisor - Container Resource Monitoring
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: mcp-cadvisor
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - "8081:8080"
+    networks:
+      - mcp_network
+    command:
+      - '--housekeeping_interval=30s'
+      - '--max_housekeeping_interval=35s'
+      - '--event_storage_event_limit=default=0'
+      - '--event_storage_age_limit=default=0'
+      - '--disable_metrics=percpu,sched,tcp,udp,disk,diskIO,accelerator'
+      - '--docker_only'
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - monitoring
+
+  # Node Exporter - Host Metrics
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: mcp-node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+      - '--collector.netdev.device-exclude=^(veth.*|docker.*|br-.*)$$'
+    ports:
+      - "9100:9100"
+    networks:
+      - mcp_network
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - monitoring
+
+  # Redis Exporter - Redis Metrics
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: mcp-redis-exporter
+    restart: unless-stopped
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+    ports:
+      - "9121:9121"
+    networks:
+      - mcp_network
+    depends_on:
+      - redis
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - monitoring
+
+  # Nginx Log Exporter - Web Server Metrics
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: mcp-nginx-exporter
+    restart: unless-stopped
+    command:
+      - '-nginx.scrape-uri=http://nginx:8080/nginx_status'
+    ports:
+      - "9113:9113"
+    networks:
+      - mcp_network
+    depends_on:
+      - nginx
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - monitoring
+
+  # Blackbox Exporter - External Service Monitoring
+  blackbox-exporter:
+    image: prom/blackbox-exporter:latest
+    container_name: mcp-blackbox-exporter
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/blackbox:/etc/blackbox_exporter:ro
+    ports:
+      - "9115:9115"
+    networks:
+      - mcp_network
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - monitoring
+
+  # Elastalert - Advanced Alerting
+  elastalert:
+    image: jertel/elastalert2:latest
+    container_name: mcp-elastalert
+    restart: unless-stopped
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTICSEARCH_PORT=9200
+    volumes:
+      - ./monitoring/elastalert:/opt/elastalert/rules:ro
+      - ./monitoring/elastalert/config.yaml:/opt/elastalert/config.yaml:ro
+    networks:
+      - mcp_network
+    depends_on:
+      - elasticsearch
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - security
+
+  # Elasticsearch - Log Storage and Analysis
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: mcp-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=true
+      - xpack.security.enrollment.enabled=false
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-changeme}
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - mcp_network
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    profiles:
+      - security
+
+  # Filebeat - Log Shipping
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.11.0
+    container_name: mcp-filebeat
+    restart: unless-stopped
+    user: root
+    volumes:
+      - ./monitoring/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - filebeat_data:/usr/share/filebeat/data
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch:9200
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-changeme}
+    networks:
+      - mcp_network
+    depends_on:
+      - elasticsearch
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - security
+
+  # Kibana - Log Visualization
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: mcp-kibana
+    restart: unless-stopped
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD:-changeme}
+    ports:
+      - "5601:5601"
+    networks:
+      - mcp_network
+    depends_on:
+      - elasticsearch
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - security
+
+  # Security Scanner - Continuous Image Scanning
+  security-scanner:
+    build:
+      context: .
+      dockerfile: Dockerfile.security-scanner
+    container_name: mcp-security-scanner
+    restart: unless-stopped
+    environment:
+      - SCAN_INTERVAL=${SECURITY_SCAN_INTERVAL:-3600}
+      - VULNERABILITY_THRESHOLD=${VULNERABILITY_THRESHOLD:-HIGH}
+      - SLACK_WEBHOOK=${SLACK_SECURITY_WEBHOOK:-}
+      - REGISTRY_AUTH=${REGISTRY_AUTH:-}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - security_scan_results:/results
+    networks:
+      - mcp_network
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - security
+
+  # Intrusion Detection System
+  suricata:
+    image: jasonish/suricata:latest
+    container_name: mcp-suricata
+    restart: unless-stopped
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./monitoring/suricata:/etc/suricata:ro
+      - suricata_logs:/var/log/suricata
+    environment:
+      - SURICATA_INTERFACE=docker0
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - security
+
+  # Security Event Aggregator
+  security-aggregator:
+    build:
+      context: .
+      dockerfile: Dockerfile.security-aggregator
+    container_name: mcp-security-aggregator
+    restart: unless-stopped
+    environment:
+      - FALCO_ENDPOINT=falco:5060
+      - ELASTICSEARCH_HOST=elasticsearch:9200
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-changeme}
+      - ALERT_THRESHOLD_CRITICAL=5
+      - ALERT_THRESHOLD_WARNING=10
+    volumes:
+      - security_events:/events
+    networks:
+      - mcp_network
+    depends_on:
+      - falco
+      - elasticsearch
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - security
+
+# Additional volumes for security monitoring
+volumes:
+  elasticsearch_data:
+    driver: local
+    labels:
+      backup: "true"
+      retention: "90d"
+  
+  filebeat_data:
+    driver: local
+  
+  suricata_logs:
+    driver: local
+    labels:
+      backup: "true"
+      retention: "30d"
+  
+  security_scan_results:
+    driver: local
+    labels:
+      backup: "true"
+      retention: "180d"
+  
+  security_events:
+    driver: local
+    labels:
+      backup: "true"
+      retention: "365d"

@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Locator - Interactive Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            gap: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            flex: 1;
+            min-height: 600px;
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .filters-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .filter-section {
+            margin-bottom: 20px;
+        }
+        
+        .filter-section h3 {
+            color: #333;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .distance-slider {
+            width: 100%;
+            margin: 12px 0;
+        }
+        
+        .distance-label {
+            display: flex;
+            justify-content: space-between;
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+        
+        .service-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .service-chip {
+            padding: 8px 14px;
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .service-chip:hover {
+            background: #edf2f7;
+        }
+        
+        .service-chip.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .stores-list {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .store-item {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .store-item:hover {
+            transform: translateX(4px);
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+        
+        .store-item.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .store-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+        
+        .store-address {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+        
+        .store-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 0.85rem;
+        }
+        
+        .store-distance {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .store-hours {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .open-status {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .open-status.open {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .open-status.closed {
+            background: #f56565;
+            color: white;
+        }
+        
+        .map-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #map {
+            flex: 1;
+            border-radius: 12px;
+            min-height: 500px;
+        }
+        
+        .map-controls {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .btn-secondary:hover {
+            background: #f7fafc;
+        }
+        
+        /* Store Details Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .modal-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+        
+        .modal-body {
+            padding: 24px;
+        }
+        
+        .store-details-section {
+            margin-bottom: 24px;
+        }
+        
+        .store-details-section h3 {
+            color: #333;
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+        
+        .service-item {
+            background: #f7fafc;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .service-icon {
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+        }
+        
+        .hours-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .hours-table td {
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .hours-table td:first-child {
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .modal-footer {
+            padding: 20px 24px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                order: 2;
+            }
+            
+            .map-container {
+                order: 1;
+            }
+            
+            .stores-list {
+                max-height: 300px;
+            }
+        }
+        
+        /* Accessibility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        
+        /* Loading State */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📍 Store Locator</h1>
+            <p>Find stores near you with interactive map and filters</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="filters-panel">
+                    <div class="filter-section">
+                        <h3>Search Location</h3>
+                        <input 
+                            type="text" 
+                            class="search-box" 
+                            id="locationSearch" 
+                            placeholder="Enter ZIP code or address..."
+                            aria-label="Search location"
+                        />
+                    </div>
+                    
+                    <div class="filter-section">
+                        <h3>Distance</h3>
+                        <input 
+                            type="range" 
+                            class="distance-slider" 
+                            id="distanceSlider" 
+                            min="1" 
+                            max="50" 
+                            value="10"
+                            aria-label="Distance radius"
+                        />
+                        <div class="distance-label">
+                            <span>1 mi</span>
+                            <span id="distanceValue">10 mi</span>
+                            <span>50 mi</span>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-section">
+                        <h3>Services</h3>
+                        <div class="service-filters">
+                            <button class="service-chip" data-service="pharmacy">💊 Pharmacy</button>
+                            <button class="service-chip" data-service="grocery">🛒 Grocery</button>
+                            <button class="service-chip" data-service="fuel">⛽ Fuel</button>
+                            <button class="service-chip" data-service="pickup">📦 Pickup</button>
+                            <button class="service-chip" data-service="delivery">🚚 Delivery</button>
+                            <button class="service-chip" data-service="deli">🥪 Deli</button>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-section">
+                        <h3>Store Hours</h3>
+                        <div class="service-filters">
+                            <button class="service-chip" data-hours="open-now">Open Now</button>
+                            <button class="service-chip" data-hours="24-hours">24 Hours</button>
+                            <button class="service-chip" data-hours="open-late">Open Late</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stores-list" id="storesList">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="map-container">
+                <div id="map"></div>
+                <div class="map-controls">
+                    <button class="btn btn-primary" onclick="getCurrentLocation()">
+                        📍 Use My Location
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetMap()">
+                        🔄 Reset View
+                    </button>
+                    <button class="btn btn-secondary" onclick="toggleMapType()">
+                        🗺️ Change Map Type
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Store Details Modal -->
+    <div class="modal" id="storeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalStoreName">Store Details</h2>
+                <p id="modalStoreAddress"></p>
+            </div>
+            <div class="modal-body">
+                <div class="store-details-section">
+                    <h3>📞 Contact Information</h3>
+                    <p id="modalPhone"></p>
+                </div>
+                
+                <div class="store-details-section">
+                    <h3>⏰ Store Hours</h3>
+                    <table class="hours-table" id="hoursTable">
+                        <!-- Hours will be populated dynamically -->
+                    </table>
+                </div>
+                
+                <div class="store-details-section">
+                    <h3>🛍️ Available Services</h3>
+                    <div class="services-grid" id="servicesGrid">
+                        <!-- Services will be populated dynamically -->
+                    </div>
+                </div>
+                
+                <div class="store-details-section">
+                    <h3>🚗 Directions</h3>
+                    <div id="directionsInfo"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+                <button class="btn btn-primary" onclick="getDirections()">
+                    🧭 Get Directions
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // MCP-UI Protocol Bridge
+        class MCPUIBridge {
+            constructor() {
+                this.setupMessageHandling();
+                this.stores = [];
+                this.selectedStore = null;
+            }
+            
+            setupMessageHandling() {
+                window.addEventListener('message', (event) => {
+                    this.handleHostMessage(event.data);
+                });
+                
+                // Send ready signal
+                this.sendToHost({
+                    type: 'mcp-ui:ready',
+                    component: 'store-map',
+                    timestamp: new Date().toISOString()
+                });
+            }
+            
+            sendToHost(message) {
+                if (window.parent !== window) {
+                    window.parent.postMessage(message, '*');
+                }
+            }
+            
+            handleHostMessage(message) {
+                switch(message.type) {
+                    case 'mcp-ui:data-update':
+                        this.updateStores(message.data.stores);
+                        break;
+                    case 'mcp-ui:location-update':
+                        this.updateUserLocation(message.data.location);
+                        break;
+                }
+            }
+            
+            sendAction(actionName, payload) {
+                this.sendToHost({
+                    type: 'mcp-ui:action',
+                    action: actionName,
+                    payload: payload,
+                    timestamp: new Date().toISOString()
+                });
+            }
+            
+            updateStores(stores) {
+                this.stores = stores || mockStores;
+                renderStoresList(this.stores);
+                updateMapMarkers(this.stores);
+            }
+            
+            updateUserLocation(location) {
+                if (location && location.lat && location.lng) {
+                    map.setView([location.lat, location.lng], 13);
+                    addUserMarker(location);
+                }
+            }
+        }
+        
+        // Initialize MCP bridge
+        const mcpBridge = new MCPUIBridge();
+        
+        // Mock store data
+        const mockStores = [
+            {
+                id: '001',
+                name: 'Downtown Store',
+                address: '123 Main St, Downtown',
+                phone: '(555) 123-4567',
+                lat: 37.7749,
+                lng: -122.4194,
+                distance: 0.5,
+                isOpen: true,
+                services: ['pharmacy', 'grocery', 'pickup', 'deli'],
+                hours: {
+                    monday: '6:00 AM - 11:00 PM',
+                    tuesday: '6:00 AM - 11:00 PM',
+                    wednesday: '6:00 AM - 11:00 PM',
+                    thursday: '6:00 AM - 11:00 PM',
+                    friday: '6:00 AM - 12:00 AM',
+                    saturday: '6:00 AM - 12:00 AM',
+                    sunday: '7:00 AM - 10:00 PM'
+                }
+            },
+            {
+                id: '002',
+                name: 'Westside Market',
+                address: '456 Oak Ave, Westside',
+                phone: '(555) 234-5678',
+                lat: 37.7849,
+                lng: -122.4294,
+                distance: 2.3,
+                isOpen: false,
+                services: ['grocery', 'fuel', 'delivery'],
+                hours: {
+                    monday: '7:00 AM - 10:00 PM',
+                    tuesday: '7:00 AM - 10:00 PM',
+                    wednesday: '7:00 AM - 10:00 PM',
+                    thursday: '7:00 AM - 10:00 PM',
+                    friday: '7:00 AM - 11:00 PM',
+                    saturday: '7:00 AM - 11:00 PM',
+                    sunday: '8:00 AM - 9:00 PM'
+                }
+            },
+            {
+                id: '003',
+                name: 'North Plaza Store',
+                address: '789 Pine Rd, North Plaza',
+                phone: '(555) 345-6789',
+                lat: 37.7949,
+                lng: -122.4094,
+                distance: 3.7,
+                isOpen: true,
+                services: ['pharmacy', 'grocery', 'pickup', 'fuel', '24hours'],
+                hours: {
+                    monday: '24 Hours',
+                    tuesday: '24 Hours',
+                    wednesday: '24 Hours',
+                    thursday: '24 Hours',
+                    friday: '24 Hours',
+                    saturday: '24 Hours',
+                    sunday: '24 Hours'
+                }
+            }
+        ];
+        
+        // Initialize map
+        let map;
+        let markers = [];
+        let userMarker = null;
+        
+        function initMap() {
+            map = L.map('map').setView([37.7749, -122.4194], 12);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // Load initial stores
+            mcpBridge.updateStores(mockStores);
+        }
+        
+        function updateMapMarkers(stores) {
+            // Clear existing markers
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+            
+            // Add store markers
+            stores.forEach(store => {
+                const marker = L.marker([store.lat, store.lng])
+                    .addTo(map)
+                    .bindPopup(`
+                        <div style="padding: 8px;">
+                            <strong>${store.name}</strong><br>
+                            ${store.address}<br>
+                            <button onclick="showStoreDetails('${store.id}')" style="margin-top: 8px; padding: 4px 8px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                View Details
+                            </button>
+                        </div>
+                    `);
+                
+                marker.storeId = store.id;
+                markers.push(marker);
+            });
+            
+            // Fit bounds to show all markers
+            if (markers.length > 0) {
+                const group = new L.featureGroup(markers);
+                map.fitBounds(group.getBounds().pad(0.1));
+            }
+        }
+        
+        function addUserMarker(location) {
+            if (userMarker) {
+                map.removeLayer(userMarker);
+            }
+            
+            userMarker = L.marker([location.lat, location.lng], {
+                icon: L.divIcon({
+                    html: '<div style="background: #4285f4; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
+                    iconSize: [16, 16],
+                    className: 'user-location-marker'
+                })
+            }).addTo(map);
+        }
+        
+        function renderStoresList(stores) {
+            const listContainer = document.getElementById('storesList');
+            listContainer.innerHTML = '';
+            
+            stores.forEach(store => {
+                const storeItem = document.createElement('div');
+                storeItem.className = 'store-item';
+                storeItem.onclick = () => selectStore(store.id);
+                
+                storeItem.innerHTML = `
+                    <div class="store-name">${store.name}</div>
+                    <div class="store-address">${store.address}</div>
+                    <div class="store-meta">
+                        <div class="store-distance">📍 ${store.distance} mi</div>
+                        <div class="store-hours">
+                            <span class="open-status ${store.isOpen ? 'open' : 'closed'}">
+                                ${store.isOpen ? 'Open' : 'Closed'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+                
+                listContainer.appendChild(storeItem);
+            });
+        }
+        
+        function selectStore(storeId) {
+            const store = mcpBridge.stores.find(s => s.id === storeId);
+            if (!store) return;
+            
+            // Update selection UI
+            document.querySelectorAll('.store-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            
+            // Center map on store
+            map.setView([store.lat, store.lng], 15);
+            
+            // Open popup
+            const marker = markers.find(m => m.storeId === storeId);
+            if (marker) {
+                marker.openPopup();
+            }
+            
+            // Send selection to host
+            mcpBridge.sendAction('store_selected', {
+                store_id: storeId,
+                store_name: store.name
+            });
+        }
+        
+        function showStoreDetails(storeId) {
+            const store = mcpBridge.stores.find(s => s.id === storeId);
+            if (!store) return;
+            
+            mcpBridge.selectedStore = store;
+            
+            // Populate modal
+            document.getElementById('modalStoreName').textContent = store.name;
+            document.getElementById('modalStoreAddress').textContent = store.address;
+            document.getElementById('modalPhone').textContent = store.phone;
+            
+            // Populate hours
+            const hoursTable = document.getElementById('hoursTable');
+            hoursTable.innerHTML = '';
+            Object.entries(store.hours).forEach(([day, hours]) => {
+                const row = hoursTable.insertRow();
+                row.innerHTML = `
+                    <td>${day.charAt(0).toUpperCase() + day.slice(1)}</td>
+                    <td>${hours}</td>
+                `;
+            });
+            
+            // Populate services
+            const servicesGrid = document.getElementById('servicesGrid');
+            const serviceIcons = {
+                pharmacy: '💊',
+                grocery: '🛒',
+                fuel: '⛽',
+                pickup: '📦',
+                delivery: '🚚',
+                deli: '🥪',
+                '24hours': '🕐'
+            };
+            
+            servicesGrid.innerHTML = store.services.map(service => `
+                <div class="service-item">
+                    <div class="service-icon">${serviceIcons[service] || '✓'}</div>
+                    <div>${service.charAt(0).toUpperCase() + service.slice(1)}</div>
+                </div>
+            `).join('');
+            
+            // Show modal
+            document.getElementById('storeModal').classList.add('active');
+            
+            // Send action to host
+            mcpBridge.sendAction('view_store_details', {
+                store_id: storeId,
+                store_name: store.name
+            });
+        }
+        
+        function closeModal() {
+            document.getElementById('storeModal').classList.remove('active');
+        }
+        
+        function getDirections() {
+            if (!mcpBridge.selectedStore) return;
+            
+            const store = mcpBridge.selectedStore;
+            const url = `https://www.google.com/maps/dir/?api=1&destination=${store.lat},${store.lng}`;
+            
+            // Send action to host
+            mcpBridge.sendAction('get_directions', {
+                store_id: store.id,
+                store_name: store.name,
+                directions_url: url
+            });
+            
+            // Open in new tab
+            window.open(url, '_blank');
+        }
+        
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const location = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        
+                        map.setView([location.lat, location.lng], 13);
+                        addUserMarker(location);
+                        
+                        // Send location to host
+                        mcpBridge.sendAction('location_obtained', location);
+                    },
+                    (error) => {
+                        console.error('Error getting location:', error);
+                        alert('Unable to get your location. Please check your browser settings.');
+                    }
+                );
+            } else {
+                alert('Geolocation is not supported by your browser.');
+            }
+        }
+        
+        function resetMap() {
+            map.setView([37.7749, -122.4194], 12);
+            mcpBridge.sendAction('map_reset', {});
+        }
+        
+        function toggleMapType() {
+            // This would toggle between different map types
+            mcpBridge.sendAction('toggle_map_type', {});
+        }
+        
+        // Filter handlers
+        document.getElementById('distanceSlider').addEventListener('input', (e) => {
+            document.getElementById('distanceValue').textContent = `${e.target.value} mi`;
+            filterStores();
+        });
+        
+        document.getElementById('locationSearch').addEventListener('input', (e) => {
+            if (e.target.value.length > 2) {
+                searchLocation(e.target.value);
+            }
+        });
+        
+        document.querySelectorAll('.service-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                chip.classList.toggle('active');
+                filterStores();
+            });
+        });
+        
+        function filterStores() {
+            const distance = document.getElementById('distanceSlider').value;
+            const activeServices = Array.from(document.querySelectorAll('.service-chip.active'))
+                .map(chip => chip.dataset.service || chip.dataset.hours);
+            
+            mcpBridge.sendAction('filter_stores', {
+                distance: distance,
+                filters: activeServices
+            });
+        }
+        
+        function searchLocation(query) {
+            mcpBridge.sendAction('search_location', {
+                query: query
+            });
+        }
+        
+        // Close modal on outside click
+        document.getElementById('storeModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                closeModal();
+            }
+        });
+        
+        // Initialize map when page loads
+        window.addEventListener('load', initMap);
+        
+        console.log('🗺️ Store Map component initialized with MCP-UI Protocol');
+    </script>
+</body>
+</html>

@@ -1,0 +1,216 @@
+version: '3.8'
+
+services:
+  playwright-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: playwright-mcp:latest
+    container_name: playwright-mcp-secure
+    restart: unless-stopped
+    
+    # Network configuration
+    ports:
+      - "127.0.0.1:9003:9003"  # Only bind to localhost
+    
+    networks:
+      - mcp-network
+      - redis-network
+    
+    # Environment variables
+    environment:
+      - LOG_LEVEL=INFO
+      - PYTHONUNBUFFERED=1
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-change-me-in-production}
+      - SESSION_ENCRYPTION_KEY=${SESSION_ENCRYPTION_KEY:-change-me-in-production}
+      - ENVIRONMENT=production
+      - MAX_CONCURRENT_SESSIONS=100
+      - MAX_SESSIONS_PER_USER=5
+      - SESSION_TIMEOUT_MINUTES=30
+      - RATE_LIMIT_PER_MINUTE=30
+      
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+      - seccomp:unconfined  # Required for Chrome
+      
+    # Capability dropping
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+      - SYS_ADMIN  # Required for Chrome sandboxing
+      
+    # Read-only root filesystem with specific writable directories
+    read_only: true
+    tmpfs:
+      - /tmp:mode=1777,size=512M
+      - /var/run:mode=755,size=10M
+      - /home/playwright/.cache:mode=755,size=100M
+      
+    # Volume mounts
+    volumes:
+      - ./logs:/var/log/playwright:rw
+      - ./config:/app/config:ro
+      - screenshots:/tmp/playwright-screenshots:rw
+      
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+          
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "10"
+        labels: "service=playwright-mcp"
+        
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9003/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+      
+    # Dependencies
+    depends_on:
+      - redis
+      
+  redis:
+    image: redis:7-alpine
+    container_name: playwright-redis
+    restart: unless-stopped
+    
+    networks:
+      - redis-network
+      
+    # Security
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD:-change-me-in-production}
+      
+    # Read-only filesystem with data volume
+    read_only: true
+    volumes:
+      - redis-data:/data:rw
+      
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+          
+    # No ports exposed to host - only accessible within network
+    expose:
+      - 6379
+      
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "5"
+        
+  # Optional: Nginx reverse proxy with security headers
+  nginx:
+    image: nginx:alpine
+    container_name: playwright-nginx
+    restart: unless-stopped
+    
+    networks:
+      - mcp-network
+      
+    ports:
+      - "443:443"
+      - "80:80"
+      
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      
+    depends_on:
+      - playwright-mcp
+      
+    # Security
+    read_only: true
+    tmpfs:
+      - /var/run:mode=755
+      - /var/cache/nginx:mode=755
+      
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+          
+  # Optional: Monitoring with Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: playwright-prometheus
+    restart: unless-stopped
+    
+    networks:
+      - mcp-network
+      
+    ports:
+      - "127.0.0.1:9090:9090"
+      
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus:rw
+      
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+networks:
+  mcp-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+          
+  redis-network:
+    driver: bridge
+    internal: true  # No external access
+    ipam:
+      config:
+        - subnet: 172.21.0.0/24
+
+volumes:
+  redis-data:
+    driver: local
+  screenshots:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: size=100m,mode=755
+  prometheus-data:
+    driver: local

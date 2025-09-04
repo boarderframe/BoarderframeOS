@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "python",
+      "args": [
+        "/Users/cosburn/MCP Servers/mcp_servers/filesystem/main.py"
+      ],
+      "env": {
+        "PYTHONPATH": "/Users/cosburn/MCP Servers/.venv/lib/python3.13/site-packages"
+      }
+    }
+  }
+}

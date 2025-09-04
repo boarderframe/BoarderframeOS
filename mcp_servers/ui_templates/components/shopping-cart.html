@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .cart-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .cart-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            position: relative;
+        }
+
+        .cart-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .cart-summary {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .summary-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .summary-value {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .cart-body {
+            padding: 30px;
+        }
+
+        .cart-items {
+            display: grid;
+            gap: 20px;
+        }
+
+        .cart-item {
+            display: grid;
+            grid-template-columns: 100px 1fr auto auto auto;
+            gap: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .cart-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .item-image {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .item-details {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .item-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3436;
+        }
+
+        .item-brand {
+            font-size: 14px;
+            color: #636e72;
+        }
+
+        .item-size {
+            font-size: 14px;
+            color: #636e72;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            border-radius: 8px;
+            padding: 5px;
+        }
+
+        .quantity-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #667eea;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .quantity-btn:hover {
+            background: #764ba2;
+            transform: scale(1.1);
+        }
+
+        .quantity-value {
+            width: 40px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .item-price {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2d3436;
+            min-width: 80px;
+            text-align: right;
+        }
+
+        .remove-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            background: #ee5a6f;
+            transform: scale(1.1);
+        }
+
+        .cart-footer {
+            padding: 30px;
+            background: #f8f9fa;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .totals {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .total-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+        }
+
+        .total-line.grand-total {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3436;
+            padding-top: 15px;
+            border-top: 2px solid #dee2e6;
+        }
+
+        .savings-badge {
+            background: #00b894;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #f8f9fa;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 60px;
+        }
+
+        .empty-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .empty-message {
+            font-size: 24px;
+            color: #636e72;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .cart-item {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .item-image {
+                width: 60px;
+                height: 60px;
+            }
+
+            .cart-summary {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cart-container">
+        <div class="cart-header">
+            <h1 class="cart-title">🛒 Shopping Cart</h1>
+            <div class="cart-summary">
+                <div class="summary-item">
+                    <span class="summary-label">Items</span>
+                    <span class="summary-value" id="itemCount">0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Subtotal</span>
+                    <span class="summary-value" id="subtotalDisplay">$0.00</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Savings</span>
+                    <span class="summary-value" id="savingsDisplay">$0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="cart-body" id="cartBody">
+            <!-- Cart items will be inserted here -->
+        </div>
+
+        <div class="cart-footer">
+            <div class="totals">
+                <div class="total-line">
+                    <span>Subtotal</span>
+                    <span id="subtotal">$0.00</span>
+                </div>
+                <div class="total-line">
+                    <span>Estimated Tax</span>
+                    <span id="tax">$0.00</span>
+                </div>
+                <div class="total-line">
+                    <span>Total Savings</span>
+                    <span class="savings-badge" id="savings">$0.00</span>
+                </div>
+                <div class="total-line grand-total">
+                    <span>Total</span>
+                    <span id="grandTotal">$0.00</span>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="continueShopping()">
+                    Continue Shopping
+                </button>
+                <button class="btn btn-primary" onclick="checkout()">
+                    Proceed to Checkout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample cart data - would be populated from server
+        const cartData = {
+            items: [
+                {
+                    id: '001',
+                    name: 'Premium Thick Cut Bacon',
+                    brand: 'Wright Brand',
+                    size: '24 oz',
+                    price: 8.99,
+                    quantity: 2,
+                    emoji: '🥓'
+                },
+                {
+                    id: '002',
+                    name: 'Organic Free Range Eggs',
+                    brand: 'Happy Egg Co',
+                    size: '12 count',
+                    price: 5.49,
+                    quantity: 1,
+                    emoji: '🥚'
+                },
+                {
+                    id: '003',
+                    name: 'Whole Milk',
+                    brand: 'Kroger Brand',
+                    size: '1 gallon',
+                    price: 3.29,
+                    quantity: 2,
+                    emoji: '🥛'
+                }
+            ],
+            subtotal: 0,
+            tax: 0,
+            total: 0,
+            savings: 2.50
+        };
+
+        function renderCart() {
+            const cartBody = document.getElementById('cartBody');
+            
+            if (cartData.items.length === 0) {
+                cartBody.innerHTML = `
+                    <div class="empty-cart">
+                        <div class="empty-icon">🛒</div>
+                        <div class="empty-message">Your cart is empty</div>
+                        <button class="btn btn-primary" onclick="continueShopping()">
+                            Start Shopping
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            const itemsHtml = cartData.items.map(item => `
+                <div class="cart-item">
+                    <div class="item-image">${item.emoji}</div>
+                    <div class="item-details">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-brand">${item.brand}</div>
+                        <div class="item-size">${item.size}</div>
+                    </div>
+                    <div class="quantity-control">
+                        <button class="quantity-btn" onclick="updateQuantity('${item.id}', -1)">-</button>
+                        <span class="quantity-value">${item.quantity}</span>
+                        <button class="quantity-btn" onclick="updateQuantity('${item.id}', 1)">+</button>
+                    </div>
+                    <div class="item-price">$${(item.price * item.quantity).toFixed(2)}</div>
+                    <button class="remove-btn" onclick="removeItem('${item.id}')">×</button>
+                </div>
+            `).join('');
+
+            cartBody.innerHTML = `<div class="cart-items">${itemsHtml}</div>`;
+            updateTotals();
+        }
+
+        function updateQuantity(itemId, change) {
+            const item = cartData.items.find(i => i.id === itemId);
+            if (item) {
+                item.quantity = Math.max(1, item.quantity + change);
+                renderCart();
+            }
+        }
+
+        function removeItem(itemId) {
+            cartData.items = cartData.items.filter(i => i.id !== itemId);
+            renderCart();
+        }
+
+        function updateTotals() {
+            const subtotal = cartData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const tax = subtotal * 0.08; // 8% tax
+            const total = subtotal + tax;
+            const itemCount = cartData.items.reduce((sum, item) => sum + item.quantity, 0);
+
+            document.getElementById('itemCount').textContent = itemCount;
+            document.getElementById('subtotalDisplay').textContent = `$${subtotal.toFixed(2)}`;
+            document.getElementById('savingsDisplay').textContent = `$${cartData.savings.toFixed(2)}`;
+            document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+            document.getElementById('tax').textContent = `$${tax.toFixed(2)}`;
+            document.getElementById('savings').textContent = `$${cartData.savings.toFixed(2)}`;
+            document.getElementById('grandTotal').textContent = `$${total.toFixed(2)}`;
+        }
+
+        function continueShopping() {
+            console.log('Continue shopping');
+            // Would navigate back to product search
+        }
+
+        function checkout() {
+            console.log('Proceed to checkout');
+            // Would navigate to checkout page
+        }
+
+        // Initialize cart
+        renderCart();
+    </script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-manager
+  namespace: mcp-ui
+  labels:
+    app: mcp-manager
+    component: backend
+    version: v1
+    tier: production
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: mcp-manager
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: mcp-manager
+        component: backend
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: mcp-manager
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+      - name: mcp-manager
+        image: mcp-server-manager:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+        env:
+        - name: FASTAPI_ENV
+          value: "production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: mcp-secrets
+              key: database-url
+        - name: DATABASE_READ_URL
+          valueFrom:
+            secretKeyRef:
+              name: mcp-secrets
+              key: database-read-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: mcp-secrets
+              key: redis-url
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mcp-secrets
+              key: secret-key
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: mcp-secrets
+              key: jwt-secret
+        - name: LOG_LEVEL
+          value: "info"
+        - name: RATE_LIMIT_ENABLED
+          value: "true"
+        - name: SECURITY_AUDIT_ENABLED
+          value: "true"
+        - name: PROMETHEUS_ENABLED
+          value: "true"
+        - name: JAEGER_ENABLED
+          value: "true"
+        - name: JAEGER_ENDPOINT
+          value: "http://jaeger-collector.mcp-ui-monitoring:14268/api/traces"
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: "service.name=mcp-manager,service.version=v1.0.0,deployment.environment=production"
+        - name: OTEL_EXPORTER_JAEGER_ENDPOINT
+          value: "http://jaeger-collector.mcp-ui-monitoring:14268/api/traces"
+        - name: METRICS_ENABLED
+          value: "true"
+        - name: HEALTH_CHECK_TIMEOUT
+          value: "30"
+        - name: MAX_WORKERS
+          value: "4"
+        - name: WORKER_TIMEOUT
+          value: "300"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+          readOnly: true
+        - name: logs-volume
+          mountPath: /app/logs
+        - name: tmp-volume
+          mountPath: /tmp
+        livenessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 8000
+            httpHeaders:
+            - name: User-Agent
+              value: "k8s-liveness-probe"
+          initialDelaySeconds: 45
+          periodSeconds: 15
+          timeoutSeconds: 10
+          failureThreshold: 3
+          successThreshold: 1
+        readinessProbe:
+          httpGet:
+            path: /api/v1/health/ready
+            port: 8000
+            httpHeaders:
+            - name: User-Agent
+              value: "k8s-readiness-probe"
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+        startupProbe:
+          httpGet:
+            path: /api/v1/health/startup
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 30
+          successThreshold: 1
+        resources:
+          requests:
+            memory: "768Mi"
+            cpu: "500m"
+            ephemeral-storage: "2Gi"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+            ephemeral-storage: "4Gi"
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: config-volume
+        configMap:
+          name: mcp-config
+      - name: logs-volume
+        emptyDir: {}
+      - name: tmp-volume
+        emptyDir: {}
+      nodeSelector:
+        kubernetes.io/os: linux
+      tolerations:
+      - key: "app"
+        operator: "Equal"
+        value: "mcp-ui"
+        effect: "NoSchedule"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-manager-service
+  namespace: mcp-ui
+  labels:
+    app: mcp-manager
+    component: backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: mcp-manager
+    component: backend
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mcp-manager
+  namespace: mcp-ui
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mcp-manager
+  namespace: mcp-ui
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mcp-manager
+  namespace: mcp-ui
+subjects:
+- kind: ServiceAccount
+  name: mcp-manager
+  namespace: mcp-ui
+roleRef:
+  kind: Role
+  name: mcp-manager
+  apiGroup: rbac.authorization.k8s.io

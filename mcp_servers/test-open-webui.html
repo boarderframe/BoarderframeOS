@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open WebUI MCP API Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .tool-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .tool-button:hover {
+            background: #0056b3;
+        }
+        .tool-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .response-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        .input-group {
+            margin: 10px 0;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .server-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .server-card {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+        }
+        .server-card h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .metric:last-child {
+            border-bottom: none;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 16px;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+        .tab.active {
+            color: #007bff;
+            border-bottom: 2px solid #007bff;
+            margin-bottom: -2px;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 MCP API Test Interface (Open WebUI Simulator)</h1>
+    
+    <div class="test-section">
+        <h2>API Status</h2>
+        <button onclick="checkHealth()">Check Health</button>
+        <button onclick="getOpenAPISpec()">Get OpenAPI Spec</button>
+        <button onclick="testCORS()">Test CORS</button>
+        <div id="api-status" class="response-box"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Server Management</h2>
+        <button onclick="listServers()">List Servers</button>
+        <button onclick="getServerStats()">Get Statistics</button>
+        <div id="server-list" class="server-list"></div>
+        <div id="server-response" class="response-box" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Tool Execution (As Open WebUI Would Call)</h2>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('list-dir')">List Directory</button>
+            <button class="tab" onclick="switchTab('read-file')">Read File</button>
+            <button class="tab" onclick="switchTab('write-file')">Write File</button>
+            <button class="tab" onclick="switchTab('search-files')">Search Files</button>
+            <button class="tab" onclick="switchTab('file-info')">File Info</button>
+            <button class="tab" onclick="switchTab('create-dir')">Create Directory</button>
+        </div>
+
+        <div id="list-dir" class="tab-content active">
+            <div class="input-group">
+                <label>Directory Path:</label>
+                <input type="text" id="list-path" value="/tmp" placeholder="/path/to/directory">
+            </div>
+            <button class="tool-button" onclick="executeTool('list_directory', {path: document.getElementById('list-path').value})">
+                List Directory
+            </button>
+        </div>
+
+        <div id="read-file" class="tab-content">
+            <div class="input-group">
+                <label>File Path:</label>
+                <input type="text" id="read-path" value="/tmp/test.txt" placeholder="/path/to/file.txt">
+            </div>
+            <button class="tool-button" onclick="executeTool('read_file', {path: document.getElementById('read-path').value})">
+                Read File
+            </button>
+        </div>
+
+        <div id="write-file" class="tab-content">
+            <div class="input-group">
+                <label>File Path:</label>
+                <input type="text" id="write-path" value="/tmp/test.txt" placeholder="/path/to/file.txt">
+            </div>
+            <div class="input-group">
+                <label>Content:</label>
+                <textarea id="write-content" rows="4" placeholder="File content...">Test content from Open WebUI simulator</textarea>
+            </div>
+            <button class="tool-button" onclick="executeTool('write_file', {path: document.getElementById('write-path').value, content: document.getElementById('write-content').value})">
+                Write File
+            </button>
+        </div>
+
+        <div id="search-files" class="tab-content">
+            <div class="input-group">
+                <label>Search Pattern:</label>
+                <input type="text" id="search-pattern" value="*.txt" placeholder="*.txt">
+            </div>
+            <div class="input-group">
+                <label>Search Path:</label>
+                <input type="text" id="search-path" value="/tmp" placeholder="/path/to/search">
+            </div>
+            <button class="tool-button" onclick="executeTool('search_files', {pattern: document.getElementById('search-pattern').value, path: document.getElementById('search-path').value})">
+                Search Files
+            </button>
+        </div>
+
+        <div id="file-info" class="tab-content">
+            <div class="input-group">
+                <label>File Path:</label>
+                <input type="text" id="info-path" value="/tmp/test.txt" placeholder="/path/to/file">
+            </div>
+            <button class="tool-button" onclick="executeTool('get_file_info', {path: document.getElementById('info-path').value})">
+                Get File Info
+            </button>
+        </div>
+
+        <div id="create-dir" class="tab-content">
+            <div class="input-group">
+                <label>Directory Path:</label>
+                <input type="text" id="create-path" value="/tmp/new_dir" placeholder="/path/to/new/directory">
+            </div>
+            <button class="tool-button" onclick="executeTool('create_directory', {path: document.getElementById('create-path').value})">
+                Create Directory
+            </button>
+        </div>
+
+        <div id="tool-response" class="response-box"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Response Time Monitor</h2>
+        <button onclick="runPerformanceTest()">Run Performance Test</button>
+        <div id="performance-results" class="response-box"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        const API_V1 = `${API_BASE}/api/v1`;
+
+        function switchTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            // Show selected tab content
+            document.getElementById(tabId).classList.add('active');
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        async function checkHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                updateStatus('api-status', `Health Check: ${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                updateStatus('api-status', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function getOpenAPISpec() {
+            try {
+                const response = await fetch(`${API_V1}/openapi.json`);
+                const data = await response.json();
+                const summary = {
+                    title: data.info.title,
+                    version: data.info.version,
+                    paths: Object.keys(data.paths).length,
+                    schemas: Object.keys(data.components?.schemas || {}).length
+                };
+                updateStatus('api-status', `OpenAPI Spec:\n${JSON.stringify(summary, null, 2)}\n\nEndpoints:\n${Object.keys(data.paths).join('\n')}`, 'success');
+            } catch (error) {
+                updateStatus('api-status', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCORS() {
+            try {
+                const response = await fetch(`${API_V1}/servers/`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': 'http://localhost:3000',
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+                
+                const corsHeaders = {
+                    'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                    'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
+                    'Access-Control-Allow-Headers': response.headers.get('Access-Control-Allow-Headers')
+                };
+                
+                updateStatus('api-status', `CORS Headers:\n${JSON.stringify(corsHeaders, null, 2)}\n\nStatus: ${response.status}`, 
+                    response.status === 200 || response.status === 204 ? 'success' : 'info');
+            } catch (error) {
+                updateStatus('api-status', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function listServers() {
+            try {
+                const response = await fetch(`${API_V1}/servers/`);
+                const data = await response.json();
+                
+                if (data.servers && data.servers.length > 0) {
+                    const serverList = document.getElementById('server-list');
+                    serverList.innerHTML = '';
+                    
+                    data.servers.forEach(server => {
+                        const card = document.createElement('div');
+                        card.className = 'server-card';
+                        card.innerHTML = `
+                            <h3>${server.name}</h3>
+                            <div class="metric"><span>Status:</span><strong>${server.status}</strong></div>
+                            <div class="metric"><span>ID:</span><strong>${server.id}</strong></div>
+                            <div class="metric"><span>Type:</span><strong>${server.type}</strong></div>
+                            ${server.metrics ? `
+                                <div class="metric"><span>CPU:</span><strong>${server.metrics.cpu}</strong></div>
+                                <div class="metric"><span>Memory:</span><strong>${server.metrics.memory}</strong></div>
+                                <div class="metric"><span>Uptime:</span><strong>${server.metrics.uptime}</strong></div>
+                            ` : ''}
+                        `;
+                        serverList.appendChild(card);
+                    });
+                    
+                    document.getElementById('server-response').style.display = 'none';
+                } else {
+                    document.getElementById('server-list').innerHTML = '';
+                    updateStatus('server-response', 'No servers found', 'info');
+                    document.getElementById('server-response').style.display = 'block';
+                }
+            } catch (error) {
+                updateStatus('server-response', `Error: ${error.message}`, 'error');
+                document.getElementById('server-response').style.display = 'block';
+            }
+        }
+
+        async function getServerStats() {
+            try {
+                const response = await fetch(`${API_V1}/servers/stats/summary`);
+                const data = await response.json();
+                document.getElementById('server-list').innerHTML = '';
+                updateStatus('server-response', `Server Statistics:\n${JSON.stringify(data, null, 2)}`, 'success');
+                document.getElementById('server-response').style.display = 'block';
+            } catch (error) {
+                updateStatus('server-response', `Error: ${error.message}`, 'error');
+                document.getElementById('server-response').style.display = 'block';
+            }
+        }
+
+        async function executeTool(tool, args) {
+            const startTime = performance.now();
+            try {
+                const response = await fetch(`${API_V1}/servers/tools/${tool}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(args)
+                });
+                
+                const responseTime = (performance.now() - startTime).toFixed(2);
+                let result;
+                
+                // Try to parse as JSON first, fall back to text
+                const text = await response.text();
+                try {
+                    result = JSON.parse(text);
+                    result = JSON.stringify(result, null, 2);
+                } catch {
+                    result = text; // It's already a string response
+                }
+                
+                updateStatus('tool-response', 
+                    `Tool: ${tool}\nResponse Time: ${responseTime}ms\nStatus: ${response.status}\n\nResult:\n${result}`, 
+                    response.ok ? 'success' : 'error');
+            } catch (error) {
+                const responseTime = (performance.now() - startTime).toFixed(2);
+                updateStatus('tool-response', 
+                    `Tool: ${tool}\nResponse Time: ${responseTime}ms\nError: ${error.message}`, 
+                    'error');
+            }
+        }
+
+        async function runPerformanceTest() {
+            const tests = [
+                { name: 'Health Check', url: `${API_BASE}/health` },
+                { name: 'List Servers', url: `${API_V1}/servers/` },
+                { name: 'OpenAPI Spec', url: `${API_V1}/openapi.json` },
+                { name: 'Tool: List Directory', url: `${API_V1}/servers/tools/list_directory`, method: 'POST', body: { path: '/' } }
+            ];
+            
+            let results = 'Performance Test Results:\n\n';
+            
+            for (const test of tests) {
+                const startTime = performance.now();
+                try {
+                    const options = {
+                        method: test.method || 'GET',
+                        headers: test.body ? { 'Content-Type': 'application/json' } : {},
+                        body: test.body ? JSON.stringify(test.body) : undefined
+                    };
+                    
+                    const response = await fetch(test.url, options);
+                    await response.text(); // Read the full response
+                    const responseTime = (performance.now() - startTime).toFixed(2);
+                    
+                    const rating = responseTime < 50 ? '🟢 Excellent' : 
+                                  responseTime < 200 ? '🟡 Good' : 
+                                  responseTime < 500 ? '🟠 Acceptable' : '🔴 Slow';
+                    
+                    results += `${test.name}: ${responseTime}ms ${rating}\n`;
+                } catch (error) {
+                    results += `${test.name}: Failed - ${error.message}\n`;
+                }
+            }
+            
+            updateStatus('performance-results', results, 'info');
+        }
+
+        function updateStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = 'response-box';
+            
+            // Add status indicator
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = type.toUpperCase();
+            element.insertBefore(statusDiv, element.firstChild);
+        }
+
+        // Auto-load servers on page load
+        window.addEventListener('load', () => {
+            checkHealth();
+            listServers();
+        });
+    </script>
+</body>
+</html>

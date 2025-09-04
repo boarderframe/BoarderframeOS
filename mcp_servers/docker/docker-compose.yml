@@ -1,0 +1,371 @@
+version: '3.8'
+
+# Production-ready Docker Compose for FastAPI MCP Server Manager
+# Includes: FastAPI MCP Manager, PostgreSQL, Monitoring, and Open WebUI integration
+
+services:
+  # Init container for dependency validation
+  init-dependencies:
+    image: alpine:latest
+    container_name: mcp-init-dependencies
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=mcpdb
+      - POSTGRES_USER=mcpuser
+      - POSTGRES_PASSWORD=mcppassword
+      - POSTGRES_TIMEOUT=60
+    command: >
+      sh -c "
+        echo 'Validating dependencies...'
+        
+        # Install required tools
+        apk add --no-cache curl netcat-openbsd postgresql-client
+        
+        # Wait for PostgreSQL
+        echo 'Waiting for PostgreSQL...'
+        timeout=$$POSTGRES_TIMEOUT
+        while [ $$timeout -gt 0 ]; do
+          if nc -z $$POSTGRES_HOST $$POSTGRES_PORT; then
+            echo 'PostgreSQL is available'
+            break
+          fi
+          echo 'Waiting for PostgreSQL... ($$timeout seconds remaining)'
+          sleep 1
+          timeout=$$((timeout-1))
+        done
+        
+        if [ $$timeout -eq 0 ]; then
+          echo 'ERROR: PostgreSQL is not available after $$POSTGRES_TIMEOUT seconds'
+          exit 1
+        fi
+        
+        # Test PostgreSQL connection
+        echo 'Testing PostgreSQL connection...'
+        export PGPASSWORD=$$POSTGRES_PASSWORD
+        if psql -h $$POSTGRES_HOST -p $$POSTGRES_PORT -U $$POSTGRES_USER -d $$POSTGRES_DB -c 'SELECT 1;' >/dev/null 2>&1; then
+          echo 'PostgreSQL connection test successful'
+        else
+          echo 'ERROR: PostgreSQL connection test failed'
+          exit 1
+        fi
+        
+        # Validate required directories
+        echo 'Validating configuration structure...'
+        mkdir -p /tmp/config
+        echo '{\"servers\": [], \"version\": \"1.0\"}' > /tmp/config/mcp.json
+        
+        echo 'All dependency validations passed'
+        exit 0
+      "
+    networks:
+      - mcp_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  # Main FastAPI MCP Server Manager Application
+  mcp-manager:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: fastapi-mcp-manager
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - FASTAPI_ENV=production
+      - DATABASE_URL=postgresql://mcpuser:mcppassword@postgres:5432/mcpdb
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=mcpdb
+      - POSTGRES_USER=mcpuser
+      - POSTGRES_PASSWORD=mcppassword
+      - MCP_CONFIG_PATH=/app/config/mcp.json
+      - LOG_LEVEL=info
+      - RATE_LIMIT_ENABLED=true
+      - SECURITY_AUDIT_ENABLED=true
+      - DB_POOL_SIZE=20
+      - DB_MAX_OVERFLOW=30
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    volumes:
+      # Only mount config directory for security
+      - mcp_config:/app/config:rw
+      - mcp_logs:/app/logs:rw
+    networks:
+      - mcp_network
+    depends_on:
+      init-dependencies:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 45s
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
+      - /app/logs:noexec,nosuid,size=50m
+
+  # PostgreSQL for primary database storage
+  postgres:
+    image: postgres:15-alpine
+    container_name: mcp-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=mcpdb
+      - POSTGRES_USER=mcpuser
+      - POSTGRES_PASSWORD=mcppassword
+      - POSTGRES_INITDB_ARGS="--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+      - POSTGRES_HOST_AUTH_METHOD=scram-sha-256
+    command: [
+      "postgres",
+      "-c", "max_connections=200",
+      "-c", "shared_buffers=256MB",
+      "-c", "effective_cache_size=1GB",
+      "-c", "maintenance_work_mem=64MB",
+      "-c", "checkpoint_completion_target=0.9",
+      "-c", "wal_buffers=16MB",
+      "-c", "default_statistics_target=100",
+      "-c", "random_page_cost=1.1",
+      "-c", "effective_io_concurrency=200",
+      "-c", "work_mem=4MB",
+      "-c", "min_wal_size=1GB",
+      "-c", "max_wal_size=4GB",
+      "-c", "log_statement=all",
+      "-c", "log_duration=on",
+      "-c", "log_line_prefix=%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h "
+    ]
+    volumes:
+      - postgres_data:/var/lib/postgresql/data:rw
+      - ./config/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+    networks:
+      - mcp_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mcpuser -d mcpdb"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    security_opt:
+      - no-new-privileges:true
+
+  # Open WebUI for chat interface integration
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: mcp-open-webui
+    restart: unless-stopped
+    ports:
+      - "3000:8080"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY:-your-secret-key-change-this}
+      - MCP_CONNECTOR_URL=http://mcp-manager:8000
+      - ENABLE_MCP_CONNECTOR=true
+    volumes:
+      - open_webui_data:/app/backend/data:rw
+    networks:
+      - mcp_network
+    depends_on:
+      - mcp-manager
+      - ollama
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+
+  # Ollama for local LLM inference
+  ollama:
+    image: ollama/ollama:latest
+    container_name: mcp-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_ORIGINS=http://localhost:3000,http://open-webui:8080
+    volumes:
+      - ollama_data:/root/.ollama:rw
+    networks:
+      - mcp_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    security_opt:
+      - no-new-privileges:true
+
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: mcp-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+    volumes:
+      - prometheus_config:/etc/prometheus:ro
+      - prometheus_data:/prometheus:rw
+    networks:
+      - mcp_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+
+  # Grafana for monitoring dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: mcp-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+    volumes:
+      - grafana_data:/var/lib/grafana:rw
+      - grafana_config:/etc/grafana:ro
+    networks:
+      - mcp_network
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+
+  # Automated backup service
+  backup-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.backup
+    container_name: mcp-backup-service
+    restart: unless-stopped
+    environment:
+      - BACKUP_SCHEDULE=${BACKUP_SCHEDULE:-0 2 * * *}
+      - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-7}
+      - S3_BACKUP_ENABLED=${S3_BACKUP_ENABLED:-false}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME:-}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - SLACK_WEBHOOK=${SLACK_WEBHOOK:-}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - backup_data:/backups:rw
+      - ./backup.sh:/backup.sh:ro
+      - .:/app:ro
+    networks:
+      - mcp_network
+    depends_on:
+      - mcp-manager
+      - postgres
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - backup
+
+  # Health monitoring service
+  health-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile.health
+    container_name: mcp-health-monitor
+    restart: unless-stopped
+    environment:
+      - HEALTH_CHECK_INTERVAL=${HEALTH_CHECK_INTERVAL:-300}
+      - SLACK_WEBHOOK=${SLACK_WEBHOOK:-}
+      - EMAIL_RECIPIENT=${EMAIL_RECIPIENT:-}
+      - SSL_ENABLED=${SSL_ENABLED:-false}
+      - SSL_DOMAIN=${SSL_DOMAIN:-localhost}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./health-check.sh:/health-check.sh:ro
+      - health_reports:/reports:rw
+    networks:
+      - mcp_network
+    depends_on:
+      - mcp-manager
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - monitoring
+
+# Named volumes for data persistence
+volumes:
+  mcp_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./config
+  mcp_logs:
+    driver: local
+  postgres_data:
+    driver: local
+  open_webui_data:
+    driver: local
+  ollama_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  prometheus_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./monitoring/prometheus
+  grafana_data:
+    driver: local
+  grafana_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./monitoring/grafana
+  backup_data:
+    driver: local
+  health_reports:
+    driver: local
+
+# Isolated network for all services
+networks:
+  mcp_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

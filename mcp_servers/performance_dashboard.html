@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP-UI Performance Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .metric:last-child {
+            border-bottom: none;
+        }
+        
+        .metric-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .metric-value {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #333;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+        
+        .status-good { background: #4caf50; }
+        .status-warning { background: #ff9800; }
+        .status-error { background: #f44336; }
+        
+        .chart-container {
+            height: 200px;
+            margin-top: 15px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.5s ease;
+        }
+        
+        .web-vitals-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .vital-box {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .vital-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .vital-label {
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+        
+        .score-display {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .score-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .score-grade {
+            font-size: 1.5rem;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        .grade-A { color: #4caf50; }
+        .grade-B { color: #8bc34a; }
+        .grade-C { color: #ff9800; }
+        .grade-D { color: #ff5722; }
+        .grade-F { color: #f44336; }
+        
+        .optimization-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+        
+        .optimization-list li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .optimization-list li:before {
+            content: "✓";
+            color: #4caf50;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .realtime-indicator {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 MCP-UI Performance Dashboard</h1>
+        
+        <div class="dashboard">
+            <!-- Response Time Metrics -->
+            <div class="card">
+                <h2>Response Times</h2>
+                <div class="metric">
+                    <span class="metric-label">Average Response</span>
+                    <span class="metric-value">
+                        <span id="avg-response">42ms</span>
+                        <span class="status-indicator status-good"></span>
+                    </span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">P95 Response</span>
+                    <span class="metric-value">
+                        <span id="p95-response">180ms</span>
+                        <span class="status-indicator status-good"></span>
+                    </span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">P99 Response</span>
+                    <span class="metric-value">
+                        <span id="p99-response">320ms</span>
+                        <span class="status-indicator status-warning"></span>
+                    </span>
+                </div>
+                <canvas id="response-chart" class="chart-container"></canvas>
+            </div>
+            
+            <!-- Core Web Vitals -->
+            <div class="card">
+                <h2>Core Web Vitals</h2>
+                <div class="web-vitals-grid">
+                    <div class="vital-box">
+                        <div class="vital-label">LCP</div>
+                        <div class="vital-value" style="color: #4caf50;">2.4s</div>
+                    </div>
+                    <div class="vital-box">
+                        <div class="vital-label">FID</div>
+                        <div class="vital-value" style="color: #4caf50;">95ms</div>
+                    </div>
+                    <div class="vital-box">
+                        <div class="vital-label">CLS</div>
+                        <div class="vital-value" style="color: #4caf50;">0.08</div>
+                    </div>
+                    <div class="vital-box">
+                        <div class="vital-label">FCP</div>
+                        <div class="vital-value" style="color: #4caf50;">1.7s</div>
+                    </div>
+                    <div class="vital-box">
+                        <div class="vital-label">TTFB</div>
+                        <div class="vital-value" style="color: #4caf50;">750ms</div>
+                    </div>
+                    <div class="vital-box">
+                        <div class="vital-label">INP</div>
+                        <div class="vital-value" style="color: #8bc34a;">180ms</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cache Performance -->
+            <div class="card">
+                <h2>Cache Performance</h2>
+                <div class="metric">
+                    <span class="metric-label">Cache Hit Rate</span>
+                    <span class="metric-value">92%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 92%"></div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Redis Latency</span>
+                    <span class="metric-value">0.8ms</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Memory Cache Size</span>
+                    <span class="metric-value">487/500 items</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">CDN Hit Rate</span>
+                    <span class="metric-value">95%</span>
+                </div>
+            </div>
+            
+            <!-- Compression Stats -->
+            <div class="card">
+                <h2>Compression & Optimization</h2>
+                <div class="metric">
+                    <span class="metric-label">Compression Savings</span>
+                    <span class="metric-value">68%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Brotli Enabled</span>
+                    <span class="metric-value">
+                        Yes
+                        <span class="status-indicator status-good"></span>
+                    </span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Image Optimization</span>
+                    <span class="metric-value">WebP + AVIF</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Bundle Size</span>
+                    <span class="metric-value">142KB (gzipped)</span>
+                </div>
+            </div>
+            
+            <!-- Load Test Results -->
+            <div class="card">
+                <h2>Load Testing</h2>
+                <div class="metric">
+                    <span class="metric-label">Concurrent Users</span>
+                    <span class="metric-value">250</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Requests/Second</span>
+                    <span class="metric-value realtime-indicator">2,354</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Error Rate</span>
+                    <span class="metric-value">
+                        0.01%
+                        <span class="status-indicator status-good"></span>
+                    </span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Uptime</span>
+                    <span class="metric-value">99.99%</span>
+                </div>
+            </div>
+            
+            <!-- Performance Score -->
+            <div class="card">
+                <h2>Overall Performance Score</h2>
+                <div class="score-display">
+                    <div class="score-circle">
+                        <svg viewBox="0 0 120 120">
+                            <circle cx="60" cy="60" r="54" fill="none" stroke="#e0e0e0" stroke-width="12"/>
+                            <circle cx="60" cy="60" r="54" fill="none" stroke="#4caf50" stroke-width="12"
+                                    stroke-dasharray="339" stroke-dashoffset="34"
+                                    transform="rotate(-90 60 60)"/>
+                        </svg>
+                        <div class="score-value">95</div>
+                    </div>
+                    <div class="score-grade grade-A">Grade: A</div>
+                </div>
+            </div>
+            
+            <!-- Active Optimizations -->
+            <div class="card">
+                <h2>Active Optimizations</h2>
+                <ul class="optimization-list">
+                    <li>Service Worker Enabled</li>
+                    <li>Progressive Web App</li>
+                    <li>Redis Caching</li>
+                    <li>CDN Integration</li>
+                    <li>Brotli Compression</li>
+                    <li>Image Lazy Loading</li>
+                    <li>Code Splitting</li>
+                    <li>Connection Pooling</li>
+                    <li>Background Jobs</li>
+                    <li>Read Replicas</li>
+                </ul>
+            </div>
+            
+            <!-- Real-time Monitoring -->
+            <div class="card">
+                <h2>Real-time Monitoring</h2>
+                <div class="metric">
+                    <span class="metric-label">Active Connections</span>
+                    <span class="metric-value realtime-indicator">42</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">WebSocket Clients</span>
+                    <span class="metric-value realtime-indicator">8</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Background Jobs</span>
+                    <span class="metric-value">3 running / 10 workers</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Database Connections</span>
+                    <span class="metric-value">12/20 pool</span>
+                </div>
+            </div>
+            
+            <!-- Network Performance -->
+            <div class="card">
+                <h2>Network Performance</h2>
+                <div class="metric">
+                    <span class="metric-label">Keep-Alive Enabled</span>
+                    <span class="metric-value">
+                        Yes
+                        <span class="status-indicator status-good"></span>
+                    </span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">HTTP/2 Support</span>
+                    <span class="metric-value">
+                        Enabled
+                        <span class="status-indicator status-good"></span>
+                    </span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Resource Hints</span>
+                    <span class="metric-value">Prefetch + Preconnect</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Edge Locations</span>
+                    <span class="metric-value">4 regions</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Simulate real-time updates
+        function updateMetrics() {
+            // Update response time
+            const avgResponse = document.getElementById('avg-response');
+            const currentAvg = parseInt(avgResponse.textContent);
+            const newAvg = Math.max(20, Math.min(100, currentAvg + (Math.random() - 0.5) * 10));
+            avgResponse.textContent = Math.round(newAvg) + 'ms';
+            
+            // Update requests per second
+            const rps = document.querySelector('.realtime-indicator');
+            const currentRps = parseInt(rps.textContent.replace(',', ''));
+            const newRps = Math.max(1000, Math.min(5000, currentRps + (Math.random() - 0.5) * 200));
+            rps.textContent = newRps.toLocaleString();
+        }
+        
+        // Update metrics every 2 seconds
+        setInterval(updateMetrics, 2000);
+        
+        // Initialize with animation
+        document.querySelectorAll('.card').forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+        
+        // Simulate WebSocket connection for real-time data
+        function connectWebSocket() {
+            console.log('Connecting to performance metrics WebSocket...');
+            // In production, this would connect to ws://localhost:8000/ws/metrics
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', () => {
+            connectWebSocket();
+            console.log('Performance Dashboard Initialized');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+# Production Docker Compose Override
+# Use: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+
+version: '3.8'
+
+services:
+  # Production MCP Manager with enhanced security
+  mcp-manager:
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - DEBUG_ENABLED=${DEBUG_ENABLED:-false}
+      - LOG_LEVEL=${LOG_LEVEL:-warn}
+      - SECURITY_AUDIT_ENABLED=${SECURITY_AUDIT_ENABLED:-true}
+      - RATE_LIMIT_ENABLED=${RATE_LIMIT_ENABLED:-true}
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=redis://redis:6379
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '${MCP_MANAGER_CPU_LIMIT:-1.0}'
+          memory: '${MCP_MANAGER_MEMORY_LIMIT:-512M}'
+          pids: 100
+        reservations:
+          cpus: '${MCP_MANAGER_CPU_RESERVATION:-0.5}'
+          memory: '${MCP_MANAGER_MEMORY_RESERVATION:-256M}'
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 30s
+        failure_action: rollback
+        monitor: 60s
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+        monitor: 30s
+    networks:
+      - mcp_network
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+      - apparmor:docker-default
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    # OOM handling
+    oom_kill_disable: false
+    oom_score_adj: 100
+    # Memory swapping
+    memswap_limit: '${MCP_MANAGER_MEMORY_LIMIT:-512M}'
+    mem_swappiness: 10
+    # Kernel memory limit
+    kernel_memory: 64M
+
+  # Production Redis with persistence and backup
+  redis:
+    restart: always
+    command: [
+      "redis-server",
+      "--appendonly", "yes",
+      "--appendfsync", "everysec",
+      "--maxmemory", "512mb",
+      "--maxmemory-policy", "allkeys-lru",
+      "--save", "900", "1",
+      "--save", "300", "10",
+      "--save", "60", "10000",
+      "--requirepass", "${REDIS_PASSWORD}"
+    ]
+    deploy:
+      resources:
+        limits:
+          cpus: '${REDIS_CPU_LIMIT:-0.5}'
+          memory: '${REDIS_MEMORY_LIMIT:-256M}'
+          pids: 50
+        reservations:
+          cpus: '${REDIS_CPU_RESERVATION:-0.25}'
+          memory: '${REDIS_MEMORY_RESERVATION:-128M}'
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    # Redis-specific OOM handling
+    oom_kill_disable: false
+    oom_score_adj: 200
+    memswap_limit: '${REDIS_MEMORY_LIMIT:-256M}'
+    mem_swappiness: 1
+
+  # Production Open WebUI
+  open-webui:
+    restart: always
+    environment:
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}
+      - LOG_LEVEL=warn
+      - ENABLE_SIGNUP=false
+      - ENABLE_LOGIN_FORM=true
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    security_opt:
+      - no-new-privileges:true
+
+  # Production Ollama with resource limits
+  ollama:
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '${OLLAMA_CPU_LIMIT:-2.0}'
+          memory: '${OLLAMA_MEMORY_LIMIT:-4G}'
+          pids: 200
+        reservations:
+          cpus: '${OLLAMA_CPU_RESERVATION:-1.0}'
+          memory: '${OLLAMA_MEMORY_RESERVATION:-2G}'
+    security_opt:
+      - no-new-privileges:true
+    # Ollama OOM handling (more lenient for AI workloads)
+    oom_kill_disable: false
+    oom_score_adj: -100
+    memswap_limit: '${OLLAMA_MEMORY_LIMIT:-4G}'
+    mem_swappiness: 60
+
+  # Production Prometheus with data retention
+  prometheus:
+    restart: always
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--storage.tsdb.retention.size=10GB'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    security_opt:
+      - no-new-privileges:true
+
+  # Production Grafana with authentication
+  grafana:
+    restart: always
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_USERS_ALLOW_ORG_CREATE=false
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_SECURITY_ALLOW_EMBEDDING=false
+      - GF_SECURITY_COOKIE_SECURE=true
+      - GF_SESSION_COOKIE_SECURE=true
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    security_opt:
+      - no-new-privileges:true
+
+  # Production load balancer (nginx)
+  nginx:
+    image: nginx:alpine
+    container_name: mcp-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx:rw
+    networks:
+      - mcp_network
+    depends_on:
+      - mcp-manager
+      - open-webui
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    security_opt:
+      - no-new-privileges:true
+
+# Production-specific volumes with backup labels
+volumes:
+  redis_data:
+    driver: local
+    labels:
+      backup: "true"
+      retention: "30d"
+  
+  prometheus_data:
+    driver: local
+    labels:
+      backup: "true"
+      retention: "90d"
+  
+  grafana_data:
+    driver: local
+    labels:
+      backup: "true"
+      retention: "30d"
+  
+  nginx_logs:
+    driver: local
+
+# Production network with custom configuration
+networks:
+  mcp_network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: mcp-prod
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+          gateway: 172.21.0.1

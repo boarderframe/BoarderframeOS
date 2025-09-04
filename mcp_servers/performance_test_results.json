@@ -1,0 +1,175 @@
+{
+  "response_times": {
+    "/api/v1/health": {
+      "min": 0.2737500035436824,
+      "max": 4.688125001848675,
+      "mean": 0.416592501278501,
+      "median": 0.3083539995714091,
+      "p95": 0.49821060165413655,
+      "p99": 6.709865001757862,
+      "samples": 50
+    },
+    "/api/v1/servers": {
+      "min": 0.29016700864303857,
+      "max": 0.5413330072769895,
+      "mean": 0.34098668227670714,
+      "median": 0.33372899633832276,
+      "p95": 0.40017705396167,
+      "p99": 0.6064005970256403,
+      "samples": 50
+    },
+    "/api/v1/metrics": {
+      "min": 0.10929099516943097,
+      "max": 0.18258299678564072,
+      "mean": 0.1293049193918705,
+      "median": 0.12697950296569616,
+      "p95": 0.15647104737581685,
+      "p99": 0.19477174690109678,
+      "samples": 50
+    }
+  },
+  "cache_performance": {
+    "cold_cache": [
+      {
+        "time": 0.30487499316222966,
+        "cache": "UNKNOWN"
+      },
+      {
+        "time": 0.27562500326894224,
+        "cache": "UNKNOWN"
+      },
+      {
+        "time": 0.28233400371391326,
+        "cache": "UNKNOWN"
+      },
+      {
+        "time": 0.27595799474511296,
+        "cache": "UNKNOWN"
+      },
+      {
+        "time": 0.2516249951440841,
+        "cache": "UNKNOWN"
+      },
+      {
+        "time": 0.25595800252631307,
+        "cache": "UNKNOWN"
+      },
+      {
+        "time": 0.2716659946599975,
+        "cache": "UNKNOWN"
+      },
+      {
+        "time": 0.2623329928610474,
+        "cache": "UNKNOWN"
+      },
+      {
+        "time": 0.26116700610145926,
+        "cache": "UNKNOWN"
+      },
+      {
+        "time": 0.2521660062484443,
+        "cache": "UNKNOWN"
+      }
+    ],
+    "warm_cache": [
+      {
+        "time": 0.27420900005381554,
+        "cache": "UNKNOWN"
+      },
+      {
+        "time": 0.265665992628783,
+        "cache": "UNKNOWN"
+      },
+      {
+        "time": 0.2550830104155466,
+        "cache": "UNKNOWN"
+      },
+      {
+        "time": 0.26808399707078934,
+        "cache": "UNKNOWN"
+      },
+      {
+        "time": 0.24333300825674087,
+        "cache": "UNKNOWN"
+      },
+      {
+        "time": 0.2589579962659627,
+        "cache": "UNKNOWN"
+      },
+      {
+        "time": 0.25637500220909715,
+        "cache": "UNKNOWN"
+      },
+      {
+        "time": 0.26029199943877757,
+        "cache": "UNKNOWN"
+      },
+      {
+        "time": 0.24616700829938054,
+        "cache": "UNKNOWN"
+      },
+      {
+        "time": 0.2691669942578301,
+        "cache": "UNKNOWN"
+      }
+    ]
+  },
+  "compression": {
+    "/api/v1/servers": {
+      "uncompressed_size": 974,
+      "compressed_size": 974,
+      "encoding": "none",
+      "savings_percent": 0.0
+    },
+    "/api/v1/metrics": {
+      "uncompressed_size": 22,
+      "compressed_size": 22,
+      "encoding": "none",
+      "savings_percent": 0.0
+    },
+    "/static/js/app.js": {
+      "uncompressed_size": 22,
+      "compressed_size": 22,
+      "encoding": "none",
+      "savings_percent": 0.0
+    }
+  },
+  "load_test": {
+    "concurrent_users": 25,
+    "duration": 10.09078073501587,
+    "total_requests": 2375,
+    "successful": 2375,
+    "failed": 0,
+    "requests_per_second": 235.36335417125332,
+    "error_rate": 0.0,
+    "avg_response_time": 5.0470148148260225,
+    "p95_response_time": 7.906741797341965
+  },
+  "web_vitals": [
+    {
+      "metric": "LCP",
+      "value": 2400,
+      "accepted": false
+    },
+    {
+      "metric": "FID",
+      "value": 95,
+      "accepted": false
+    },
+    {
+      "metric": "CLS",
+      "value": 0.08,
+      "accepted": false
+    },
+    {
+      "metric": "FCP",
+      "value": 1700,
+      "accepted": false
+    },
+    {
+      "metric": "TTFB",
+      "value": 750,
+      "accepted": false
+    }
+  ]
+}

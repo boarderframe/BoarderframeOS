@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple MCP UI Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #output {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .debug {
+            background: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Simple MCP UI Test - Direct HTML Rendering</h1>
+        
+        <div class="controls">
+            <button onclick="testDirect('bacon')">Test Bacon</button>
+            <button onclick="testDirect('eggs')">Test Eggs</button>
+            <button onclick="testDirect('milk')">Test Milk</button>
+            <div id="status" style="margin-top: 10px; font-weight: bold;"></div>
+        </div>
+
+        <div id="debug" class="debug" style="display: none;"></div>
+        
+        <div id="output"></div>
+    </div>
+
+    <script>
+        async function testDirect(term) {
+            const status = document.getElementById('status');
+            const debug = document.getElementById('debug');
+            const output = document.getElementById('output');
+            
+            status.textContent = `Loading ${term}...`;
+            status.style.color = '#007bff';
+            
+            try {
+                const response = await fetch(`http://localhost:9004/products/search/compact?term=${term}&limit=3`);
+                const data = await response.json();
+                
+                // Show debug info
+                debug.style.display = 'block';
+                debug.innerHTML = `
+                    <strong>Debug Info:</strong><br>
+                    Query: ${data.search_term || data.query}<br>
+                    Products found: ${data.count}<br>
+                    UI Resources: ${data.ui_resources ? Object.keys(data.ui_resources).length : 0}<br>
+                    ${data.ui_resources ? Object.keys(data.ui_resources).map(key => 
+                        `Resource ${key}: ${data.ui_resources[key].mimeType}, ${data.ui_resources[key].content ? data.ui_resources[key].content.length : 0} chars`
+                    ).join('<br>') : 'No UI resources'}
+                `;
+                
+                if (data.ui_resources && Object.keys(data.ui_resources).length > 0) {
+                    const resource = Object.values(data.ui_resources)[0];
+                    
+                    // Display the HTML content directly
+                    output.innerHTML = resource.content;
+                    
+                    status.textContent = `✅ Successfully loaded ${term} with ${data.count} products!`;
+                    status.style.color = '#28a745';
+                } else {
+                    output.innerHTML = '<div style="padding: 40px; text-align: center; color: #dc3545;">No UI resources found in response</div>';
+                    status.textContent = `⚠️ No UI resources found for ${term}`;
+                    status.style.color = '#ffc107';
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                status.textContent = `❌ Error loading ${term}: ${error.message}`;
+                status.style.color = '#dc3545';
+                output.innerHTML = `<div style="padding: 40px; text-align: center; color: #dc3545;">Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            setTimeout(() => testDirect('bacon'), 1000);
+        });
+    </script>
+</body>
+</html>

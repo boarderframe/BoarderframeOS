@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Traffic Monitor</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .monitor-panel {
+            background: #000;
+            border: 1px solid #00ff00;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .request-entry {
+            border-bottom: 1px solid #333;
+            padding: 10px 0;
+            margin: 5px 0;
+        }
+        .method {
+            color: #ffff00;
+            font-weight: bold;
+        }
+        .url {
+            color: #00ffff;
+        }
+        .headers {
+            color: #ff9900;
+            font-size: 12px;
+            margin: 5px 0;
+        }
+        .body {
+            color: #90EE90;
+            background: #1a1a1a;
+            padding: 8px;
+            border-left: 3px solid #00ff00;
+            margin: 5px 0;
+            white-space: pre-wrap;
+            font-size: 11px;
+        }
+        .sse-indicator {
+            background: #ff0000;
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            margin: 0 5px;
+        }
+        .json-indicator {
+            background: #0066cc;
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            margin: 0 5px;
+        }
+        .websocket-indicator {
+            background: #9900cc;
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            margin: 0 5px;
+        }
+        .controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 8px 15px;
+            margin: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #00cc00;
+        }
+        .filter-active {
+            background: #ffff00 !important;
+            color: #000 !important;
+        }
+        .timestamp {
+            color: #888;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 Open WebUI Network Traffic Monitor</h1>
+        <p>Real-time monitoring of HTTP traffic to identify JSON → SSE conversions</p>
+        
+        <div class="controls">
+            <button onclick="clearLog()">Clear Log</button>
+            <button onclick="toggleFilter('sse')" id="sseFilter">Filter SSE</button>
+            <button onclick="toggleFilter('json')" id="jsonFilter">Filter JSON</button>
+            <button onclick="toggleFilter('websocket')" id="wsFilter">Filter WebSocket</button>
+            <button onclick="exportLog()">Export Log</button>
+        </div>
+
+        <div class="monitor-panel">
+            <h3>📊 Traffic Statistics</h3>
+            <div id="stats">
+                <span id="totalRequests">Total Requests: 0</span> |
+                <span id="sseCount">SSE Requests: 0</span> |
+                <span id="jsonCount">JSON Requests: 0</span> |
+                <span id="wsCount">WebSocket Connections: 0</span>
+            </div>
+        </div>
+
+        <div class="monitor-panel">
+            <h3>🔍 Live Traffic Log</h3>
+            <div id="trafficLog"></div>
+        </div>
+
+        <div class="monitor-panel">
+            <h3>⚠️ SSE Conversion Alerts</h3>
+            <div id="conversionAlerts"></div>
+        </div>
+    </div>
+
+    <script>
+        let trafficLog = [];
+        let filters = { sse: false, json: false, websocket: false };
+        let stats = { total: 0, sse: 0, json: 0, websocket: 0 };
+
+        // Override XMLHttpRequest to monitor AJAX calls
+        const originalXHR = window.XMLHttpRequest;
+        window.XMLHttpRequest = function() {
+            const xhr = new originalXHR();
+            const originalOpen = xhr.open;
+            const originalSend = xhr.send;
+            const originalSetRequestHeader = xhr.setRequestHeader;
+            
+            let requestData = {
+                method: '',
+                url: '',
+                headers: {},
+                body: '',
+                timestamp: new Date().toISOString()
+            };
+
+            xhr.open = function(method, url, async, user, password) {
+                requestData.method = method;
+                requestData.url = url;
+                return originalOpen.apply(this, arguments);
+            };
+
+            xhr.setRequestHeader = function(header, value) {
+                requestData.headers[header] = value;
+                return originalSetRequestHeader.apply(this, arguments);
+            };
+
+            xhr.send = function(body) {
+                requestData.body = body || '';
+                
+                xhr.addEventListener('readystatechange', function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        const responseData = {
+                            ...requestData,
+                            status: xhr.status,
+                            responseHeaders: {},
+                            responseBody: xhr.responseText,
+                            contentType: xhr.getResponseHeader('content-type') || '',
+                            isSSE: false,
+                            isJSON: false,
+                            hasDataPrefix: false
+                        };
+
+                        // Parse response headers
+                        const headerString = xhr.getAllResponseHeaders();
+                        const headers = headerString.split('\r\n');
+                        headers.forEach(header => {
+                            const [key, value] = header.split(': ');
+                            if (key && value) {
+                                responseData.responseHeaders[key.toLowerCase()] = value;
+                            }
+                        });
+
+                        // Check for SSE indicators
+                        responseData.isSSE = responseData.contentType.includes('text/event-stream') ||
+                                           Object.values(requestData.headers).some(h => 
+                                               h && h.toString().includes('text/event-stream'));
+
+                        // Check for JSON
+                        responseData.isJSON = responseData.contentType.includes('application/json') ||
+                                            Object.values(requestData.headers).some(h => 
+                                                h && h.toString().includes('application/json'));
+
+                        // Check for data: prefix (SSE format)
+                        responseData.hasDataPrefix = responseData.responseBody.startsWith('data: ');
+
+                        logTraffic(responseData);
+                    }
+                });
+
+                return originalSend.apply(this, arguments);
+            };
+
+            return xhr;
+        };
+
+        // Override fetch API
+        const originalFetch = window.fetch;
+        window.fetch = async function(url, options = {}) {
+            const startTime = new Date().toISOString();
+            
+            const requestData = {
+                method: options.method || 'GET',
+                url: url.toString(),
+                headers: options.headers || {},
+                body: options.body || '',
+                timestamp: startTime
+            };
+
+            try {
+                const response = await originalFetch.apply(this, arguments);
+                const responseClone = response.clone();
+                const responseBody = await responseClone.text();
+
+                const responseData = {
+                    ...requestData,
+                    status: response.status,
+                    responseHeaders: {},
+                    responseBody: responseBody,
+                    contentType: response.headers.get('content-type') || '',
+                    isSSE: false,
+                    isJSON: false,
+                    hasDataPrefix: false
+                };
+
+                // Parse response headers
+                response.headers.forEach((value, key) => {
+                    responseData.responseHeaders[key.toLowerCase()] = value;
+                });
+
+                // Check for SSE indicators
+                responseData.isSSE = responseData.contentType.includes('text/event-stream') ||
+                                   Object.values(requestData.headers).some(h => 
+                                       h && h.toString().includes('text/event-stream'));
+
+                // Check for JSON
+                responseData.isJSON = responseData.contentType.includes('application/json') ||
+                                    Object.values(requestData.headers).some(h => 
+                                        h && h.toString().includes('application/json'));
+
+                // Check for data: prefix (SSE format)
+                responseData.hasDataPrefix = responseBody.startsWith('data: ');
+
+                logTraffic(responseData);
+                return response;
+            } catch (error) {
+                console.error('Fetch error:', error);
+                throw error;
+            }
+        };
+
+        // Monitor WebSocket connections
+        const originalWebSocket = window.WebSocket;
+        window.WebSocket = function(url, protocols) {
+            const ws = new originalWebSocket(url, protocols);
+            
+            const wsData = {
+                url: url,
+                timestamp: new Date().toISOString(),
+                type: 'websocket',
+                isWebSocket: true
+            };
+
+            stats.websocket++;
+            stats.total++;
+            updateStats();
+
+            logTraffic(wsData);
+
+            const originalSend = ws.send;
+            ws.send = function(data) {
+                logTraffic({
+                    ...wsData,
+                    method: 'WS_SEND',
+                    body: data,
+                    timestamp: new Date().toISOString()
+                });
+                return originalSend.apply(this, arguments);
+            };
+
+            ws.addEventListener('message', function(event) {
+                const messageData = {
+                    ...wsData,
+                    method: 'WS_MESSAGE',
+                    responseBody: event.data,
+                    hasDataPrefix: event.data.toString().startsWith('data: '),
+                    timestamp: new Date().toISOString()
+                };
+                logTraffic(messageData);
+            });
+
+            return ws;
+        };
+
+        function logTraffic(data) {
+            trafficLog.push(data);
+            
+            // Update stats
+            stats.total++;
+            if (data.isSSE) stats.sse++;
+            if (data.isJSON) stats.json++;
+            if (data.isWebSocket) stats.websocket++;
+            
+            updateStats();
+            updateTrafficDisplay();
+            
+            // Check for conversions
+            if (data.isJSON && data.hasDataPrefix) {
+                addConversionAlert('JSON request with SSE-style data: prefix detected', data);
+            }
+            if (data.isJSON && data.isSSE) {
+                addConversionAlert('JSON→SSE conversion detected', data);
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalRequests').textContent = `Total Requests: ${stats.total}`;
+            document.getElementById('sseCount').textContent = `SSE Requests: ${stats.sse}`;
+            document.getElementById('jsonCount').textContent = `JSON Requests: ${stats.json}`;
+            document.getElementById('wsCount').textContent = `WebSocket Connections: ${stats.websocket}`;
+        }
+
+        function updateTrafficDisplay() {
+            const logElement = document.getElementById('trafficLog');
+            const filteredLog = trafficLog.filter(entry => {
+                if (filters.sse && !entry.isSSE) return false;
+                if (filters.json && !entry.isJSON) return false;
+                if (filters.websocket && !entry.isWebSocket) return false;
+                return true;
+            });
+
+            logElement.innerHTML = filteredLog.slice(-20).map(entry => {
+                const indicators = [];
+                if (entry.isSSE) indicators.push('<span class="sse-indicator">SSE</span>');
+                if (entry.isJSON) indicators.push('<span class="json-indicator">JSON</span>');
+                if (entry.isWebSocket) indicators.push('<span class="websocket-indicator">WS</span>');
+                if (entry.hasDataPrefix) indicators.push('<span class="sse-indicator">DATA:</span>');
+
+                return `
+                    <div class="request-entry">
+                        <div>
+                            <span class="timestamp">${entry.timestamp}</span>
+                            <span class="method">${entry.method || 'GET'}</span>
+                            <span class="url">${entry.url}</span>
+                            ${indicators.join('')}
+                        </div>
+                        <div class="headers">
+                            Request Headers: ${JSON.stringify(entry.headers)}
+                            ${entry.responseHeaders ? `<br>Response Headers: ${JSON.stringify(entry.responseHeaders)}` : ''}
+                        </div>
+                        ${entry.body ? `<div class="body">Request: ${entry.body.substring(0, 200)}${entry.body.length > 200 ? '...' : ''}</div>` : ''}
+                        ${entry.responseBody ? `<div class="body">Response: ${entry.responseBody.substring(0, 200)}${entry.responseBody.length > 200 ? '...' : ''}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function addConversionAlert(message, data) {
+            const alertsElement = document.getElementById('conversionAlerts');
+            const alert = document.createElement('div');
+            alert.className = 'request-entry';
+            alert.style.background = '#440000';
+            alert.innerHTML = `
+                <div style="color: #ff6666; font-weight: bold;">${message}</div>
+                <div class="url">${data.url}</div>
+                <div class="body">${JSON.stringify(data, null, 2)}</div>
+            `;
+            alertsElement.insertBefore(alert, alertsElement.firstChild);
+        }
+
+        function toggleFilter(type) {
+            filters[type] = !filters[type];
+            const button = document.getElementById(type + 'Filter');
+            if (filters[type]) {
+                button.classList.add('filter-active');
+            } else {
+                button.classList.remove('filter-active');
+            }
+            updateTrafficDisplay();
+        }
+
+        function clearLog() {
+            trafficLog = [];
+            stats = { total: 0, sse: 0, json: 0, websocket: 0 };
+            updateStats();
+            updateTrafficDisplay();
+            document.getElementById('conversionAlerts').innerHTML = '';
+        }
+
+        function exportLog() {
+            const dataStr = JSON.stringify(trafficLog, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `network-traffic-${new Date().toISOString()}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Start monitoring immediately
+        console.log('🌐 Network traffic monitoring started');
+        console.log('📊 All XMLHttpRequest, fetch, and WebSocket calls will be logged');
+    </script>
+</body>
+</html>

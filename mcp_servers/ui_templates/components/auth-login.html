@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kroger Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+
+        .logo {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .login-body {
+            padding: 40px;
+        }
+
+        .features {
+            margin-bottom: 30px;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .feature:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .feature-icon {
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+        }
+
+        .feature-text {
+            flex: 1;
+            font-size: 16px;
+            color: #2d3436;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .security-note {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f3ff;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .security-title {
+            font-weight: 600;
+            color: #2d3436;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .security-text {
+            font-size: 14px;
+            color: #636e72;
+            line-height: 1.5;
+        }
+
+        .divider {
+            margin: 30px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #dee2e6;
+        }
+
+        .divider-text {
+            background: white;
+            padding: 0 15px;
+            position: relative;
+            color: #636e72;
+            font-size: 14px;
+        }
+
+        .demo-mode {
+            text-align: center;
+        }
+
+        .demo-button {
+            padding: 12px 24px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .demo-button:hover {
+            background: #f8f9fa;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo">🛒</div>
+            <h1 class="title">Kroger Shopping Assistant</h1>
+            <p class="subtitle">Login to access your personalized shopping experience</p>
+        </div>
+
+        <div class="login-body">
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🛍️</div>
+                    <div class="feature-text">Manage your shopping cart across devices</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">💰</div>
+                    <div class="feature-text">Access exclusive digital coupons and deals</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📍</div>
+                    <div class="feature-text">Find products at your favorite stores</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📋</div>
+                    <div class="feature-text">View order history and track purchases</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🍳</div>
+                    <div class="feature-text">Plan meals and create shopping lists</div>
+                </div>
+            </div>
+
+            <button class="login-button pulse" onclick="loginWithKroger()">
+                <span>🔐</span>
+                <span>Login with Kroger Account</span>
+            </button>
+
+            <div class="security-note">
+                <div class="security-title">
+                    <span>🔒</span>
+                    <span>Secure Authentication</span>
+                </div>
+                <div class="security-text">
+                    Your login is handled securely through Kroger's official OAuth 2.0 system. 
+                    We never see or store your Kroger password.
+                </div>
+            </div>
+
+            <div class="divider">
+                <span class="divider-text">OR</span>
+            </div>
+
+            <div class="demo-mode">
+                <button class="demo-button" onclick="useDemoMode()">
+                    Try Demo Mode
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get auth URL from data attribute or use default
+        const authUrl = document.currentScript?.getAttribute('data-auth-url') || '/auth/login';
+
+        function loginWithKroger() {
+            // Redirect to Kroger OAuth login
+            window.location.href = authUrl;
+        }
+
+        function useDemoMode() {
+            // Use demo mode without authentication
+            console.log('Demo mode activated');
+            // Would trigger demo mode in the application
+        }
+    </script>
+</body>
+</html>

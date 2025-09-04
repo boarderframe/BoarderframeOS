@@ -1,0 +1,60 @@
+# Security Scanner Container for Continuous Vulnerability Assessment
+# Performs automated security scanning of Docker images and reports findings
+
+FROM alpine:3.18@sha256:7144f7bab3d4c2648d7e59409f15ec52a18006a128c733fcff20d3a4a54ba44a
+
+# Install security scanning tools
+RUN apk update && \
+    apk upgrade && \
+    apk add --no-cache \
+        curl \
+        jq \
+        bash \
+        openssl \
+        ca-certificates \
+        docker-cli \
+        python3 \
+        py3-pip \
+        git && \
+    # Install Trivy for vulnerability scanning
+    curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin && \
+    # Install Grype for additional scanning
+    curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin && \
+    # Install Syft for SBOM generation
+    curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin && \
+    # Clean up
+    rm -rf /var/cache/apk/*
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S scanner && \
+    adduser -S -D -H -u 1001 -s /bin/bash -G docker scanner
+
+# Create directories for scanning results
+RUN mkdir -p /results /reports /config && \
+    chown -R scanner:scanner /results /reports /config
+
+# Copy security scanning scripts
+COPY --chown=scanner:scanner scripts/security-scanner.sh /usr/local/bin/security-scanner
+COPY --chown=scanner:scanner scripts/vulnerability-report.sh /usr/local/bin/vulnerability-report
+COPY --chown=scanner:scanner config/scanner-config.yaml /config/
+
+# Make scripts executable
+RUN chmod +x /usr/local/bin/security-scanner /usr/local/bin/vulnerability-report
+
+# Switch to non-root user
+USER scanner
+
+# Set environment variables
+ENV SCANNER_CONFIG=/config/scanner-config.yaml \
+    RESULTS_DIR=/results \
+    REPORTS_DIR=/reports \
+    SCAN_INTERVAL=3600 \
+    VULNERABILITY_THRESHOLD=HIGH \
+    TRIVY_CACHE_DIR=/tmp/trivy
+
+# Health check
+HEALTHCHECK --interval=60s --timeout=30s --start-period=30s --retries=3 \
+    CMD pgrep -f security-scanner > /dev/null || exit 1
+
+# Default command
+CMD ["/usr/local/bin/security-scanner"]

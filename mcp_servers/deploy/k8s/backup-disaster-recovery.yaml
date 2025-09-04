@@ -1,0 +1,618 @@
+---
+# Backup and Disaster Recovery Infrastructure
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mcp-ui-backup
+  labels:
+    name: mcp-ui-backup
+    tier: infrastructure
+---
+# Database backup using pg_dump
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  namespace: mcp-ui-backup
+  labels:
+    app: postgres-backup
+    component: database
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM UTC
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 3600  # 1 hour timeout
+      template:
+        metadata:
+          labels:
+            app: postgres-backup
+        spec:
+          serviceAccountName: backup-service-account
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            fsGroup: 1001
+          containers:
+          - name: postgres-backup
+            image: postgres:15
+            env:
+            - name: PGHOST
+              valueFrom:
+                secretKeyRef:
+                  name: database-credentials
+                  key: host
+            - name: PGPORT
+              value: "5432"
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: database-credentials
+                  key: username
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: database-credentials
+                  key: password
+            - name: PGDATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: database-credentials
+                  key: database
+            - name: AWS_REGION
+              value: "us-west-2"
+            - name: S3_BUCKET
+              value: "mcp-ui-backups-production"
+            - name: BACKUP_RETENTION_DAYS
+              value: "30"
+            command:
+            - /bin/bash
+            - -c
+            - |
+              set -euo pipefail
+              
+              TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+              BACKUP_FILE="postgres_backup_${TIMESTAMP}.sql.gz"
+              
+              echo "Starting PostgreSQL backup at $(date)"
+              echo "Backup file: ${BACKUP_FILE}"
+              
+              # Create backup with compression
+              pg_dump --verbose --no-password --create --clean --if-exists \
+                | gzip > "/tmp/${BACKUP_FILE}"
+              
+              # Verify backup file was created and has content
+              if [[ ! -f "/tmp/${BACKUP_FILE}" ]] || [[ ! -s "/tmp/${BACKUP_FILE}" ]]; then
+                echo "ERROR: Backup file was not created or is empty"
+                exit 1
+              fi
+              
+              # Upload to S3
+              aws s3 cp "/tmp/${BACKUP_FILE}" "s3://${S3_BUCKET}/database/${BACKUP_FILE}" \
+                --server-side-encryption AES256 \
+                --metadata "backup-type=daily,database=postgres,timestamp=${TIMESTAMP}"
+              
+              # Verify upload
+              aws s3 ls "s3://${S3_BUCKET}/database/${BACKUP_FILE}"
+              
+              # Clean up old backups (keep last 30 days)
+              CUTOFF_DATE=$(date -d "${BACKUP_RETENTION_DAYS} days ago" +%Y%m%d)
+              aws s3 ls "s3://${S3_BUCKET}/database/" | while read -r line; do
+                BACKUP_DATE=$(echo "$line" | grep -oE '[0-9]{8}' | head -1)
+                if [[ "$BACKUP_DATE" < "$CUTOFF_DATE" ]]; then
+                  FILE_NAME=$(echo "$line" | awk '{print $4}')
+                  echo "Deleting old backup: $FILE_NAME"
+                  aws s3 rm "s3://${S3_BUCKET}/database/$FILE_NAME"
+                fi
+              done
+              
+              echo "Database backup completed successfully at $(date)"
+            resources:
+              requests:
+                cpu: 500m
+                memory: 512Mi
+              limits:
+                cpu: 1000m
+                memory: 1Gi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+            volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
+          volumes:
+          - name: tmp-volume
+            emptyDir: {}
+          restartPolicy: OnFailure
+          nodeSelector:
+            kubernetes.io/os: linux
+---
+# Redis backup (RDB snapshots)
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: redis-backup
+  namespace: mcp-ui-backup
+  labels:
+    app: redis-backup
+    component: cache
+spec:
+  schedule: "0 3 * * *"  # Daily at 3 AM UTC
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 1800  # 30 minutes timeout
+      template:
+        metadata:
+          labels:
+            app: redis-backup
+        spec:
+          serviceAccountName: backup-service-account
+          containers:
+          - name: redis-backup
+            image: redis:7
+            env:
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: host
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: auth_token
+            - name: AWS_REGION
+              value: "us-west-2"
+            - name: S3_BUCKET
+              value: "mcp-ui-backups-production"
+            command:
+            - /bin/bash
+            - -c
+            - |
+              set -euo pipefail
+              
+              TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+              BACKUP_FILE="redis_backup_${TIMESTAMP}.rdb"
+              
+              echo "Starting Redis backup at $(date)"
+              
+              # Trigger Redis BGSAVE
+              redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_AUTH" BGSAVE
+              
+              # Wait for background save to complete
+              while [ "$(redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_AUTH" LASTSAVE)" = "$(redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_AUTH" LASTSAVE)" ]; do
+                sleep 5
+                echo "Waiting for Redis BGSAVE to complete..."
+              done
+              
+              # Copy RDB file from Redis container (this would need to be adapted based on your Redis setup)
+              echo "Redis backup snapshot created at $(date)"
+              
+              # For ElastiCache, we rely on automated backups, so we just log the status
+              echo "ElastiCache Redis backup relies on AWS automated snapshots"
+              echo "Manual snapshot would be triggered via AWS API if needed"
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 200m
+                memory: 256Mi
+          restartPolicy: OnFailure
+---
+# Configuration backup (ConfigMaps, Secrets metadata)
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: config-backup
+  namespace: mcp-ui-backup
+  labels:
+    app: config-backup
+    component: configuration
+spec:
+  schedule: "0 1 * * *"  # Daily at 1 AM UTC
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: backup-service-account
+          containers:
+          - name: config-backup
+            image: bitnami/kubectl:latest
+            env:
+            - name: AWS_REGION
+              value: "us-west-2"
+            - name: S3_BUCKET
+              value: "mcp-ui-backups-production"
+            command:
+            - /bin/bash
+            - -c
+            - |
+              set -euo pipefail
+              
+              TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+              BACKUP_DIR="/tmp/config_backup_${TIMESTAMP}"
+              BACKUP_FILE="config_backup_${TIMESTAMP}.tar.gz"
+              
+              mkdir -p "$BACKUP_DIR"
+              
+              echo "Starting configuration backup at $(date)"
+              
+              # Backup ConfigMaps
+              kubectl get configmaps --all-namespaces -o yaml > "$BACKUP_DIR/configmaps.yaml"
+              
+              # Backup Secrets metadata (not the actual secret values)
+              kubectl get secrets --all-namespaces -o yaml | \
+                sed 's/data:/# data:/g' | \
+                sed 's/stringData:/# stringData:/g' > "$BACKUP_DIR/secrets-metadata.yaml"
+              
+              # Backup Ingress configurations
+              kubectl get ingress --all-namespaces -o yaml > "$BACKUP_DIR/ingress.yaml"
+              
+              # Backup Services
+              kubectl get services --all-namespaces -o yaml > "$BACKUP_DIR/services.yaml"
+              
+              # Backup NetworkPolicies
+              kubectl get networkpolicies --all-namespaces -o yaml > "$BACKUP_DIR/networkpolicies.yaml"
+              
+              # Backup RBAC
+              kubectl get roles,rolebindings,clusterroles,clusterrolebindings -o yaml > "$BACKUP_DIR/rbac.yaml"
+              
+              # Create tarball
+              cd /tmp
+              tar -czf "$BACKUP_FILE" "config_backup_${TIMESTAMP}/"
+              
+              # Upload to S3
+              aws s3 cp "$BACKUP_FILE" "s3://${S3_BUCKET}/config/${BACKUP_FILE}" \
+                --server-side-encryption AES256
+              
+              echo "Configuration backup completed at $(date)"
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 200m
+                memory: 256Mi
+          restartPolicy: OnFailure
+---
+# Disaster Recovery Runbook as ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: disaster-recovery-runbook
+  namespace: mcp-ui-backup
+  labels:
+    app: disaster-recovery
+data:
+  runbook.md: |
+    # MCP-UI Disaster Recovery Runbook
+    
+    ## Overview
+    This runbook outlines the procedures for disaster recovery of the MCP-UI system.
+    
+    ## Recovery Time Objectives (RTO) and Recovery Point Objectives (RPO)
+    - **RTO**: 4 hours (time to restore service)
+    - **RPO**: 1 hour (maximum acceptable data loss)
+    
+    ## Scenarios and Procedures
+    
+    ### 1. Database Failure
+    
+    #### Detection
+    - Database connection errors in application logs
+    - High error rates on database health checks
+    - RDS alarms triggered
+    
+    #### Recovery Steps
+    1. Assess the scope of the failure
+    2. Check RDS console for automated recovery options
+    3. If needed, restore from automated backup:
+       ```bash
+       aws rds restore-db-instance-from-db-snapshot \
+         --db-instance-identifier mcp-ui-postgres-recovery \
+         --db-snapshot-identifier <latest-snapshot-id>
+       ```
+    4. Update DNS/connection strings if necessary
+    5. Verify data integrity
+    
+    ### 2. Complete AWS Region Failure
+    
+    #### Detection
+    - Multiple service failures across the region
+    - AWS status page confirms regional issues
+    
+    #### Recovery Steps
+    1. Activate secondary region (if configured)
+    2. Restore from cross-region backups:
+       ```bash
+       # Restore database in secondary region
+       aws rds restore-db-instance-from-db-snapshot \
+         --db-instance-identifier mcp-ui-postgres-dr \
+         --db-snapshot-identifier <cross-region-snapshot>
+       ```
+    3. Deploy application stack in secondary region using Terraform
+    4. Update DNS to point to secondary region
+    5. Communicate with stakeholders
+    
+    ### 3. Kubernetes Cluster Failure
+    
+    #### Detection
+    - kubectl commands failing
+    - Applications unreachable
+    - EKS control plane issues
+    
+    #### Recovery Steps
+    1. Check EKS cluster status in AWS console
+    2. If cluster is corrupted, recreate using Terraform:
+       ```bash
+       cd terraform/
+       terraform destroy -target=aws_eks_cluster.mcp_cluster
+       terraform apply
+       ```
+    3. Restore application deployments:
+       ```bash
+       kubectl apply -f deploy/k8s/
+       ```
+    4. Restore data from backups if needed
+    
+    ### 4. Application-Level Corruption
+    
+    #### Detection
+    - Data inconsistencies reported by users
+    - Application behaving unexpectedly
+    - Integrity check failures
+    
+    #### Recovery Steps
+    1. Stop all write operations
+    2. Identify the last known good state
+    3. Restore database from point-in-time backup:
+       ```bash
+       aws rds restore-db-instance-to-point-in-time \
+         --source-db-instance-identifier mcp-ui-postgres \
+         --target-db-instance-identifier mcp-ui-postgres-recovery \
+         --restore-time 2024-01-15T14:30:00Z
+       ```
+    4. Validate restored data
+    5. Resume operations
+    
+    ## Emergency Contacts
+    - On-call Engineer: +1-555-ONCALL
+    - DevOps Team Lead: devops-lead@example.com
+    - Product Owner: product@example.com
+    - AWS Support: Enterprise Support Case
+    
+    ## Communication Plan
+    1. Create incident in incident management system
+    2. Notify stakeholders via #incidents Slack channel
+    3. Update status page (status.mcp-ui.example.com)
+    4. Send email updates every 30 minutes during outage
+    
+    ## Post-Incident
+    1. Conduct post-mortem meeting within 48 hours
+    2. Update runbook based on lessons learned
+    3. Implement preventive measures
+    4. Test recovery procedures monthly
+  
+  recovery-scripts.sh: |
+    #!/bin/bash
+    # MCP-UI Disaster Recovery Scripts
+    
+    set -euo pipefail
+    
+    # Configuration
+    AWS_REGION=${AWS_REGION:-us-west-2}
+    BACKUP_REGION=${BACKUP_REGION:-us-east-1}
+    S3_BUCKET=${S3_BUCKET:-mcp-ui-backups-production}
+    
+    # Function to restore database from latest backup
+    restore_database() {
+        local target_identifier=${1:-mcp-ui-postgres-recovery}
+        
+        echo "Restoring database to ${target_identifier}..."
+        
+        # Find latest backup
+        latest_backup=$(aws rds describe-db-snapshots \
+            --db-instance-identifier mcp-ui-postgres-production \
+            --snapshot-type automated \
+            --query 'DBSnapshots[0].DBSnapshotIdentifier' \
+            --output text)
+        
+        echo "Using backup: ${latest_backup}"
+        
+        # Restore from snapshot
+        aws rds restore-db-instance-from-db-snapshot \
+            --db-instance-identifier "${target_identifier}" \
+            --db-snapshot-identifier "${latest_backup}" \
+            --db-instance-class db.r6g.large \
+            --multi-az \
+            --publicly-accessible false \
+            --storage-encrypted
+        
+        echo "Database restore initiated. Monitor progress in AWS console."
+    }
+    
+    # Function to deploy application stack
+    deploy_application() {
+        local environment=${1:-production}
+        
+        echo "Deploying application stack for ${environment}..."
+        
+        # Apply Terraform
+        cd terraform/
+        terraform init
+        terraform plan -var="environment=${environment}"
+        terraform apply -var="environment=${environment}" -auto-approve
+        
+        # Deploy Kubernetes resources
+        kubectl apply -f ../deploy/k8s/namespace.yaml
+        kubectl apply -f ../deploy/k8s/mcp-manager-deployment.yaml
+        kubectl apply -f ../deploy/k8s/mcp-autoscaling.yaml
+        kubectl apply -f ../deploy/k8s/mcp-ingress.yaml
+        
+        echo "Application deployment completed."
+    }
+    
+    # Function to check system health
+    check_health() {
+        echo "Performing health checks..."
+        
+        # Check database connectivity
+        if kubectl exec -n mcp-ui deployment/mcp-manager -- python -c "
+    import psycopg2
+    import os
+    conn = psycopg2.connect(os.environ['DATABASE_URL'])
+    print('Database: OK')
+    "; then
+            echo "✓ Database connectivity OK"
+        else
+            echo "✗ Database connectivity FAILED"
+        fi
+        
+        # Check Redis connectivity
+        if kubectl exec -n mcp-ui deployment/mcp-manager -- python -c "
+    import redis
+    import os
+    r = redis.from_url(os.environ['REDIS_URL'])
+    r.ping()
+    print('Redis: OK')
+    "; then
+            echo "✓ Redis connectivity OK"
+        else
+            echo "✗ Redis connectivity FAILED"
+        fi
+        
+        # Check HTTP endpoints
+        if curl -f -s https://mcp-ui.example.com/api/v1/health > /dev/null; then
+            echo "✓ API endpoint OK"
+        else
+            echo "✗ API endpoint FAILED"
+        fi
+        
+        echo "Health check completed."
+    }
+    
+    # Main disaster recovery function
+    disaster_recovery() {
+        local scenario=$1
+        
+        case $scenario in
+            "database")
+                echo "Initiating database disaster recovery..."
+                restore_database
+                ;;
+            "full")
+                echo "Initiating full system disaster recovery..."
+                deploy_application
+                restore_database
+                check_health
+                ;;
+            "health")
+                check_health
+                ;;
+            *)
+                echo "Usage: $0 {database|full|health}"
+                exit 1
+                ;;
+        esac
+    }
+    
+    # Execute if script is run directly
+    if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+        disaster_recovery "$@"
+    fi
+---
+# Backup monitoring and alerting
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: backup-monitoring
+  namespace: mcp-ui-backup
+  labels:
+    app: backup-monitoring
+spec:
+  groups:
+  - name: backup.rules
+    interval: 1h
+    rules:
+    - alert: BackupJobFailed
+      expr: kube_job_status_failed{namespace="mcp-ui-backup"} > 0
+      for: 5m
+      labels:
+        severity: critical
+        service: backup
+      annotations:
+        summary: "Backup job failed"
+        description: "Backup job {{ $labels.job_name }} in namespace {{ $labels.namespace }} has failed"
+
+    - alert: BackupJobTooLong
+      expr: time() - kube_job_status_start_time{namespace="mcp-ui-backup"} > 7200
+      for: 15m
+      labels:
+        severity: warning
+        service: backup
+      annotations:
+        summary: "Backup job running too long"
+        description: "Backup job {{ $labels.job_name }} has been running for more than 2 hours"
+
+    - alert: BackupNotCompleted
+      expr: time() - kube_job_status_completion_time{namespace="mcp-ui-backup"} > 172800
+      for: 1h
+      labels:
+        severity: critical
+        service: backup
+      annotations:
+        summary: "Backup not completed in 48 hours"
+        description: "No successful backup for {{ $labels.job_name }} in the last 48 hours"
+---
+# ServiceAccount for backup operations
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backup-service-account
+  namespace: mcp-ui-backup
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT-ID:role/mcp-ui-backup-role-production
+---
+# RBAC for backup service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: backup-operator
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "secrets", "services"]
+  verbs: ["get", "list"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses", "networkpolicies"]
+  verbs: ["get", "list"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
+  verbs: ["get", "list"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets", "statefulsets"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: backup-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: backup-operator
+subjects:
+- kind: ServiceAccount
+  name: backup-service-account
+  namespace: mcp-ui-backup

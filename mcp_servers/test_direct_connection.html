@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direct MCP Connection Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #f0f0f0; }
+        .test-result { margin: 20px 0; padding: 15px; border-radius: 5px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; }
+        pre { background: white; padding: 10px; border: 1px solid #ddd; overflow: auto; max-height: 300px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Direct MCP Connection Test</h1>
+    <p>Testing direct connection to MCP server bypassing Open WebUI pipeline</p>
+    
+    <button onclick="testDirectConnection()">Test Direct MCP Connection</button>
+    <button onclick="testWithHeaders()">Test with Open WebUI Headers</button>
+    <button onclick="simulateOpenWebUI()">Simulate Open WebUI Request</button>
+    
+    <div id="results"></div>
+
+    <script>
+        async function testDirectConnection() {
+            updateResults('🔄 Testing direct connection to MCP server...');
+            
+            try {
+                const response = await fetch('http://localhost:9004/products/search/llm-ready?term=milk&limit=2');
+                const data = await response.json();
+                
+                const result = {
+                    status: response.status,
+                    headers: Object.fromEntries(response.headers.entries()),
+                    hasLLMResponse: !!data.llm_response,
+                    hasInstructions: !!data.instructions,
+                    productCount: data.product_count,
+                    artifactAvailable: data.artifact_available
+                };
+                
+                updateResults(`
+                    <div class="test-result success">
+                        <h3>✅ Direct Connection SUCCESS</h3>
+                        <p><strong>Status:</strong> ${result.status}</p>
+                        <p><strong>Content-Type:</strong> ${result.headers['content-type']}</p>
+                        <p><strong>LLM Response Available:</strong> ${result.hasLLMResponse}</p>
+                        <p><strong>Product Count:</strong> ${result.productCount}</p>
+                        <p><strong>Instructions:</strong> ${data.instructions}</p>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    </div>
+                `);
+                
+            } catch (error) {
+                updateResults(`
+                    <div class="test-result error">
+                        <h3>❌ Direct Connection FAILED</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `);
+            }
+        }
+        
+        async function testWithHeaders() {
+            updateResults('🔄 Testing with Open WebUI style headers...');
+            
+            try {
+                const response = await fetch('http://localhost:9004/products/search/llm-ready?term=bread&limit=2', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'Open-WebUI',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                updateResults(`
+                    <div class="test-result success">
+                        <h3>✅ Open WebUI Headers SUCCESS</h3>
+                        <p><strong>Response is clean JSON:</strong> ${typeof data === 'object'}</p>
+                        <p><strong>No SSE prefix found:</strong> ✅</p>
+                        <p><strong>Product Count:</strong> ${data.product_count}</p>
+                        <p><strong>Artifact Available:</strong> ${data.artifact_available}</p>
+                    </div>
+                `);
+                
+            } catch (error) {
+                updateResults(`
+                    <div class="test-result error">
+                        <h3>❌ Header Test FAILED</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `);
+            }
+        }
+        
+        async function simulateOpenWebUI() {
+            updateResults('🔄 Simulating Open WebUI tool call...');
+            
+            try {
+                // Test the exact format Open WebUI might use
+                const response = await fetch('http://localhost:9004/products/search/llm-ready', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                // Read response as text first to check for SSE format
+                const responseText = await response.text();
+                
+                if (responseText.startsWith('data: {')) {
+                    updateResults(`
+                        <div class="test-result error">
+                            <h3>❌ SSE FORMAT DETECTED</h3>
+                            <p>Response starts with "data: " - this is the problem!</p>
+                            <pre>${responseText.substring(0, 200)}...</pre>
+                        </div>
+                    `);
+                } else {
+                    try {
+                        const data = JSON.parse(responseText);
+                        updateResults(`
+                            <div class="test-result success">
+                                <h3>✅ CLEAN JSON RESPONSE</h3>
+                                <p>No SSE format detected - response is pure JSON</p>
+                                <p><strong>Response Length:</strong> ${responseText.length} bytes</p>
+                                <p><strong>Starts With:</strong> ${responseText.substring(0, 50)}...</p>
+                            </div>
+                        `);
+                    } catch (parseError) {
+                        updateResults(`
+                            <div class="test-result error">
+                                <h3>❌ JSON PARSE ERROR</h3>
+                                <p><strong>Error:</strong> ${parseError.message}</p>
+                                <pre>${responseText.substring(0, 200)}...</pre>
+                            </div>
+                        `);
+                    }
+                }
+                
+            } catch (error) {
+                updateResults(`
+                    <div class="test-result error">
+                        <h3>❌ Simulation FAILED</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `);
+            }
+        }
+        
+        function updateResults(html) {
+            document.getElementById('results').innerHTML = html;
+        }
+        
+        // Auto-run basic test
+        window.onload = () => {
+            updateResults('<div class="test-result info"><p>Click a test button to verify MCP server responses...</p></div>');
+        };
+    </script>
+</body>
+</html>

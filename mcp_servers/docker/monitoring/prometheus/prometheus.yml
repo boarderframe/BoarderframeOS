@@ -1,0 +1,137 @@
+# Prometheus Configuration for MCP Server Manager
+# Scrapes metrics from all services and provides alerting
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'mcp-server-manager'
+    replica: 'prometheus-1'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+# Load alerting rules
+rule_files:
+  - "alerts/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 5s
+    metrics_path: /metrics
+
+  # MCP Server Manager application metrics
+  - job_name: 'mcp-manager'
+    static_configs:
+      - targets: ['mcp-manager:8080']
+    scrape_interval: 10s
+    metrics_path: /metrics
+    timeout: 5s
+    honor_labels: true
+    params:
+      format: ['prometheus']
+
+  # Redis metrics via redis_exporter
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Node/Container metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 30s
+
+  # Open WebUI metrics
+  - job_name: 'open-webui'
+    static_configs:
+      - targets: ['open-webui:8080']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    honor_labels: true
+
+  # Ollama metrics
+  - job_name: 'ollama'
+    static_configs:
+      - targets: ['ollama:11434']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Docker container metrics via cAdvisor
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Nginx metrics via nginx_exporter
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Blackbox exporter for external monitoring
+  - job_name: 'blackbox'
+    static_configs:
+      - targets: ['blackbox-exporter:9115']
+    scrape_interval: 60s
+    metrics_path: /metrics
+
+  # Blackbox HTTP checks
+  - job_name: 'blackbox-http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - https://localhost/health
+        - https://localhost/api/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # Security monitoring via Falco
+  - job_name: 'falco'
+    static_configs:
+      - targets: ['falco-sidekick:2801']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # SSL certificate monitoring
+  - job_name: 'blackbox-ssl'
+    metrics_path: /probe
+    params:
+      module: [ssl_cert]
+    static_configs:
+      - targets:
+        - localhost:443
+        - mcp-manager:8080
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+# Storage configuration
+storage:
+  tsdb:
+    path: /prometheus
+    retention.time: 15d
+    retention.size: 10GB
+    wal-compression: true

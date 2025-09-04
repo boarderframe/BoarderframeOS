@@ -1,0 +1,159 @@
+# Secure Docker image for MCP-UI System
+# Multi-stage build with minimal attack surface
+
+# ============================================================================
+# Stage 1: Python Dependencies Builder
+# ============================================================================
+FROM python:3.11-slim AS python-builder
+
+# Security: Run as non-root during build
+RUN useradd -m -u 1001 builder && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        gcc \
+        g++ \
+        make \
+        libssl-dev \
+        libffi-dev \
+        libpq-dev \
+        git && \
+    rm -rf /var/lib/apt/lists/*
+
+USER builder
+WORKDIR /home/builder
+
+# Copy requirements
+COPY --chown=builder:builder requirements.txt requirements-dev.txt ./
+
+# Create virtual environment and install dependencies
+RUN python -m venv /home/builder/venv && \
+    . /home/builder/venv/bin/activate && \
+    pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt
+
+# ============================================================================
+# Stage 2: Node.js Dependencies Builder
+# ============================================================================
+FROM node:18-alpine AS node-builder
+
+# Security: Run as non-root during build
+RUN adduser -D -u 1001 builder
+
+USER builder
+WORKDIR /home/builder
+
+# Copy frontend package files
+COPY --chown=builder:builder frontend/package*.json ./frontend/
+
+# Install dependencies
+WORKDIR /home/builder/frontend
+RUN npm ci --only=production && \
+    npm cache clean --force
+
+# Copy frontend source and build
+COPY --chown=builder:builder frontend/ ./
+RUN npm run build
+
+# ============================================================================
+# Stage 3: Security Scanner
+# ============================================================================
+FROM aquasec/trivy:latest AS scanner
+
+# Copy built artifacts for scanning
+COPY --from=python-builder /home/builder/venv /tmp/venv
+COPY --from=node-builder /home/builder/frontend/dist /tmp/dist
+
+# Run security scans
+RUN trivy fs --no-progress --severity HIGH,CRITICAL /tmp/venv || true && \
+    trivy fs --no-progress --severity HIGH,CRITICAL /tmp/dist || true
+
+# ============================================================================
+# Stage 4: Final Production Image
+# ============================================================================
+FROM python:3.11-slim
+
+# Metadata
+LABEL maintainer="security@mcp-ui.com"
+LABEL version="1.0.0"
+LABEL description="Secure MCP-UI System"
+
+# Security: Install security updates and required runtime packages
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        libpq5 \
+        libssl3 \
+        curl \
+        dumb-init && \
+    # Clean up
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+    # Security: Remove unnecessary binaries
+    find / -type f -perm /6000 -exec chmod a-s {} \; 2>/dev/null || true
+
+# Security: Create non-root user
+RUN groupadd -r -g 1001 mcp && \
+    useradd -r -u 1001 -g mcp -d /app -s /sbin/nologin mcp && \
+    mkdir -p /app /var/log/mcp-ui /var/run/mcp-ui && \
+    chown -R mcp:mcp /app /var/log/mcp-ui /var/run/mcp-ui
+
+# Security: Set up directories with proper permissions
+WORKDIR /app
+
+# Copy Python virtual environment from builder
+COPY --from=python-builder --chown=mcp:mcp /home/builder/venv ./venv
+
+# Copy frontend build from builder
+COPY --from=node-builder --chown=mcp:mcp /home/builder/frontend/dist ./static
+
+# Copy application code
+COPY --chown=mcp:mcp src/ ./src/
+COPY --chown=mcp:mcp config/ ./config/
+COPY --chown=mcp:mcp scripts/ ./scripts/
+
+# Security: Set restrictive permissions
+RUN chmod -R 750 /app && \
+    chmod -R 640 /app/config && \
+    chmod -R 755 /app/static && \
+    chmod -R 750 /app/scripts && \
+    # Security: Remove write permissions from code
+    find /app/src -type f -exec chmod 440 {} \; && \
+    find /app/src -type d -exec chmod 550 {} \;
+
+# Security: Environment variables (to be overridden)
+ENV PYTHONPATH=/app \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PATH="/app/venv/bin:$PATH" \
+    # Security settings
+    SECURE_SSL_REDIRECT=true \
+    SESSION_COOKIE_SECURE=true \
+    CSRF_COOKIE_SECURE=true \
+    SECURE_BROWSER_XSS_FILTER=true \
+    SECURE_CONTENT_TYPE_NOSNIFF=true \
+    X_FRAME_OPTIONS=DENY
+
+# Security: Health check endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Security: Switch to non-root user
+USER mcp
+
+# Expose port (non-privileged)
+EXPOSE 8000
+
+# Security: Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
+
+# Run the application
+CMD ["python", "-m", "uvicorn", "src.app.main:app", \
+     "--host", "0.0.0.0", \
+     "--port", "8000", \
+     "--workers", "4", \
+     "--loop", "uvloop", \
+     "--access-log", \
+     "--log-config", "/app/config/logging.yaml"]

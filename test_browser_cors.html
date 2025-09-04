@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CORS Test</title>
+</head>
+<body>
+    <h1>CORS Test for Favicon Loading</h1>
+    <p>Open browser console to see CORS errors</p>
+    
+    <div>
+        <h2>Test 1: Image element (should work)</h2>
+        <img id="favicon-img" src="http://localhost:8080/static/favicon.png" alt="Favicon" style="width: 32px; height: 32px;">
+    </div>
+    
+    <div>
+        <h2>Test 2: Fetch API (may have CORS issues)</h2>
+        <button onclick="testFetch()">Test Fetch</button>
+        <div id="fetch-result"></div>
+    </div>
+    
+    <div>
+        <h2>Test 3: XMLHttpRequest</h2>
+        <button onclick="testXHR()">Test XHR</button>
+        <div id="xhr-result"></div>
+    </div>
+
+    <script>
+        function testFetch() {
+            console.log('Testing fetch...');
+            fetch('http://localhost:8080/static/favicon.png')
+                .then(response => {
+                    console.log('Fetch successful:', response.status);
+                    document.getElementById('fetch-result').innerHTML = 'Fetch successful: ' + response.status;
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    document.getElementById('fetch-result').innerHTML = 'Fetch error: ' + error.message;
+                });
+        }
+        
+        function testXHR() {
+            console.log('Testing XHR...');
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'http://localhost:8080/static/favicon.png');
+            xhr.onload = function() {
+                console.log('XHR successful:', xhr.status);
+                document.getElementById('xhr-result').innerHTML = 'XHR successful: ' + xhr.status;
+            };
+            xhr.onerror = function() {
+                console.error('XHR error');
+                document.getElementById('xhr-result').innerHTML = 'XHR error';
+            };
+            xhr.send();
+        }
+        
+        // Test on page load
+        console.log('Page loaded from:', window.location.origin);
+        console.log('Testing cross-origin requests to: http://localhost:8080');
+        
+        // Check if image loads successfully
+        document.getElementById('favicon-img').onload = function() {
+            console.log('Image loaded successfully');
+        };
+        document.getElementById('favicon-img').onerror = function() {
+            console.error('Image failed to load');
+        };
+    </script>
+</body>
+</html>

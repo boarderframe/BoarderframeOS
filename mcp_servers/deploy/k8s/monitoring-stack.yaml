@@ -1,0 +1,571 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mcp-ui-monitoring
+  labels:
+    name: mcp-ui-monitoring
+    tier: monitoring
+---
+# Prometheus ServiceMonitor for application metrics
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mcp-ui-monitor
+  namespace: mcp-ui-monitoring
+  labels:
+    app: mcp-ui
+    component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: mcp-manager
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+    - mcp-ui
+---
+# Prometheus ServiceMonitor for frontend metrics
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mcp-frontend-monitor
+  namespace: mcp-ui-monitoring
+  labels:
+    app: mcp-frontend
+    component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: mcp-frontend
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+    - mcp-ui
+---
+# PrometheusRule for alerting
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: mcp-ui-alerts
+  namespace: mcp-ui-monitoring
+  labels:
+    app: mcp-ui
+    component: monitoring
+spec:
+  groups:
+  - name: mcp-ui.rules
+    interval: 30s
+    rules:
+    - alert: MCPUIHighCPU
+      expr: rate(container_cpu_usage_seconds_total{pod=~"mcp-manager-.*"}[5m]) > 0.8
+      for: 5m
+      labels:
+        severity: warning
+        service: mcp-ui
+        component: backend
+      annotations:
+        summary: "MCP-UI backend CPU usage is high"
+        description: "CPU usage for {{ $labels.pod }} has been above 80% for more than 5 minutes"
+
+    - alert: MCPUIHighMemory
+      expr: container_memory_usage_bytes{pod=~"mcp-manager-.*"} / container_spec_memory_limit_bytes > 0.85
+      for: 5m
+      labels:
+        severity: warning
+        service: mcp-ui
+        component: backend
+      annotations:
+        summary: "MCP-UI backend memory usage is high"
+        description: "Memory usage for {{ $labels.pod }} has been above 85% for more than 5 minutes"
+
+    - alert: MCPUIHighErrorRate
+      expr: rate(http_requests_total{job="mcp-manager",status=~"5.."}[5m]) / rate(http_requests_total{job="mcp-manager"}[5m]) > 0.05
+      for: 2m
+      labels:
+        severity: critical
+        service: mcp-ui
+        component: backend
+      annotations:
+        summary: "MCP-UI high error rate"
+        description: "Error rate is {{ $value | humanizePercentage }} for the last 5 minutes"
+
+    - alert: MCPUISlowResponse
+      expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="mcp-manager"}[5m])) > 2
+      for: 3m
+      labels:
+        severity: warning
+        service: mcp-ui
+        component: backend
+      annotations:
+        summary: "MCP-UI slow response times"
+        description: "95th percentile response time is {{ $value }}s for the last 5 minutes"
+
+    - alert: MCPUIPodCrashLooping
+      expr: rate(kube_pod_container_status_restarts_total{pod=~"mcp-.*"}[15m]) > 0
+      for: 5m
+      labels:
+        severity: critical
+        service: mcp-ui
+      annotations:
+        summary: "MCP-UI pod is crash looping"
+        description: "Pod {{ $labels.pod }} is restarting frequently"
+
+    - alert: MCPUIPodsNotReady
+      expr: kube_deployment_status_replicas_unavailable{deployment=~"mcp-.*"} > 0
+      for: 5m
+      labels:
+        severity: warning
+        service: mcp-ui
+      annotations:
+        summary: "MCP-UI pods not ready"
+        description: "{{ $value }} pods are not ready for deployment {{ $labels.deployment }}"
+
+    - alert: MCPUIDatabaseConnections
+      expr: postgresql_stat_database_numbackends / postgresql_settings_max_connections > 0.8
+      for: 5m
+      labels:
+        severity: warning
+        service: mcp-ui
+        component: database
+      annotations:
+        summary: "MCP-UI database connection usage high"
+        description: "Database connection usage is {{ $value | humanizePercentage }}"
+
+    - alert: MCPUIRedisConnections
+      expr: redis_connected_clients / redis_config_maxclients > 0.8
+      for: 5m
+      labels:
+        severity: warning
+        service: mcp-ui
+        component: cache
+      annotations:
+        summary: "MCP-UI Redis connection usage high"
+        description: "Redis connection usage is {{ $value | humanizePercentage }}"
+
+    - alert: MCPUIQueueDepth
+      expr: mcp_task_queue_depth > 1000
+      for: 2m
+      labels:
+        severity: warning
+        service: mcp-ui
+        component: queue
+      annotations:
+        summary: "MCP-UI task queue depth is high"
+        description: "Task queue depth is {{ $value }} tasks"
+
+    - alert: MCPUIAPIRateLimit
+      expr: rate(http_requests_total{job="mcp-manager",status="429"}[5m]) > 10
+      for: 1m
+      labels:
+        severity: warning
+        service: mcp-ui
+        component: api
+      annotations:
+        summary: "MCP-UI API rate limiting active"
+        description: "Rate limiting is being triggered at {{ $value }} requests/second"
+---
+# Jaeger Operator for distributed tracing
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: jaeger-production
+  namespace: mcp-ui-monitoring
+spec:
+  strategy: production
+  storage:
+    type: elasticsearch
+    elasticsearch:
+      nodeCount: 3
+      redundancyPolicy: ZeroRedundancy
+      resources:
+        requests:
+          cpu: 200m
+          memory: 4Gi
+        limits:
+          cpu: 1000m
+          memory: 4Gi
+      storage:
+        storageClassName: gp3
+        size: 100Gi
+      esIndexCleaner:
+        enabled: true
+        numberOfDays: 7
+        schedule: "55 23 * * *"
+  collector:
+    maxReplicas: 5
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  query:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  agent:
+    strategy: DaemonSet
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+---
+# Grafana instance
+apiVersion: integreatly.org/v1alpha1
+kind: Grafana
+metadata:
+  name: grafana-instance
+  namespace: mcp-ui-monitoring
+  labels:
+    app: grafana
+spec:
+  ingress:
+    enabled: true
+    hostname: grafana.mcp-ui.example.com
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    tls:
+      enabled: true
+      secretName: grafana-tls
+  config:
+    auth:
+      disable_login_form: false
+    auth.anonymous:
+      enabled: false
+    security:
+      admin_user: admin
+      admin_password: ${GRAFANA_ADMIN_PASSWORD}
+    server:
+      root_url: https://grafana.mcp-ui.example.com
+    database:
+      type: postgres
+      host: postgresql.mcp-ui-data:5432
+      name: grafana
+      user: grafana
+      password: ${GRAFANA_DB_PASSWORD}
+      ssl_mode: require
+    session:
+      provider: redis
+      provider_config: addr=redis.mcp-ui-data:6379,pool_size=100,db=grafana
+  dashboardLabelSelector:
+    - matchExpressions:
+        - key: app
+          operator: In
+          values:
+            - grafana
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: ${GRAFANA_ROLE_ARN}
+---
+# Grafana Data Source for Prometheus
+apiVersion: integreatly.org/v1alpha1
+kind: GrafanaDataSource
+metadata:
+  name: prometheus-datasource
+  namespace: mcp-ui-monitoring
+  labels:
+    app: grafana
+spec:
+  name: prometheus-datasource.yaml
+  datasources:
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      url: http://prometheus-operated.mcp-ui-monitoring.svc:9090
+      isDefault: true
+      jsonData:
+        timeInterval: "30s"
+        queryTimeout: "300s"
+        httpMethod: GET
+        manageAlerts: true
+        alertmanagerUid: alertmanager
+      secureJsonData:
+        httpHeaderValue1: "Bearer ${PROMETHEUS_TOKEN}"
+    - name: Jaeger
+      type: jaeger
+      access: proxy
+      url: http://jaeger-production-query.mcp-ui-monitoring.svc:16686
+      jsonData:
+        tracesToLogs:
+          datasourceUid: loki
+          tags: ['job', 'instance', 'pod', 'namespace']
+        nodeGraph:
+          enabled: true
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki-gateway.mcp-ui-monitoring.svc:80
+      jsonData:
+        maxLines: 1000
+---
+# Grafana Dashboard ConfigMap for MCP-UI
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mcp-ui-dashboard
+  namespace: mcp-ui-monitoring
+  labels:
+    app: grafana
+    grafana_dashboard: "1"
+data:
+  mcp-ui-overview.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "MCP-UI Production Overview",
+        "tags": ["mcp-ui", "production"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Request Rate",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum(rate(http_requests_total{job=\"mcp-manager\"}[5m]))",
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "reqps"
+              }
+            },
+            "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0}
+          },
+          {
+            "id": 2,
+            "title": "Error Rate",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum(rate(http_requests_total{job=\"mcp-manager\",status=~\"5..\"}[5m])) / sum(rate(http_requests_total{job=\"mcp-manager\"}[5m]))",
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "percentunit",
+                "thresholds": {
+                  "steps": [
+                    {"color": "green", "value": 0},
+                    {"color": "yellow", "value": 0.01},
+                    {"color": "red", "value": 0.05}
+                  ]
+                }
+              }
+            },
+            "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0}
+          },
+          {
+            "id": 3,
+            "title": "Response Time (95th percentile)",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"mcp-manager\"}[5m])) by (le))",
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "s",
+                "thresholds": {
+                  "steps": [
+                    {"color": "green", "value": 0},
+                    {"color": "yellow", "value": 1},
+                    {"color": "red", "value": 2}
+                  ]
+                }
+              }
+            },
+            "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0}
+          },
+          {
+            "id": 4,
+            "title": "Active Pods",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum(kube_deployment_status_replicas_available{deployment=~\"mcp-.*\"})",
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "short"
+              }
+            },
+            "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0}
+          },
+          {
+            "id": 5,
+            "title": "HTTP Request Volume",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "sum(rate(http_requests_total{job=\"mcp-manager\"}[5m])) by (method, status)",
+                "refId": "A",
+                "legendFormat": "{{method}} {{status}}"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+          },
+          {
+            "id": 6,
+            "title": "Resource Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"mcp-.*\"}[5m])) by (pod)",
+                "refId": "A",
+                "legendFormat": "CPU - {{pod}}"
+              },
+              {
+                "expr": "sum(container_memory_usage_bytes{pod=~\"mcp-.*\"}) by (pod) / 1024 / 1024 / 1024",
+                "refId": "B",
+                "legendFormat": "Memory - {{pod}}"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+          }
+        ],
+        "time": {
+          "from": "now-1h",
+          "to": "now"
+        },
+        "refresh": "30s"
+      }
+    }
+---
+# Alertmanager configuration
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: mcp-ui-alerting
+  namespace: mcp-ui-monitoring
+  labels:
+    app: mcp-ui
+    component: alerting
+spec:
+  route:
+    groupBy: ['alertname', 'service']
+    groupWait: 10s
+    groupInterval: 10s
+    repeatInterval: 1h
+    receiver: 'default'
+    routes:
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+    - match:
+        severity: warning
+      receiver: 'warning-alerts'
+  receivers:
+  - name: 'default'
+    slackConfigs:
+    - apiURL:
+        key: url
+        name: slack-webhook
+      channel: '#mcp-ui-alerts'
+      title: 'MCP-UI Alert'
+      text: '{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.description }}{{ end }}'
+  - name: 'critical-alerts'
+    slackConfigs:
+    - apiURL:
+        key: url
+        name: slack-webhook
+      channel: '#mcp-ui-critical'
+      title: '🚨 CRITICAL: MCP-UI Alert'
+      text: '{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.description }}{{ end }}'
+    emailConfigs:
+    - to: 'ops-team@example.com'
+      from: 'alerts@mcp-ui.example.com'
+      subject: 'CRITICAL: MCP-UI Alert - {{ .GroupLabels.alertname }}'
+      body: |
+        {{ range .Alerts }}
+        Alert: {{ .Annotations.summary }}
+        Description: {{ .Annotations.description }}
+        Labels: {{ range .Labels.SortedPairs }}{{ .Name }}={{ .Value }} {{ end }}
+        {{ end }}
+  - name: 'warning-alerts'
+    slackConfigs:
+    - apiURL:
+        key: url
+        name: slack-webhook
+      channel: '#mcp-ui-alerts'
+      title: '⚠️ WARNING: MCP-UI Alert'
+      text: '{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.description }}{{ end }}'
+---
+# External Secrets Operator for managing monitoring secrets
+apiVersion: external-secrets.io/v1beta1
+kind: SecretStore
+metadata:
+  name: aws-secrets-monitoring
+  namespace: mcp-ui-monitoring
+spec:
+  provider:
+    aws:
+      service: SecretsManager
+      region: us-west-2
+      auth:
+        jwt:
+          serviceAccountRef:
+            name: external-secrets-operator
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: monitoring-secrets
+  namespace: mcp-ui-monitoring
+spec:
+  refreshInterval: 15m
+  secretStoreRef:
+    name: aws-secrets-monitoring
+    kind: SecretStore
+  target:
+    name: monitoring-secrets
+    creationPolicy: Owner
+  data:
+  - secretKey: grafana-admin-password
+    remoteRef:
+      key: mcp-ui/production/monitoring
+      property: grafana_admin_password
+  - secretKey: grafana-db-password
+    remoteRef:
+      key: mcp-ui/production/monitoring
+      property: grafana_db_password
+  - secretKey: slack-webhook-url
+    remoteRef:
+      key: mcp-ui/production/monitoring
+      property: slack_webhook_url
+  - secretKey: prometheus-token
+    remoteRef:
+      key: mcp-ui/production/monitoring
+      property: prometheus_token

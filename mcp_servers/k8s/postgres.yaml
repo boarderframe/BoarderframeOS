@@ -1,0 +1,224 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: mcp-server-manager
+  labels:
+    app: postgres
+    component: database
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+        component: database
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        fsGroup: 999
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        ports:
+        - containerPort: 5432
+          name: postgres
+        env:
+        - name: POSTGRES_DB
+          value: "mcpdb"
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: mcp-secrets
+              key: postgres-user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mcp-secrets
+              key: postgres-password
+        - name: POSTGRES_INITDB_ARGS
+          value: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+        - name: POSTGRES_HOST_AUTH_METHOD
+          value: "scram-sha-256"
+        - name: PGDATA
+          value: "/var/lib/postgresql/data/pgdata"
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+        - name: postgres-config
+          mountPath: /etc/postgresql
+          readOnly: true
+        - name: init-scripts
+          mountPath: /docker-entrypoint-initdb.d
+          readOnly: true
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - $(POSTGRES_USER)
+            - -d
+            - $(POSTGRES_DB)
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - $(POSTGRES_USER)
+            - -d
+            - $(POSTGRES_DB)
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: postgres-config
+        configMap:
+          name: postgres-config
+      - name: init-scripts
+        configMap:
+          name: postgres-init-scripts
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-data
+      labels:
+        app: postgres
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 10Gi
+      storageClassName: fast-ssd
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: mcp-server-manager
+  labels:
+    app: postgres
+    component: database
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: postgres
+    protocol: TCP
+    name: postgres
+  selector:
+    app: postgres
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: mcp-server-manager
+  labels:
+    app: postgres
+data:
+  postgresql.conf: |
+    # Connection settings
+    listen_addresses = '*'
+    port = 5432
+    max_connections = 200
+    
+    # Memory settings
+    shared_buffers = 256MB
+    effective_cache_size = 1GB
+    maintenance_work_mem = 64MB
+    work_mem = 4MB
+    
+    # WAL settings
+    wal_buffers = 16MB
+    checkpoint_completion_target = 0.9
+    min_wal_size = 1GB
+    max_wal_size = 4GB
+    
+    # Query tuning
+    default_statistics_target = 100
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+    
+    # Logging
+    log_statement = 'all'
+    log_duration = on
+    log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '
+    log_min_messages = info
+    log_min_error_statement = error
+    
+    # Security
+    ssl = off
+    password_encryption = scram-sha-256
+    
+    # Performance
+    shared_preload_libraries = 'pg_stat_statements'
+  
+  pg_hba.conf: |
+    # TYPE  DATABASE        USER            ADDRESS                 METHOD
+    local   all             all                                     scram-sha-256
+    host    all             all             127.0.0.1/32            scram-sha-256
+    host    all             all             ::1/128                 scram-sha-256
+    host    all             all             0.0.0.0/0               scram-sha-256
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-scripts
+  namespace: mcp-server-manager
+  labels:
+    app: postgres
+data:
+  01-init-database.sql: |
+    -- Create additional schemas if needed
+    CREATE SCHEMA IF NOT EXISTS mcp_schema;
+    
+    -- Create basic tables for MCP server management
+    CREATE TABLE IF NOT EXISTS mcp_servers (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL UNIQUE,
+        description TEXT,
+        config JSONB,
+        status VARCHAR(50) DEFAULT 'inactive',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+    
+    CREATE TABLE IF NOT EXISTS mcp_logs (
+        id SERIAL PRIMARY KEY,
+        server_id INTEGER REFERENCES mcp_servers(id),
+        level VARCHAR(20),
+        message TEXT,
+        metadata JSONB,
+        timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+    
+    -- Create indexes for performance
+    CREATE INDEX IF NOT EXISTS idx_mcp_servers_status ON mcp_servers(status);
+    CREATE INDEX IF NOT EXISTS idx_mcp_logs_server_timestamp ON mcp_logs(server_id, timestamp);
+    CREATE INDEX IF NOT EXISTS idx_mcp_logs_level ON mcp_logs(level);
+    
+    -- Grant permissions
+    GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO mcpuser;
+    GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO mcpuser;

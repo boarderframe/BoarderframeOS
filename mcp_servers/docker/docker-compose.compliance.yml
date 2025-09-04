@@ -1,0 +1,429 @@
+# Docker Compose Override for Security Compliance and Scanning
+# Use with: docker-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.compliance.yml up
+# This configuration adds comprehensive security scanning, compliance monitoring, and audit capabilities
+
+version: '3.8'
+
+services:
+  # Enhanced MCP Manager with compliance features
+  mcp-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile.security-enhanced
+      target: production  # Use distroless production image
+      args:
+        - NODE_VERSION=${NODE_VERSION:-18}
+        - ALPINE_VERSION=${ALPINE_VERSION:-3.18}
+    environment:
+      - COMPLIANCE_MODE=${COMPLIANCE_MODE:-strict}
+      - AUDIT_LOG_ENABLED=${AUDIT_LOG_ENABLED:-true}
+      - SECURITY_SCAN_RUNTIME=${SECURITY_SCAN_RUNTIME:-true}
+      - SBOM_GENERATION_ENABLED=true
+    volumes:
+      # Mount compliance and audit directories
+      - compliance_data:/app/compliance:rw
+      - audit_logs:/app/logs/audit:rw
+      - security_scans:/app/security:ro
+    labels:
+      - "security.compliance=true"
+      - "security.audit=enabled"
+      - "security.sbom=generated"
+      - "compliance.framework=SOC2,ISO27001,NIST"
+
+  # Trivy Vulnerability Scanner
+  trivy-scanner:
+    image: aquasec/trivy:latest
+    container_name: mcp-trivy-scanner
+    restart: unless-stopped
+    environment:
+      - TRIVY_DB_REPOSITORY=ghcr.io/aquasecurity/trivy-db
+      - TRIVY_JAVA_DB_REPOSITORY=ghcr.io/aquasecurity/trivy-java-db
+      - TRIVY_CACHE_DIR=/root/.cache/trivy
+      - TRIVY_TIMEOUT=10m
+      - SCAN_INTERVAL=${SECURITY_SCAN_INTERVAL:-3600}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - trivy_cache:/root/.cache/trivy
+      - security_scan_results:/results
+      - ./scripts/continuous-scan.sh:/scripts/scan.sh:ro
+    command: ["/scripts/scan.sh"]
+    networks:
+      - mcp_network
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - compliance
+      - security-scanning
+
+  # Grype Vulnerability Scanner (Alternative/Additional)
+  grype-scanner:
+    image: anchore/grype:latest
+    container_name: mcp-grype-scanner
+    restart: unless-stopped
+    environment:
+      - GRYPE_DB_AUTO_UPDATE=true
+      - GRYPE_DB_CACHE_DIR=/tmp/grype-cache
+      - GRYPE_CHECK_FOR_APP_UPDATE=false
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - grype_cache:/tmp/grype-cache
+      - security_scan_results:/results
+    networks:
+      - mcp_network
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - compliance
+      - security-scanning
+
+  # Syft SBOM Generator
+  syft-sbom:
+    image: anchore/syft:latest
+    container_name: mcp-syft-sbom
+    restart: unless-stopped
+    environment:
+      - SYFT_CHECK_FOR_APP_UPDATE=false
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - sbom_data:/sbom
+      - ./scripts/generate-sbom.sh:/scripts/generate-sbom.sh:ro
+    command: ["/scripts/generate-sbom.sh"]
+    networks:
+      - mcp_network
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - compliance
+      - sbom
+
+  # Docker Bench Security
+  docker-bench:
+    image: docker/docker-bench-security:latest
+    container_name: mcp-docker-bench
+    restart: "no"  # Run on-demand
+    cap_add:
+      - SYS_ADMIN
+    volumes:
+      - /var/lib/docker:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /usr/lib/systemd:/usr/lib/systemd:ro
+      - /etc:/etc:ro
+      - docker_bench_results:/usr/local/bin/results
+    networks:
+      - mcp_network
+    profiles:
+      - compliance
+      - security-audit
+
+  # CIS-CAT Lite (Configuration Assessment)
+  cis-cat:
+    build:
+      context: ./security/cis-cat
+      dockerfile: Dockerfile
+    container_name: mcp-cis-cat
+    restart: "no"  # Run on-demand
+    environment:
+      - CISCAT_OPTS=-v
+    volumes:
+      - cis_results:/opt/cis-cat-lite/results
+      - /etc:/host/etc:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+    networks:
+      - mcp_network
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - compliance
+      - cis-benchmark
+
+  # OpenSCAP Security Scanner
+  openscap:
+    image: quay.io/compliance-operator/openscap-ocp:latest
+    container_name: mcp-openscap
+    restart: "no"  # Run on-demand
+    volumes:
+      - openscap_results:/results
+      - /etc:/host/etc:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+    command: ["oscap", "xccdf", "eval", "--results", "/results/openscap-results.xml", "--report", "/results/openscap-report.html", "/usr/share/xml/scap/ssg/content/ssg-ol8-ds.xml"]
+    networks:
+      - mcp_network
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - compliance
+      - openscap
+
+  # Compliance Dashboard
+  compliance-dashboard:
+    build:
+      context: ./security/compliance-dashboard
+      dockerfile: Dockerfile
+    container_name: mcp-compliance-dashboard
+    restart: unless-stopped
+    environment:
+      - DASHBOARD_PORT=8090
+      - RESULTS_DIR=/results
+      - UPDATE_INTERVAL=300  # 5 minutes
+    volumes:
+      - security_scan_results:/results/scans:ro
+      - docker_bench_results:/results/docker-bench:ro
+      - cis_results:/results/cis:ro
+      - openscap_results:/results/openscap:ro
+      - sbom_data:/results/sbom:ro
+      - compliance_data:/results/compliance:ro
+    ports:
+      - "8090:8090"
+    networks:
+      - mcp_network
+    depends_on:
+      - trivy-scanner
+      - docker-bench
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - compliance
+      - dashboard
+
+  # Security Event Collector
+  security-event-collector:
+    build:
+      context: ./security/event-collector
+      dockerfile: Dockerfile
+    container_name: mcp-security-events
+    restart: unless-stopped
+    environment:
+      - COLLECTOR_PORT=8091
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - EVENT_BUFFER_SIZE=1000
+      - FLUSH_INTERVAL=60
+    volumes:
+      - security_events:/events
+      - ./security/event-collector/rules:/etc/rules:ro
+    ports:
+      - "8091:8091"
+    networks:
+      - mcp_network
+    depends_on:
+      - elasticsearch
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - compliance
+      - security-monitoring
+
+  # Compliance Reporter
+  compliance-reporter:
+    build:
+      context: ./security/compliance-reporter
+      dockerfile: Dockerfile
+    container_name: mcp-compliance-reporter
+    restart: unless-stopped
+    environment:
+      - REPORT_SCHEDULE=${COMPLIANCE_REPORT_SCHEDULE:-0 6 * * 1}  # Weekly Monday 6 AM
+      - REPORT_FORMAT=json,html,pdf
+      - NOTIFICATION_WEBHOOK=${COMPLIANCE_WEBHOOK_URL}
+      - FRAMEWORKS=SOC2,ISO27001,NIST,CIS
+    volumes:
+      - compliance_reports:/reports
+      - security_scan_results:/input/scans:ro
+      - audit_logs:/input/audit:ro
+      - compliance_data:/input/compliance:ro
+    networks:
+      - mcp_network
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - compliance
+      - reporting
+
+  # Image Policy Webhook (OPA/Gatekeeper-style)
+  image-policy:
+    image: openpolicyagent/opa:latest-envoy
+    container_name: mcp-image-policy
+    restart: unless-stopped
+    environment:
+      - OPA_LOG_LEVEL=info
+    volumes:
+      - ./security/policies:/policies:ro
+    command:
+      - "run"
+      - "--server"
+      - "--addr=0.0.0.0:8181"
+      - "--config-file=/policies/config.yaml"
+      - "/policies"
+    ports:
+      - "8181:8181"
+    networks:
+      - mcp_network
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - compliance
+      - policy-enforcement
+
+  # Container Runtime Security Monitor
+  runtime-security:
+    image: falcosecurity/falco:latest
+    container_name: mcp-runtime-security
+    restart: unless-stopped
+    privileged: true
+    environment:
+      - FALCO_GRPC_ENABLED=true
+      - FALCO_GRPC_BIND_ADDRESS=0.0.0.0:5060
+      - FALCO_METRICS_ENABLED=true
+      - FALCO_JSON_OUTPUT=true
+      - FALCO_LOG_LEVEL=info
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock:ro
+      - /dev:/host/dev:ro
+      - /proc:/host/proc:ro
+      - /boot:/host/boot:ro
+      - /lib/modules:/host/lib/modules:ro
+      - /usr:/host/usr:ro
+      - /etc:/host/etc:ro
+      - ./security/falco-rules:/etc/falco/rules.d:ro
+      - falco_logs:/var/log/falco
+    ports:
+      - "5060:5060"
+    networks:
+      - mcp_network
+    cap_add:
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - SYS_PTRACE
+    security_opt:
+      - apparmor:unconfined
+    profiles:
+      - compliance
+      - runtime-security
+
+  # Network Policy Enforcement (if using K8s-style networking)
+  network-policy:
+    image: calico/felix:latest
+    container_name: mcp-network-policy
+    restart: unless-stopped
+    environment:
+      - FELIX_LOGSEVERITYSCREEN=info
+      - FELIX_DEFAULTENDPOINTTOHOSTACTION=ACCEPT
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./security/network-policies:/policies:ro
+    networks:
+      - mcp_network
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - compliance
+      - network-security
+
+# Compliance and security-specific volumes
+volumes:
+  # Security scan results and artifacts
+  security_scan_results:
+    driver: local
+    labels:
+      backup: "true"
+      retention: "90d"
+      classification: "security"
+
+  trivy_cache:
+    driver: local
+    labels:
+      backup: "false"
+      retention: "30d"
+
+  grype_cache:
+    driver: local
+    labels:
+      backup: "false"
+      retention: "30d"
+
+  # SBOM and supply chain security
+  sbom_data:
+    driver: local
+    labels:
+      backup: "true"
+      retention: "365d"
+      classification: "compliance"
+
+  # Compliance data and reports
+  compliance_data:
+    driver: local
+    labels:
+      backup: "true"
+      retention: "2555d"  # 7 years for compliance
+      classification: "compliance"
+
+  compliance_reports:
+    driver: local
+    labels:
+      backup: "true"
+      retention: "2555d"  # 7 years for compliance
+      classification: "compliance"
+
+  # Audit logs
+  audit_logs:
+    driver: local
+    labels:
+      backup: "true"
+      retention: "2555d"  # 7 years for compliance
+      classification: "audit"
+
+  # Security benchmarks and assessments
+  docker_bench_results:
+    driver: local
+    labels:
+      backup: "true"
+      retention: "365d"
+      classification: "security"
+
+  cis_results:
+    driver: local
+    labels:
+      backup: "true"
+      retention: "365d"
+      classification: "security"
+
+  openscap_results:
+    driver: local
+    labels:
+      backup: "true"
+      retention: "365d"
+      classification: "security"
+
+  # Runtime security logs
+  falco_logs:
+    driver: local
+    labels:
+      backup: "true"
+      retention: "90d"
+      classification: "security"
+
+  # Security events
+  security_events:
+    driver: local
+    labels:
+      backup: "true"
+      retention: "365d"
+      classification: "security"
+
+# Network configuration for compliance isolation
+networks:
+  compliance_network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: mcp-compliance
+    ipam:
+      config:
+        - subnet: 172.22.0.0/16
+          gateway: 172.22.0.1
+    labels:
+      security.zone: "compliance"
+      monitoring: "enabled"

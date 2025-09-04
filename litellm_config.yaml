@@ -1,0 +1,153 @@
+model_list:
+  # Local LM Studio Models
+  - model_name: gpt-oss-20b
+    litellm_params:
+      model: openai/gpt-oss-20b
+      api_base: http://127.0.0.1:1234/v1
+      api_key: sk-dummy-key
+
+  - model_name: qwen2.5-3b-instruct
+    litellm_params:
+      model: openai/qwen2.5-3b-instruct
+      api_base: http://127.0.0.1:1234/v1
+      api_key: sk-dummy-key
+
+  # OpenAI Models - Top 7 Selection
+  - model_name: gpt-5
+    litellm_params:
+      model: gpt-5
+      api_key: os.environ/OPENAI_API_KEY
+
+  - model_name: gpt-5-mini
+    litellm_params:
+      model: gpt-5-mini
+      api_key: os.environ/OPENAI_API_KEY
+
+  - model_name: o3
+    litellm_params:
+      model: o3
+      api_key: os.environ/OPENAI_API_KEY
+
+  - model_name: gpt-4o
+    litellm_params:
+      model: gpt-4o
+      api_key: os.environ/OPENAI_API_KEY
+
+  - model_name: gpt-4.1
+    litellm_params:
+      model: gpt-4.1
+      api_key: os.environ/OPENAI_API_KEY
+
+  - model_name: gpt-4o-search-preview
+    litellm_params:
+      model: gpt-4o-search-preview
+      api_key: os.environ/OPENAI_API_KEY
+
+  - model_name: o1
+    litellm_params:
+      model: o1
+      api_key: os.environ/OPENAI_API_KEY
+
+  # Anthropic Models - Top 6 Selection (Verified Available)
+  - model_name: claude-opus-4-1-20250805
+    litellm_params:
+      model: anthropic/claude-opus-4-1-20250805
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  - model_name: claude-opus-4-20250514
+    litellm_params:
+      model: anthropic/claude-opus-4-20250514
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  - model_name: claude-sonnet-4-20250514
+    litellm_params:
+      model: anthropic/claude-sonnet-4-20250514
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  - model_name: claude-3-7-sonnet-20250219
+    litellm_params:
+      model: anthropic/claude-3-7-sonnet-20250219
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  - model_name: claude-3-5-haiku-20241022
+    litellm_params:
+      model: anthropic/claude-3-5-haiku-20241022
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  - model_name: claude-3-haiku-20240307
+    litellm_params:
+      model: anthropic/claude-3-haiku-20240307
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  # Google Gemini Models - Top 8 Selection  
+  - model_name: gemini-2-5-pro
+    litellm_params:
+      model: gemini/gemini-2.5-pro
+      api_key: os.environ/GOOGLE_API_KEY
+
+  - model_name: gemini-2-5-flash
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GOOGLE_API_KEY
+
+  - model_name: gemini-2-0-flash-001
+    litellm_params:
+      model: gemini/gemini-2.0-flash-001
+      api_key: os.environ/GOOGLE_API_KEY
+
+  - model_name: gemini-1-5-pro-002
+    litellm_params:
+      model: gemini/gemini-1.5-pro-002
+      api_key: os.environ/GOOGLE_API_KEY
+
+  - model_name: gemini-1-5-flash-002
+    litellm_params:
+      model: gemini/gemini-1.5-flash-002
+      api_key: os.environ/GOOGLE_API_KEY
+
+  - model_name: gemini-1-5-flash-8b
+    litellm_params:
+      model: gemini/gemini-1.5-flash-8b
+      api_key: os.environ/GOOGLE_API_KEY
+
+  - model_name: gemini-2-0-flash-thinking-exp
+    litellm_params:
+      model: gemini/gemini-2.0-flash-thinking-exp
+      api_key: os.environ/GOOGLE_API_KEY
+
+  - model_name: gemini-2-0-flash-exp-image-generation
+    litellm_params:
+      model: gemini/gemini-2.0-flash-exp-image-generation
+      api_key: os.environ/GOOGLE_API_KEY
+
+  # Additional Top-Tier Gemini Chat Models (From Research)
+  - model_name: gemini-2-5-flash-lite
+    litellm_params:
+      model: gemini/gemini-2.5-flash-lite
+      api_key: os.environ/GOOGLE_API_KEY
+
+  # Embedding Models for Memory System
+  - model_name: text-embedding-3-large
+    litellm_params:
+      model: text-embedding-3-large
+      api_key: os.environ/OPENAI_API_KEY
+
+  - model_name: text-embedding-3-small
+    litellm_params:
+      model: text-embedding-3-small
+      api_key: os.environ/OPENAI_API_KEY
+
+  - model_name: text-embedding-ada-002
+    litellm_params:
+      model: text-embedding-ada-002
+      api_key: os.environ/OPENAI_API_KEY
+
+# General settings
+general_settings:
+  master_key: litellm-master-key-2024
+  allow_client_side_credentials: true
+  
+# Enable model fallbacks
+router_settings:
+  enable_loadbalancing: true
+  enable_fallbacks: true

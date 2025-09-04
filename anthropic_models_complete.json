@@ -1,0 +1,78 @@
+{
+  "anthropic_models_complete": {
+    "research_date": "2025-08-17",
+    "source": "comprehensive_search_specialist_research",
+    "models": {
+      "claude_4_series": {
+        "claude-opus-4-20250805": {
+          "api_name": "claude-opus-4-20250805",
+          "model_family": "Claude 4.1 Opus",
+          "context_window": 200000,
+          "pricing": {
+            "input": "$15/million tokens",
+            "output": "$75/million tokens"
+          },
+          "capabilities": ["text", "vision", "coding", "advanced_reasoning", "tool_use"],
+          "performance": {
+            "swe_bench_verified": "74.5%"
+          },
+          "best_for": "Complex coding, advanced reasoning, multi-step workflows",
+          "thinking_mode": "Extended thinking with tool use",
+          "tier": "flagship"
+        },
+        "claude-sonnet-4-20250522": {
+          "api_name": "claude-sonnet-4-20250522",
+          "model_family": "Claude 4 Sonnet",
+          "context_window": 200000,
+          "pricing": {
+            "input": "$3/million tokens",
+            "output": "$15/million tokens"
+          },
+          "capabilities": ["text", "vision", "coding", "reasoning", "tool_use"],
+          "performance": {
+            "swe_bench": "72.7%"
+          },
+          "best_for": "Balanced performance, general tasks, cost-effective reasoning",
+          "thinking_mode": "Hybrid near-instant and extended reasoning",
+          "tier": "advanced"
+        }
+      },
+      "claude_3_5_series": {
+        "claude-3-5-haiku-latest": {
+          "api_name": "claude-3-5-haiku-latest",
+          "model_family": "Claude 3.5 Haiku",
+          "capabilities": ["text", "fast_reasoning"],
+          "best_for": "Fast, cost-effective tasks requiring quick responses",
+          "features": ["rapid_response", "knowledge_retrieval", "sales_automation"],
+          "tier": "cost_effective"
+        },
+        "claude-3-5-sonnet-20241022": {
+          "api_name": "claude-3-5-sonnet-20241022",
+          "model_family": "Claude 3.5 Sonnet",
+          "context_window": 200000,
+          "capabilities": ["text", "vision", "coding"],
+          "tier": "current_gen"
+        },
+        "claude-3-5-haiku-20241022": {
+          "api_name": "claude-3-5-haiku-20241022",
+          "model_family": "Claude 3.5 Haiku",
+          "capabilities": ["text"],
+          "tier": "cost_effective"
+        }
+      },
+      "thinking_variants": {
+        "extended_thinking": {
+          "opus_4_1": "Enables deep, multi-step reasoning with tool use",
+          "sonnet_4": "Balanced reasoning with extended analysis capabilities"
+        }
+      }
+    },
+    "key_features_2025": {
+      "context_window": "200,000 tokens",
+      "tool_use": "Advanced tool use capabilities",
+      "reasoning_modes": "Hybrid reasoning (near-instant + extended)",
+      "performance": "Sustained performance on complex, multi-step tasks",
+      "coding": "Improved coding and agent workflow performance"
+    }
+  }
+}

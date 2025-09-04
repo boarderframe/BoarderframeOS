@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>MCP UI Artifact Validation Test</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background: #f5f5f5; }
+        .test-container { background: white; padding: 30px; border-radius: 12px; max-width: 1200px; margin: 0 auto; box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
+        .test-section { margin: 30px 0; padding: 20px; border: 2px solid #e5e7eb; border-radius: 8px; }
+        .success { border-color: #10b981; background: #ecfdf5; }
+        .test-result { margin: 15px 0; padding: 12px; border-radius: 6px; }
+        .pass { background: #dcfce7; border: 1px solid #16a34a; }
+        .fail { background: #fef2f2; border: 1px solid #dc2626; }
+        button { background: #3b82f6; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; margin: 10px 5px; font-weight: 600; }
+        button:hover { background: #2563eb; }
+        #results { margin-top: 20px; }
+        .code-block { background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 6px; padding: 15px; margin: 10px 0; font-family: monospace; overflow: auto; }
+        .artifact-preview { border: 2px dashed #6b7280; border-radius: 8px; padding: 20px; margin: 15px 0; text-align: center; background: #f9fafb; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 MCP UI Artifact Rendering Validation</h1>
+        <p>This tool validates that MCP server responses are properly formatted for Open WebUI artifact rendering.</p>
+        
+        <div class="test-section">
+            <h2>✅ Test 1: LLM-Ready Endpoint Response</h2>
+            <button onclick="testLLMReadyEndpoint()">Test /products/search/llm-ready</button>
+            <div id="llm-ready-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎯 Test 2: HTML Code Block Validation</h2>
+            <button onclick="testHTMLCodeBlock()">Validate HTML Structure</button>
+            <div id="html-validation-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Test 3: Artifact Size Analysis</h2>
+            <button onclick="testArtifactSize()">Check Size Limits</button>
+            <div id="size-analysis-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔍 Test 4: Visual Preview</h2>
+            <button onclick="previewArtifact()">Preview Artifact Rendering</button>
+            <div id="preview-results">
+                <div class="artifact-preview">
+                    <p>Artifact preview will appear here after testing</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section success">
+            <h2>📋 Usage Instructions</h2>
+            <p><strong>For LLMs using this MCP server:</strong></p>
+            <ol>
+                <li>Use the <code>/products/search/llm-ready</code> endpoint instead of <code>/products/search/compact</code></li>
+                <li>Copy the <code>llm_response</code> field directly into your chat response</li>
+                <li>The HTML code block will automatically render as a visual artifact in Open WebUI</li>
+                <li>Use the <code>fallback_text</code> field if artifacts fail to render</li>
+            </ol>
+            
+            <div class="code-block">
+Example usage:
+GET /products/search/llm-ready?term=milk&limit=6
+
+Response includes:
+- llm_response: Ready-to-use text with HTML code block
+- artifact_html: Raw HTML content
+- fallback_text: Plain text alternative
+- instructions: Clear guidance for LLMs
+            </div>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        async function testLLMReadyEndpoint() {
+            const resultsDiv = document.getElementById('llm-ready-results');
+            resultsDiv.innerHTML = '<p>Testing LLM-ready endpoint...</p>';
+            
+            try {
+                const response = await fetch('/products/search/llm-ready?term=milk&limit=4');
+                const data = await response.json();
+                
+                const tests = [
+                    { name: 'Response Status', pass: response.ok, details: `HTTP ${response.status}` },
+                    { name: 'Has llm_response field', pass: !!data.llm_response, details: data.llm_response ? '✓ Present' : '✗ Missing' },
+                    { name: 'Contains HTML code block', pass: data.llm_response && data.llm_response.includes('```html'), details: data.llm_response && data.llm_response.includes('```html') ? '✓ Found ```html block' : '✗ No code block' },
+                    { name: 'Has artifact_html field', pass: !!data.artifact_html, details: data.artifact_html ? '✓ Present' : '✗ Missing' },
+                    { name: 'Has fallback_text field', pass: !!data.fallback_text, details: data.fallback_text ? '✓ Present' : '✗ Missing' },
+                    { name: 'Has instructions field', pass: !!data.instructions, details: data.instructions ? '✓ Present' : '✗ Missing' }
+                ];
+                
+                let html = '<h3>Test Results:</h3>';
+                tests.forEach(test => {
+                    const className = test.pass ? 'pass' : 'fail';
+                    html += `<div class="test-result ${className}"><strong>${test.name}:</strong> ${test.details}</div>`;
+                });
+                
+                html += `<div class="code-block"><strong>Sample llm_response preview:</strong><br>${data.llm_response ? data.llm_response.substring(0, 200) + '...' : 'N/A'}</div>`;
+                
+                resultsDiv.innerHTML = html;
+                
+                // Store data for other tests
+                window.testData = data;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="test-result fail"><strong>Error:</strong> ${error.message}</div>`;
+            }
+        }
+
+        async function testHTMLCodeBlock() {
+            const resultsDiv = document.getElementById('html-validation-results');
+            
+            if (!window.testData) {
+                resultsDiv.innerHTML = '<p>Please run Test 1 first to load test data.</p>';
+                return;
+            }
+            
+            const html = window.testData.artifact_html;
+            const tests = [
+                { name: 'Valid HTML structure', pass: html.includes('<!DOCTYPE html>'), details: html.includes('<!DOCTYPE html>') ? '✓ Has DOCTYPE' : '✗ Missing DOCTYPE' },
+                { name: 'Self-contained styles', pass: html.includes('<style>') && !html.includes('<link'), details: html.includes('<style>') ? '✓ Inline styles' : '✗ Missing inline styles' },
+                { name: 'No external resources', pass: !html.includes('http://') && !html.includes('https://') || html.includes('kroger.com'), details: 'Kroger image URLs allowed' },
+                { name: 'Responsive design', pass: html.includes('grid') || html.includes('flex'), details: html.includes('grid') ? '✓ CSS Grid' : html.includes('flex') ? '✓ Flexbox' : '✗ No responsive layout' },
+                { name: 'Proper meta tags', pass: html.includes('<meta charset='), details: html.includes('<meta charset=') ? '✓ Has charset' : '✗ Missing charset' }
+            ];
+            
+            let resultsHTML = '<h3>HTML Structure Validation:</h3>';
+            tests.forEach(test => {
+                const className = test.pass ? 'pass' : 'fail';
+                resultsHTML += `<div class="test-result ${className}"><strong>${test.name}:</strong> ${test.details}</div>`;
+            });
+            
+            resultsDiv.innerHTML = resultsHTML;
+        }
+
+        async function testArtifactSize() {
+            const resultsDiv = document.getElementById('size-analysis-results');
+            
+            if (!window.testData) {
+                resultsDiv.innerHTML = '<p>Please run Test 1 first to load test data.</p>';
+                return;
+            }
+            
+            const html = window.testData.artifact_html;
+            const sizeBytes = new Blob([html]).size;
+            const sizeKB = (sizeBytes / 1024).toFixed(2);
+            
+            const tests = [
+                { name: 'Size under 50KB (optimal)', pass: sizeBytes < 50000, details: `${sizeKB}KB ${sizeBytes < 50000 ? '✓ Optimal' : '⚠ Large'}` },
+                { name: 'Size under 100KB (good)', pass: sizeBytes < 100000, details: `${sizeKB}KB ${sizeBytes < 100000 ? '✓ Good' : '⚠ Very large'}` },
+                { name: 'Size under 200KB (limit)', pass: sizeBytes < 200000, details: `${sizeKB}KB ${sizeBytes < 200000 ? '✓ Within limits' : '✗ Too large'}` }
+            ];
+            
+            let resultsHTML = '<h3>Size Analysis:</h3>';
+            tests.forEach(test => {
+                const className = test.pass ? 'pass' : 'fail';
+                resultsHTML += `<div class="test-result ${className}"><strong>${test.name}:</strong> ${test.details}</div>`;
+            });
+            
+            resultsDiv.innerHTML = resultsHTML;
+        }
+
+        async function previewArtifact() {
+            const resultsDiv = document.getElementById('preview-results');
+            
+            if (!window.testData) {
+                resultsDiv.innerHTML = '<p>Please run Test 1 first to load test data.</p>';
+                return;
+            }
+            
+            const html = window.testData.artifact_html;
+            const iframe = document.createElement('iframe');
+            iframe.style.width = '100%';
+            iframe.style.height = '600px';
+            iframe.style.border = '1px solid #d1d5db';
+            iframe.style.borderRadius = '8px';
+            
+            resultsDiv.innerHTML = '<h3>Artifact Preview:</h3><p>This is how the artifact will appear in Open WebUI:</p>';
+            resultsDiv.appendChild(iframe);
+            
+            iframe.onload = () => {
+                iframe.contentDocument.open();
+                iframe.contentDocument.write(html);
+                iframe.contentDocument.close();
+            };
+        }
+
+        // Auto-run basic test on page load
+        window.onload = () => {
+            testLLMReadyEndpoint();
+        };
+    </script>
+</body>
+</html>

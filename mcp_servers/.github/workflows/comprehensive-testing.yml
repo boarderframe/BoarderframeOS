@@ -1,0 +1,631 @@
+name: Comprehensive Testing Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run comprehensive tests nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+  POSTGRES_VERSION: '15'
+  REDIS_VERSION: '7'
+
+jobs:
+  # Code Quality and Linting
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+          
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+        
+      - name: Python linting with ruff
+        run: |
+          ruff check src/ tests/
+          ruff format --check src/ tests/
+          
+      - name: Python type checking with mypy
+        run: mypy src/
+        
+      - name: Frontend linting
+        working-directory: ./frontend
+        run: |
+          npm run lint
+          npm run type-check
+          
+      - name: Security scanning with bandit
+        run: bandit -r src/ -f json -o security-report.json
+        continue-on-error: true
+        
+      - name: Upload security report
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-report
+          path: security-report.json
+
+  # Unit Tests - Backend
+  unit-tests-backend:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
+    
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_mcp_manager
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+          
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          
+      - name: Set up test environment
+        run: |
+          cp .env.example .env.test
+          export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/test_mcp_manager"
+          export REDIS_URL="redis://localhost:6379/0"
+          export TESTING=true
+          
+      - name: Run unit tests
+        run: |
+          pytest tests/unit/ \
+            --cov=src/app \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-report=term-missing \
+            --junit-xml=test-results/unit-tests.xml \
+            --html=test-results/unit-tests.html \
+            --tb=short \
+            -v
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_mcp_manager
+          REDIS_URL: redis://localhost:6379/0
+          TESTING: true
+          
+      - name: Upload unit test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: unit-test-results-${{ matrix.python-version }}
+          path: test-results/
+          
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: coverage.xml
+          flags: backend,unit
+          name: backend-unit-${{ matrix.python-version }}
+
+  # Unit Tests - Frontend
+  unit-tests-frontend:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ['18', '20']
+        
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+          
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+        
+      - name: Run unit tests
+        working-directory: ./frontend
+        run: |
+          npm run test:ci
+          
+      - name: Upload frontend test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: frontend-test-results-${{ matrix.node-version }}
+          path: frontend/coverage/
+          
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: frontend/coverage/lcov.info
+          flags: frontend,unit
+          name: frontend-unit-${{ matrix.node-version }}
+
+  # Integration Tests
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: [code-quality]
+    
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_mcp_manager
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+          
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          
+      - name: Start application services
+        run: |
+          # Start backend in background
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          
+          # Wait for services to be ready
+          sleep 10
+          
+          # Health check
+          curl -f http://localhost:8000/api/v1/health || exit 1
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_mcp_manager
+          REDIS_URL: redis://localhost:6379/0
+          TESTING: true
+          
+      - name: Run integration tests
+        run: |
+          pytest tests/integration/ \
+            --cov=src/app \
+            --cov-append \
+            --cov-report=xml \
+            --junit-xml=test-results/integration-tests.xml \
+            --html=test-results/integration-tests.html \
+            --tb=short \
+            -v \
+            --timeout=300
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_mcp_manager
+          REDIS_URL: redis://localhost:6379/0
+          TESTING: true
+          
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: integration-test-results
+          path: test-results/
+
+  # Security Tests
+  security-tests:
+    runs-on: ubuntu-latest
+    needs: [code-quality]
+    
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_mcp_manager
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          
+      - name: Run security tests
+        run: |
+          pytest tests/security/ \
+            --junit-xml=test-results/security-tests.xml \
+            --html=test-results/security-tests.html \
+            --tb=short \
+            -v \
+            --timeout=180
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_mcp_manager
+          TESTING: true
+          
+      - name: Run OWASP ZAP security scan
+        run: |
+          # Start application
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          sleep 10
+          
+          # Run ZAP baseline scan
+          docker run -v $(pwd):/zap/wrk/:rw \
+            -t owasp/zap2docker-stable zap-baseline.py \
+            -t http://host.docker.internal:8000 \
+            -J zap-report.json \
+            -r zap-report.html || true
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_mcp_manager
+          TESTING: true
+          
+      - name: Upload security test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-test-results
+          path: |
+            test-results/
+            zap-report.*
+
+  # End-to-End Tests
+  e2e-tests:
+    runs-on: ubuntu-latest
+    needs: [unit-tests-backend, unit-tests-frontend]
+    
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_mcp_manager
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+          
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+          
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+        
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+        
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
+        
+      - name: Start services
+        run: |
+          # Start backend
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          
+          # Start frontend
+          cd frontend && npm run preview -- --port 3000 --host &
+          
+          # Wait for services
+          sleep 15
+          
+          # Health checks
+          curl -f http://localhost:8000/api/v1/health || exit 1
+          curl -f http://localhost:3000 || exit 1
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_mcp_manager
+          REDIS_URL: redis://localhost:6379/0
+          TESTING: true
+          
+      - name: Run E2E tests
+        run: |
+          npx playwright test \
+            --reporter=html,json,junit \
+            --output-dir=test-results/e2e
+        env:
+          BASE_URL: http://localhost:3000
+          API_URL: http://localhost:8000
+          
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-test-results
+          path: |
+            test-results/e2e/
+            playwright-report/
+
+  # Performance Tests
+  performance-tests:
+    runs-on: ubuntu-latest
+    needs: [integration-tests]
+    if: github.event_name == 'schedule' || contains(github.event.head_commit.message, '[perf]')
+    
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_mcp_manager
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          
+      - name: Start application
+        run: |
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          sleep 10
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_mcp_manager
+          TESTING: true
+          
+      - name: Run performance tests
+        run: |
+          pytest tests/performance/ \
+            --junit-xml=test-results/performance-tests.xml \
+            --html=test-results/performance-tests.html \
+            --benchmark-json=test-results/benchmark.json \
+            -v
+            
+      - name: Run load tests with Locust
+        run: |
+          cd tests/performance
+          locust -f locustfile.py \
+            --host=http://localhost:8000 \
+            --users=50 \
+            --spawn-rate=5 \
+            --run-time=2m \
+            --html=../../test-results/load-test-report.html \
+            --headless
+            
+      - name: Upload performance test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: performance-test-results
+          path: test-results/
+
+  # Docker Image Tests
+  docker-tests:
+    runs-on: ubuntu-latest
+    needs: [code-quality]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Build Docker image
+        run: |
+          docker build -f docker/Dockerfile -t mcp-server-manager:test .
+          
+      - name: Test Docker image
+        run: |
+          # Start services with Docker Compose
+          cd docker
+          docker-compose -f docker-compose.dev.yml up -d
+          
+          # Wait for services
+          sleep 30
+          
+          # Health check
+          curl -f http://localhost:8000/api/v1/health || exit 1
+          
+          # Run container tests
+          docker run --rm --network docker_default \
+            mcp-server-manager:test \
+            pytest tests/unit/test_health.py -v
+            
+      - name: Security scan with Trivy
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $(pwd):/workspace aquasec/trivy:latest \
+            image --format json --output /workspace/trivy-report.json \
+            mcp-server-manager:test
+            
+      - name: Upload Docker test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: docker-test-results
+          path: trivy-report.json
+
+  # Test Summary and Reporting
+  test-summary:
+    runs-on: ubuntu-latest
+    needs: [
+      unit-tests-backend,
+      unit-tests-frontend,
+      integration-tests,
+      security-tests,
+      e2e-tests
+    ]
+    if: always()
+    
+    steps:
+      - name: Download all test artifacts
+        uses: actions/download-artifact@v3
+        
+      - name: Generate test summary
+        run: |
+          echo "# Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Count test results
+          UNIT_BACKEND_COUNT=$(find . -name "*unit-tests.xml" | wc -l)
+          UNIT_FRONTEND_COUNT=$(find . -name "*frontend*" -type d | wc -l)
+          INTEGRATION_COUNT=$(find . -name "*integration-tests.xml" | wc -l)
+          SECURITY_COUNT=$(find . -name "*security-tests.xml" | wc -l)
+          E2E_COUNT=$(find . -name "*e2e*" -type d | wc -l)
+          
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend Unit Tests: $UNIT_BACKEND_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend Unit Tests: $UNIT_FRONTEND_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- Integration Tests: $INTEGRATION_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- Security Tests: $SECURITY_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- E2E Tests: $E2E_COUNT" >> $GITHUB_STEP_SUMMARY
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Coverage Reports" >> $GITHUB_STEP_SUMMARY
+          echo "Coverage reports have been uploaded to Codecov." >> $GITHUB_STEP_SUMMARY
+          
+      - name: Upload consolidated test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: all-test-results
+          path: ./
+
+  # Deployment readiness check
+  deployment-readiness:
+    runs-on: ubuntu-latest
+    needs: [test-summary]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: Check deployment readiness
+        run: |
+          echo "All tests passed. Ready for deployment."
+          echo "DEPLOYMENT_READY=true" >> $GITHUB_ENV
+          
+      - name: Trigger deployment
+        if: env.DEPLOYMENT_READY == 'true'
+        run: |
+          echo "Triggering deployment workflow..."
+          # This would trigger your deployment workflow
+          # curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          #   -H "Accept: application/vnd.github.v3+json" \
+          #   https://api.github.com/repos/${{ github.repository }}/dispatches \
+          #   -d '{"event_type":"deploy"}'

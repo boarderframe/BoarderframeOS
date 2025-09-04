@@ -1,0 +1,148 @@
+# Dockerfile for health monitoring service
+# Provides continuous health monitoring with alerting
+
+FROM alpine:latest
+
+# Install required packages
+RUN apk update && \
+    apk upgrade && \
+    apk add --no-cache \
+        docker-cli \
+        bash \
+        curl \
+        jq \
+        mailx \
+        cronie \
+        bc \
+        procps \
+        tzdata && \
+    rm -rf /var/cache/apk/*
+
+# Create monitoring user
+RUN addgroup -g 1001 -S monitor && \
+    adduser -S -D -H -u 1001 -s /bin/bash monitor
+
+# Create necessary directories
+RUN mkdir -p /reports /scripts /var/log/health && \
+    chown -R monitor:monitor /reports /scripts /var/log/health
+
+# Copy health check script
+COPY health-check.sh /scripts/health-check.sh
+RUN chmod +x /scripts/health-check.sh && \
+    chown monitor:monitor /scripts/health-check.sh
+
+# Create monitoring wrapper script
+RUN cat > /scripts/health-monitor.sh << 'EOF'
+#!/bin/bash
+set -euo pipefail
+
+# Configuration
+export HEALTH_CHECK_TIMEOUT=30
+export COMPOSE_PROJECT_NAME=docker
+export SLACK_WEBHOOK=${SLACK_WEBHOOK:-}
+export EMAIL_RECIPIENT=${EMAIL_RECIPIENT:-}
+export SSL_ENABLED=${SSL_ENABLED:-false}
+export SSL_DOMAIN=${SSL_DOMAIN:-localhost}
+export SSL_PORT=${SSL_PORT:-443}
+
+# Create timestamped log
+LOG_FILE="/var/log/health/health-$(date +%Y%m%d_%H%M%S).log"
+
+# Run health check and log results
+echo "Running health check at $(date)" | tee "$LOG_FILE"
+/scripts/health-check.sh check 2>&1 | tee -a "$LOG_FILE"
+
+# Copy log to reports volume
+cp "$LOG_FILE" "/reports/latest.log"
+
+# Clean up old logs (keep last 24 hours)
+find /var/log/health -name "health-*.log" -type f -mtime +1 -delete 2>/dev/null || true
+find /reports -name "health-*.log" -type f -mtime +7 -delete 2>/dev/null || true
+EOF
+
+RUN chmod +x /scripts/health-monitor.sh && \
+    chown monitor:monitor /scripts/health-monitor.sh
+
+# Create continuous monitoring script
+RUN cat > /scripts/continuous-monitor.sh << 'EOF'
+#!/bin/bash
+set -euo pipefail
+
+HEALTH_CHECK_INTERVAL=${HEALTH_CHECK_INTERVAL:-300}  # 5 minutes default
+
+echo "Starting continuous health monitoring (interval: ${HEALTH_CHECK_INTERVAL}s)"
+
+while true; do
+    echo "$(date): Running health check..."
+    /scripts/health-monitor.sh
+    
+    echo "$(date): Sleeping for ${HEALTH_CHECK_INTERVAL} seconds..."
+    sleep "$HEALTH_CHECK_INTERVAL"
+done
+EOF
+
+RUN chmod +x /scripts/continuous-monitor.sh && \
+    chown monitor:monitor /scripts/continuous-monitor.sh
+
+# Create entrypoint script
+RUN cat > /scripts/entrypoint.sh << 'EOF'
+#!/bin/bash
+set -euo pipefail
+
+# Set timezone
+export TZ=${TZ:-UTC}
+ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Create initial log files
+touch /var/log/health/monitor.log
+chown monitor:monitor /var/log/health/monitor.log
+
+echo "Health monitoring service starting..."
+echo "Check interval: ${HEALTH_CHECK_INTERVAL:-300} seconds"
+echo "Logs directory: /var/log/health"
+echo "Reports directory: /reports"
+
+# Run initial health check
+echo "Running initial health check..."
+su - monitor -c "/scripts/health-monitor.sh" || echo "Initial health check completed with issues"
+
+# Start continuous monitoring
+echo "Starting continuous monitoring..."
+exec su - monitor -c "/scripts/continuous-monitor.sh"
+EOF
+
+RUN chmod +x /scripts/entrypoint.sh
+
+# Create health check for the monitoring service itself
+RUN cat > /scripts/self-check.sh << 'EOF'
+#!/bin/bash
+# Check if the monitoring service is working
+if pgrep -f continuous-monitor.sh > /dev/null; then
+    # Check if recent log exists (within last 10 minutes)
+    if find /var/log/health -name "health-*.log" -newermt "10 minutes ago" | grep -q .; then
+        exit 0
+    else
+        exit 1
+    fi
+else
+    exit 1
+fi
+EOF
+
+RUN chmod +x /scripts/self-check.sh
+
+# Switch to monitor user
+USER monitor
+
+# Set working directory
+WORKDIR /reports
+
+# Health check for the monitoring service
+HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
+    CMD /scripts/self-check.sh
+
+# Expose volumes
+VOLUME ["/reports", "/var/log/health"]
+
+# Set entrypoint
+ENTRYPOINT ["/scripts/entrypoint.sh"]
