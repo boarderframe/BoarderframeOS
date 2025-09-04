@@ -28,10 +28,10 @@
 	import { toast } from 'svelte-sonner';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import Cog6 from '$lib/components/icons/Cog6.svelte';
-	import ConfigureModelsModal from './Models/ConfigureModelsModal.svelte';
+	import ConfigureModelsModal from '$lib/components/admin/Settings/Models/ConfigureModelsModal.svelte';
 	import Wrench from '$lib/components/icons/Wrench.svelte';
 	import ArrowDownTray from '$lib/components/icons/ArrowDownTray.svelte';
-	import ManageModelsModal from './Models/ManageModelsModal.svelte';
+	import ManageModelsModal from '$lib/components/admin/Settings/Models/ManageModelsModal.svelte';
 	import ModelMenu from '$lib/components/admin/Settings/Models/ModelMenu.svelte';
 	import EllipsisHorizontal from '$lib/components/icons/EllipsisHorizontal.svelte';
 	import EyeSlash from '$lib/components/icons/EyeSlash.svelte';
