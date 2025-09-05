@@ -7,17 +7,38 @@ import { writable } from 'svelte/store';
 const createI18nStore = (i18n: i18nType) => {
 	const i18nWritable = writable(i18n);
 
+	// Create a custom store that wraps the i18next instance
+	const { subscribe, set } = i18nWritable;
+
+	// Update the store when i18next events occur
 	i18n.on('initialized', () => {
-		i18nWritable.set(i18n);
+		set(i18n);
 	});
 	i18n.on('loaded', () => {
-		i18nWritable.set(i18n);
+		set(i18n);
 	});
-	i18n.on('added', () => i18nWritable.set(i18n));
+	i18n.on('added', () => set(i18n));
 	i18n.on('languageChanged', () => {
-		i18nWritable.set(i18n);
+		set(i18n);
 	});
-	return i18nWritable;
+
+	// Return a store object that includes all i18next methods
+	return {
+		subscribe,
+		// Expose i18next methods directly on the store
+		t: i18n.t.bind(i18n),
+		changeLanguage: i18n.changeLanguage.bind(i18n),
+		getLanguage: () => i18n.language,
+		// Add other commonly used i18next methods as needed
+		exists: i18n.exists.bind(i18n),
+		getResource: i18n.getResource.bind(i18n),
+		addResource: i18n.addResource.bind(i18n),
+		addResources: i18n.addResources.bind(i18n),
+		addResourceBundle: i18n.addResourceBundle.bind(i18n),
+		hasResourceBundle: i18n.hasResourceBundle.bind(i18n),
+		getResourceBundle: i18n.getResourceBundle.bind(i18n),
+		removeResourceBundle: i18n.removeResourceBundle.bind(i18n)
+	};
 };
 
 const createIsLoadingStore = (i18n: i18nType) => {
@@ -78,6 +99,8 @@ export const getLanguages = async () => {
 	const languages = (await import(`./locales/languages.json`)).default;
 	return languages;
 };
+
+// Enhanced changeLanguage that updates DOM lang attribute
 export const changeLanguage = (lang: string) => {
 	document.documentElement.setAttribute('lang', lang);
 	i18next.changeLanguage(lang);

@@ -6,7 +6,7 @@
 
 	const i18n = getContext('i18n');
 
-	import { createNewPrompt, getPrompts } from '$lib/apis/prompts';
+	import { createNewPrompt, getPrompts, type PromptItem } from '$lib/apis/prompts';
 	import PromptEditor from '$lib/components/workspace/Prompts/PromptEditor.svelte';
 
 	let prompt: {
@@ -18,7 +18,7 @@
 
 	let clone = false;
 
-	const onSubmit = async (_prompt) => {
+	const onSubmit = async (_prompt: PromptItem) => {
 		const res = await createNewPrompt(localStorage.token, _prompt).catch((error) => {
 			toast.error(`${error}`);
 			return null;

@@ -1,5 +1,6 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import path from 'path';
 
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
@@ -20,29 +21,29 @@ export default defineConfig({
 		extensions: ['.js', '.ts', '.svelte', '.json'],
 		alias: {
 			// Ensure directory imports resolve to index.ts files for all API modules
-			'$lib/apis/audio': new URL('./src/lib/apis/audio/index.ts', import.meta.url).pathname,
-			'$lib/apis/auths': new URL('./src/lib/apis/auths/index.ts', import.meta.url).pathname,
-			'$lib/apis/channels': new URL('./src/lib/apis/channels/index.ts', import.meta.url).pathname,
-			'$lib/apis/chats': new URL('./src/lib/apis/chats/index.ts', import.meta.url).pathname,
-			'$lib/apis/configs': new URL('./src/lib/apis/configs/index.ts', import.meta.url).pathname,
-			'$lib/apis/evaluations': new URL('./src/lib/apis/evaluations/index.ts', import.meta.url).pathname,
-			'$lib/apis/files': new URL('./src/lib/apis/files/index.ts', import.meta.url).pathname,
-			'$lib/apis/folders': new URL('./src/lib/apis/folders/index.ts', import.meta.url).pathname,
-			'$lib/apis/functions': new URL('./src/lib/apis/functions/index.ts', import.meta.url).pathname,
-			'$lib/apis/groups': new URL('./src/lib/apis/groups/index.ts', import.meta.url).pathname,
-			'$lib/apis/images': new URL('./src/lib/apis/images/index.ts', import.meta.url).pathname,
-			'$lib/apis/knowledge': new URL('./src/lib/apis/knowledge/index.ts', import.meta.url).pathname,
-			'$lib/apis/memories': new URL('./src/lib/apis/memories/index.ts', import.meta.url).pathname,
-			'$lib/apis/models': new URL('./src/lib/apis/models/index.ts', import.meta.url).pathname,
-			'$lib/apis/notes': new URL('./src/lib/apis/notes/index.ts', import.meta.url).pathname,
-			'$lib/apis/ollama': new URL('./src/lib/apis/ollama/index.ts', import.meta.url).pathname,
-			'$lib/apis/openai': new URL('./src/lib/apis/openai/index.ts', import.meta.url).pathname,
-			'$lib/apis/prompts': new URL('./src/lib/apis/prompts/index.ts', import.meta.url).pathname,
-			'$lib/apis/retrieval': new URL('./src/lib/apis/retrieval/index.ts', import.meta.url).pathname,
-			'$lib/apis/streaming': new URL('./src/lib/apis/streaming/index.ts', import.meta.url).pathname,
-			'$lib/apis/tools': new URL('./src/lib/apis/tools/index.ts', import.meta.url).pathname,
-			'$lib/apis/users': new URL('./src/lib/apis/users/index.ts', import.meta.url).pathname,
-			'$lib/apis/utils': new URL('./src/lib/apis/utils/index.ts', import.meta.url).pathname
+			'$lib/apis/audio': path.resolve(__dirname, './src/lib/apis/audio/index.ts'),
+			'$lib/apis/auths': path.resolve(__dirname, './src/lib/apis/auths/index.ts'),
+			'$lib/apis/channels': path.resolve(__dirname, './src/lib/apis/channels/index.ts'),
+			'$lib/apis/chats': path.resolve(__dirname, './src/lib/apis/chats/index.ts'),
+			'$lib/apis/configs': path.resolve(__dirname, './src/lib/apis/configs/index.ts'),
+			'$lib/apis/evaluations': path.resolve(__dirname, './src/lib/apis/evaluations/index.ts'),
+			'$lib/apis/files': path.resolve(__dirname, './src/lib/apis/files/index.ts'),
+			'$lib/apis/folders': path.resolve(__dirname, './src/lib/apis/folders/index.ts'),
+			'$lib/apis/functions': path.resolve(__dirname, './src/lib/apis/functions/index.ts'),
+			'$lib/apis/groups': path.resolve(__dirname, './src/lib/apis/groups/index.ts'),
+			'$lib/apis/images': path.resolve(__dirname, './src/lib/apis/images/index.ts'),
+			'$lib/apis/knowledge': path.resolve(__dirname, './src/lib/apis/knowledge/index.ts'),
+			'$lib/apis/memories': path.resolve(__dirname, './src/lib/apis/memories/index.ts'),
+			'$lib/apis/models': path.resolve(__dirname, './src/lib/apis/models/index.ts'),
+			'$lib/apis/notes': path.resolve(__dirname, './src/lib/apis/notes/index.ts'),
+			'$lib/apis/ollama': path.resolve(__dirname, './src/lib/apis/ollama/index.ts'),
+			'$lib/apis/openai': path.resolve(__dirname, './src/lib/apis/openai/index.ts'),
+			'$lib/apis/prompts': path.resolve(__dirname, './src/lib/apis/prompts/index.ts'),
+			'$lib/apis/retrieval': path.resolve(__dirname, './src/lib/apis/retrieval/index.ts'),
+			'$lib/apis/streaming': path.resolve(__dirname, './src/lib/apis/streaming/index.ts'),
+			'$lib/apis/tools': path.resolve(__dirname, './src/lib/apis/tools/index.ts'),
+			'$lib/apis/users': path.resolve(__dirname, './src/lib/apis/users/index.ts'),
+			'$lib/apis/utils': path.resolve(__dirname, './src/lib/apis/utils/index.ts')
 		}
 	},
 	define: {
