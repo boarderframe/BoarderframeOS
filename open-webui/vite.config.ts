@@ -16,12 +16,20 @@ export default defineConfig({
 			]
 		})
 	],
+	resolve: {
+		extensions: ['.js', '.ts', '.svelte', '.json']
+	},
 	define: {
-		APP_VERSION: JSON.stringify(process.env.npm_package_version),
+		APP_VERSION: JSON.stringify(process.env.npm_package_version || '0.1.0'),
 		APP_BUILD_HASH: JSON.stringify(process.env.APP_BUILD_HASH || 'dev-build')
 	},
 	build: {
-		sourcemap: true
+		sourcemap: true,
+		rollupOptions: {
+			output: {
+				manualChunks: undefined
+			}
+		}
 	},
 	worker: {
 		format: 'es'
