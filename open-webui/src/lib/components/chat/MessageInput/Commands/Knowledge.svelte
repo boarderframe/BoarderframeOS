@@ -9,7 +9,7 @@
 	import { tick, getContext, onMount, onDestroy } from 'svelte';
 	import { removeLastWordFromString, isValidHttpUrl } from '$lib/utils';
 	import { knowledge } from '$lib/stores';
-	import { getNoteList, getNotes } from '$lib/apis/notes/index.js';
+	import { getNoteList, getNotes } from '$lib/apis/notes';
 
 	const i18n = getContext('i18n');
 

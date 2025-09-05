@@ -6,7 +6,7 @@
 
 	import { blobToFile } from '$lib/utils';
 	import { generateEmoji } from '$lib/apis';
-	import { synthesizeOpenAISpeech, transcribeAudio } from '$lib/apis/audio/index.js';
+	import { synthesizeOpenAISpeech, transcribeAudio } from '$lib/apis/audio';
 
 	import { toast } from 'svelte-sonner';
 

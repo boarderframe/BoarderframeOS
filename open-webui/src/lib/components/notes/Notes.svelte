@@ -33,7 +33,7 @@
 	import { onMount, getContext, onDestroy } from 'svelte';
 	import { WEBUI_NAME, config, prompts as _prompts, user } from '$lib/stores';
 
-	import { createNewNote, deleteNoteById, getNotes } from '$lib/apis/notes/index.js';
+	import { createNewNote, deleteNoteById, getNotes } from '$lib/apis/notes';
 	import { capitalizeFirstLetter, copyToClipboard, getTimeRange } from '$lib/utils';
 
 	import EllipsisHorizontal from '../icons/EllipsisHorizontal.svelte';

@@ -1,4 +1,4 @@
-import { titleGenerationTemplate } from '$lib/utils/index.js';
+import { titleGenerationTemplate } from '$lib/utils';
 import { expect, test } from 'vitest';
 
 test('titleGenerationTemplate correctly replaces {{prompt}} placeholder', () => {

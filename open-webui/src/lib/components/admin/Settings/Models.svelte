@@ -13,7 +13,7 @@
 		getBaseModels,
 		toggleModelById,
 		updateModelById
-	} from '$lib/apis/models/index.js';
+	} from '$lib/apis/models';
 	import { copyToClipboard } from '$lib/utils';
 	import { page } from '$app/stores';
 

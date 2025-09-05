@@ -6,7 +6,7 @@
 	import Leaderboard from './Evaluations/Leaderboard.svelte';
 	import Feedbacks from './Evaluations/Feedbacks.svelte';
 
-	import { getAllFeedbacks } from '$lib/apis/evaluations/index.js';
+	import { getAllFeedbacks } from '$lib/apis/evaluations';
 
 	const i18n = getContext('i18n');
 

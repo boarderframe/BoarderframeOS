@@ -12,7 +12,7 @@
 		getConfig,
 		updateConfig,
 		verifyConfigUrl
-	} from '$lib/apis/images/index.js';
+	} from '$lib/apis/images';
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import SensitiveInput from '$lib/components/common/SensitiveInput.svelte';
 	import Switch from '$lib/components/common/Switch.svelte';

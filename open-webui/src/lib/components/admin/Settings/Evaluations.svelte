@@ -5,7 +5,7 @@
 
 	const dispatch = createEventDispatcher();
 	import { getModels } from '$lib/apis';
-	import { getConfig, updateConfig } from '$lib/apis/evaluations/index.js';
+	import { getConfig, updateConfig } from '$lib/apis/evaluations';
 
 	import Switch from '$lib/components/common/Switch.svelte';
 	import Spinner from '$lib/components/common/Spinner.svelte';

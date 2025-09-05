@@ -6,7 +6,7 @@
 	import { config, user, tools as _tools, mobile } from '$lib/stores';
 	import { createPicker } from '$lib/utils/google-drive-picker';
 
-	import { getTools } from '$lib/apis/tools/index.js';
+	import { getTools } from '$lib/apis/tools';
 
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';

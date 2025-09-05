@@ -9,7 +9,7 @@
 		getUserValvesById as getToolUserValvesById,
 		updateUserValvesById as updateToolUserValvesById,
 		getTools
-	} from '$lib/apis/tools/index.js';
+	} from '$lib/apis/tools';
 	import {
 		getUserValvesSpecById as getFunctionUserValvesSpecById,
 		getUserValvesById as getFunctionUserValvesById,
